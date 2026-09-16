@@ -1,0 +1,16 @@
+# Mirrors the Mind type from the Node backend's GET /api/mind (server.js `publicMind`) and the
+# mobile client's Mind type (mobile/src/api/types.ts) — this is the first real WYRD data model
+# ported into Serverpod, proving the model -> generate -> endpoint -> client pipeline end to end
+# before the rest of the ~30 endpoints get the same treatment.
+class: Mind
+
+fields:
+  mood: String
+  focusTopic: String?
+  activeGoal: String?
+  curiosity: double
+  confidence: double
+  digest: DigestInfo
+  lastEvent: String?
+  explorationCount: int?
+  updatedAt: DateTime

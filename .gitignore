@@ -1,0 +1,26 @@
+# Files and directories created by pub
+.dart_tool/
+.packages
+
+# Pubspec overrides
+pubspec_overrides.yaml
+
+# Agents
+.dart_skills/
+.agents/
+.claude/
+.gemini/
+.cursor/
+.vscode/mcp.json
+.codex/
+.mcp.json
+
+# Serverpod Cloud CLI
+.scloud/
+
+# Embedded test Postgres (binaries + data dir), managed by `dart test` per config/test.yaml
+wyrd_server/.serverpod/
+
+# Real secrets (DB/Redis passwords, JWT signing keys, service secret) for every environment
+# including production — the file's own header says not to version-control it.
+wyrd_server/config/passwords.yaml

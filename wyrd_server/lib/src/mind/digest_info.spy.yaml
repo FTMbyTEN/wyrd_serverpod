@@ -1,0 +1,13 @@
+# Mirrors DigestInfo from the Node backend (server.js `computeDigest`) and the mobile client's
+# DigestInfo type (mobile/src/api/types.ts) — same field names, same shapes, so the eventual
+# Flutter client and this model line up with what the rest of WYRD already expects.
+class: DigestInfo
+
+fields:
+  totalTopics: int
+  answeredTopics: int
+  backlog: int
+  percent: double
+  ratePerMin: double?
+  etaMinutes: double?
+  etaAt: DateTime?
