@@ -18,6 +18,7 @@ import '../mind/diary_future_call.dart' as _i749zoke;
 import '../mind/growth_future_call.dart' as _i0cg22dz;
 import '../mind/reasoning_future_call.dart' as _ipbl5psg;
 import '../mind/self_question_future_call.dart' as _i51wt927;
+import '../mind/synthesis_future_call.dart' as _i5fxv39a;
 
 /// Invokes a future call.
 typedef _InvokeFutureCall =
@@ -65,6 +66,7 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
       'GrowthTakeSnapshotFutureCall': GrowthTakeSnapshotFutureCall(),
       'ReasoningTickFutureCall': ReasoningTickFutureCall(),
       'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
+      'SynthesisTickFutureCall': SynthesisTickFutureCall(),
     };
     _futureCallManager = futureCallManager;
     _serverId = serverId;
@@ -194,6 +196,8 @@ class _FutureCallRef {
   late final selfQuestion = _SelfQuestionFutureCallDispatcher(
     _invokeFutureCall,
   );
+
+  late final synthesis = _SynthesisFutureCallDispatcher(_invokeFutureCall);
 }
 
 class _DiaryFutureCallDispatcher {
@@ -248,6 +252,19 @@ class _SelfQuestionFutureCallDispatcher {
   }
 }
 
+class _SynthesisFutureCallDispatcher {
+  _SynthesisFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'SynthesisTickFutureCall',
+      null,
+    );
+  }
+}
+
 class DiaryCheckAndWriteFutureCall extends _is.FutureCall
     implements _is.InvokableFutureCall {
   @override
@@ -289,5 +306,16 @@ class SelfQuestionTickFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _i51wt927.SelfQuestionFutureCall().tick(session);
+  }
+}
+
+class SynthesisTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _i5fxv39a.SynthesisFutureCall().tick(session);
   }
 }

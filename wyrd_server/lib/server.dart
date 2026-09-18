@@ -123,6 +123,11 @@ void run(List<String> args) async {
       .every(const Duration(seconds: 30))
       .selfQuestion
       .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'synthesis-tick')
+      .every(const Duration(seconds: 90))
+      .synthesis
+      .tick();
 
   // Start the server.
   await pod.start();

@@ -32,6 +32,9 @@ abstract class MemoryBlock
     this.question,
     this.answer,
     this.answeredTopic,
+    this.insight,
+    this.sourceBlockIds,
+    this.sourceTopics,
   });
 
   factory MemoryBlock({
@@ -51,6 +54,9 @@ abstract class MemoryBlock
     String? question,
     String? answer,
     String? answeredTopic,
+    String? insight,
+    List<int>? sourceBlockIds,
+    List<String>? sourceTopics,
   }) = _MemoryBlockImpl;
 
   factory MemoryBlock.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -75,6 +81,17 @@ abstract class MemoryBlock
       question: jsonSerialization['question'] as String?,
       answer: jsonSerialization['answer'] as String?,
       answeredTopic: jsonSerialization['answeredTopic'] as String?,
+      insight: jsonSerialization['insight'] as String?,
+      sourceBlockIds: jsonSerialization['sourceBlockIds'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<int>>(
+              jsonSerialization['sourceBlockIds'],
+            ),
+      sourceTopics: jsonSerialization['sourceTopics'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<String>>(
+              jsonSerialization['sourceTopics'],
+            ),
     );
   }
 
@@ -113,6 +130,12 @@ abstract class MemoryBlock
 
   String? answeredTopic;
 
+  String? insight;
+
+  List<int>? sourceBlockIds;
+
+  List<String>? sourceTopics;
+
   /// Returns a shallow copy of this [MemoryBlock]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -133,6 +156,9 @@ abstract class MemoryBlock
     String? question,
     String? answer,
     String? answeredTopic,
+    String? insight,
+    List<int>? sourceBlockIds,
+    List<String>? sourceTopics,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -154,6 +180,9 @@ abstract class MemoryBlock
       if (question != null) 'question': question,
       if (answer != null) 'answer': answer,
       if (answeredTopic != null) 'answeredTopic': answeredTopic,
+      if (insight != null) 'insight': insight,
+      if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
+      if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
     };
   }
 
@@ -177,6 +206,9 @@ abstract class MemoryBlock
       if (question != null) 'question': question,
       if (answer != null) 'answer': answer,
       if (answeredTopic != null) 'answeredTopic': answeredTopic,
+      if (insight != null) 'insight': insight,
+      if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
+      if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
     };
   }
 
@@ -206,6 +238,9 @@ class _MemoryBlockImpl extends MemoryBlock {
     String? question,
     String? answer,
     String? answeredTopic,
+    String? insight,
+    List<int>? sourceBlockIds,
+    List<String>? sourceTopics,
   }) : super._(
          id: id,
          legacyId: legacyId,
@@ -223,6 +258,9 @@ class _MemoryBlockImpl extends MemoryBlock {
          question: question,
          answer: answer,
          answeredTopic: answeredTopic,
+         insight: insight,
+         sourceBlockIds: sourceBlockIds,
+         sourceTopics: sourceTopics,
        );
 
   /// Returns a shallow copy of this [MemoryBlock]
@@ -246,6 +284,9 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? question = _Undefined,
     Object? answer = _Undefined,
     Object? answeredTopic = _Undefined,
+    Object? insight = _Undefined,
+    Object? sourceBlockIds = _Undefined,
+    Object? sourceTopics = _Undefined,
   }) {
     return MemoryBlock(
       id: id is int? ? id : this.id,
@@ -266,6 +307,13 @@ class _MemoryBlockImpl extends MemoryBlock {
       answeredTopic: answeredTopic is String?
           ? answeredTopic
           : this.answeredTopic,
+      insight: insight is String? ? insight : this.insight,
+      sourceBlockIds: sourceBlockIds is List<int>?
+          ? sourceBlockIds
+          : this.sourceBlockIds?.map((e0) => e0).toList(),
+      sourceTopics: sourceTopics is List<String>?
+          ? sourceTopics
+          : this.sourceTopics?.map((e0) => e0).toList(),
     );
   }
 }

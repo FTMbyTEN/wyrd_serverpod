@@ -38,3 +38,5 @@ reasoning:
   - trigger:
 selfQuestion:
   - trigger:
+synthesis:
+  - trigger:

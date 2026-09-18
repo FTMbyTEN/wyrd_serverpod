@@ -501,6 +501,21 @@ class EndpointSelfQuestion extends _isc.EndpointRef {
   );
 }
 
+/// Ports /api/synthesis/trigger from server.js. Public/unauthenticated, matching Node.
+/// {@category Endpoint}
+class EndpointSynthesis extends _isc.EndpointRef {
+  EndpointSynthesis(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'synthesis';
+
+  _ida.Future<bool> trigger() => caller.callServerEndpoint<bool>(
+    'synthesis',
+    'trigger',
+    {},
+  );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _iaic.Caller(client);
@@ -552,6 +567,7 @@ class Client extends _isc.ServerpodClientShared {
     profile = EndpointProfile(this);
     reasoning = EndpointReasoning(this);
     selfQuestion = EndpointSelfQuestion(this);
+    synthesis = EndpointSynthesis(this);
     modules = Modules(this);
   }
 
@@ -581,6 +597,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointSelfQuestion selfQuestion;
 
+  late final EndpointSynthesis synthesis;
+
   late final Modules modules;
 
   @override
@@ -598,6 +616,7 @@ class Client extends _isc.ServerpodClientShared {
     'profile': profile,
     'reasoning': reasoning,
     'selfQuestion': selfQuestion,
+    'synthesis': synthesis,
   };
 
   @override

@@ -21,6 +21,9 @@ fields:
   question: String?
   answer: String?
   answeredTopic: String?
+  insight: String?
+  sourceBlockIds: List<int>?
+  sourceTopics: List<String>?
 
 indexes:
   memory_block_timestamp_idx:

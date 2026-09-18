@@ -187,6 +187,8 @@ class TestEndpoints {
   late final _ReasoningEndpoint reasoning;
 
   late final _SelfQuestionEndpoint selfQuestion;
+
+  late final _SynthesisEndpoint synthesis;
 }
 
 class _InternalTestEndpoints extends TestEndpoints
@@ -248,6 +250,10 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    synthesis = _SynthesisEndpoint(
+      endpoints,
+      serializationManager,
+    );
   }
 }
 
@@ -259,6 +265,8 @@ class _FutureCalls {
   late final reasoning = _ReasoningFutureCall();
 
   late final selfQuestion = _SelfQuestionFutureCall();
+
+  late final synthesis = _SynthesisFutureCall();
 }
 
 class _EmailIdpEndpoint {
@@ -1244,6 +1252,45 @@ class _SelfQuestionEndpoint {
   }
 }
 
+class _SynthesisEndpoint {
+  _SynthesisEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<bool> trigger(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'synthesis',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'synthesis',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _DiaryFutureCall {
   Future<void> checkAndWrite(_ist.TestSessionBuilder sessionBuilder) async {
     var _localUniqueSession =
@@ -1295,6 +1342,21 @@ class _SelfQuestionFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ix7un2io.SelfQuestionTickFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _SynthesisFutureCall {
+  Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.SynthesisTickFutureCall().invoke(
         _localUniqueSession,
         null,
       );
