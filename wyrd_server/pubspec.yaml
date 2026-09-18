@@ -39,6 +39,23 @@ serverpod:
         set -- web --base-href / --output ../wyrd_server/web/app
         flutter build "$@" || { flutter clean && flutter build "$@"; }
 
+    # Build the Expo (React Native web) app -- the "port 8090" WYRD gate/mind UI, in the
+    # separate consciousness-bot repo -- and copy it to the server's web directory. This is
+    # what actually gets served at the project's web domain; swap this back to `flutter_build`
+    # in scloud.yaml if the Flutter frontend should be served instead.
+    expo_build:
+      windows: >-
+        (if exist web\app rmdir /S /Q web\app)
+        & cd /D C:\Users\TEN\consciousness-bot\mobile
+        & set EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space
+        && npx expo export --platform web
+        && xcopy /E /I /Y dist C:\Users\TEN\Desktop\wyrd_serverpod\wyrd_server\web\app
+      posix: |
+        rm -rf ../wyrd_server/web/app
+        cd ~/consciousness-bot/mobile
+        EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space npx expo export --platform web
+        cp -r dist ../../wyrd_serverpod/wyrd_server/web/app
+
   # Companion Flutter apps that `serverpod start` can launch (Ctrl+R), keyed
   # by a display alias. The default device is the web server, opening the
   # machine's default browser when ready. All non-reserved properties are
