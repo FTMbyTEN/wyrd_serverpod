@@ -19,6 +19,7 @@ import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../mind/chat_endpoint.dart' as _i2b8uve4;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
 import '../mind/dream_endpoint.dart' as _inxbi04j;
 import '../mind/growth_endpoint.dart' as _idrisijy;
@@ -48,6 +49,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'chat': _i2b8uve4.ChatEndpoint()
+        ..initialize(
+          server,
+          'chat',
           null,
         ),
       'diary': _i71dg2tj.DiaryEndpoint()
@@ -320,6 +327,50 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['greeting'] as _il624ik7.GreetingEndpoint).hello(
                     session,
                     params['name'],
+                  ),
+        ),
+      },
+    );
+    connectors['chat'] = _is.EndpointConnector(
+      name: 'chat',
+      endpoint: endpoints['chat']!,
+      methodConnectors: {
+        'sendMessage': _is.MethodConnector(
+          name: 'sendMessage',
+          params: {
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['chat'] as _i2b8uve4.ChatEndpoint).sendMessage(
+                    session,
+                    params['text'],
+                  ),
+        ),
+        'getHistory': _is.MethodConnector(
+          name: 'getHistory',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['chat'] as _i2b8uve4.ChatEndpoint).getHistory(
+                    session,
+                    limit: params['limit'],
                   ),
         ),
       },

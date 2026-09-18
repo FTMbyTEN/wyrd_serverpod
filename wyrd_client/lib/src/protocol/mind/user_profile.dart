@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/protocol.dart' as _i2pladzn;
+import '../mind/user_fact.dart' as _il0k3um2;
 
 abstract class UserProfile
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
@@ -29,7 +30,7 @@ abstract class UserProfile
     int? id,
     required _isc.UuidValue authUserId,
     String? username,
-    required List<String> facts,
+    required List<_il0k3um2.UserFact> facts,
     required int visitCount,
     required DateTime firstSeen,
     required DateTime lastSeen,
@@ -42,7 +43,7 @@ abstract class UserProfile
         jsonSerialization['authUserId'],
       ),
       username: jsonSerialization['username'] as String?,
-      facts: _i2pladzn.Protocol().deserialize<List<String>>(
+      facts: _i2pladzn.Protocol().deserialize<List<_il0k3um2.UserFact>>(
         jsonSerialization['facts'],
       ),
       visitCount: jsonSerialization['visitCount'] as int,
@@ -64,7 +65,7 @@ abstract class UserProfile
 
   String? username;
 
-  List<String> facts;
+  List<_il0k3um2.UserFact> facts;
 
   int visitCount;
 
@@ -79,7 +80,7 @@ abstract class UserProfile
     int? id,
     _isc.UuidValue? authUserId,
     String? username,
-    List<String>? facts,
+    List<_il0k3um2.UserFact>? facts,
     int? visitCount,
     DateTime? firstSeen,
     DateTime? lastSeen,
@@ -91,7 +92,7 @@ abstract class UserProfile
       if (id != null) 'id': id,
       'authUserId': authUserId.toJson(),
       if (username != null) 'username': username,
-      'facts': facts.toJson(),
+      'facts': facts.toJson(valueToJson: (v) => v.toJson()),
       'visitCount': visitCount,
       'firstSeen': firstSeen.toJson(),
       'lastSeen': lastSeen.toJson(),
@@ -105,7 +106,7 @@ abstract class UserProfile
       if (id != null) 'id': id,
       'authUserId': authUserId.toJson(),
       if (username != null) 'username': username,
-      'facts': facts.toJson(),
+      'facts': facts.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       'visitCount': visitCount,
       'firstSeen': firstSeen.toJson(),
       'lastSeen': lastSeen.toJson(),
@@ -125,7 +126,7 @@ class _UserProfileImpl extends UserProfile {
     int? id,
     required _isc.UuidValue authUserId,
     String? username,
-    required List<String> facts,
+    required List<_il0k3um2.UserFact> facts,
     required int visitCount,
     required DateTime firstSeen,
     required DateTime lastSeen,
@@ -147,7 +148,7 @@ class _UserProfileImpl extends UserProfile {
     Object? id = _Undefined,
     _isc.UuidValue? authUserId,
     Object? username = _Undefined,
-    List<String>? facts,
+    List<_il0k3um2.UserFact>? facts,
     int? visitCount,
     DateTime? firstSeen,
     DateTime? lastSeen,
@@ -156,7 +157,7 @@ class _UserProfileImpl extends UserProfile {
       id: id is int? ? id : this.id,
       authUserId: authUserId ?? this.authUserId,
       username: username is String? ? username : this.username,
-      facts: facts ?? this.facts.map((e0) => e0).toList(),
+      facts: facts ?? this.facts.map((e0) => e0.copyWith()).toList(),
       visitCount: visitCount ?? this.visitCount,
       firstSeen: firstSeen ?? this.firstSeen,
       lastSeen: lastSeen ?? this.lastSeen,

@@ -1,0 +1,15 @@
+# Mirrors server.js's conversations.json (userTurns/appendConversationTurn) -- dedicated,
+# per-user chat history, deliberately separate from MemoryBlock so real conversation history
+# is never at risk of eviction by high-volume autonomous background activity.
+class: ConversationTurn
+table: conversation_turn
+
+fields:
+  authUserId: UuidValue
+  userText: String
+  botText: String
+  timestamp: DateTime
+
+indexes:
+  conversation_turn_auth_user_id_idx:
+    fields: authUserId

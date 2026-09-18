@@ -11,6 +11,9 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+chat:
+  - sendMessage:
+  - getHistory:
 diary:
   - getEntries:
   - trigger:

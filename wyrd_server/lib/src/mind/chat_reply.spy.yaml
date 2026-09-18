@@ -1,0 +1,4 @@
+class: ChatReply
+fields:
+  reply: String
+  mind: Mind

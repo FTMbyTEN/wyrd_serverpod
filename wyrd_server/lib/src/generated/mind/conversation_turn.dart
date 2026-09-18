@@ -11,131 +11,109 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:wyrd_server/src/generated/protocol.dart' as _i9sln91s;
-import '../mind/user_fact.dart' as _il0k3um2;
 
-abstract class UserProfile
+abstract class ConversationTurn
     implements _is.TableRow<int?>, _is.ProtocolSerialization {
-  UserProfile._({
+  ConversationTurn._({
     this.id,
     required this.authUserId,
-    this.username,
-    required this.facts,
-    required this.visitCount,
-    required this.firstSeen,
-    required this.lastSeen,
+    required this.userText,
+    required this.botText,
+    required this.timestamp,
   });
 
-  factory UserProfile({
+  factory ConversationTurn({
     int? id,
     required _is.UuidValue authUserId,
-    String? username,
-    required List<_il0k3um2.UserFact> facts,
-    required int visitCount,
-    required DateTime firstSeen,
-    required DateTime lastSeen,
-  }) = _UserProfileImpl;
+    required String userText,
+    required String botText,
+    required DateTime timestamp,
+  }) = _ConversationTurnImpl;
 
-  factory UserProfile.fromJson(Map<String, dynamic> jsonSerialization) {
-    return UserProfile(
+  factory ConversationTurn.fromJson(Map<String, dynamic> jsonSerialization) {
+    return ConversationTurn(
       id: jsonSerialization['id'] as int?,
       authUserId: _is.UuidValueJsonExtension.fromJson(
         jsonSerialization['authUserId'],
       ),
-      username: jsonSerialization['username'] as String?,
-      facts: _i9sln91s.Protocol().deserialize<List<_il0k3um2.UserFact>>(
-        jsonSerialization['facts'],
-      ),
-      visitCount: jsonSerialization['visitCount'] as int,
-      firstSeen: _is.DateTimeJsonExtension.fromJson(
-        jsonSerialization['firstSeen'],
-      ),
-      lastSeen: _is.DateTimeJsonExtension.fromJson(
-        jsonSerialization['lastSeen'],
+      userText: jsonSerialization['userText'] as String,
+      botText: jsonSerialization['botText'] as String,
+      timestamp: _is.DateTimeJsonExtension.fromJson(
+        jsonSerialization['timestamp'],
       ),
     );
   }
 
-  static final t = UserProfileTable();
+  static final t = ConversationTurnTable();
 
-  static const db = UserProfileRepository._();
+  static const db = ConversationTurnRepository._();
 
   @override
   int? id;
 
   _is.UuidValue authUserId;
 
-  String? username;
+  String userText;
 
-  List<_il0k3um2.UserFact> facts;
+  String botText;
 
-  int visitCount;
-
-  DateTime firstSeen;
-
-  DateTime lastSeen;
+  DateTime timestamp;
 
   @override
   _is.Table<int?> get table => t;
 
-  /// Returns a shallow copy of this [UserProfile]
+  /// Returns a shallow copy of this [ConversationTurn]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
-  UserProfile copyWith({
+  ConversationTurn copyWith({
     int? id,
     _is.UuidValue? authUserId,
-    String? username,
-    List<_il0k3um2.UserFact>? facts,
-    int? visitCount,
-    DateTime? firstSeen,
-    DateTime? lastSeen,
+    String? userText,
+    String? botText,
+    DateTime? timestamp,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
-      '__className__': 'UserProfile',
+      '__className__': 'ConversationTurn',
       if (id != null) 'id': id,
       'authUserId': authUserId.toJson(),
-      if (username != null) 'username': username,
-      'facts': facts.toJson(valueToJson: (v) => v.toJson()),
-      'visitCount': visitCount,
-      'firstSeen': firstSeen.toJson(),
-      'lastSeen': lastSeen.toJson(),
+      'userText': userText,
+      'botText': botText,
+      'timestamp': timestamp.toJson(),
     };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      '__className__': 'UserProfile',
+      '__className__': 'ConversationTurn',
       if (id != null) 'id': id,
       'authUserId': authUserId.toJson(),
-      if (username != null) 'username': username,
-      'facts': facts.toJson(valueToJson: (v) => v.toJsonForProtocol()),
-      'visitCount': visitCount,
-      'firstSeen': firstSeen.toJson(),
-      'lastSeen': lastSeen.toJson(),
+      'userText': userText,
+      'botText': botText,
+      'timestamp': timestamp.toJson(),
     };
   }
 
-  static UserProfileInclude include() {
-    return UserProfileInclude._();
+  static ConversationTurnInclude include() {
+    return ConversationTurnInclude._();
   }
 
-  static UserProfileIncludeList includeList({
-    _is.WhereExpressionBuilder<UserProfileTable>? where,
+  static ConversationTurnIncludeList includeList({
+    _is.WhereExpressionBuilder<ConversationTurnTable>? where,
     int? limit,
     int? offset,
-    _is.OrderByBuilder<UserProfileTable>? orderBy,
-    _is.OrderByListBuilder<UserProfileTable>? orderByList,
-    UserProfileInclude? include,
+    _is.OrderByBuilder<ConversationTurnTable>? orderBy,
+    _is.OrderByListBuilder<ConversationTurnTable>? orderByList,
+    ConversationTurnInclude? include,
   }) {
-    return UserProfileIncludeList._(
+    return ConversationTurnIncludeList._(
       where: where,
       limit: limit,
       offset: offset,
-      orderBy: orderBy?.call(UserProfile.t),
-      orderByList: orderByList?.call(UserProfile.t),
+      orderBy: orderBy?.call(ConversationTurn.t),
+      orderByList: orderByList?.call(ConversationTurn.t),
       include: include,
     );
   }
@@ -148,52 +126,45 @@ abstract class UserProfile
 
 class _Undefined {}
 
-class _UserProfileImpl extends UserProfile {
-  _UserProfileImpl({
+class _ConversationTurnImpl extends ConversationTurn {
+  _ConversationTurnImpl({
     int? id,
     required _is.UuidValue authUserId,
-    String? username,
-    required List<_il0k3um2.UserFact> facts,
-    required int visitCount,
-    required DateTime firstSeen,
-    required DateTime lastSeen,
+    required String userText,
+    required String botText,
+    required DateTime timestamp,
   }) : super._(
          id: id,
          authUserId: authUserId,
-         username: username,
-         facts: facts,
-         visitCount: visitCount,
-         firstSeen: firstSeen,
-         lastSeen: lastSeen,
+         userText: userText,
+         botText: botText,
+         timestamp: timestamp,
        );
 
-  /// Returns a shallow copy of this [UserProfile]
+  /// Returns a shallow copy of this [ConversationTurn]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   @override
-  UserProfile copyWith({
+  ConversationTurn copyWith({
     Object? id = _Undefined,
     _is.UuidValue? authUserId,
-    Object? username = _Undefined,
-    List<_il0k3um2.UserFact>? facts,
-    int? visitCount,
-    DateTime? firstSeen,
-    DateTime? lastSeen,
+    String? userText,
+    String? botText,
+    DateTime? timestamp,
   }) {
-    return UserProfile(
+    return ConversationTurn(
       id: id is int? ? id : this.id,
       authUserId: authUserId ?? this.authUserId,
-      username: username is String? ? username : this.username,
-      facts: facts ?? this.facts.map((e0) => e0.copyWith()).toList(),
-      visitCount: visitCount ?? this.visitCount,
-      firstSeen: firstSeen ?? this.firstSeen,
-      lastSeen: lastSeen ?? this.lastSeen,
+      userText: userText ?? this.userText,
+      botText: botText ?? this.botText,
+      timestamp: timestamp ?? this.timestamp,
     );
   }
 }
 
-class UserProfileUpdateTable extends _is.UpdateTable<UserProfileTable> {
-  UserProfileUpdateTable(super.table);
+class ConversationTurnUpdateTable
+    extends _is.UpdateTable<ConversationTurnTable> {
+  ConversationTurnUpdateTable(super.table);
 
   _is.ColumnValue<_is.UuidValue, _is.UuidValue> authUserId(
     _is.UuidValue value,
@@ -202,124 +173,98 @@ class UserProfileUpdateTable extends _is.UpdateTable<UserProfileTable> {
     value,
   );
 
-  _is.ColumnValue<String, String> username(String? value) => _is.ColumnValue(
-    table.username,
+  _is.ColumnValue<String, String> userText(String value) => _is.ColumnValue(
+    table.userText,
     value,
   );
 
-  _is.ColumnValue<List<_il0k3um2.UserFact>, List<_il0k3um2.UserFact>> facts(
-    List<_il0k3um2.UserFact> value,
-  ) => _is.ColumnValue(
-    table.facts,
+  _is.ColumnValue<String, String> botText(String value) => _is.ColumnValue(
+    table.botText,
     value,
   );
 
-  _is.ColumnValue<int, int> visitCount(int value) => _is.ColumnValue(
-    table.visitCount,
-    value,
-  );
-
-  _is.ColumnValue<DateTime, DateTime> firstSeen(DateTime value) =>
+  _is.ColumnValue<DateTime, DateTime> timestamp(DateTime value) =>
       _is.ColumnValue(
-        table.firstSeen,
-        value,
-      );
-
-  _is.ColumnValue<DateTime, DateTime> lastSeen(DateTime value) =>
-      _is.ColumnValue(
-        table.lastSeen,
+        table.timestamp,
         value,
       );
 }
 
-class UserProfileTable extends _is.Table<int?> {
-  UserProfileTable({super.tableRelation}) : super(tableName: 'user_profile') {
-    updateTable = UserProfileUpdateTable(this);
+class ConversationTurnTable extends _is.Table<int?> {
+  ConversationTurnTable({super.tableRelation})
+    : super(tableName: 'conversation_turn') {
+    updateTable = ConversationTurnUpdateTable(this);
     authUserId = _is.ColumnUuid(
       'authUserId',
       this,
     );
-    username = _is.ColumnString(
-      'username',
+    userText = _is.ColumnString(
+      'userText',
       this,
     );
-    facts = _is.ColumnSerializable<List<_il0k3um2.UserFact>>(
-      'facts',
+    botText = _is.ColumnString(
+      'botText',
       this,
     );
-    visitCount = _is.ColumnInt(
-      'visitCount',
-      this,
-    );
-    firstSeen = _is.ColumnDateTime(
-      'firstSeen',
-      this,
-    );
-    lastSeen = _is.ColumnDateTime(
-      'lastSeen',
+    timestamp = _is.ColumnDateTime(
+      'timestamp',
       this,
     );
   }
 
-  late final UserProfileUpdateTable updateTable;
+  late final ConversationTurnUpdateTable updateTable;
 
   late final _is.ColumnUuid authUserId;
 
-  late final _is.ColumnString username;
+  late final _is.ColumnString userText;
 
-  late final _is.ColumnSerializable<List<_il0k3um2.UserFact>> facts;
+  late final _is.ColumnString botText;
 
-  late final _is.ColumnInt visitCount;
-
-  late final _is.ColumnDateTime firstSeen;
-
-  late final _is.ColumnDateTime lastSeen;
+  late final _is.ColumnDateTime timestamp;
 
   @override
   List<_is.Column> get columns => [
     id,
     authUserId,
-    username,
-    facts,
-    visitCount,
-    firstSeen,
-    lastSeen,
+    userText,
+    botText,
+    timestamp,
   ];
 }
 
-class UserProfileInclude extends _is.IncludeObject {
-  UserProfileInclude._();
+class ConversationTurnInclude extends _is.IncludeObject {
+  ConversationTurnInclude._();
 
   @override
   Map<String, _is.Include?> get includes => {};
 
   @override
-  _is.Table<int?> get table => UserProfile.t;
+  _is.Table<int?> get table => ConversationTurn.t;
 }
 
-class UserProfileIncludeList extends _is.IncludeList {
-  UserProfileIncludeList._({
-    _is.WhereExpressionBuilder<UserProfileTable>? where,
+class ConversationTurnIncludeList extends _is.IncludeList {
+  ConversationTurnIncludeList._({
+    _is.WhereExpressionBuilder<ConversationTurnTable>? where,
     super.limit,
     super.offset,
     super.orderBy,
     super.orderByList,
     super.include,
   }) {
-    super.where = where?.call(UserProfile.t);
+    super.where = where?.call(ConversationTurn.t);
   }
 
   @override
   Map<String, _is.Include?> get includes => include?.includes ?? {};
 
   @override
-  _is.Table<int?> get table => UserProfile.t;
+  _is.Table<int?> get table => ConversationTurn.t;
 }
 
-class UserProfileRepository {
-  const UserProfileRepository._();
+class ConversationTurnRepository {
+  const ConversationTurnRepository._();
 
-  /// Returns a list of [UserProfile]s matching the given query parameters.
+  /// Returns a list of [ConversationTurn]s matching the given query parameters.
   ///
   /// Use [where] to specify which items to include in the return value.
   /// If none is specified, all items will be returned.
@@ -341,21 +286,21 @@ class UserProfileRepository {
   ///   limit: 100,
   /// );
   /// ```
-  Future<List<UserProfile>> find(
+  Future<List<ConversationTurn>> find(
     _is.DatabaseSession session, {
-    _is.WhereExpressionBuilder<UserProfileTable>? where,
+    _is.WhereExpressionBuilder<ConversationTurnTable>? where,
     int? limit,
     int? offset,
-    _is.OrderByBuilder<UserProfileTable>? orderBy,
-    _is.OrderByListBuilder<UserProfileTable>? orderByList,
+    _is.OrderByBuilder<ConversationTurnTable>? orderBy,
+    _is.OrderByListBuilder<ConversationTurnTable>? orderByList,
     _is.Transaction? transaction,
     _is.LockMode? lockMode,
     _is.LockBehavior? lockBehavior,
   }) async {
-    return session.db.find<UserProfile>(
-      where: where?.call(UserProfile.t),
-      orderBy: orderBy?.call(UserProfile.t),
-      orderByList: orderByList?.call(UserProfile.t),
+    return session.db.find<ConversationTurn>(
+      where: where?.call(ConversationTurn.t),
+      orderBy: orderBy?.call(ConversationTurn.t),
+      orderByList: orderByList?.call(ConversationTurn.t),
       limit: limit,
       offset: offset,
       transaction: transaction,
@@ -364,7 +309,7 @@ class UserProfileRepository {
     );
   }
 
-  /// Returns the first matching [UserProfile] matching the given query parameters.
+  /// Returns the first matching [ConversationTurn] matching the given query parameters.
   ///
   /// Use [where] to specify which items to include in the return value.
   /// If none is specified, all items will be returned.
@@ -381,20 +326,20 @@ class UserProfileRepository {
   ///   orderBy: (t) => t.age,
   /// );
   /// ```
-  Future<UserProfile?> findFirstRow(
+  Future<ConversationTurn?> findFirstRow(
     _is.DatabaseSession session, {
-    _is.WhereExpressionBuilder<UserProfileTable>? where,
+    _is.WhereExpressionBuilder<ConversationTurnTable>? where,
     int? offset,
-    _is.OrderByBuilder<UserProfileTable>? orderBy,
-    _is.OrderByListBuilder<UserProfileTable>? orderByList,
+    _is.OrderByBuilder<ConversationTurnTable>? orderBy,
+    _is.OrderByListBuilder<ConversationTurnTable>? orderByList,
     _is.Transaction? transaction,
     _is.LockMode? lockMode,
     _is.LockBehavior? lockBehavior,
   }) async {
-    return session.db.findFirstRow<UserProfile>(
-      where: where?.call(UserProfile.t),
-      orderBy: orderBy?.call(UserProfile.t),
-      orderByList: orderByList?.call(UserProfile.t),
+    return session.db.findFirstRow<ConversationTurn>(
+      where: where?.call(ConversationTurn.t),
+      orderBy: orderBy?.call(ConversationTurn.t),
+      orderByList: orderByList?.call(ConversationTurn.t),
       offset: offset,
       transaction: transaction,
       lockMode: lockMode,
@@ -402,15 +347,15 @@ class UserProfileRepository {
     );
   }
 
-  /// Finds a single [UserProfile] by its [id] or null if no such row exists.
-  Future<UserProfile?> findById(
+  /// Finds a single [ConversationTurn] by its [id] or null if no such row exists.
+  Future<ConversationTurn?> findById(
     _is.DatabaseSession session,
     int id, {
     _is.Transaction? transaction,
     _is.LockMode? lockMode,
     _is.LockBehavior? lockBehavior,
   }) async {
-    return session.db.findById<UserProfile>(
+    return session.db.findById<ConversationTurn>(
       id,
       transaction: transaction,
       lockMode: lockMode,
@@ -418,9 +363,9 @@ class UserProfileRepository {
     );
   }
 
-  /// Inserts all [UserProfile]s in the list and returns the inserted rows.
+  /// Inserts all [ConversationTurn]s in the list and returns the inserted rows.
   ///
-  /// The returned [UserProfile]s will have their `id` fields set.
+  /// The returned [ConversationTurn]s will have their `id` fields set.
   ///
   /// This is an atomic operation, meaning that if one of the rows fails to
   /// insert, none of the rows will be inserted.
@@ -432,14 +377,14 @@ class UserProfileRepository {
   /// If [noReturn] is set to `true`, the inserted rows are not read back from
   /// the database and an empty list is returned. This avoids the overhead of
   /// transferring and deserializing the rows when the result is not needed.
-  Future<List<UserProfile>> insert(
+  Future<List<ConversationTurn>> insert(
     _is.DatabaseSession session,
-    List<UserProfile> rows, {
+    List<ConversationTurn> rows, {
     _is.Transaction? transaction,
     bool ignoreConflicts = false,
     bool noReturn = false,
   }) async {
-    return session.db.insert<UserProfile>(
+    return session.db.insert<ConversationTurn>(
       rows,
       transaction: transaction,
       ignoreConflicts: ignoreConflicts,
@@ -447,21 +392,21 @@ class UserProfileRepository {
     );
   }
 
-  /// Inserts a single [UserProfile] and returns the inserted row.
+  /// Inserts a single [ConversationTurn] and returns the inserted row.
   ///
-  /// The returned [UserProfile] will have its `id` field set.
-  Future<UserProfile> insertRow(
+  /// The returned [ConversationTurn] will have its `id` field set.
+  Future<ConversationTurn> insertRow(
     _is.DatabaseSession session,
-    UserProfile row, {
+    ConversationTurn row, {
     _is.Transaction? transaction,
   }) async {
-    return session.db.insertRow<UserProfile>(
+    return session.db.insertRow<ConversationTurn>(
       row,
       transaction: transaction,
     );
   }
 
-  /// Upserts all [UserProfile]s in the list and returns the resulting rows.
+  /// Upserts all [ConversationTurn]s in the list and returns the resulting rows.
   ///
   /// If a row conflicts on the given [conflictColumns], the existing row is
   /// updated with the new values. Otherwise, a new row is inserted.
@@ -473,7 +418,7 @@ class UserProfileRepository {
   /// given expression. Conflicting rows that don't match are skipped and not
   /// returned, so the resulting list may be shorter than [rows].
   ///
-  /// The returned [UserProfile]s will have their `id` fields set.
+  /// The returned [ConversationTurn]s will have their `id` fields set.
   ///
   /// This is an atomic operation, meaning that if one of the rows fails,
   /// none of the rows will be affected.
@@ -481,26 +426,26 @@ class UserProfileRepository {
   /// If [noReturn] is set to `true`, the resulting rows are not read back from
   /// the database and an empty list is returned. This avoids the overhead of
   /// transferring and deserializing the rows when the result is not needed.
-  Future<List<UserProfile>> upsert(
+  Future<List<ConversationTurn>> upsert(
     _is.DatabaseSession session,
-    List<UserProfile> rows, {
-    required _is.ColumnSelections<UserProfileTable> conflictColumns,
-    _is.ColumnSelections<UserProfileTable>? updateColumns,
-    _is.WhereExpressionBuilder<UserProfileTable>? updateWhere,
+    List<ConversationTurn> rows, {
+    required _is.ColumnSelections<ConversationTurnTable> conflictColumns,
+    _is.ColumnSelections<ConversationTurnTable>? updateColumns,
+    _is.WhereExpressionBuilder<ConversationTurnTable>? updateWhere,
     _is.Transaction? transaction,
     bool noReturn = false,
   }) async {
-    return session.db.upsert<UserProfile>(
+    return session.db.upsert<ConversationTurn>(
       rows,
-      conflictColumns: conflictColumns(UserProfile.t),
-      updateColumns: updateColumns?.call(UserProfile.t),
-      updateWhere: updateWhere?.call(UserProfile.t),
+      conflictColumns: conflictColumns(ConversationTurn.t),
+      updateColumns: updateColumns?.call(ConversationTurn.t),
+      updateWhere: updateWhere?.call(ConversationTurn.t),
       transaction: transaction,
       noReturn: noReturn,
     );
   }
 
-  /// Upserts a single [UserProfile] and returns the resulting row.
+  /// Upserts a single [ConversationTurn] and returns the resulting row.
   ///
   /// If the row conflicts on the given [conflictColumns], the existing row is
   /// updated. Otherwise, a new row is inserted.
@@ -512,25 +457,25 @@ class UserProfileRepository {
   /// row matches the expression. Returns `null` if no row was affected — for
   /// example when [updateWhere] does not match the conflicting row.
   ///
-  /// The returned [UserProfile] will have its `id` field set.
-  Future<UserProfile?> upsertRow(
+  /// The returned [ConversationTurn] will have its `id` field set.
+  Future<ConversationTurn?> upsertRow(
     _is.DatabaseSession session,
-    UserProfile row, {
-    required _is.ColumnSelections<UserProfileTable> conflictColumns,
-    _is.ColumnSelections<UserProfileTable>? updateColumns,
-    _is.WhereExpressionBuilder<UserProfileTable>? updateWhere,
+    ConversationTurn row, {
+    required _is.ColumnSelections<ConversationTurnTable> conflictColumns,
+    _is.ColumnSelections<ConversationTurnTable>? updateColumns,
+    _is.WhereExpressionBuilder<ConversationTurnTable>? updateWhere,
     _is.Transaction? transaction,
   }) async {
-    return session.db.upsertRow<UserProfile>(
+    return session.db.upsertRow<ConversationTurn>(
       row,
-      conflictColumns: conflictColumns(UserProfile.t),
-      updateColumns: updateColumns?.call(UserProfile.t),
-      updateWhere: updateWhere?.call(UserProfile.t),
+      conflictColumns: conflictColumns(ConversationTurn.t),
+      updateColumns: updateColumns?.call(ConversationTurn.t),
+      updateWhere: updateWhere?.call(ConversationTurn.t),
       transaction: transaction,
     );
   }
 
-  /// Updates all [UserProfile]s in the list and returns the updated rows. If
+  /// Updates all [ConversationTurn]s in the list and returns the updated rows. If
   /// [columns] is provided, only those columns will be updated. Defaults to
   /// all columns.
   /// This is an atomic operation, meaning that if one of the rows fails to
@@ -539,82 +484,84 @@ class UserProfileRepository {
   /// If [noReturn] is set to `true`, the updated rows are not read back from
   /// the database and an empty list is returned. This avoids the overhead of
   /// transferring and deserializing the rows when the result is not needed.
-  Future<List<UserProfile>> update(
+  Future<List<ConversationTurn>> update(
     _is.DatabaseSession session,
-    List<UserProfile> rows, {
-    _is.ColumnSelections<UserProfileTable>? columns,
+    List<ConversationTurn> rows, {
+    _is.ColumnSelections<ConversationTurnTable>? columns,
     _is.Transaction? transaction,
     bool noReturn = false,
   }) async {
-    return session.db.update<UserProfile>(
+    return session.db.update<ConversationTurn>(
       rows,
-      columns: columns?.call(UserProfile.t),
+      columns: columns?.call(ConversationTurn.t),
       transaction: transaction,
       noReturn: noReturn,
     );
   }
 
-  /// Updates a single [UserProfile]. The row needs to have its id set.
+  /// Updates a single [ConversationTurn]. The row needs to have its id set.
   /// Optionally, a list of [columns] can be provided to only update those
   /// columns. Defaults to all columns.
-  Future<UserProfile> updateRow(
+  Future<ConversationTurn> updateRow(
     _is.DatabaseSession session,
-    UserProfile row, {
-    _is.ColumnSelections<UserProfileTable>? columns,
+    ConversationTurn row, {
+    _is.ColumnSelections<ConversationTurnTable>? columns,
     _is.Transaction? transaction,
   }) async {
-    return session.db.updateRow<UserProfile>(
+    return session.db.updateRow<ConversationTurn>(
       row,
-      columns: columns?.call(UserProfile.t),
+      columns: columns?.call(ConversationTurn.t),
       transaction: transaction,
     );
   }
 
-  /// Updates a single [UserProfile] by its [id] with the specified [columnValues].
+  /// Updates a single [ConversationTurn] by its [id] with the specified [columnValues].
   /// Returns the updated row or null if no row with the given id exists.
-  Future<UserProfile?> updateById(
+  Future<ConversationTurn?> updateById(
     _is.DatabaseSession session,
     int id, {
-    required _is.ColumnValueListBuilder<UserProfileUpdateTable> columnValues,
+    required _is.ColumnValueListBuilder<ConversationTurnUpdateTable>
+    columnValues,
     _is.Transaction? transaction,
   }) async {
-    return session.db.updateById<UserProfile>(
+    return session.db.updateById<ConversationTurn>(
       id,
-      columnValues: columnValues(UserProfile.t.updateTable),
+      columnValues: columnValues(ConversationTurn.t.updateTable),
       transaction: transaction,
     );
   }
 
-  /// Updates all [UserProfile]s matching the [where] expression with the specified [columnValues].
+  /// Updates all [ConversationTurn]s matching the [where] expression with the specified [columnValues].
   /// Returns the list of updated rows.
   ///
   /// If [noReturn] is set to `true`, the updated rows are not read back from
   /// the database and an empty list is returned. This avoids the overhead of
   /// transferring and deserializing the rows when the result is not needed.
-  Future<List<UserProfile>> updateWhere(
+  Future<List<ConversationTurn>> updateWhere(
     _is.DatabaseSession session, {
-    required _is.ColumnValueListBuilder<UserProfileUpdateTable> columnValues,
-    required _is.WhereExpressionBuilder<UserProfileTable> where,
+    required _is.ColumnValueListBuilder<ConversationTurnUpdateTable>
+    columnValues,
+    required _is.WhereExpressionBuilder<ConversationTurnTable> where,
     int? limit,
     int? offset,
-    _is.OrderByBuilder<UserProfileTable>? orderBy,
-    _is.OrderByListBuilder<UserProfileTable>? orderByList,
+    _is.OrderByBuilder<ConversationTurnTable>? orderBy,
+    _is.OrderByListBuilder<ConversationTurnTable>? orderByList,
     _is.Transaction? transaction,
     bool noReturn = false,
   }) async {
-    return session.db.updateWhere<UserProfile>(
-      columnValues: columnValues(UserProfile.t.updateTable),
-      where: where(UserProfile.t),
+    return session.db.updateWhere<ConversationTurn>(
+      columnValues: columnValues(ConversationTurn.t.updateTable),
+      where: where(ConversationTurn.t),
       limit: limit,
       offset: offset,
-      orderBy: orderBy?.call(UserProfile.t),
-      orderByList: orderByList?.call(UserProfile.t),
+      orderBy: orderBy?.call(ConversationTurn.t),
+      orderByList: orderByList?.call(ConversationTurn.t),
       transaction: transaction,
       noReturn: noReturn,
     );
   }
 
-  /// Deletes all [UserProfile]s in the list and returns the deleted rows.
+  /// Deletes all [ConversationTurn]s in the list and returns the deleted rows.
   ///
   /// To specify the order of the returned rows use [orderBy] or [orderByList]
   /// when sorting by multiple columns.
@@ -625,30 +572,30 @@ class UserProfileRepository {
   /// If [noReturn] is set to `true`, the deleted rows are not read back from
   /// the database and an empty list is returned. This avoids the overhead of
   /// transferring and deserializing the rows when the result is not needed.
-  Future<List<UserProfile>> delete(
+  Future<List<ConversationTurn>> delete(
     _is.DatabaseSession session,
-    List<UserProfile> rows, {
-    _is.OrderByBuilder<UserProfileTable>? orderBy,
-    _is.OrderByListBuilder<UserProfileTable>? orderByList,
+    List<ConversationTurn> rows, {
+    _is.OrderByBuilder<ConversationTurnTable>? orderBy,
+    _is.OrderByListBuilder<ConversationTurnTable>? orderByList,
     _is.Transaction? transaction,
     bool noReturn = false,
   }) async {
-    return session.db.delete<UserProfile>(
+    return session.db.delete<ConversationTurn>(
       rows,
-      orderBy: orderBy?.call(UserProfile.t),
-      orderByList: orderByList?.call(UserProfile.t),
+      orderBy: orderBy?.call(ConversationTurn.t),
+      orderByList: orderByList?.call(ConversationTurn.t),
       transaction: transaction,
       noReturn: noReturn,
     );
   }
 
-  /// Deletes a single [UserProfile].
-  Future<UserProfile> deleteRow(
+  /// Deletes a single [ConversationTurn].
+  Future<ConversationTurn> deleteRow(
     _is.DatabaseSession session,
-    UserProfile row, {
+    ConversationTurn row, {
     _is.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<UserProfile>(
+    return session.db.deleteRow<ConversationTurn>(
       row,
       transaction: transaction,
     );
@@ -662,18 +609,18 @@ class UserProfileRepository {
   /// If [noReturn] is set to `true`, the deleted rows are not read back from
   /// the database and an empty list is returned. This avoids the overhead of
   /// transferring and deserializing the rows when the result is not needed.
-  Future<List<UserProfile>> deleteWhere(
+  Future<List<ConversationTurn>> deleteWhere(
     _is.DatabaseSession session, {
-    required _is.WhereExpressionBuilder<UserProfileTable> where,
-    _is.OrderByBuilder<UserProfileTable>? orderBy,
-    _is.OrderByListBuilder<UserProfileTable>? orderByList,
+    required _is.WhereExpressionBuilder<ConversationTurnTable> where,
+    _is.OrderByBuilder<ConversationTurnTable>? orderBy,
+    _is.OrderByListBuilder<ConversationTurnTable>? orderByList,
     _is.Transaction? transaction,
     bool noReturn = false,
   }) async {
-    return session.db.deleteWhere<UserProfile>(
-      where: where(UserProfile.t),
-      orderBy: orderBy?.call(UserProfile.t),
-      orderByList: orderByList?.call(UserProfile.t),
+    return session.db.deleteWhere<ConversationTurn>(
+      where: where(ConversationTurn.t),
+      orderBy: orderBy?.call(ConversationTurn.t),
+      orderByList: orderByList?.call(ConversationTurn.t),
       transaction: transaction,
       noReturn: noReturn,
     );
@@ -683,27 +630,27 @@ class UserProfileRepository {
   /// will return the count of all rows in the table.
   Future<int> count(
     _is.DatabaseSession session, {
-    _is.WhereExpressionBuilder<UserProfileTable>? where,
+    _is.WhereExpressionBuilder<ConversationTurnTable>? where,
     int? limit,
     _is.Transaction? transaction,
   }) async {
-    return session.db.count<UserProfile>(
-      where: where?.call(UserProfile.t),
+    return session.db.count<ConversationTurn>(
+      where: where?.call(ConversationTurn.t),
       limit: limit,
       transaction: transaction,
     );
   }
 
-  /// Acquires row-level locks on [UserProfile] rows matching the [where] expression.
+  /// Acquires row-level locks on [ConversationTurn] rows matching the [where] expression.
   Future<void> lockRows(
     _is.DatabaseSession session, {
-    required _is.WhereExpressionBuilder<UserProfileTable> where,
+    required _is.WhereExpressionBuilder<ConversationTurnTable> where,
     required _is.LockMode lockMode,
     required _is.Transaction transaction,
     _is.LockBehavior lockBehavior = _is.LockBehavior.wait,
   }) async {
-    return session.db.lockRows<UserProfile>(
-      where: where(UserProfile.t),
+    return session.db.lockRows<ConversationTurn>(
+      where: where(ConversationTurn.t),
       lockMode: lockMode,
       lockBehavior: lockBehavior,
       transaction: transaction,

@@ -8,7 +8,7 @@ table: user_profile
 fields:
   authUserId: UuidValue
   username: String?
-  facts: List<String>
+  facts: List<UserFact>
   visitCount: int
   firstSeen: DateTime
   lastSeen: DateTime

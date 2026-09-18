@@ -1,0 +1,9 @@
+# Mirrors a single entry in server.js's profile.facts (extractUserFacts/addUserFacts) --
+# something WYRD has learned about a specific person from things they've said, with a
+# forgetting-curve style relevance decay based on lastMentioned (see UserFactService).
+class: UserFact
+fields:
+  text: String
+  category: String
+  timestamp: DateTime
+  lastMentioned: DateTime

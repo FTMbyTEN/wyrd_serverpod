@@ -15,8 +15,29 @@ class LlmService {
     String userPrompt,
     int maxTokens,
   ) async {
+    return callWithHistory(session, systemPrompt, [], userPrompt, maxTokens);
+  }
+
+  /// Like [callSimple] but with real prior turns in the messages array (ports the [history]
+  /// construction in server.js's callLLM) instead of a single user message. Each history entry
+  /// is {userText, botText}.
+  static Future<String?> callWithHistory(
+    Session session,
+    String systemPrompt,
+    List<({String userText, String botText})> history,
+    String userText,
+    int maxTokens,
+  ) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
+
+    final messages = [
+      for (final turn in history) ...[
+        {'role': 'user', 'content': turn.userText},
+        {'role': 'assistant', 'content': turn.botText},
+      ],
+      {'role': 'user', 'content': userText},
+    ];
 
     try {
       final res = await http.post(
@@ -30,9 +51,7 @@ class LlmService {
           'model': _model,
           'max_tokens': maxTokens,
           'system': systemPrompt,
-          'messages': [
-            {'role': 'user', 'content': userPrompt},
-          ],
+          'messages': messages,
         }),
       );
       if (res.statusCode != 200) return null;

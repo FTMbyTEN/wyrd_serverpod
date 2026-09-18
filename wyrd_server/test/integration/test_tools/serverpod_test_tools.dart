@@ -19,7 +19,10 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
 import 'package:serverpod_test/serverpod_test.dart' as _ist;
 import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import 'package:wyrd_server/src/generated/greetings/greeting.dart' as _i6wty2t7;
+import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
+import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
+    as _i619x11i;
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
 import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
@@ -165,6 +168,8 @@ class TestEndpoints {
 
   late final _GreetingEndpoint greeting;
 
+  late final _ChatEndpoint chat;
+
   late final _DiaryEndpoint diary;
 
   late final _DreamEndpoint dream;
@@ -196,6 +201,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     greeting = _GreetingEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    chat = _ChatEndpoint(
       endpoints,
       serializationManager,
     );
@@ -588,6 +597,79 @@ class _GreetingEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i6wty2t7.Greeting>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _ChatEndpoint {
+  _ChatEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_i6oasa27.ChatReply> sendMessage(
+    _ist.TestSessionBuilder sessionBuilder,
+    String text,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'chat',
+            method: 'sendMessage',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'chat',
+          methodName: 'sendMessage',
+          parameters: _ist.testObjectToJson({'text': text}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i6oasa27.ChatReply>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_i619x11i.ConversationTurn>> getHistory(
+    _ist.TestSessionBuilder sessionBuilder, {
+    int? limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'chat',
+            method: 'getHistory',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'chat',
+          methodName: 'getHistory',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_i619x11i.ConversationTurn>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

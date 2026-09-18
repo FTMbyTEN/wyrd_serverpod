@@ -18,7 +18,10 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
+import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
+import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
+    as _ie2belbc;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
@@ -273,6 +276,31 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// Ports /api/chat from server.js (the core reply path -- see chat_service.dart for what's
+/// intentionally not ported yet). Requires login, matching Node's requireAuth. Node's
+/// per-user rate limiting (30 messages/min) is not ported yet either.
+/// {@category Endpoint}
+class EndpointChat extends _isc.EndpointRef {
+  EndpointChat(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'chat';
+
+  _ida.Future<_is592ckh.ChatReply> sendMessage(String text) =>
+      caller.callServerEndpoint<_is592ckh.ChatReply>(
+        'chat',
+        'sendMessage',
+        {'text': text},
+      );
+
+  _ida.Future<List<_ie2belbc.ConversationTurn>> getHistory({int? limit}) =>
+      caller.callServerEndpoint<List<_ie2belbc.ConversationTurn>>(
+        'chat',
+        'getHistory',
+        {'limit': limit},
+      );
+}
+
 /// Ports /api/diary and /api/diary/trigger from server.js. Public/unauthenticated, matching
 /// Node -- WYRD's diary is a single shared journal, not per-user.
 /// {@category Endpoint}
@@ -483,6 +511,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    chat = EndpointChat(this);
     diary = EndpointDiary(this);
     dream = EndpointDream(this);
     growth = EndpointGrowth(this);
@@ -498,6 +527,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointChat chat;
 
   late final EndpointDiary diary;
 
@@ -520,6 +551,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'chat': chat,
     'diary': diary,
     'dream': dream,
     'growth': growth,
