@@ -3,6 +3,7 @@ import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'client.dart';
 import 'screens/wyrd_shell.dart';
+import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,26 +11,17 @@ void main() async {
   runApp(const WyrdApp());
 }
 
-ThemeData _buildTheme(Brightness brightness) {
-  return ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF00FF41),
-      brightness: brightness,
-    ),
-  );
-}
-
 class WyrdApp extends StatelessWidget {
   const WyrdApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // WYRD's terminal-green aesthetic is always dark -- there is no light variant, same as the
+    // React Native app.
     return MaterialApp(
       title: 'WYRD',
-      theme: _buildTheme(Brightness.light),
-      darkTheme: _buildTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
+      theme: buildWyrdTheme(),
+      themeMode: ThemeMode.dark,
       home: const AuthGate(),
     );
   }
@@ -48,6 +40,7 @@ class AuthGate extends StatelessWidget {
       builder: (context, authInfo, _) {
         if (authInfo == null) {
           return Scaffold(
+            backgroundColor: WyrdColors.bg,
             body: SafeArea(
               child: Center(
                 child: ConstrainedBox(
