@@ -28,7 +28,8 @@ abstract class MemoryBlock
     this.botText,
     this.triggeredBy,
     required this.topics,
-    this.curriculum,
+    this.curriculumSubject,
+    this.curriculumLevel,
     this.question,
     this.answer,
     this.answeredTopic,
@@ -50,7 +51,8 @@ abstract class MemoryBlock
     String? botText,
     String? triggeredBy,
     required List<String> topics,
-    String? curriculum,
+    String? curriculumSubject,
+    String? curriculumLevel,
     String? question,
     String? answer,
     String? answeredTopic,
@@ -77,7 +79,8 @@ abstract class MemoryBlock
       topics: _i2pladzn.Protocol().deserialize<List<String>>(
         jsonSerialization['topics'],
       ),
-      curriculum: jsonSerialization['curriculum'] as String?,
+      curriculumSubject: jsonSerialization['curriculumSubject'] as String?,
+      curriculumLevel: jsonSerialization['curriculumLevel'] as String?,
       question: jsonSerialization['question'] as String?,
       answer: jsonSerialization['answer'] as String?,
       answeredTopic: jsonSerialization['answeredTopic'] as String?,
@@ -122,7 +125,9 @@ abstract class MemoryBlock
 
   List<String> topics;
 
-  String? curriculum;
+  String? curriculumSubject;
+
+  String? curriculumLevel;
 
   String? question;
 
@@ -152,7 +157,8 @@ abstract class MemoryBlock
     String? botText,
     String? triggeredBy,
     List<String>? topics,
-    String? curriculum,
+    String? curriculumSubject,
+    String? curriculumLevel,
     String? question,
     String? answer,
     String? answeredTopic,
@@ -176,7 +182,8 @@ abstract class MemoryBlock
       if (botText != null) 'botText': botText,
       if (triggeredBy != null) 'triggeredBy': triggeredBy,
       'topics': topics.toJson(),
-      if (curriculum != null) 'curriculum': curriculum,
+      if (curriculumSubject != null) 'curriculumSubject': curriculumSubject,
+      if (curriculumLevel != null) 'curriculumLevel': curriculumLevel,
       if (question != null) 'question': question,
       if (answer != null) 'answer': answer,
       if (answeredTopic != null) 'answeredTopic': answeredTopic,
@@ -202,7 +209,8 @@ abstract class MemoryBlock
       if (botText != null) 'botText': botText,
       if (triggeredBy != null) 'triggeredBy': triggeredBy,
       'topics': topics.toJson(),
-      if (curriculum != null) 'curriculum': curriculum,
+      if (curriculumSubject != null) 'curriculumSubject': curriculumSubject,
+      if (curriculumLevel != null) 'curriculumLevel': curriculumLevel,
       if (question != null) 'question': question,
       if (answer != null) 'answer': answer,
       if (answeredTopic != null) 'answeredTopic': answeredTopic,
@@ -234,7 +242,8 @@ class _MemoryBlockImpl extends MemoryBlock {
     String? botText,
     String? triggeredBy,
     required List<String> topics,
-    String? curriculum,
+    String? curriculumSubject,
+    String? curriculumLevel,
     String? question,
     String? answer,
     String? answeredTopic,
@@ -254,7 +263,8 @@ class _MemoryBlockImpl extends MemoryBlock {
          botText: botText,
          triggeredBy: triggeredBy,
          topics: topics,
-         curriculum: curriculum,
+         curriculumSubject: curriculumSubject,
+         curriculumLevel: curriculumLevel,
          question: question,
          answer: answer,
          answeredTopic: answeredTopic,
@@ -280,7 +290,8 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? botText = _Undefined,
     Object? triggeredBy = _Undefined,
     List<String>? topics,
-    Object? curriculum = _Undefined,
+    Object? curriculumSubject = _Undefined,
+    Object? curriculumLevel = _Undefined,
     Object? question = _Undefined,
     Object? answer = _Undefined,
     Object? answeredTopic = _Undefined,
@@ -301,7 +312,12 @@ class _MemoryBlockImpl extends MemoryBlock {
       botText: botText is String? ? botText : this.botText,
       triggeredBy: triggeredBy is String? ? triggeredBy : this.triggeredBy,
       topics: topics ?? this.topics.map((e0) => e0).toList(),
-      curriculum: curriculum is String? ? curriculum : this.curriculum,
+      curriculumSubject: curriculumSubject is String?
+          ? curriculumSubject
+          : this.curriculumSubject,
+      curriculumLevel: curriculumLevel is String?
+          ? curriculumLevel
+          : this.curriculumLevel,
       question: question is String? ? question : this.question,
       answer: answer is String? ? answer : this.answer,
       answeredTopic: answeredTopic is String?

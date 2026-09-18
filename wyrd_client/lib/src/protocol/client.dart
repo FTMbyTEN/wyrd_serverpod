@@ -22,8 +22,11 @@ import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
+import 'package:wyrd_client/src/protocol/mind/curriculum_status.dart'
+    as _i8wsch3q;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
+import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
@@ -301,6 +304,22 @@ class EndpointChat extends _isc.EndpointRef {
       );
 }
 
+/// Ports /api/curriculum from server.js. Public/unauthenticated, matching Node.
+/// {@category Endpoint}
+class EndpointCurriculum extends _isc.EndpointRef {
+  EndpointCurriculum(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'curriculum';
+
+  _ida.Future<_i8wsch3q.CurriculumStatus> getStatus() =>
+      caller.callServerEndpoint<_i8wsch3q.CurriculumStatus>(
+        'curriculum',
+        'getStatus',
+        {},
+      );
+}
+
 /// Ports /api/diary and /api/diary/trigger from server.js. Public/unauthenticated, matching
 /// Node -- WYRD's diary is a single shared journal, not per-user.
 /// {@category Endpoint}
@@ -348,6 +367,30 @@ class EndpointDream extends _isc.EndpointRef {
         'trigger',
         {},
       );
+}
+
+/// Ports /api/feed/recent and /api/feed/trigger from server.js. Public/unauthenticated,
+/// matching Node. /api/feed/next (nextTickAt/cycleMs) is not ported -- it depended on Node's
+/// TURBO_FACTOR speed-scaling, which isn't ported either (see feed_future_call.dart).
+/// {@category Endpoint}
+class EndpointFeed extends _isc.EndpointRef {
+  EndpointFeed(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'feed';
+
+  _ida.Future<List<_ipp6qnor.FeedIngest>> getRecent() =>
+      caller.callServerEndpoint<List<_ipp6qnor.FeedIngest>>(
+        'feed',
+        'getRecent',
+        {},
+      );
+
+  _ida.Future<bool> trigger() => caller.callServerEndpoint<bool>(
+    'feed',
+    'trigger',
+    {},
+  );
 }
 
 /// Ports /api/growth (read) from server.js. Public/unauthenticated, matching Node. There is
@@ -558,8 +601,10 @@ class Client extends _isc.ServerpodClientShared {
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
     chat = EndpointChat(this);
+    curriculum = EndpointCurriculum(this);
     diary = EndpointDiary(this);
     dream = EndpointDream(this);
+    feed = EndpointFeed(this);
     growth = EndpointGrowth(this);
     lexicon = EndpointLexicon(this);
     memory = EndpointMemory(this);
@@ -579,9 +624,13 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointChat chat;
 
+  late final EndpointCurriculum curriculum;
+
   late final EndpointDiary diary;
 
   late final EndpointDream dream;
+
+  late final EndpointFeed feed;
 
   late final EndpointGrowth growth;
 
@@ -607,8 +656,10 @@ class Client extends _isc.ServerpodClientShared {
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
     'chat': chat,
+    'curriculum': curriculum,
     'diary': diary,
     'dream': dream,
+    'feed': feed,
     'growth': growth,
     'lexicon': lexicon,
     'memory': memory,

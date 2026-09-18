@@ -15,6 +15,7 @@ import 'dart:async' as _ida;
 import 'package:clock/clock.dart' as _io0w16m8;
 import 'package:serverpod/serverpod.dart' as _is;
 import '../mind/diary_future_call.dart' as _i749zoke;
+import '../mind/feed_future_call.dart' as _irvvfdmu;
 import '../mind/growth_future_call.dart' as _i0cg22dz;
 import '../mind/reasoning_future_call.dart' as _ipbl5psg;
 import '../mind/self_question_future_call.dart' as _i51wt927;
@@ -63,6 +64,7 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
   ) {
     var registeredFutureCalls = <String, _is.InvokableFutureCall>{
       'DiaryCheckAndWriteFutureCall': DiaryCheckAndWriteFutureCall(),
+      'FeedTickFutureCall': FeedTickFutureCall(),
       'GrowthTakeSnapshotFutureCall': GrowthTakeSnapshotFutureCall(),
       'ReasoningTickFutureCall': ReasoningTickFutureCall(),
       'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
@@ -189,6 +191,8 @@ class _FutureCallRef {
 
   late final diary = _DiaryFutureCallDispatcher(_invokeFutureCall);
 
+  late final feed = _FeedFutureCallDispatcher(_invokeFutureCall);
+
   late final growth = _GrowthFutureCallDispatcher(_invokeFutureCall);
 
   late final reasoning = _ReasoningFutureCallDispatcher(_invokeFutureCall);
@@ -208,6 +212,19 @@ class _DiaryFutureCallDispatcher {
   Future<void> checkAndWrite() {
     return _invokeFutureCall(
       'DiaryCheckAndWriteFutureCall',
+      null,
+    );
+  }
+}
+
+class _FeedFutureCallDispatcher {
+  _FeedFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'FeedTickFutureCall',
       null,
     );
   }
@@ -273,6 +290,17 @@ class DiaryCheckAndWriteFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _i749zoke.DiaryFutureCall().checkAndWrite(session);
+  }
+}
+
+class FeedTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _irvvfdmu.FeedFutureCall().tick(session);
   }
 }
 

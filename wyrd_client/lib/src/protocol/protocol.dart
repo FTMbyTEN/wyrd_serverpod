@@ -20,6 +20,7 @@ import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
+import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
@@ -29,9 +30,12 @@ import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/conversation_turn.dart' as _i8fl0sel;
+import 'mind/curriculum_progress.dart' as _ipo2nutw;
+import 'mind/curriculum_status.dart' as _iiwgxlwr;
 import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
 import 'mind/dream_entry.dart' as _izf9406n;
+import 'mind/feed_ingest.dart' as _ig20dqq5;
 import 'mind/growth_snapshot.dart' as _iyj2s79k;
 import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
@@ -46,9 +50,12 @@ export 'mind/concept_edge.dart';
 export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
 export 'mind/conversation_turn.dart';
+export 'mind/curriculum_progress.dart';
+export 'mind/curriculum_status.dart';
 export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
 export 'mind/dream_entry.dart';
+export 'mind/feed_ingest.dart';
 export 'mind/growth_snapshot.dart';
 export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
@@ -111,6 +118,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i8fl0sel.ConversationTurn) {
       return _i8fl0sel.ConversationTurn.fromJson(data) as T;
     }
+    if (t == _ipo2nutw.CurriculumProgress) {
+      return _ipo2nutw.CurriculumProgress.fromJson(data) as T;
+    }
+    if (t == _iiwgxlwr.CurriculumStatus) {
+      return _iiwgxlwr.CurriculumStatus.fromJson(data) as T;
+    }
     if (t == _i0u3uu6s.DiaryEntry) {
       return _i0u3uu6s.DiaryEntry.fromJson(data) as T;
     }
@@ -119,6 +132,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _izf9406n.DreamEntry) {
       return _izf9406n.DreamEntry.fromJson(data) as T;
+    }
+    if (t == _ig20dqq5.FeedIngest) {
+      return _ig20dqq5.FeedIngest.fromJson(data) as T;
     }
     if (t == _iyj2s79k.GrowthSnapshot) {
       return _iyj2s79k.GrowthSnapshot.fromJson(data) as T;
@@ -163,6 +179,14 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _i8fl0sel.ConversationTurn.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_ipo2nutw.CurriculumProgress?>()) {
+      return (data != null ? _ipo2nutw.CurriculumProgress.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iiwgxlwr.CurriculumStatus?>()) {
+      return (data != null ? _iiwgxlwr.CurriculumStatus.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i0u3uu6s.DiaryEntry?>()) {
       return (data != null ? _i0u3uu6s.DiaryEntry.fromJson(data) : null) as T;
     }
@@ -171,6 +195,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_izf9406n.DreamEntry?>()) {
       return (data != null ? _izf9406n.DreamEntry.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ig20dqq5.FeedIngest?>()) {
+      return (data != null ? _ig20dqq5.FeedIngest.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iyj2s79k.GrowthSnapshot?>()) {
       return (data != null ? _iyj2s79k.GrowthSnapshot.fromJson(data) : null)
@@ -210,6 +237,9 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<int>) {
       return (data as List).map((e) => deserialize<int>(e)).toList() as T;
     }
@@ -218,9 +248,6 @@ class Protocol extends _isc.SerializationManager {
               .map((e) => deserialize<_i7zu42sq.LexiconWordSummary>(e))
               .toList()
           as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == _isc.getType<List<int>?>()) {
       return (data != null
@@ -258,6 +285,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ipp6qnor.FeedIngest>) {
+      return (data as List)
+              .map((e) => deserialize<_ipp6qnor.FeedIngest>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ikfbn3bp.GrowthSnapshot>) {
       return (data as List)
               .map((e) => deserialize<_ikfbn3bp.GrowthSnapshot>(e))
@@ -287,9 +320,12 @@ class Protocol extends _isc.SerializationManager {
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
       _iapme6ge.ConceptNode => 'ConceptNode',
       _i8fl0sel.ConversationTurn => 'ConversationTurn',
+      _ipo2nutw.CurriculumProgress => 'CurriculumProgress',
+      _iiwgxlwr.CurriculumStatus => 'CurriculumStatus',
       _i0u3uu6s.DiaryEntry => 'DiaryEntry',
       _i9vbq77t.DigestInfo => 'DigestInfo',
       _izf9406n.DreamEntry => 'DreamEntry',
+      _ig20dqq5.FeedIngest => 'FeedIngest',
       _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
       _i37ps124.LexiconEntry => 'LexiconEntry',
       _ic2pi8fi.LexiconStats => 'LexiconStats',
@@ -324,12 +360,18 @@ class Protocol extends _isc.SerializationManager {
         return 'ConceptNode';
       case _i8fl0sel.ConversationTurn():
         return 'ConversationTurn';
+      case _ipo2nutw.CurriculumProgress():
+        return 'CurriculumProgress';
+      case _iiwgxlwr.CurriculumStatus():
+        return 'CurriculumStatus';
       case _i0u3uu6s.DiaryEntry():
         return 'DiaryEntry';
       case _i9vbq77t.DigestInfo():
         return 'DigestInfo';
       case _izf9406n.DreamEntry():
         return 'DreamEntry';
+      case _ig20dqq5.FeedIngest():
+        return 'FeedIngest';
       case _iyj2s79k.GrowthSnapshot():
         return 'GrowthSnapshot';
       case _i37ps124.LexiconEntry():
@@ -386,6 +428,12 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'ConversationTurn') {
       return deserialize<_i8fl0sel.ConversationTurn>(data['data']);
     }
+    if (dataClassName == 'CurriculumProgress') {
+      return deserialize<_ipo2nutw.CurriculumProgress>(data['data']);
+    }
+    if (dataClassName == 'CurriculumStatus') {
+      return deserialize<_iiwgxlwr.CurriculumStatus>(data['data']);
+    }
     if (dataClassName == 'DiaryEntry') {
       return deserialize<_i0u3uu6s.DiaryEntry>(data['data']);
     }
@@ -394,6 +442,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DreamEntry') {
       return deserialize<_izf9406n.DreamEntry>(data['data']);
+    }
+    if (dataClassName == 'FeedIngest') {
+      return deserialize<_ig20dqq5.FeedIngest>(data['data']);
     }
     if (dataClassName == 'GrowthSnapshot') {
       return deserialize<_iyj2s79k.GrowthSnapshot>(data['data']);

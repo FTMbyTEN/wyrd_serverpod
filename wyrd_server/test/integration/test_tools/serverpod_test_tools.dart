@@ -23,8 +23,11 @@ import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
+import 'package:wyrd_server/src/generated/mind/curriculum_status.dart'
+    as _ib9ako77;
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
 import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
+import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
 import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
@@ -170,9 +173,13 @@ class TestEndpoints {
 
   late final _ChatEndpoint chat;
 
+  late final _CurriculumEndpoint curriculum;
+
   late final _DiaryEndpoint diary;
 
   late final _DreamEndpoint dream;
+
+  late final _FeedEndpoint feed;
 
   late final _GrowthEndpoint growth;
 
@@ -214,11 +221,19 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    curriculum = _CurriculumEndpoint(
+      endpoints,
+      serializationManager,
+    );
     diary = _DiaryEndpoint(
       endpoints,
       serializationManager,
     );
     dream = _DreamEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    feed = _FeedEndpoint(
       endpoints,
       serializationManager,
     );
@@ -259,6 +274,8 @@ class _InternalTestEndpoints extends TestEndpoints
 
 class _FutureCalls {
   late final diary = _DiaryFutureCall();
+
+  late final feed = _FeedFutureCall();
 
   late final growth = _GrowthFutureCall();
 
@@ -702,6 +719,47 @@ class _ChatEndpoint {
   }
 }
 
+class _CurriculumEndpoint {
+  _CurriculumEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_ib9ako77.CurriculumStatus> getStatus(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'curriculum',
+            method: 'getStatus',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'curriculum',
+          methodName: 'getStatus',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ib9ako77.CurriculumStatus>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _DiaryEndpoint {
   _DiaryEndpoint(
     this._endpointDispatch,
@@ -838,6 +896,75 @@ class _DreamEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_ijdvl27e.DreamEntry?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _FeedEndpoint {
+  _FeedEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_icnxukj3.FeedIngest>> getRecent(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'feed',
+            method: 'getRecent',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'feed',
+          methodName: 'getRecent',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_icnxukj3.FeedIngest>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<bool> trigger(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'feed',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'feed',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<bool>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1297,6 +1424,21 @@ class _DiaryFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ix7un2io.DiaryCheckAndWriteFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _FeedFutureCall {
+  Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.FeedTickFutureCall().invoke(
         _localUniqueSession,
         null,
       );

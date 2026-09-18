@@ -14,11 +14,16 @@ greeting:
 chat:
   - sendMessage:
   - getHistory:
+curriculum:
+  - getStatus:
 diary:
   - getEntries:
   - trigger:
 dream:
   - getEntries:
+  - trigger:
+feed:
+  - getRecent:
   - trigger:
 growth:
   - getSnapshots:

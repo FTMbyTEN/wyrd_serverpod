@@ -1,0 +1,8 @@
+# Mirrors server.js's curriculum.json -- a singleton row (id 1) tracking where WYRD is in the
+# fixed CurriculumData syllabus. Same story as Mind: exactly one row, shared by everyone.
+class: CurriculumProgress
+table: curriculum_progress
+
+fields:
+  index: int
+  completedTitles: List<String>

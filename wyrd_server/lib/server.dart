@@ -128,6 +128,11 @@ void run(List<String> args) async {
       .every(const Duration(seconds: 90))
       .synthesis
       .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'feed-tick')
+      .every(const Duration(seconds: 60))
+      .feed
+      .tick();
 
   // Start the server.
   await pod.start();

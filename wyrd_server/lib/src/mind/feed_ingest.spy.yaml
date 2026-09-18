@@ -1,0 +1,8 @@
+class: FeedIngest
+fields:
+  title: String
+  feedSource: String
+  url: String?
+  timestamp: DateTime
+  curriculumSubject: String?
+  curriculumLevel: String?

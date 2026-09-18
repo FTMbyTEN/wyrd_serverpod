@@ -20,8 +20,10 @@ import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 import '../mind/chat_endpoint.dart' as _i2b8uve4;
+import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
 import '../mind/dream_endpoint.dart' as _inxbi04j;
+import '../mind/feed_endpoint.dart' as _in0i7e4k;
 import '../mind/growth_endpoint.dart' as _idrisijy;
 import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
@@ -60,6 +62,12 @@ class Endpoints extends _is.EndpointDispatch {
           'chat',
           null,
         ),
+      'curriculum': _i7sq3i85.CurriculumEndpoint()
+        ..initialize(
+          server,
+          'curriculum',
+          null,
+        ),
       'diary': _i71dg2tj.DiaryEndpoint()
         ..initialize(
           server,
@@ -70,6 +78,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'dream',
+          null,
+        ),
+      'feed': _in0i7e4k.FeedEndpoint()
+        ..initialize(
+          server,
+          'feed',
           null,
         ),
       'growth': _idrisijy.GrowthEndpoint()
@@ -396,6 +410,23 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['curriculum'] = _is.EndpointConnector(
+      name: 'curriculum',
+      endpoint: endpoints['curriculum']!,
+      methodConnectors: {
+        'getStatus': _is.MethodConnector(
+          name: 'getStatus',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['curriculum'] as _i7sq3i85.CurriculumEndpoint)
+                      .getStatus(session),
+        ),
+      },
+    );
     connectors['diary'] = _is.EndpointConnector(
       name: 'diary',
       endpoint: endpoints['diary']!,
@@ -463,6 +494,33 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['dream'] as _inxbi04j.DreamEndpoint)
                   .trigger(session),
+        ),
+      },
+    );
+    connectors['feed'] = _is.EndpointConnector(
+      name: 'feed',
+      endpoint: endpoints['feed']!,
+      methodConnectors: {
+        'getRecent': _is.MethodConnector(
+          name: 'getRecent',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['feed'] as _in0i7e4k.FeedEndpoint)
+                  .getRecent(session),
+        ),
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['feed'] as _in0i7e4k.FeedEndpoint).trigger(
+                session,
+              ),
         ),
       },
     );

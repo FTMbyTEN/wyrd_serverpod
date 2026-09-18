@@ -1,0 +1,9 @@
+class: CurriculumStatus
+fields:
+  subject: String
+  level: String
+  title: String
+  position: int
+  total: int
+  lap: int
+  recentlyCompleted: List<String>
