@@ -100,9 +100,15 @@ void run(List<String> args) async {
     ),
   );
 
+  // Start the server.
+  await pod.start();
+
   // Recurring background ticks (mirrors server.js's setInterval calls for growth snapshots
   // and the diary day-check). Scheduling by a fixed identifier is idempotent across restarts
-  // -- it reschedules the same recurring entry rather than stacking duplicates.
+  // -- it reschedules the same recurring entry rather than stacking duplicates. This must run
+  // AFTER pod.start() -- the generated FutureCalls dispatcher isn't initialized until the
+  // server has actually started, and calling it earlier throws "FutureCalls is not
+  // initialized" (caught the hard way via a failed Serverpod Cloud rollout).
   await pod.futureCalls
       .callRecurring(identifier: 'growth-snapshot')
       .every(const Duration(minutes: 30))
@@ -138,7 +144,4 @@ void run(List<String> args) async {
       .every(const Duration(hours: 4))
       .selfConfig
       .tick();
-
-  // Start the server.
-  await pod.start();
 }
