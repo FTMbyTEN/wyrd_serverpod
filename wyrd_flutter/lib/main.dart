@@ -1,61 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'client.dart';
-import 'screens/greetings_screen.dart';
+import 'screens/wyrd_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeClient();
-  runApp(const MyApp());
+  runApp(const WyrdApp());
 }
 
-/// Builds a theme for the given [brightness].
 ThemeData _buildTheme(Brightness brightness) {
   return ThemeData(
+    useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.blue,
+      seedColor: const Color(0xFF00FF41),
       brightness: brightness,
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class WyrdApp extends StatelessWidget {
+  const WyrdApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Serverpod Demo',
+      title: 'WYRD',
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
       themeMode: ThemeMode.system,
-      home: const MyHomePage(title: 'Serverpod Example'),
+      home: const AuthGate(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+/// Shows the email sign-in flow until the session is authenticated, then the main app shell.
+/// [client.authSessionManager] is a [ValueListenable], so this rebuilds automatically the
+/// moment sign-in/sign-out completes -- no manual navigation needed either way.
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const GreetingsScreen(),
-      // To test authentication in this example app, uncomment the line below
-      // and comment out the line above. This wraps the GreetingsScreen with a
-      // SignInScreen, which automatically shows a sign-in UI when the user is
-      // not authenticated and displays the GreetingsScreen once they sign in.
-      //
-      // body: SignInScreen(
-      //   child: GreetingsScreen(
-      //     onSignOut: () async {
-      //       await client.auth.signOutDevice();
-      //     },
-      //   ),
-      // ),
+    return ValueListenableBuilder(
+      valueListenable: client.authSessionManager.authInfoListenable,
+      builder: (context, authInfo, _) {
+        if (authInfo == null) {
+          return Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: EmailSignInWidget(
+                      client: client,
+                      onAuthenticated: () {
+                        // fire-and-forget: mirrors server.js's touchProfileVisit on
+                        // register/login, which has no direct hook in the built-in IDP flow.
+                        client.profile.touchVisit();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return const WyrdShell();
+      },
     );
   }
 }
