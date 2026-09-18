@@ -27,6 +27,7 @@ import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'greetings/greeting.dart' as _izw8z7ou;
+import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_graph.dart' as _iggcgqw1;
@@ -50,6 +51,7 @@ import 'mind/self_config_change.dart' as _ifocq1fp;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 export 'greetings/greeting.dart';
+export 'mind/account_export.dart';
 export 'mind/chat_reply.dart';
 export 'mind/concept_edge.dart';
 export 'mind/concept_graph.dart';
@@ -852,6 +854,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
+    if (t == _ij1ha6k5.AccountExport) {
+      return _ij1ha6k5.AccountExport.fromJson(data) as T;
+    }
     if (t == _iav0lzqw.ChatReply) {
       return _iav0lzqw.ChatReply.fromJson(data) as T;
     }
@@ -920,6 +925,10 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ij1ha6k5.AccountExport?>()) {
+      return (data != null ? _ij1ha6k5.AccountExport.fromJson(data) : null)
+          as T;
     }
     if (t == _is.getType<_iav0lzqw.ChatReply?>()) {
       return (data != null ? _iav0lzqw.ChatReply.fromJson(data) : null) as T;
@@ -993,6 +1002,18 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_irc0lure.UserProfile?>()) {
       return (data != null ? _irc0lure.UserProfile.fromJson(data) : null) as T;
     }
+    if (t == List<_i8ng53gk.UserFact>) {
+      return (data as List)
+              .map((e) => deserialize<_i8ng53gk.UserFact>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i8fl0sel.ConversationTurn>) {
+      return (data as List)
+              .map((e) => deserialize<_i8fl0sel.ConversationTurn>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iapme6ge.ConceptNode>) {
       return (data as List)
               .map((e) => deserialize<_iapme6ge.ConceptNode>(e))
@@ -1032,12 +1053,6 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_ifocq1fp.SelfConfigChange>) {
       return (data as List)
               .map((e) => deserialize<_ifocq1fp.SelfConfigChange>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i8ng53gk.UserFact>) {
-      return (data as List)
-              .map((e) => deserialize<_i8ng53gk.UserFact>(e))
               .toList()
           as T;
     }
@@ -1098,6 +1113,7 @@ class Protocol extends _is.DatabaseSerializationManager {
   static String? getClassNameForType(Type type) {
     return switch (type) {
       _izw8z7ou.Greeting => 'Greeting',
+      _ij1ha6k5.AccountExport => 'AccountExport',
       _iav0lzqw.ChatReply => 'ChatReply',
       _iafou6mz.ConceptEdge => 'ConceptEdge',
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
@@ -1136,6 +1152,8 @@ class Protocol extends _is.DatabaseSerializationManager {
     switch (data) {
       case _izw8z7ou.Greeting():
         return 'Greeting';
+      case _ij1ha6k5.AccountExport():
+        return 'AccountExport';
       case _iav0lzqw.ChatReply():
         return 'ChatReply';
       case _iafou6mz.ConceptEdge():
@@ -1208,6 +1226,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
+    }
+    if (dataClassName == 'AccountExport') {
+      return deserialize<_ij1ha6k5.AccountExport>(data['data']);
     }
     if (dataClassName == 'ChatReply') {
       return deserialize<_iav0lzqw.ChatReply>(data['data']);

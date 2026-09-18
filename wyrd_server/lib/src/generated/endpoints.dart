@@ -19,6 +19,7 @@ import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../mind/account_endpoint.dart' as _i45717np;
 import '../mind/chat_endpoint.dart' as _i2b8uve4;
 import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
@@ -55,6 +56,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'account': _i45717np.AccountEndpoint()
+        ..initialize(
+          server,
+          'account',
           null,
         ),
       'chat': _i2b8uve4.ChatEndpoint()
@@ -370,6 +377,32 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['name'],
                   ),
+        ),
+      },
+    );
+    connectors['account'] = _is.EndpointConnector(
+      name: 'account',
+      endpoint: endpoints['account']!,
+      methodConnectors: {
+        'exportData': _is.MethodConnector(
+          name: 'exportData',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['account'] as _i45717np.AccountEndpoint)
+                  .exportData(session),
+        ),
+        'deleteMyData': _is.MethodConnector(
+          name: 'deleteMyData',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['account'] as _i45717np.AccountEndpoint)
+                  .deleteMyData(session),
         ),
       },
     );

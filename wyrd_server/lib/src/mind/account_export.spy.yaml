@@ -1,0 +1,8 @@
+class: AccountExport
+fields:
+  email: String?
+  facts: List<UserFact>
+  visitCount: int
+  firstSeen: DateTime
+  lastSeen: DateTime
+  conversation: List<ConversationTurn>

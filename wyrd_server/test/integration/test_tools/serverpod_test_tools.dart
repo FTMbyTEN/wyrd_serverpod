@@ -19,6 +19,8 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
 import 'package:serverpod_test/serverpod_test.dart' as _ist;
 import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import 'package:wyrd_server/src/generated/greetings/greeting.dart' as _i6wty2t7;
+import 'package:wyrd_server/src/generated/mind/account_export.dart'
+    as _it0zlzes;
 import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
@@ -175,6 +177,8 @@ class TestEndpoints {
 
   late final _GreetingEndpoint greeting;
 
+  late final _AccountEndpoint account;
+
   late final _ChatEndpoint chat;
 
   late final _CurriculumEndpoint curriculum;
@@ -220,6 +224,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     greeting = _GreetingEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    account = _AccountEndpoint(
       endpoints,
       serializationManager,
     );
@@ -650,6 +658,75 @@ class _GreetingEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i6wty2t7.Greeting>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _AccountEndpoint {
+  _AccountEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_it0zlzes.AccountExport> exportData(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'account',
+            method: 'exportData',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'account',
+          methodName: 'exportData',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_it0zlzes.AccountExport>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<void> deleteMyData(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'account',
+            method: 'deleteMyData',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'account',
+          methodName: 'deleteMyData',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<void>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

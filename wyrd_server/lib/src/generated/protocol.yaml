@@ -11,6 +11,9 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+account:
+  - exportData:
+  - deleteMyData:
 chat:
   - sendMessage:
   - getHistory:

@@ -18,6 +18,7 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
+import 'package:wyrd_client/src/protocol/mind/account_export.dart' as _izg4k2n4;
 import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
@@ -283,9 +284,36 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// Ports /api/account/export and /api/account/delete from server.js. Node's delete required
+/// re-entering the password and removed the login credential itself, not just app data --
+/// with Serverpod's built-in email auth, credential deletion isn't something this project's
+/// own endpoints can safely do (that lives inside serverpod_auth_idp_server, with no public
+/// self-service delete-account method exposed), so [deleteMyData] wipes everything this app
+/// owns about the person (profile facts, visit history, conversation history) but leaves
+/// their login credential intact -- a real, documented gap versus Node's full account wipe.
+/// {@category Endpoint}
+class EndpointAccount extends _isc.EndpointRef {
+  EndpointAccount(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'account';
+
+  _ida.Future<_izg4k2n4.AccountExport> exportData() =>
+      caller.callServerEndpoint<_izg4k2n4.AccountExport>(
+        'account',
+        'exportData',
+        {},
+      );
+
+  _ida.Future<void> deleteMyData() => caller.callServerEndpoint<void>(
+    'account',
+    'deleteMyData',
+    {},
+  );
+}
+
 /// Ports /api/chat from server.js (the core reply path -- see chat_service.dart for what's
-/// intentionally not ported yet). Requires login, matching Node's requireAuth. Node's
-/// per-user rate limiting (30 messages/min) is not ported yet either.
+/// intentionally not ported yet). Requires login, matching Node's requireAuth.
 /// {@category Endpoint}
 class EndpointChat extends _isc.EndpointRef {
   EndpointChat(_isc.EndpointCaller caller) : super(caller);
@@ -635,6 +663,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    account = EndpointAccount(this);
     chat = EndpointChat(this);
     curriculum = EndpointCurriculum(this);
     diary = EndpointDiary(this);
@@ -657,6 +686,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointAccount account;
 
   late final EndpointChat chat;
 
@@ -693,6 +724,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'account': account,
     'chat': chat,
     'curriculum': curriculum,
     'diary': diary,
