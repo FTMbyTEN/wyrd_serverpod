@@ -1,0 +1,11 @@
+# Mirrors server.js's self_config.json -- WYRD's own behavior-tuning knobs (tone/reply
+# length/curiosity), which it can adjust for itself via attemptSelfModification. Singleton
+# row (id 1), same pattern as Mind.
+class: SelfConfig
+table: self_config
+
+fields:
+  toneNote: String
+  replyLengthMax: int
+  curiosityLevel: String
+  history: List<SelfConfigChange>

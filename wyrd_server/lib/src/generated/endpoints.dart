@@ -30,6 +30,7 @@ import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
 import '../mind/profile_endpoint.dart' as _in0jvng1;
 import '../mind/reasoning_endpoint.dart' as _iovbjp1a;
+import '../mind/self_config_endpoint.dart' as _iuprx8k1;
 import '../mind/self_question_endpoint.dart' as _i4qouglj;
 import '../mind/synthesis_endpoint.dart' as _i6ave7v9;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
@@ -120,6 +121,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'reasoning',
+          null,
+        ),
+      'selfConfig': _iuprx8k1.SelfConfigEndpoint()
+        ..initialize(
+          server,
+          'selfConfig',
           null,
         ),
       'selfQuestion': _i4qouglj.SelfQuestionEndpoint()
@@ -685,6 +692,54 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['reasoning'] as _iovbjp1a.ReasoningEndpoint)
                   .trigger(session),
+        ),
+      },
+    );
+    connectors['selfConfig'] = _is.EndpointConnector(
+      name: 'selfConfig',
+      endpoint: endpoints['selfConfig']!,
+      methodConnectors: {
+        'getConfig': _is.MethodConnector(
+          name: 'getConfig',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['selfConfig'] as _iuprx8k1.SelfConfigEndpoint)
+                      .getConfig(session),
+        ),
+        'getCopLog': _is.MethodConnector(
+          name: 'getCopLog',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['selfConfig'] as _iuprx8k1.SelfConfigEndpoint)
+                      .getCopLog(
+                        session,
+                        limit: params['limit'],
+                      ),
+        ),
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['selfConfig'] as _iuprx8k1.SelfConfigEndpoint)
+                      .trigger(session),
         ),
       },
     );

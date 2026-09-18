@@ -22,6 +22,7 @@ import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
+import 'package:wyrd_client/src/protocol/mind/cop_log_entry.dart' as _iudx1gwn;
 import 'package:wyrd_client/src/protocol/mind/curriculum_status.dart'
     as _i8wsch3q;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
@@ -33,6 +34,9 @@ import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
 import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
+import 'package:wyrd_client/src/protocol/mind/self_config.dart' as _i2gzn8r6;
+import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
+    as _ifqisoc8;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
 import 'protocol.dart' as _il2as5qe;
 
@@ -529,6 +533,37 @@ class EndpointReasoning extends _isc.EndpointRef {
   );
 }
 
+/// Ports /api/self-config, /api/cop-log, and /api/self-modify/trigger from server.js.
+/// Public/unauthenticated, matching Node.
+/// {@category Endpoint}
+class EndpointSelfConfig extends _isc.EndpointRef {
+  EndpointSelfConfig(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'selfConfig';
+
+  _ida.Future<_i2gzn8r6.SelfConfig> getConfig() =>
+      caller.callServerEndpoint<_i2gzn8r6.SelfConfig>(
+        'selfConfig',
+        'getConfig',
+        {},
+      );
+
+  _ida.Future<List<_iudx1gwn.CopLogEntry>> getCopLog({int? limit}) =>
+      caller.callServerEndpoint<List<_iudx1gwn.CopLogEntry>>(
+        'selfConfig',
+        'getCopLog',
+        {'limit': limit},
+      );
+
+  _ida.Future<_ifqisoc8.SelfConfigChange?> trigger() =>
+      caller.callServerEndpoint<_ifqisoc8.SelfConfigChange?>(
+        'selfConfig',
+        'trigger',
+        {},
+      );
+}
+
 /// Ports /api/self/trigger from server.js. Public/unauthenticated, matching Node.
 /// {@category Endpoint}
 class EndpointSelfQuestion extends _isc.EndpointRef {
@@ -611,6 +646,7 @@ class Client extends _isc.ServerpodClientShared {
     mind = EndpointMind(this);
     profile = EndpointProfile(this);
     reasoning = EndpointReasoning(this);
+    selfConfig = EndpointSelfConfig(this);
     selfQuestion = EndpointSelfQuestion(this);
     synthesis = EndpointSynthesis(this);
     modules = Modules(this);
@@ -644,6 +680,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointReasoning reasoning;
 
+  late final EndpointSelfConfig selfConfig;
+
   late final EndpointSelfQuestion selfQuestion;
 
   late final EndpointSynthesis synthesis;
@@ -666,6 +704,7 @@ class Client extends _isc.ServerpodClientShared {
     'mind': mind,
     'profile': profile,
     'reasoning': reasoning,
+    'selfConfig': selfConfig,
     'selfQuestion': selfQuestion,
     'synthesis': synthesis,
   };

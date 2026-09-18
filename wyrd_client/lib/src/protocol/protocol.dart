@@ -18,6 +18,7 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
+import 'package:wyrd_client/src/protocol/mind/cop_log_entry.dart' as _iudx1gwn;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
 import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
@@ -30,6 +31,7 @@ import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/conversation_turn.dart' as _i8fl0sel;
+import 'mind/cop_log_entry.dart' as _i9dbtrq4;
 import 'mind/curriculum_progress.dart' as _ipo2nutw;
 import 'mind/curriculum_status.dart' as _iiwgxlwr;
 import 'mind/diary_entry.dart' as _i0u3uu6s;
@@ -42,6 +44,8 @@ import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
+import 'mind/self_config.dart' as _ig7bxoiw;
+import 'mind/self_config_change.dart' as _ifocq1fp;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 export 'greetings/greeting.dart';
@@ -50,6 +54,7 @@ export 'mind/concept_edge.dart';
 export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
 export 'mind/conversation_turn.dart';
+export 'mind/cop_log_entry.dart';
 export 'mind/curriculum_progress.dart';
 export 'mind/curriculum_status.dart';
 export 'mind/diary_entry.dart';
@@ -62,6 +67,8 @@ export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
+export 'mind/self_config.dart';
+export 'mind/self_config_change.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 export 'client.dart';
@@ -118,6 +125,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i8fl0sel.ConversationTurn) {
       return _i8fl0sel.ConversationTurn.fromJson(data) as T;
     }
+    if (t == _i9dbtrq4.CopLogEntry) {
+      return _i9dbtrq4.CopLogEntry.fromJson(data) as T;
+    }
     if (t == _ipo2nutw.CurriculumProgress) {
       return _ipo2nutw.CurriculumProgress.fromJson(data) as T;
     }
@@ -154,6 +164,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iqhk00ra.Mind) {
       return _iqhk00ra.Mind.fromJson(data) as T;
     }
+    if (t == _ig7bxoiw.SelfConfig) {
+      return _ig7bxoiw.SelfConfig.fromJson(data) as T;
+    }
+    if (t == _ifocq1fp.SelfConfigChange) {
+      return _ifocq1fp.SelfConfigChange.fromJson(data) as T;
+    }
     if (t == _i8ng53gk.UserFact) {
       return _i8ng53gk.UserFact.fromJson(data) as T;
     }
@@ -178,6 +194,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i8fl0sel.ConversationTurn?>()) {
       return (data != null ? _i8fl0sel.ConversationTurn.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i9dbtrq4.CopLogEntry?>()) {
+      return (data != null ? _i9dbtrq4.CopLogEntry.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ipo2nutw.CurriculumProgress?>()) {
       return (data != null ? _ipo2nutw.CurriculumProgress.fromJson(data) : null)
@@ -219,6 +238,13 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iqhk00ra.Mind?>()) {
       return (data != null ? _iqhk00ra.Mind.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ig7bxoiw.SelfConfig?>()) {
+      return (data != null ? _ig7bxoiw.SelfConfig.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ifocq1fp.SelfConfigChange?>()) {
+      return (data != null ? _ifocq1fp.SelfConfigChange.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i8ng53gk.UserFact?>()) {
       return (data != null ? _i8ng53gk.UserFact.fromJson(data) : null) as T;
     }
@@ -259,6 +285,12 @@ class Protocol extends _isc.SerializationManager {
       return (data != null
               ? (data as List).map((e) => deserialize<String>(e)).toList()
               : null)
+          as T;
+    }
+    if (t == List<_ifocq1fp.SelfConfigChange>) {
+      return (data as List)
+              .map((e) => deserialize<_ifocq1fp.SelfConfigChange>(e))
+              .toList()
           as T;
     }
     if (t == List<_i8ng53gk.UserFact>) {
@@ -303,6 +335,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_iudx1gwn.CopLogEntry>) {
+      return (data as List)
+              .map((e) => deserialize<_iudx1gwn.CopLogEntry>(e))
+              .toList()
+          as T;
+    }
     try {
       return _iaic.Protocol().deserialize<T>(data, t);
     } on _isc.DeserializationTypeNotFoundException catch (_) {}
@@ -320,6 +358,7 @@ class Protocol extends _isc.SerializationManager {
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
       _iapme6ge.ConceptNode => 'ConceptNode',
       _i8fl0sel.ConversationTurn => 'ConversationTurn',
+      _i9dbtrq4.CopLogEntry => 'CopLogEntry',
       _ipo2nutw.CurriculumProgress => 'CurriculumProgress',
       _iiwgxlwr.CurriculumStatus => 'CurriculumStatus',
       _i0u3uu6s.DiaryEntry => 'DiaryEntry',
@@ -332,6 +371,8 @@ class Protocol extends _isc.SerializationManager {
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
+      _ig7bxoiw.SelfConfig => 'SelfConfig',
+      _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _ => null,
@@ -360,6 +401,8 @@ class Protocol extends _isc.SerializationManager {
         return 'ConceptNode';
       case _i8fl0sel.ConversationTurn():
         return 'ConversationTurn';
+      case _i9dbtrq4.CopLogEntry():
+        return 'CopLogEntry';
       case _ipo2nutw.CurriculumProgress():
         return 'CurriculumProgress';
       case _iiwgxlwr.CurriculumStatus():
@@ -384,6 +427,10 @@ class Protocol extends _isc.SerializationManager {
         return 'MemoryBlock';
       case _iqhk00ra.Mind():
         return 'Mind';
+      case _ig7bxoiw.SelfConfig():
+        return 'SelfConfig';
+      case _ifocq1fp.SelfConfigChange():
+        return 'SelfConfigChange';
       case _i8ng53gk.UserFact():
         return 'UserFact';
       case _irc0lure.UserProfile():
@@ -428,6 +475,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'ConversationTurn') {
       return deserialize<_i8fl0sel.ConversationTurn>(data['data']);
     }
+    if (dataClassName == 'CopLogEntry') {
+      return deserialize<_i9dbtrq4.CopLogEntry>(data['data']);
+    }
     if (dataClassName == 'CurriculumProgress') {
       return deserialize<_ipo2nutw.CurriculumProgress>(data['data']);
     }
@@ -463,6 +513,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'Mind') {
       return deserialize<_iqhk00ra.Mind>(data['data']);
+    }
+    if (dataClassName == 'SelfConfig') {
+      return deserialize<_ig7bxoiw.SelfConfig>(data['data']);
+    }
+    if (dataClassName == 'SelfConfigChange') {
+      return deserialize<_ifocq1fp.SelfConfigChange>(data['data']);
     }
     if (dataClassName == 'UserFact') {
       return deserialize<_i8ng53gk.UserFact>(data['data']);

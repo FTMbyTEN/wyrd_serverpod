@@ -41,6 +41,10 @@ profile:
   - setUsername:
 reasoning:
   - trigger:
+selfConfig:
+  - getConfig:
+  - getCopLog:
+  - trigger:
 selfQuestion:
   - trigger:
 synthesis:

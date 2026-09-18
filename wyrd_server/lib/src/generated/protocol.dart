@@ -19,6 +19,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
+import 'package:wyrd_server/src/generated/mind/cop_log_entry.dart' as _isvsvjy1;
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
 import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
 import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
@@ -31,6 +32,7 @@ import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/conversation_turn.dart' as _i8fl0sel;
+import 'mind/cop_log_entry.dart' as _i9dbtrq4;
 import 'mind/curriculum_progress.dart' as _ipo2nutw;
 import 'mind/curriculum_status.dart' as _iiwgxlwr;
 import 'mind/diary_entry.dart' as _i0u3uu6s;
@@ -43,6 +45,8 @@ import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
+import 'mind/self_config.dart' as _ig7bxoiw;
+import 'mind/self_config_change.dart' as _ifocq1fp;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 export 'greetings/greeting.dart';
@@ -51,6 +55,7 @@ export 'mind/concept_edge.dart';
 export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
 export 'mind/conversation_turn.dart';
+export 'mind/cop_log_entry.dart';
 export 'mind/curriculum_progress.dart';
 export 'mind/curriculum_status.dart';
 export 'mind/diary_entry.dart';
@@ -63,6 +68,8 @@ export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
+export 'mind/self_config.dart';
+export 'mind/self_config_change.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 
@@ -121,6 +128,80 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'cop_log_entry',
+      dartName: 'CopLogEntry',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'timestamp',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'configKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'oldValueJson',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'newValueJson',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reason',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'verdict',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'cop_log_entry_timestamp_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'timestamp',
             ),
           ],
           type: 'btree',
@@ -627,6 +708,48 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'self_config',
+      dartName: 'SelfConfig',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'toneNote',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'replyLengthMax',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'curiosityLevel',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'history',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<protocol:SelfConfigChange>',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'user_profile',
       dartName: 'UserProfile',
       schema: 'public',
@@ -744,6 +867,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i8fl0sel.ConversationTurn) {
       return _i8fl0sel.ConversationTurn.fromJson(data) as T;
     }
+    if (t == _i9dbtrq4.CopLogEntry) {
+      return _i9dbtrq4.CopLogEntry.fromJson(data) as T;
+    }
     if (t == _ipo2nutw.CurriculumProgress) {
       return _ipo2nutw.CurriculumProgress.fromJson(data) as T;
     }
@@ -780,6 +906,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iqhk00ra.Mind) {
       return _iqhk00ra.Mind.fromJson(data) as T;
     }
+    if (t == _ig7bxoiw.SelfConfig) {
+      return _ig7bxoiw.SelfConfig.fromJson(data) as T;
+    }
+    if (t == _ifocq1fp.SelfConfigChange) {
+      return _ifocq1fp.SelfConfigChange.fromJson(data) as T;
+    }
     if (t == _i8ng53gk.UserFact) {
       return _i8ng53gk.UserFact.fromJson(data) as T;
     }
@@ -804,6 +936,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i8fl0sel.ConversationTurn?>()) {
       return (data != null ? _i8fl0sel.ConversationTurn.fromJson(data) : null)
           as T;
+    }
+    if (t == _is.getType<_i9dbtrq4.CopLogEntry?>()) {
+      return (data != null ? _i9dbtrq4.CopLogEntry.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ipo2nutw.CurriculumProgress?>()) {
       return (data != null ? _ipo2nutw.CurriculumProgress.fromJson(data) : null)
@@ -845,6 +980,13 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iqhk00ra.Mind?>()) {
       return (data != null ? _iqhk00ra.Mind.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_ig7bxoiw.SelfConfig?>()) {
+      return (data != null ? _ig7bxoiw.SelfConfig.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ifocq1fp.SelfConfigChange?>()) {
+      return (data != null ? _ifocq1fp.SelfConfigChange.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_i8ng53gk.UserFact?>()) {
       return (data != null ? _i8ng53gk.UserFact.fromJson(data) : null) as T;
     }
@@ -885,6 +1027,12 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null
               ? (data as List).map((e) => deserialize<String>(e)).toList()
               : null)
+          as T;
+    }
+    if (t == List<_ifocq1fp.SelfConfigChange>) {
+      return (data as List)
+              .map((e) => deserialize<_ifocq1fp.SelfConfigChange>(e))
+              .toList()
           as T;
     }
     if (t == List<_i8ng53gk.UserFact>) {
@@ -929,6 +1077,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_isvsvjy1.CopLogEntry>) {
+      return (data as List)
+              .map((e) => deserialize<_isvsvjy1.CopLogEntry>(e))
+              .toList()
+          as T;
+    }
     try {
       return _iais.Protocol().deserialize<T>(data, t);
     } on _is.DeserializationTypeNotFoundException catch (_) {}
@@ -949,6 +1103,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
       _iapme6ge.ConceptNode => 'ConceptNode',
       _i8fl0sel.ConversationTurn => 'ConversationTurn',
+      _i9dbtrq4.CopLogEntry => 'CopLogEntry',
       _ipo2nutw.CurriculumProgress => 'CurriculumProgress',
       _iiwgxlwr.CurriculumStatus => 'CurriculumStatus',
       _i0u3uu6s.DiaryEntry => 'DiaryEntry',
@@ -961,6 +1116,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
+      _ig7bxoiw.SelfConfig => 'SelfConfig',
+      _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _ => null,
@@ -989,6 +1146,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ConceptNode';
       case _i8fl0sel.ConversationTurn():
         return 'ConversationTurn';
+      case _i9dbtrq4.CopLogEntry():
+        return 'CopLogEntry';
       case _ipo2nutw.CurriculumProgress():
         return 'CurriculumProgress';
       case _iiwgxlwr.CurriculumStatus():
@@ -1013,6 +1172,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'MemoryBlock';
       case _iqhk00ra.Mind():
         return 'Mind';
+      case _ig7bxoiw.SelfConfig():
+        return 'SelfConfig';
+      case _ifocq1fp.SelfConfigChange():
+        return 'SelfConfigChange';
       case _i8ng53gk.UserFact():
         return 'UserFact';
       case _irc0lure.UserProfile():
@@ -1061,6 +1224,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'ConversationTurn') {
       return deserialize<_i8fl0sel.ConversationTurn>(data['data']);
     }
+    if (dataClassName == 'CopLogEntry') {
+      return deserialize<_i9dbtrq4.CopLogEntry>(data['data']);
+    }
     if (dataClassName == 'CurriculumProgress') {
       return deserialize<_ipo2nutw.CurriculumProgress>(data['data']);
     }
@@ -1096,6 +1262,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'Mind') {
       return deserialize<_iqhk00ra.Mind>(data['data']);
+    }
+    if (dataClassName == 'SelfConfig') {
+      return deserialize<_ig7bxoiw.SelfConfig>(data['data']);
+    }
+    if (dataClassName == 'SelfConfigChange') {
+      return deserialize<_ifocq1fp.SelfConfigChange>(data['data']);
     }
     if (dataClassName == 'UserFact') {
       return deserialize<_i8ng53gk.UserFact>(data['data']);
@@ -1146,6 +1318,8 @@ class Protocol extends _is.DatabaseSerializationManager {
     switch (t) {
       case _i8fl0sel.ConversationTurn:
         return _i8fl0sel.ConversationTurn.t;
+      case _i9dbtrq4.CopLogEntry:
+        return _i9dbtrq4.CopLogEntry.t;
       case _ipo2nutw.CurriculumProgress:
         return _ipo2nutw.CurriculumProgress.t;
       case _i0u3uu6s.DiaryEntry:
@@ -1160,6 +1334,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _if349ohh.MemoryBlock.t;
       case _iqhk00ra.Mind:
         return _iqhk00ra.Mind.t;
+      case _ig7bxoiw.SelfConfig:
+        return _ig7bxoiw.SelfConfig.t;
       case _irc0lure.UserProfile:
         return _irc0lure.UserProfile.t;
     }

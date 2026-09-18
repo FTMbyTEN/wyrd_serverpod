@@ -1,0 +1,10 @@
+# oldValue/newValue are JSON-encoded because SelfConfig's three keys have different Dart
+# types (String, int, String-enum) -- keeping the change log itself type-erased is simpler
+# than a tagged union for a 3-key schema this small.
+class: SelfConfigChange
+fields:
+  timestamp: DateTime
+  key: String
+  oldValueJson: String
+  newValueJson: String
+  reason: String

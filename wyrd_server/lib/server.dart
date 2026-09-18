@@ -133,6 +133,11 @@ void run(List<String> args) async {
       .every(const Duration(seconds: 60))
       .feed
       .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'self-config-tick')
+      .every(const Duration(hours: 4))
+      .selfConfig
+      .tick();
 
   // Start the server.
   await pod.start();

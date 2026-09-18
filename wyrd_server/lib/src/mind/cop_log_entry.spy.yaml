@@ -1,0 +1,20 @@
+# Mirrors server.js's cop_log.json -- COP's independent (separate LLM call, no shared
+# context) after-the-fact review of every self-modification WYRD makes. Only the 'config'
+# kind is ported (behavior-tuning changes); 'code' (WYRD rewriting its own source files and
+# restarting) is intentionally not ported -- self-modifying a managed Dart server's own
+# source at runtime is a different and considerably riskier feature than this batch scopes to.
+class: CopLogEntry
+table: cop_log_entry
+
+fields:
+  timestamp: DateTime
+  kind: String
+  configKey: String
+  oldValueJson: String
+  newValueJson: String
+  reason: String
+  verdict: String
+
+indexes:
+  cop_log_entry_timestamp_idx:
+    fields: timestamp

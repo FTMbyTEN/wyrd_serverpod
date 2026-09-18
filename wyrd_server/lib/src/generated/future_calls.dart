@@ -18,6 +18,7 @@ import '../mind/diary_future_call.dart' as _i749zoke;
 import '../mind/feed_future_call.dart' as _irvvfdmu;
 import '../mind/growth_future_call.dart' as _i0cg22dz;
 import '../mind/reasoning_future_call.dart' as _ipbl5psg;
+import '../mind/self_config_future_call.dart' as _ishes48l;
 import '../mind/self_question_future_call.dart' as _i51wt927;
 import '../mind/synthesis_future_call.dart' as _i5fxv39a;
 
@@ -67,6 +68,7 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
       'FeedTickFutureCall': FeedTickFutureCall(),
       'GrowthTakeSnapshotFutureCall': GrowthTakeSnapshotFutureCall(),
       'ReasoningTickFutureCall': ReasoningTickFutureCall(),
+      'SelfConfigTickFutureCall': SelfConfigTickFutureCall(),
       'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
       'SynthesisTickFutureCall': SynthesisTickFutureCall(),
     };
@@ -197,6 +199,8 @@ class _FutureCallRef {
 
   late final reasoning = _ReasoningFutureCallDispatcher(_invokeFutureCall);
 
+  late final selfConfig = _SelfConfigFutureCallDispatcher(_invokeFutureCall);
+
   late final selfQuestion = _SelfQuestionFutureCallDispatcher(
     _invokeFutureCall,
   );
@@ -251,6 +255,19 @@ class _ReasoningFutureCallDispatcher {
   Future<void> tick() {
     return _invokeFutureCall(
       'ReasoningTickFutureCall',
+      null,
+    );
+  }
+}
+
+class _SelfConfigFutureCallDispatcher {
+  _SelfConfigFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'SelfConfigTickFutureCall',
       null,
     );
   }
@@ -323,6 +340,17 @@ class ReasoningTickFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _ipbl5psg.ReasoningFutureCall().tick(session);
+  }
+}
+
+class SelfConfigTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _ishes48l.SelfConfigFutureCall().tick(session);
   }
 }
 
