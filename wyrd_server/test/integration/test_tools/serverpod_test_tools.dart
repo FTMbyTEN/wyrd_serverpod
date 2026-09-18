@@ -183,6 +183,10 @@ class TestEndpoints {
   late final _MindEndpoint mind;
 
   late final _ProfileEndpoint profile;
+
+  late final _ReasoningEndpoint reasoning;
+
+  late final _SelfQuestionEndpoint selfQuestion;
 }
 
 class _InternalTestEndpoints extends TestEndpoints
@@ -236,6 +240,14 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    reasoning = _ReasoningEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    selfQuestion = _SelfQuestionEndpoint(
+      endpoints,
+      serializationManager,
+    );
   }
 }
 
@@ -243,6 +255,10 @@ class _FutureCalls {
   late final diary = _DiaryFutureCall();
 
   late final growth = _GrowthFutureCall();
+
+  late final reasoning = _ReasoningFutureCall();
+
+  late final selfQuestion = _SelfQuestionFutureCall();
 }
 
 class _EmailIdpEndpoint {
@@ -1150,6 +1166,84 @@ class _ProfileEndpoint {
   }
 }
 
+class _ReasoningEndpoint {
+  _ReasoningEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<bool> trigger(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'reasoning',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'reasoning',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _SelfQuestionEndpoint {
+  _SelfQuestionEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<bool> trigger(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'selfQuestion',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'selfQuestion',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _DiaryFutureCall {
   Future<void> checkAndWrite(_ist.TestSessionBuilder sessionBuilder) async {
     var _localUniqueSession =
@@ -1171,6 +1265,36 @@ class _GrowthFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ix7un2io.GrowthTakeSnapshotFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _ReasoningFutureCall {
+  Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.ReasoningTickFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _SelfQuestionFutureCall {
+  Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.SelfQuestionTickFutureCall().invoke(
         _localUniqueSession,
         null,
       );

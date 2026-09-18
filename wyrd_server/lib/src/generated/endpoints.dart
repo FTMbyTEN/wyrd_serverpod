@@ -27,6 +27,8 @@ import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
 import '../mind/profile_endpoint.dart' as _in0jvng1;
+import '../mind/reasoning_endpoint.dart' as _iovbjp1a;
+import '../mind/self_question_endpoint.dart' as _i4qouglj;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
 class Endpoints extends _is.EndpointDispatch {
@@ -97,6 +99,18 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'profile',
+          null,
+        ),
+      'reasoning': _iovbjp1a.ReasoningEndpoint()
+        ..initialize(
+          server,
+          'reasoning',
+          null,
+        ),
+      'selfQuestion': _i4qouglj.SelfQuestionEndpoint()
+        ..initialize(
+          server,
+          'selfQuestion',
           null,
         ),
     };
@@ -590,6 +604,39 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['username'],
                   ),
+        ),
+      },
+    );
+    connectors['reasoning'] = _is.EndpointConnector(
+      name: 'reasoning',
+      endpoint: endpoints['reasoning']!,
+      methodConnectors: {
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['reasoning'] as _iovbjp1a.ReasoningEndpoint)
+                  .trigger(session),
+        ),
+      },
+    );
+    connectors['selfQuestion'] = _is.EndpointConnector(
+      name: 'selfQuestion',
+      endpoint: endpoints['selfQuestion']!,
+      methodConnectors: {
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['selfQuestion'] as _i4qouglj.SelfQuestionEndpoint)
+                      .trigger(session),
         ),
       },
     );

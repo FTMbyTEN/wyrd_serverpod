@@ -29,6 +29,9 @@ abstract class MemoryBlock
     this.triggeredBy,
     required this.topics,
     this.curriculum,
+    this.question,
+    this.answer,
+    this.answeredTopic,
   });
 
   factory MemoryBlock({
@@ -45,6 +48,9 @@ abstract class MemoryBlock
     String? triggeredBy,
     required List<String> topics,
     String? curriculum,
+    String? question,
+    String? answer,
+    String? answeredTopic,
   }) = _MemoryBlockImpl;
 
   factory MemoryBlock.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -66,6 +72,9 @@ abstract class MemoryBlock
         jsonSerialization['topics'],
       ),
       curriculum: jsonSerialization['curriculum'] as String?,
+      question: jsonSerialization['question'] as String?,
+      answer: jsonSerialization['answer'] as String?,
+      answeredTopic: jsonSerialization['answeredTopic'] as String?,
     );
   }
 
@@ -100,6 +109,12 @@ abstract class MemoryBlock
 
   String? curriculum;
 
+  String? question;
+
+  String? answer;
+
+  String? answeredTopic;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -120,6 +135,9 @@ abstract class MemoryBlock
     String? triggeredBy,
     List<String>? topics,
     String? curriculum,
+    String? question,
+    String? answer,
+    String? answeredTopic,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -138,6 +156,9 @@ abstract class MemoryBlock
       if (triggeredBy != null) 'triggeredBy': triggeredBy,
       'topics': topics.toJson(),
       if (curriculum != null) 'curriculum': curriculum,
+      if (question != null) 'question': question,
+      if (answer != null) 'answer': answer,
+      if (answeredTopic != null) 'answeredTopic': answeredTopic,
     };
   }
 
@@ -158,6 +179,9 @@ abstract class MemoryBlock
       if (triggeredBy != null) 'triggeredBy': triggeredBy,
       'topics': topics.toJson(),
       if (curriculum != null) 'curriculum': curriculum,
+      if (question != null) 'question': question,
+      if (answer != null) 'answer': answer,
+      if (answeredTopic != null) 'answeredTopic': answeredTopic,
     };
   }
 
@@ -206,6 +230,9 @@ class _MemoryBlockImpl extends MemoryBlock {
     String? triggeredBy,
     required List<String> topics,
     String? curriculum,
+    String? question,
+    String? answer,
+    String? answeredTopic,
   }) : super._(
          id: id,
          legacyId: legacyId,
@@ -220,6 +247,9 @@ class _MemoryBlockImpl extends MemoryBlock {
          triggeredBy: triggeredBy,
          topics: topics,
          curriculum: curriculum,
+         question: question,
+         answer: answer,
+         answeredTopic: answeredTopic,
        );
 
   /// Returns a shallow copy of this [MemoryBlock]
@@ -240,6 +270,9 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? triggeredBy = _Undefined,
     List<String>? topics,
     Object? curriculum = _Undefined,
+    Object? question = _Undefined,
+    Object? answer = _Undefined,
+    Object? answeredTopic = _Undefined,
   }) {
     return MemoryBlock(
       id: id is int? ? id : this.id,
@@ -255,6 +288,11 @@ class _MemoryBlockImpl extends MemoryBlock {
       triggeredBy: triggeredBy is String? ? triggeredBy : this.triggeredBy,
       topics: topics ?? this.topics.map((e0) => e0).toList(),
       curriculum: curriculum is String? ? curriculum : this.curriculum,
+      question: question is String? ? question : this.question,
+      answer: answer is String? ? answer : this.answer,
+      answeredTopic: answeredTopic is String?
+          ? answeredTopic
+          : this.answeredTopic,
     );
   }
 }
@@ -323,6 +361,22 @@ class MemoryBlockUpdateTable extends _is.UpdateTable<MemoryBlockTable> {
     table.curriculum,
     value,
   );
+
+  _is.ColumnValue<String, String> question(String? value) => _is.ColumnValue(
+    table.question,
+    value,
+  );
+
+  _is.ColumnValue<String, String> answer(String? value) => _is.ColumnValue(
+    table.answer,
+    value,
+  );
+
+  _is.ColumnValue<String, String> answeredTopic(String? value) =>
+      _is.ColumnValue(
+        table.answeredTopic,
+        value,
+      );
 }
 
 class MemoryBlockTable extends _is.Table<int?> {
@@ -376,6 +430,18 @@ class MemoryBlockTable extends _is.Table<int?> {
       'curriculum',
       this,
     );
+    question = _is.ColumnString(
+      'question',
+      this,
+    );
+    answer = _is.ColumnString(
+      'answer',
+      this,
+    );
+    answeredTopic = _is.ColumnString(
+      'answeredTopic',
+      this,
+    );
   }
 
   late final MemoryBlockUpdateTable updateTable;
@@ -404,6 +470,12 @@ class MemoryBlockTable extends _is.Table<int?> {
 
   late final _is.ColumnString curriculum;
 
+  late final _is.ColumnString question;
+
+  late final _is.ColumnString answer;
+
+  late final _is.ColumnString answeredTopic;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -419,6 +491,9 @@ class MemoryBlockTable extends _is.Table<int?> {
     triggeredBy,
     topics,
     curriculum,
+    question,
+    answer,
+    answeredTopic,
   ];
 }
 

@@ -18,6 +18,9 @@ fields:
   triggeredBy: String?
   topics: List<String>
   curriculum: String?
+  question: String?
+  answer: String?
+  answeredTopic: String?
 
 indexes:
   memory_block_timestamp_idx:

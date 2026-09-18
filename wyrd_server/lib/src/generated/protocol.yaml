@@ -34,3 +34,7 @@ profile:
   - getProfile:
   - touchVisit:
   - setUsername:
+reasoning:
+  - trigger:
+selfQuestion:
+  - trigger:

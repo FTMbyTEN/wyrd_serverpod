@@ -16,6 +16,8 @@ import 'package:clock/clock.dart' as _io0w16m8;
 import 'package:serverpod/serverpod.dart' as _is;
 import '../mind/diary_future_call.dart' as _i749zoke;
 import '../mind/growth_future_call.dart' as _i0cg22dz;
+import '../mind/reasoning_future_call.dart' as _ipbl5psg;
+import '../mind/self_question_future_call.dart' as _i51wt927;
 
 /// Invokes a future call.
 typedef _InvokeFutureCall =
@@ -61,6 +63,8 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
     var registeredFutureCalls = <String, _is.InvokableFutureCall>{
       'DiaryCheckAndWriteFutureCall': DiaryCheckAndWriteFutureCall(),
       'GrowthTakeSnapshotFutureCall': GrowthTakeSnapshotFutureCall(),
+      'ReasoningTickFutureCall': ReasoningTickFutureCall(),
+      'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
     };
     _futureCallManager = futureCallManager;
     _serverId = serverId;
@@ -184,6 +188,12 @@ class _FutureCallRef {
   late final diary = _DiaryFutureCallDispatcher(_invokeFutureCall);
 
   late final growth = _GrowthFutureCallDispatcher(_invokeFutureCall);
+
+  late final reasoning = _ReasoningFutureCallDispatcher(_invokeFutureCall);
+
+  late final selfQuestion = _SelfQuestionFutureCallDispatcher(
+    _invokeFutureCall,
+  );
 }
 
 class _DiaryFutureCallDispatcher {
@@ -212,6 +222,32 @@ class _GrowthFutureCallDispatcher {
   }
 }
 
+class _ReasoningFutureCallDispatcher {
+  _ReasoningFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'ReasoningTickFutureCall',
+      null,
+    );
+  }
+}
+
+class _SelfQuestionFutureCallDispatcher {
+  _SelfQuestionFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'SelfQuestionTickFutureCall',
+      null,
+    );
+  }
+}
+
 class DiaryCheckAndWriteFutureCall extends _is.FutureCall
     implements _is.InvokableFutureCall {
   @override
@@ -231,5 +267,27 @@ class GrowthTakeSnapshotFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _i0cg22dz.GrowthFutureCall().takeSnapshot(session);
+  }
+}
+
+class ReasoningTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _ipbl5psg.ReasoningFutureCall().tick(session);
+  }
+}
+
+class SelfQuestionTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _i51wt927.SelfQuestionFutureCall().tick(session);
   }
 }

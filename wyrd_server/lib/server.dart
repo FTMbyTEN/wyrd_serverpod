@@ -113,6 +113,16 @@ void run(List<String> args) async {
       .every(const Duration(minutes: 10))
       .diary
       .checkAndWrite();
+  await pod.futureCalls
+      .callRecurring(identifier: 'reasoning-tick')
+      .every(const Duration(seconds: 30))
+      .reasoning
+      .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'self-question-tick')
+      .every(const Duration(seconds: 30))
+      .selfQuestion
+      .tick();
 
   // Start the server.
   await pod.start();

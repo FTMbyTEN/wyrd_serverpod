@@ -470,6 +470,37 @@ class EndpointProfile extends _isc.EndpointRef {
       );
 }
 
+/// Ports /api/reasoning/trigger from server.js. Public/unauthenticated, matching Node.
+/// GET /api/reasoning (the human-readable .md log) is not ported -- see reasoning_service.dart.
+/// {@category Endpoint}
+class EndpointReasoning extends _isc.EndpointRef {
+  EndpointReasoning(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'reasoning';
+
+  _ida.Future<bool> trigger() => caller.callServerEndpoint<bool>(
+    'reasoning',
+    'trigger',
+    {},
+  );
+}
+
+/// Ports /api/self/trigger from server.js. Public/unauthenticated, matching Node.
+/// {@category Endpoint}
+class EndpointSelfQuestion extends _isc.EndpointRef {
+  EndpointSelfQuestion(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'selfQuestion';
+
+  _ida.Future<bool> trigger() => caller.callServerEndpoint<bool>(
+    'selfQuestion',
+    'trigger',
+    {},
+  );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _iaic.Caller(client);
@@ -519,6 +550,8 @@ class Client extends _isc.ServerpodClientShared {
     memory = EndpointMemory(this);
     mind = EndpointMind(this);
     profile = EndpointProfile(this);
+    reasoning = EndpointReasoning(this);
+    selfQuestion = EndpointSelfQuestion(this);
     modules = Modules(this);
   }
 
@@ -544,6 +577,10 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointProfile profile;
 
+  late final EndpointReasoning reasoning;
+
+  late final EndpointSelfQuestion selfQuestion;
+
   late final Modules modules;
 
   @override
@@ -559,6 +596,8 @@ class Client extends _isc.ServerpodClientShared {
     'memory': memory,
     'mind': mind,
     'profile': profile,
+    'reasoning': reasoning,
+    'selfQuestion': selfQuestion,
   };
 
   @override
