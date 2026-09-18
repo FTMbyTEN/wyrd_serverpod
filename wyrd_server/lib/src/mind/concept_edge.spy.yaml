@@ -1,0 +1,5 @@
+class: ConceptEdge
+fields:
+  a: String
+  b: String
+  weight: int

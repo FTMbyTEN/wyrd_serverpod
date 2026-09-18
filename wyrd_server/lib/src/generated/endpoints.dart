@@ -18,7 +18,9 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
+import '../mind/profile_endpoint.dart' as _in0jvng1;
 
 class Endpoints extends _is.EndpointDispatch {
   @override
@@ -42,10 +44,22 @@ class Endpoints extends _is.EndpointDispatch {
           'greeting',
           null,
         ),
+      'memory': _ibdzbeap.MemoryEndpoint()
+        ..initialize(
+          server,
+          'memory',
+          null,
+        ),
       'mind': _i2dwy8oi.MindEndpoint()
         ..initialize(
           server,
           'mind',
+          null,
+        ),
+      'profile': _in0jvng1.ProfileEndpoint()
+        ..initialize(
+          server,
+          'profile',
           null,
         ),
     };
@@ -280,6 +294,32 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['memory'] = _is.EndpointConnector(
+      name: 'memory',
+      endpoint: endpoints['memory']!,
+      methodConnectors: {
+        'getMemory': _is.MethodConnector(
+          name: 'getMemory',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['memory'] as _ibdzbeap.MemoryEndpoint)
+                  .getMemory(session),
+        ),
+        'getConcepts': _is.MethodConnector(
+          name: 'getConcepts',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['memory'] as _ibdzbeap.MemoryEndpoint)
+                  .getConcepts(session),
+        ),
+      },
+    );
     connectors['mind'] = _is.EndpointConnector(
       name: 'mind',
       endpoint: endpoints['mind']!,
@@ -294,6 +334,51 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['mind'] as _i2dwy8oi.MindEndpoint).getMind(
                 session,
               ),
+        ),
+      },
+    );
+    connectors['profile'] = _is.EndpointConnector(
+      name: 'profile',
+      endpoint: endpoints['profile']!,
+      methodConnectors: {
+        'getProfile': _is.MethodConnector(
+          name: 'getProfile',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['profile'] as _in0jvng1.ProfileEndpoint)
+                  .getProfile(session),
+        ),
+        'touchVisit': _is.MethodConnector(
+          name: 'touchVisit',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['profile'] as _in0jvng1.ProfileEndpoint)
+                  .touchVisit(session),
+        ),
+        'setUsername': _is.MethodConnector(
+          name: 'setUsername',
+          params: {
+            'username': _is.ParameterDescription(
+              name: 'username',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['profile'] as _in0jvng1.ProfileEndpoint)
+                  .setUsername(
+                    session,
+                    params['username'],
+                  ),
         ),
       },
     );

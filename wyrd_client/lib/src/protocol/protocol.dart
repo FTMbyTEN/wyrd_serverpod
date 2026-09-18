@@ -16,12 +16,23 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'greetings/greeting.dart' as _izw8z7ou;
+import 'mind/concept_edge.dart' as _iafou6mz;
+import 'mind/concept_graph.dart' as _iggcgqw1;
+import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/digest_info.dart' as _i9vbq77t;
+import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
+import 'mind/user_profile.dart' as _irc0lure;
 export 'greetings/greeting.dart';
+export 'mind/concept_edge.dart';
+export 'mind/concept_graph.dart';
+export 'mind/concept_node.dart';
 export 'mind/digest_info.dart';
+export 'mind/memory_block.dart';
 export 'mind/mind.dart';
+export 'mind/user_profile.dart';
 export 'client.dart';
 
 class Protocol extends _isc.SerializationManager {
@@ -61,20 +72,74 @@ class Protocol extends _isc.SerializationManager {
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
+    if (t == _iafou6mz.ConceptEdge) {
+      return _iafou6mz.ConceptEdge.fromJson(data) as T;
+    }
+    if (t == _iggcgqw1.ConceptGraph) {
+      return _iggcgqw1.ConceptGraph.fromJson(data) as T;
+    }
+    if (t == _iapme6ge.ConceptNode) {
+      return _iapme6ge.ConceptNode.fromJson(data) as T;
+    }
     if (t == _i9vbq77t.DigestInfo) {
       return _i9vbq77t.DigestInfo.fromJson(data) as T;
+    }
+    if (t == _if349ohh.MemoryBlock) {
+      return _if349ohh.MemoryBlock.fromJson(data) as T;
     }
     if (t == _iqhk00ra.Mind) {
       return _iqhk00ra.Mind.fromJson(data) as T;
     }
+    if (t == _irc0lure.UserProfile) {
+      return _irc0lure.UserProfile.fromJson(data) as T;
+    }
     if (t == _isc.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iafou6mz.ConceptEdge?>()) {
+      return (data != null ? _iafou6mz.ConceptEdge.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iggcgqw1.ConceptGraph?>()) {
+      return (data != null ? _iggcgqw1.ConceptGraph.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iapme6ge.ConceptNode?>()) {
+      return (data != null ? _iapme6ge.ConceptNode.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i9vbq77t.DigestInfo?>()) {
       return (data != null ? _i9vbq77t.DigestInfo.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_if349ohh.MemoryBlock?>()) {
+      return (data != null ? _if349ohh.MemoryBlock.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_iqhk00ra.Mind?>()) {
       return (data != null ? _iqhk00ra.Mind.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_irc0lure.UserProfile?>()) {
+      return (data != null ? _irc0lure.UserProfile.fromJson(data) : null) as T;
+    }
+    if (t == List<_iapme6ge.ConceptNode>) {
+      return (data as List)
+              .map((e) => deserialize<_iapme6ge.ConceptNode>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iafou6mz.ConceptEdge>) {
+      return (data as List)
+              .map((e) => deserialize<_iafou6mz.ConceptEdge>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
+    if (t == List<_ij6z6xwm.MemoryBlock>) {
+      return (data as List)
+              .map((e) => deserialize<_ij6z6xwm.MemoryBlock>(e))
+              .toList()
+          as T;
     }
     try {
       return _iaic.Protocol().deserialize<T>(data, t);
@@ -88,8 +153,13 @@ class Protocol extends _isc.SerializationManager {
   static String? getClassNameForType(Type type) {
     return switch (type) {
       _izw8z7ou.Greeting => 'Greeting',
+      _iafou6mz.ConceptEdge => 'ConceptEdge',
+      _iggcgqw1.ConceptGraph => 'ConceptGraph',
+      _iapme6ge.ConceptNode => 'ConceptNode',
       _i9vbq77t.DigestInfo => 'DigestInfo',
+      _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
+      _irc0lure.UserProfile => 'UserProfile',
       _ => null,
     };
   }
@@ -106,10 +176,20 @@ class Protocol extends _isc.SerializationManager {
     switch (data) {
       case _izw8z7ou.Greeting():
         return 'Greeting';
+      case _iafou6mz.ConceptEdge():
+        return 'ConceptEdge';
+      case _iggcgqw1.ConceptGraph():
+        return 'ConceptGraph';
+      case _iapme6ge.ConceptNode():
+        return 'ConceptNode';
       case _i9vbq77t.DigestInfo():
         return 'DigestInfo';
+      case _if349ohh.MemoryBlock():
+        return 'MemoryBlock';
       case _iqhk00ra.Mind():
         return 'Mind';
+      case _irc0lure.UserProfile():
+        return 'UserProfile';
     }
     className = _iaic.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -135,11 +215,26 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
     }
+    if (dataClassName == 'ConceptEdge') {
+      return deserialize<_iafou6mz.ConceptEdge>(data['data']);
+    }
+    if (dataClassName == 'ConceptGraph') {
+      return deserialize<_iggcgqw1.ConceptGraph>(data['data']);
+    }
+    if (dataClassName == 'ConceptNode') {
+      return deserialize<_iapme6ge.ConceptNode>(data['data']);
+    }
     if (dataClassName == 'DigestInfo') {
       return deserialize<_i9vbq77t.DigestInfo>(data['data']);
     }
+    if (dataClassName == 'MemoryBlock') {
+      return deserialize<_if349ohh.MemoryBlock>(data['data']);
+    }
     if (dataClassName == 'Mind') {
       return deserialize<_iqhk00ra.Mind>(data['data']);
+    }
+    if (dataClassName == 'UserProfile') {
+      return deserialize<_irc0lure.UserProfile>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);

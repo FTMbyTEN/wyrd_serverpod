@@ -1,0 +1,24 @@
+# Mirrors the heterogeneous entries in server.js's memory.json blocks array. Node blocks are
+# loosely-typed JSON that vary by source (chat/net/photo/self/synthesis/ingest each set a
+# different subset of fields) — this flattens that into one table with the union of fields
+# actually written at any push site, leaving the ones a given source doesn't use null.
+class: MemoryBlock
+table: memory_block
+
+fields:
+  legacyId: String?
+  timestamp: DateTime
+  source: String
+  feedSource: String?
+  title: String?
+  extract: String?
+  url: String?
+  userText: String?
+  botText: String?
+  triggeredBy: String?
+  topics: List<String>
+  curriculum: String?
+
+indexes:
+  memory_block_timestamp_idx:
+    fields: timestamp

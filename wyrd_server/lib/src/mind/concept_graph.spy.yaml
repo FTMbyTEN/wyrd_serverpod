@@ -1,0 +1,4 @@
+class: ConceptGraph
+fields:
+  nodes: List<ConceptNode>
+  edges: List<ConceptEdge>

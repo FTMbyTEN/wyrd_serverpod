@@ -17,6 +17,7 @@ import '../mind/digest_info.dart' as _iegfx6l9;
 abstract class Mind
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   Mind._({
+    this.id,
     required this.mood,
     this.focusTopic,
     this.activeGoal,
@@ -24,11 +25,15 @@ abstract class Mind
     required this.confidence,
     required this.digest,
     this.lastEvent,
-    this.explorationCount,
+    required this.explorationCount,
     required this.updatedAt,
+    required this.seenTopics,
+    required this.resolvedTopics,
+    required this.selfAnswerTimestamps,
   });
 
   factory Mind({
+    int? id,
     required String mood,
     String? focusTopic,
     String? activeGoal,
@@ -36,12 +41,16 @@ abstract class Mind
     required double confidence,
     required _iegfx6l9.DigestInfo digest,
     String? lastEvent,
-    int? explorationCount,
+    required int explorationCount,
     required DateTime updatedAt,
+    required List<String> seenTopics,
+    required List<String> resolvedTopics,
+    required List<int> selfAnswerTimestamps,
   }) = _MindImpl;
 
   factory Mind.fromJson(Map<String, dynamic> jsonSerialization) {
     return Mind(
+      id: jsonSerialization['id'] as int?,
       mood: jsonSerialization['mood'] as String,
       focusTopic: jsonSerialization['focusTopic'] as String?,
       activeGoal: jsonSerialization['activeGoal'] as String?,
@@ -51,12 +60,26 @@ abstract class Mind
         jsonSerialization['digest'],
       ),
       lastEvent: jsonSerialization['lastEvent'] as String?,
-      explorationCount: jsonSerialization['explorationCount'] as int?,
+      explorationCount: jsonSerialization['explorationCount'] as int,
       updatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
+      seenTopics: _i2pladzn.Protocol().deserialize<List<String>>(
+        jsonSerialization['seenTopics'],
+      ),
+      resolvedTopics: _i2pladzn.Protocol().deserialize<List<String>>(
+        jsonSerialization['resolvedTopics'],
+      ),
+      selfAnswerTimestamps: _i2pladzn.Protocol().deserialize<List<int>>(
+        jsonSerialization['selfAnswerTimestamps'],
+      ),
     );
   }
+
+  /// The database id, set if the object has been inserted into the
+  /// database or if it has been fetched from the database. Otherwise,
+  /// the id will be null.
+  int? id;
 
   String mood;
 
@@ -72,14 +95,21 @@ abstract class Mind
 
   String? lastEvent;
 
-  int? explorationCount;
+  int explorationCount;
 
   DateTime updatedAt;
+
+  List<String> seenTopics;
+
+  List<String> resolvedTopics;
+
+  List<int> selfAnswerTimestamps;
 
   /// Returns a shallow copy of this [Mind]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   Mind copyWith({
+    int? id,
     String? mood,
     String? focusTopic,
     String? activeGoal,
@@ -89,11 +119,15 @@ abstract class Mind
     String? lastEvent,
     int? explorationCount,
     DateTime? updatedAt,
+    List<String>? seenTopics,
+    List<String>? resolvedTopics,
+    List<int>? selfAnswerTimestamps,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       '__className__': 'Mind',
+      if (id != null) 'id': id,
       'mood': mood,
       if (focusTopic != null) 'focusTopic': focusTopic,
       if (activeGoal != null) 'activeGoal': activeGoal,
@@ -101,8 +135,11 @@ abstract class Mind
       'confidence': confidence,
       'digest': digest.toJson(),
       if (lastEvent != null) 'lastEvent': lastEvent,
-      if (explorationCount != null) 'explorationCount': explorationCount,
+      'explorationCount': explorationCount,
       'updatedAt': updatedAt.toJson(),
+      'seenTopics': seenTopics.toJson(),
+      'resolvedTopics': resolvedTopics.toJson(),
+      'selfAnswerTimestamps': selfAnswerTimestamps.toJson(),
     };
   }
 
@@ -110,6 +147,7 @@ abstract class Mind
   Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'Mind',
+      if (id != null) 'id': id,
       'mood': mood,
       if (focusTopic != null) 'focusTopic': focusTopic,
       if (activeGoal != null) 'activeGoal': activeGoal,
@@ -117,8 +155,11 @@ abstract class Mind
       'confidence': confidence,
       'digest': digest.toJsonForProtocol(),
       if (lastEvent != null) 'lastEvent': lastEvent,
-      if (explorationCount != null) 'explorationCount': explorationCount,
+      'explorationCount': explorationCount,
       'updatedAt': updatedAt.toJson(),
+      'seenTopics': seenTopics.toJson(),
+      'resolvedTopics': resolvedTopics.toJson(),
+      'selfAnswerTimestamps': selfAnswerTimestamps.toJson(),
     };
   }
 
@@ -132,6 +173,7 @@ class _Undefined {}
 
 class _MindImpl extends Mind {
   _MindImpl({
+    int? id,
     required String mood,
     String? focusTopic,
     String? activeGoal,
@@ -139,9 +181,13 @@ class _MindImpl extends Mind {
     required double confidence,
     required _iegfx6l9.DigestInfo digest,
     String? lastEvent,
-    int? explorationCount,
+    required int explorationCount,
     required DateTime updatedAt,
+    required List<String> seenTopics,
+    required List<String> resolvedTopics,
+    required List<int> selfAnswerTimestamps,
   }) : super._(
+         id: id,
          mood: mood,
          focusTopic: focusTopic,
          activeGoal: activeGoal,
@@ -151,6 +197,9 @@ class _MindImpl extends Mind {
          lastEvent: lastEvent,
          explorationCount: explorationCount,
          updatedAt: updatedAt,
+         seenTopics: seenTopics,
+         resolvedTopics: resolvedTopics,
+         selfAnswerTimestamps: selfAnswerTimestamps,
        );
 
   /// Returns a shallow copy of this [Mind]
@@ -158,6 +207,7 @@ class _MindImpl extends Mind {
   @_isc.useResult
   @override
   Mind copyWith({
+    Object? id = _Undefined,
     String? mood,
     Object? focusTopic = _Undefined,
     Object? activeGoal = _Undefined,
@@ -165,10 +215,14 @@ class _MindImpl extends Mind {
     double? confidence,
     _iegfx6l9.DigestInfo? digest,
     Object? lastEvent = _Undefined,
-    Object? explorationCount = _Undefined,
+    int? explorationCount,
     DateTime? updatedAt,
+    List<String>? seenTopics,
+    List<String>? resolvedTopics,
+    List<int>? selfAnswerTimestamps,
   }) {
     return Mind(
+      id: id is int? ? id : this.id,
       mood: mood ?? this.mood,
       focusTopic: focusTopic is String? ? focusTopic : this.focusTopic,
       activeGoal: activeGoal is String? ? activeGoal : this.activeGoal,
@@ -176,10 +230,14 @@ class _MindImpl extends Mind {
       confidence: confidence ?? this.confidence,
       digest: digest ?? this.digest.copyWith(),
       lastEvent: lastEvent is String? ? lastEvent : this.lastEvent,
-      explorationCount: explorationCount is int?
-          ? explorationCount
-          : this.explorationCount,
+      explorationCount: explorationCount ?? this.explorationCount,
       updatedAt: updatedAt ?? this.updatedAt,
+      seenTopics: seenTopics ?? this.seenTopics.map((e0) => e0).toList(),
+      resolvedTopics:
+          resolvedTopics ?? this.resolvedTopics.map((e0) => e0).toList(),
+      selfAnswerTimestamps:
+          selfAnswerTimestamps ??
+          this.selfAnswerTimestamps.map((e0) => e0).toList(),
     );
   }
 }

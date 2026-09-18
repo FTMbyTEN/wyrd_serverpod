@@ -11,5 +11,12 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+memory:
+  - getMemory:
+  - getConcepts:
 mind:
   - getMind:
+profile:
+  - getProfile:
+  - touchVisit:
+  - setUsername:

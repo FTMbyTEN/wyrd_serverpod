@@ -1,0 +1,19 @@
+# Mirrors server.js's user_profiles.json (getProfile/touchProfileVisit), one row per Serverpod
+# auth user instead of the old Node-side numeric user id. Node's username lived on its own
+# users.json row; here it's folded into this profile since the email IDP's AuthUser has no
+# username field of its own.
+class: UserProfile
+table: user_profile
+
+fields:
+  authUserId: UuidValue
+  username: String?
+  facts: List<String>
+  visitCount: int
+  firstSeen: DateTime
+  lastSeen: DateTime
+
+indexes:
+  user_profile_auth_user_id_idx:
+    fields: authUserId
+    unique: true

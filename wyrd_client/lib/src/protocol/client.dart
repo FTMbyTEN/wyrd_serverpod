@@ -18,7 +18,10 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
+import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
+import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
+import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
 import 'protocol.dart' as _il2as5qe;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
@@ -264,12 +267,34 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
-/// Ports GET /api/mind from the Node backend (server.js `publicMind`). This first pass proves
-/// the model -> generate -> endpoint -> client pipeline works for WYRD's real data shape; the
-/// actual mind state (mood/curiosity/confidence ticks, digest tracking against real memory) still
-/// lives only in the Node server's in-memory/JSON-file state and has not been ported yet — that's
-/// a much larger piece (the autonomous reasoning/self-questioning/curriculum ticks that keep it
-/// updated) than one endpoint. [getMind] returns a realistic placeholder shape, not live state.
+/// Ports /api/memory and /api/concepts from server.js. Public/unauthenticated, matching Node.
+/// Node trims memory.json to the last 5000 blocks on every write (MAX_BLOCKS); rather than
+/// enforce that at write time here too, both reads below just cap the query to the newest 5000
+/// rows, so the trimming behavior is equivalent without needing a separate cleanup job yet.
+/// {@category Endpoint}
+class EndpointMemory extends _isc.EndpointRef {
+  EndpointMemory(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'memory';
+
+  _ida.Future<List<_ij6z6xwm.MemoryBlock>> getMemory() =>
+      caller.callServerEndpoint<List<_ij6z6xwm.MemoryBlock>>(
+        'memory',
+        'getMemory',
+        {},
+      );
+
+  _ida.Future<_i3megjmi.ConceptGraph> getConcepts() =>
+      caller.callServerEndpoint<_i3megjmi.ConceptGraph>(
+        'memory',
+        'getConcepts',
+        {},
+      );
+}
+
+/// Real GET /mind, backed by the persisted singleton row (see [MindService]) instead of the
+/// earlier hardcoded placeholder. Public/unauthenticated, matching server.js's /api/mind.
 /// {@category Endpoint}
 class EndpointMind extends _isc.EndpointRef {
   EndpointMind(_isc.EndpointCaller caller) : super(caller);
@@ -282,6 +307,39 @@ class EndpointMind extends _isc.EndpointRef {
         'mind',
         'getMind',
         {},
+      );
+}
+
+/// Ports /api/profile + the getProfile/touchProfileVisit pair from server.js. Node touched the
+/// visit counter server-side at register/login; here that hook doesn't exist (the built-in email
+/// IDP endpoints aren't ours to modify), so the Flutter client calls [touchVisit] right after a
+/// successful sign-in instead.
+/// {@category Endpoint}
+class EndpointProfile extends _isc.EndpointRef {
+  EndpointProfile(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'profile';
+
+  _ida.Future<_ig38dtlp.UserProfile> getProfile() =>
+      caller.callServerEndpoint<_ig38dtlp.UserProfile>(
+        'profile',
+        'getProfile',
+        {},
+      );
+
+  _ida.Future<_ig38dtlp.UserProfile> touchVisit() =>
+      caller.callServerEndpoint<_ig38dtlp.UserProfile>(
+        'profile',
+        'touchVisit',
+        {},
+      );
+
+  _ida.Future<_ig38dtlp.UserProfile> setUsername(String username) =>
+      caller.callServerEndpoint<_ig38dtlp.UserProfile>(
+        'profile',
+        'setUsername',
+        {'username': username},
       );
 }
 
@@ -326,7 +384,9 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    memory = EndpointMemory(this);
     mind = EndpointMind(this);
+    profile = EndpointProfile(this);
     modules = Modules(this);
   }
 
@@ -336,7 +396,11 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointGreeting greeting;
 
+  late final EndpointMemory memory;
+
   late final EndpointMind mind;
+
+  late final EndpointProfile profile;
 
   late final Modules modules;
 
@@ -345,7 +409,9 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'memory': memory,
     'mind': mind,
+    'profile': profile,
   };
 
   @override
