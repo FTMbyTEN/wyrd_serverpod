@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/protocol.dart' as _i2pladzn;
+import '../mind/chat_action.dart' as _i3mvbw8t;
 import '../mind/mind.dart' as _is7qzfkp;
 
 abstract class ChatReply
@@ -19,11 +20,13 @@ abstract class ChatReply
   ChatReply._({
     required this.reply,
     required this.mind,
+    this.action,
   });
 
   factory ChatReply({
     required String reply,
     required _is7qzfkp.Mind mind,
+    _i3mvbw8t.ChatAction? action,
   }) = _ChatReplyImpl;
 
   factory ChatReply.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -32,6 +35,11 @@ abstract class ChatReply
       mind: _i2pladzn.Protocol().deserialize<_is7qzfkp.Mind>(
         jsonSerialization['mind'],
       ),
+      action: jsonSerialization['action'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<_i3mvbw8t.ChatAction>(
+              jsonSerialization['action'],
+            ),
     );
   }
 
@@ -39,12 +47,15 @@ abstract class ChatReply
 
   _is7qzfkp.Mind mind;
 
+  _i3mvbw8t.ChatAction? action;
+
   /// Returns a shallow copy of this [ChatReply]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   ChatReply copyWith({
     String? reply,
     _is7qzfkp.Mind? mind,
+    _i3mvbw8t.ChatAction? action,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -52,6 +63,7 @@ abstract class ChatReply
       '__className__': 'ChatReply',
       'reply': reply,
       'mind': mind.toJson(),
+      if (action != null) 'action': action?.toJson(),
     };
   }
 
@@ -61,6 +73,7 @@ abstract class ChatReply
       '__className__': 'ChatReply',
       'reply': reply,
       'mind': mind.toJsonForProtocol(),
+      if (action != null) 'action': action?.toJsonForProtocol(),
     };
   }
 
@@ -70,13 +83,17 @@ abstract class ChatReply
   }
 }
 
+class _Undefined {}
+
 class _ChatReplyImpl extends ChatReply {
   _ChatReplyImpl({
     required String reply,
     required _is7qzfkp.Mind mind,
+    _i3mvbw8t.ChatAction? action,
   }) : super._(
          reply: reply,
          mind: mind,
+         action: action,
        );
 
   /// Returns a shallow copy of this [ChatReply]
@@ -86,10 +103,14 @@ class _ChatReplyImpl extends ChatReply {
   ChatReply copyWith({
     String? reply,
     _is7qzfkp.Mind? mind,
+    Object? action = _Undefined,
   }) {
     return ChatReply(
       reply: reply ?? this.reply,
       mind: mind ?? this.mind.copyWith(),
+      action: action is _i3mvbw8t.ChatAction?
+          ? action
+          : this.action?.copyWith(),
     );
   }
 }

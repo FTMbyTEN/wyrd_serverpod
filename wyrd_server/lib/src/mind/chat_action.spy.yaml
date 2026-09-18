@@ -1,0 +1,4 @@
+class: ChatAction
+fields:
+  type: String
+  country: String?
