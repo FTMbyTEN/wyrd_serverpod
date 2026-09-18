@@ -1,0 +1,18 @@
+# Mirrors server.js's lexicon.json — one row per word WYRD has attempted to learn via the
+# (not yet ported) autonomous lexicon tick. Only the read side (getStats/getWord) is ported
+# here; the tick itself calls an LLM to define words and belongs with the rest of the
+# autonomous engine port, not this batch.
+class: LexiconEntry
+table: lexicon_entry
+
+fields:
+  word: String
+  understood: bool
+  definition: String?
+  partOfSpeech: String?
+  learnedAt: DateTime
+
+indexes:
+  lexicon_entry_word_idx:
+    fields: word
+    unique: true

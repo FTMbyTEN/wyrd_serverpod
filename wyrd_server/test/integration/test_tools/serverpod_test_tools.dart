@@ -19,6 +19,8 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
 import 'package:serverpod_test/serverpod_test.dart' as _ist;
 import 'package:wyrd_server/src/generated/greetings/greeting.dart' as _i6wty2t7;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
+import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
+import 'package:wyrd_server/src/generated/mind/lexicon_stats.dart' as _iv2jt4ku;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'package:wyrd_server/src/generated/mind/mind.dart' as _i8dcpm7v;
 import 'package:wyrd_server/src/generated/mind/user_profile.dart' as _ifiznghf;
@@ -156,6 +158,8 @@ class TestEndpoints {
 
   late final _GreetingEndpoint greeting;
 
+  late final _LexiconEndpoint lexicon;
+
   late final _MemoryEndpoint memory;
 
   late final _MindEndpoint mind;
@@ -179,6 +183,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     greeting = _GreetingEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    lexicon = _LexiconEndpoint(
       endpoints,
       serializationManager,
     );
@@ -549,6 +557,78 @@ class _GreetingEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i6wty2t7.Greeting>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _LexiconEndpoint {
+  _LexiconEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_iv2jt4ku.LexiconStats> getStats(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'lexicon',
+            method: 'getStats',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'lexicon',
+          methodName: 'getStats',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iv2jt4ku.LexiconStats>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iltis5l5.LexiconEntry?> getWord(
+    _ist.TestSessionBuilder sessionBuilder,
+    String word,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'lexicon',
+            method: 'getWord',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'lexicon',
+          methodName: 'getWord',
+          parameters: _ist.testObjectToJson({'word': word}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iltis5l5.LexiconEntry?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

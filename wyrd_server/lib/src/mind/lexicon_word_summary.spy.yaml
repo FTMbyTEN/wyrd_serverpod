@@ -1,0 +1,5 @@
+class: LexiconWordSummary
+fields:
+  word: String
+  definition: String?
+  partOfSpeech: String?

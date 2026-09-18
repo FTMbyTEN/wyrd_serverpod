@@ -11,6 +11,9 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+lexicon:
+  - getStats:
+  - getWord:
 memory:
   - getMemory:
   - getConcepts:

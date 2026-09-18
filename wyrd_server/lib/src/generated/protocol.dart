@@ -23,6 +23,9 @@ import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/digest_info.dart' as _i9vbq77t;
+import 'mind/lexicon_entry.dart' as _i37ps124;
+import 'mind/lexicon_stats.dart' as _ic2pi8fi;
+import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/user_profile.dart' as _irc0lure;
@@ -31,6 +34,9 @@ export 'mind/concept_edge.dart';
 export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
 export 'mind/digest_info.dart';
+export 'mind/lexicon_entry.dart';
+export 'mind/lexicon_stats.dart';
+export 'mind/lexicon_word_summary.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
 export 'mind/user_profile.dart';
@@ -43,6 +49,68 @@ class Protocol extends _is.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._().._registerHostProtocols();
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
+    _isp.TableDefinition(
+      name: 'lexicon_entry',
+      dartName: 'LexiconEntry',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'word',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'understood',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'definition',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'partOfSpeech',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'learnedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'lexicon_entry_word_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'word',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     _isp.TableDefinition(
       name: 'memory_block',
       dartName: 'MemoryBlock',
@@ -352,6 +420,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i9vbq77t.DigestInfo) {
       return _i9vbq77t.DigestInfo.fromJson(data) as T;
     }
+    if (t == _i37ps124.LexiconEntry) {
+      return _i37ps124.LexiconEntry.fromJson(data) as T;
+    }
+    if (t == _ic2pi8fi.LexiconStats) {
+      return _ic2pi8fi.LexiconStats.fromJson(data) as T;
+    }
+    if (t == _i7zu42sq.LexiconWordSummary) {
+      return _i7zu42sq.LexiconWordSummary.fromJson(data) as T;
+    }
     if (t == _if349ohh.MemoryBlock) {
       return _if349ohh.MemoryBlock.fromJson(data) as T;
     }
@@ -376,6 +453,16 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i9vbq77t.DigestInfo?>()) {
       return (data != null ? _i9vbq77t.DigestInfo.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_i37ps124.LexiconEntry?>()) {
+      return (data != null ? _i37ps124.LexiconEntry.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ic2pi8fi.LexiconStats?>()) {
+      return (data != null ? _ic2pi8fi.LexiconStats.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i7zu42sq.LexiconWordSummary?>()) {
+      return (data != null ? _i7zu42sq.LexiconWordSummary.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_if349ohh.MemoryBlock?>()) {
       return (data != null ? _if349ohh.MemoryBlock.fromJson(data) : null) as T;
     }
@@ -394,6 +481,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_iafou6mz.ConceptEdge>) {
       return (data as List)
               .map((e) => deserialize<_iafou6mz.ConceptEdge>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i7zu42sq.LexiconWordSummary>) {
+      return (data as List)
+              .map((e) => deserialize<_i7zu42sq.LexiconWordSummary>(e))
               .toList()
           as T;
     }
@@ -428,6 +521,9 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
       _iapme6ge.ConceptNode => 'ConceptNode',
       _i9vbq77t.DigestInfo => 'DigestInfo',
+      _i37ps124.LexiconEntry => 'LexiconEntry',
+      _ic2pi8fi.LexiconStats => 'LexiconStats',
+      _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
       _irc0lure.UserProfile => 'UserProfile',
@@ -455,6 +551,12 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ConceptNode';
       case _i9vbq77t.DigestInfo():
         return 'DigestInfo';
+      case _i37ps124.LexiconEntry():
+        return 'LexiconEntry';
+      case _ic2pi8fi.LexiconStats():
+        return 'LexiconStats';
+      case _i7zu42sq.LexiconWordSummary():
+        return 'LexiconWordSummary';
       case _if349ohh.MemoryBlock():
         return 'MemoryBlock';
       case _iqhk00ra.Mind():
@@ -501,6 +603,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'DigestInfo') {
       return deserialize<_i9vbq77t.DigestInfo>(data['data']);
+    }
+    if (dataClassName == 'LexiconEntry') {
+      return deserialize<_i37ps124.LexiconEntry>(data['data']);
+    }
+    if (dataClassName == 'LexiconStats') {
+      return deserialize<_ic2pi8fi.LexiconStats>(data['data']);
+    }
+    if (dataClassName == 'LexiconWordSummary') {
+      return deserialize<_i7zu42sq.LexiconWordSummary>(data['data']);
     }
     if (dataClassName == 'MemoryBlock') {
       return deserialize<_if349ohh.MemoryBlock>(data['data']);
@@ -552,6 +663,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       }
     }
     switch (t) {
+      case _i37ps124.LexiconEntry:
+        return _i37ps124.LexiconEntry.t;
       case _if349ohh.MemoryBlock:
         return _if349ohh.MemoryBlock.t;
       case _iqhk00ra.Mind:

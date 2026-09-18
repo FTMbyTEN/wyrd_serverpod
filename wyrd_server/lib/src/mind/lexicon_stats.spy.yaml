@@ -1,0 +1,5 @@
+class: LexiconStats
+fields:
+  learned: int
+  attempted: int
+  recentWords: List<LexiconWordSummary>

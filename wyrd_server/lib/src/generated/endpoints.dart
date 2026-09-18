@@ -18,6 +18,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
 import '../mind/profile_endpoint.dart' as _in0jvng1;
@@ -42,6 +43,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'lexicon': _i3c3oo5r.LexiconEndpoint()
+        ..initialize(
+          server,
+          'lexicon',
           null,
         ),
       'memory': _ibdzbeap.MemoryEndpoint()
@@ -290,6 +297,41 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['greeting'] as _il624ik7.GreetingEndpoint).hello(
                     session,
                     params['name'],
+                  ),
+        ),
+      },
+    );
+    connectors['lexicon'] = _is.EndpointConnector(
+      name: 'lexicon',
+      endpoint: endpoints['lexicon']!,
+      methodConnectors: {
+        'getStats': _is.MethodConnector(
+          name: 'getStats',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['lexicon'] as _i3c3oo5r.LexiconEndpoint)
+                  .getStats(session),
+        ),
+        'getWord': _is.MethodConnector(
+          name: 'getWord',
+          params: {
+            'word': _is.ParameterDescription(
+              name: 'word',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['lexicon'] as _i3c3oo5r.LexiconEndpoint).getWord(
+                    session,
+                    params['word'],
                   ),
         ),
       },

@@ -19,6 +19,8 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
+import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
+import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
@@ -267,6 +269,32 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// Ports the read side of server.js's /api/lexicon/stats and /api/lexicon/word/:word.
+/// /api/lexicon/trigger (the LLM-backed word-learning tick) is not ported yet — it belongs
+/// with the rest of the autonomous engine, not this read-only batch. Public/unauthenticated,
+/// matching Node.
+/// {@category Endpoint}
+class EndpointLexicon extends _isc.EndpointRef {
+  EndpointLexicon(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'lexicon';
+
+  _ida.Future<_i85rewab.LexiconStats> getStats() =>
+      caller.callServerEndpoint<_i85rewab.LexiconStats>(
+        'lexicon',
+        'getStats',
+        {},
+      );
+
+  _ida.Future<_izjkulc1.LexiconEntry?> getWord(String word) =>
+      caller.callServerEndpoint<_izjkulc1.LexiconEntry?>(
+        'lexicon',
+        'getWord',
+        {'word': word},
+      );
+}
+
 /// Ports /api/memory and /api/concepts from server.js. Public/unauthenticated, matching Node.
 /// Node trims memory.json to the last 5000 blocks on every write (MAX_BLOCKS); rather than
 /// enforce that at write time here too, both reads below just cap the query to the newest 5000
@@ -384,6 +412,7 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    lexicon = EndpointLexicon(this);
     memory = EndpointMemory(this);
     mind = EndpointMind(this);
     profile = EndpointProfile(this);
@@ -395,6 +424,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointLexicon lexicon;
 
   late final EndpointMemory memory;
 
@@ -409,6 +440,7 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'lexicon': lexicon,
     'memory': memory,
     'mind': mind,
     'profile': profile,
