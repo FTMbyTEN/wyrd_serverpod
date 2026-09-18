@@ -38,6 +38,8 @@ memory:
   - getConcepts:
 mind:
   - getMind:
+photo:
+  - describe:
 profile:
   - getProfile:
   - touchVisit:

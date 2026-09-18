@@ -512,6 +512,27 @@ class EndpointMind extends _isc.EndpointRef {
       );
 }
 
+/// Ports /api/chat/photo from server.js. Requires login, matching Node's requireAuth.
+/// {@category Endpoint}
+class EndpointPhoto extends _isc.EndpointRef {
+  EndpointPhoto(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'photo';
+
+  _ida.Future<_is592ckh.ChatReply> describe(
+    String imageBase64Jpeg, {
+    String? caption,
+  }) => caller.callServerEndpoint<_is592ckh.ChatReply>(
+    'photo',
+    'describe',
+    {
+      'imageBase64Jpeg': imageBase64Jpeg,
+      'caption': caption,
+    },
+  );
+}
+
 /// Ports /api/profile + the getProfile/touchProfileVisit pair from server.js. Node touched the
 /// visit counter server-side at register/login; here that hook doesn't exist (the built-in email
 /// IDP endpoints aren't ours to modify), so the Flutter client calls [touchVisit] right after a
@@ -673,6 +694,7 @@ class Client extends _isc.ServerpodClientShared {
     lexicon = EndpointLexicon(this);
     memory = EndpointMemory(this);
     mind = EndpointMind(this);
+    photo = EndpointPhoto(this);
     profile = EndpointProfile(this);
     reasoning = EndpointReasoning(this);
     selfConfig = EndpointSelfConfig(this);
@@ -707,6 +729,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointMind mind;
 
+  late final EndpointPhoto photo;
+
   late final EndpointProfile profile;
 
   late final EndpointReasoning reasoning;
@@ -734,6 +758,7 @@ class Client extends _isc.ServerpodClientShared {
     'lexicon': lexicon,
     'memory': memory,
     'mind': mind,
+    'photo': photo,
     'profile': profile,
     'reasoning': reasoning,
     'selfConfig': selfConfig,

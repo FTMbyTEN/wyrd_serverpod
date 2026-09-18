@@ -69,6 +69,59 @@ class LlmService {
     }
   }
 
+  /// Ports server.js's describePhotoWithVision -- a single-turn call with a base64 JPEG image
+  /// attached alongside the text prompt.
+  static Future<String?> callWithImage(
+    Session session,
+    String systemPrompt,
+    String imageBase64Jpeg,
+    String userPrompt,
+    int maxTokens,
+  ) async {
+    final apiKey = session.passwords['anthropicApiKey'];
+    if (apiKey == null || apiKey.isEmpty) return null;
+
+    try {
+      final res = await http.post(
+        Uri.parse('https://api.anthropic.com/v1/messages'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: jsonEncode({
+          'model': _model,
+          'max_tokens': maxTokens,
+          'system': systemPrompt,
+          'messages': [
+            {
+              'role': 'user',
+              'content': [
+                {
+                  'type': 'image',
+                  'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': imageBase64Jpeg},
+                },
+                {'type': 'text', 'text': userPrompt},
+              ],
+            },
+          ],
+        }),
+      );
+      if (res.statusCode != 200) return null;
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final content = data['content'] as List<dynamic>?;
+      final block = content?.firstWhere(
+        (b) => b['type'] == 'text',
+        orElse: () => null,
+      );
+      final text = block?['text'] as String?;
+      return text?.trim();
+    } catch (_) {
+      return null;
+    }
+  }
+
   // Mechanical port of server.js's denialPatterns -- catches the model breaking character to
   // deny WYRD's premise (claiming to be Claude, denying persistent memory/continuity, etc.)
   // so a denial never reaches the user; callers fall back to a template reply instead.

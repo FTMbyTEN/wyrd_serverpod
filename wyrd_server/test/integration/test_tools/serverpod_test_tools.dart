@@ -197,6 +197,8 @@ class TestEndpoints {
 
   late final _MindEndpoint mind;
 
+  late final _PhotoEndpoint photo;
+
   late final _ProfileEndpoint profile;
 
   late final _ReasoningEndpoint reasoning;
@@ -264,6 +266,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     mind = _MindEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    photo = _PhotoEndpoint(
       endpoints,
       serializationManager,
     );
@@ -1280,6 +1286,52 @@ class _MindEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i8dcpm7v.Mind>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _PhotoEndpoint {
+  _PhotoEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_i6oasa27.ChatReply> describe(
+    _ist.TestSessionBuilder sessionBuilder,
+    String imageBase64Jpeg, {
+    String? caption,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'photo',
+            method: 'describe',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'photo',
+          methodName: 'describe',
+          parameters: _ist.testObjectToJson({
+            'imageBase64Jpeg': imageBase64Jpeg,
+            'caption': caption,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i6oasa27.ChatReply>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

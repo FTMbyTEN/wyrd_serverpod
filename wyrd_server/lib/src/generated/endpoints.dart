@@ -29,6 +29,7 @@ import '../mind/growth_endpoint.dart' as _idrisijy;
 import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
+import '../mind/photo_endpoint.dart' as _ij44nk8s;
 import '../mind/profile_endpoint.dart' as _in0jvng1;
 import '../mind/reasoning_endpoint.dart' as _iovbjp1a;
 import '../mind/self_config_endpoint.dart' as _iuprx8k1;
@@ -116,6 +117,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'mind',
+          null,
+        ),
+      'photo': _ij44nk8s.PhotoEndpoint()
+        ..initialize(
+          server,
+          'photo',
           null,
         ),
       'profile': _in0jvng1.ProfileEndpoint()
@@ -664,6 +671,37 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['mind'] as _i2dwy8oi.MindEndpoint).getMind(
                 session,
               ),
+        ),
+      },
+    );
+    connectors['photo'] = _is.EndpointConnector(
+      name: 'photo',
+      endpoint: endpoints['photo']!,
+      methodConnectors: {
+        'describe': _is.MethodConnector(
+          name: 'describe',
+          params: {
+            'imageBase64Jpeg': _is.ParameterDescription(
+              name: 'imageBase64Jpeg',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'caption': _is.ParameterDescription(
+              name: 'caption',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['photo'] as _ij44nk8s.PhotoEndpoint).describe(
+                    session,
+                    params['imageBase64Jpeg'],
+                    caption: params['caption'],
+                  ),
         ),
       },
     );
