@@ -16,12 +16,19 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
+import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
+import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
+    as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
+import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
+import 'mind/dream_entry.dart' as _izf9406n;
+import 'mind/growth_snapshot.dart' as _iyj2s79k;
 import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
@@ -32,7 +39,10 @@ export 'greetings/greeting.dart';
 export 'mind/concept_edge.dart';
 export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
+export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
+export 'mind/dream_entry.dart';
+export 'mind/growth_snapshot.dart';
 export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
@@ -87,8 +97,17 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iapme6ge.ConceptNode) {
       return _iapme6ge.ConceptNode.fromJson(data) as T;
     }
+    if (t == _i0u3uu6s.DiaryEntry) {
+      return _i0u3uu6s.DiaryEntry.fromJson(data) as T;
+    }
     if (t == _i9vbq77t.DigestInfo) {
       return _i9vbq77t.DigestInfo.fromJson(data) as T;
+    }
+    if (t == _izf9406n.DreamEntry) {
+      return _izf9406n.DreamEntry.fromJson(data) as T;
+    }
+    if (t == _iyj2s79k.GrowthSnapshot) {
+      return _iyj2s79k.GrowthSnapshot.fromJson(data) as T;
     }
     if (t == _i37ps124.LexiconEntry) {
       return _i37ps124.LexiconEntry.fromJson(data) as T;
@@ -120,8 +139,18 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iapme6ge.ConceptNode?>()) {
       return (data != null ? _iapme6ge.ConceptNode.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_i0u3uu6s.DiaryEntry?>()) {
+      return (data != null ? _i0u3uu6s.DiaryEntry.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_i9vbq77t.DigestInfo?>()) {
       return (data != null ? _i9vbq77t.DigestInfo.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_izf9406n.DreamEntry?>()) {
+      return (data != null ? _izf9406n.DreamEntry.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iyj2s79k.GrowthSnapshot?>()) {
+      return (data != null ? _iyj2s79k.GrowthSnapshot.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_i37ps124.LexiconEntry?>()) {
       return (data != null ? _i37ps124.LexiconEntry.fromJson(data) : null) as T;
@@ -154,6 +183,9 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
     if (t == List<_i7zu42sq.LexiconWordSummary>) {
       return (data as List)
               .map((e) => deserialize<_i7zu42sq.LexiconWordSummary>(e))
@@ -163,8 +195,23 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<int>) {
-      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    if (t == List<_iz65e3oe.DiaryEntry>) {
+      return (data as List)
+              .map((e) => deserialize<_iz65e3oe.DiaryEntry>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_igmpa92d.DreamEntry>) {
+      return (data as List)
+              .map((e) => deserialize<_igmpa92d.DreamEntry>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ikfbn3bp.GrowthSnapshot>) {
+      return (data as List)
+              .map((e) => deserialize<_ikfbn3bp.GrowthSnapshot>(e))
+              .toList()
+          as T;
     }
     if (t == List<_ij6z6xwm.MemoryBlock>) {
       return (data as List)
@@ -187,7 +234,10 @@ class Protocol extends _isc.SerializationManager {
       _iafou6mz.ConceptEdge => 'ConceptEdge',
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
       _iapme6ge.ConceptNode => 'ConceptNode',
+      _i0u3uu6s.DiaryEntry => 'DiaryEntry',
       _i9vbq77t.DigestInfo => 'DigestInfo',
+      _izf9406n.DreamEntry => 'DreamEntry',
+      _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
       _i37ps124.LexiconEntry => 'LexiconEntry',
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
@@ -216,8 +266,14 @@ class Protocol extends _isc.SerializationManager {
         return 'ConceptGraph';
       case _iapme6ge.ConceptNode():
         return 'ConceptNode';
+      case _i0u3uu6s.DiaryEntry():
+        return 'DiaryEntry';
       case _i9vbq77t.DigestInfo():
         return 'DigestInfo';
+      case _izf9406n.DreamEntry():
+        return 'DreamEntry';
+      case _iyj2s79k.GrowthSnapshot():
+        return 'GrowthSnapshot';
       case _i37ps124.LexiconEntry():
         return 'LexiconEntry';
       case _ic2pi8fi.LexiconStats():
@@ -264,8 +320,17 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'ConceptNode') {
       return deserialize<_iapme6ge.ConceptNode>(data['data']);
     }
+    if (dataClassName == 'DiaryEntry') {
+      return deserialize<_i0u3uu6s.DiaryEntry>(data['data']);
+    }
     if (dataClassName == 'DigestInfo') {
       return deserialize<_i9vbq77t.DigestInfo>(data['data']);
+    }
+    if (dataClassName == 'DreamEntry') {
+      return deserialize<_izf9406n.DreamEntry>(data['data']);
+    }
+    if (dataClassName == 'GrowthSnapshot') {
+      return deserialize<_iyj2s79k.GrowthSnapshot>(data['data']);
     }
     if (dataClassName == 'LexiconEntry') {
       return deserialize<_i37ps124.LexiconEntry>(data['data']);

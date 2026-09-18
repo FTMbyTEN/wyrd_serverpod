@@ -1,0 +1,13 @@
+# Mirrors server.js's dreams.json (generateDream) -- two old memory fragments blended
+# associatively during idle stretches, distinct from diary's grounded daily reflection.
+class: DreamEntry
+table: dream_entry
+
+fields:
+  timestamp: DateTime
+  content: String
+  sourceBlockIds: List<int>
+
+indexes:
+  dream_entry_timestamp_idx:
+    fields: timestamp

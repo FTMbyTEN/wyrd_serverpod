@@ -11,6 +11,14 @@ jwtRefresh:
   - refreshAccessToken:
 greeting:
   - hello:
+diary:
+  - getEntries:
+  - trigger:
+dream:
+  - getEntries:
+  - trigger:
+growth:
+  - getSnapshots:
 lexicon:
   - getStats:
   - getWord:

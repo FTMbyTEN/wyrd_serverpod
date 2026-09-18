@@ -15,13 +15,18 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
+import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../mind/diary_endpoint.dart' as _i71dg2tj;
+import '../mind/dream_endpoint.dart' as _inxbi04j;
+import '../mind/growth_endpoint.dart' as _idrisijy;
 import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
 import '../mind/profile_endpoint.dart' as _in0jvng1;
+export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
 class Endpoints extends _is.EndpointDispatch {
   @override
@@ -43,6 +48,24 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'diary': _i71dg2tj.DiaryEndpoint()
+        ..initialize(
+          server,
+          'diary',
+          null,
+        ),
+      'dream': _inxbi04j.DreamEndpoint()
+        ..initialize(
+          server,
+          'dream',
+          null,
+        ),
+      'growth': _idrisijy.GrowthEndpoint()
+        ..initialize(
+          server,
+          'growth',
           null,
         ),
       'lexicon': _i3c3oo5r.LexiconEndpoint()
@@ -301,6 +324,101 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['diary'] = _is.EndpointConnector(
+      name: 'diary',
+      endpoint: endpoints['diary']!,
+      methodConnectors: {
+        'getEntries': _is.MethodConnector(
+          name: 'getEntries',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['diary'] as _i71dg2tj.DiaryEndpoint).getEntries(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['diary'] as _i71dg2tj.DiaryEndpoint)
+                  .trigger(session),
+        ),
+      },
+    );
+    connectors['dream'] = _is.EndpointConnector(
+      name: 'dream',
+      endpoint: endpoints['dream']!,
+      methodConnectors: {
+        'getEntries': _is.MethodConnector(
+          name: 'getEntries',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['dream'] as _inxbi04j.DreamEndpoint).getEntries(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['dream'] as _inxbi04j.DreamEndpoint)
+                  .trigger(session),
+        ),
+      },
+    );
+    connectors['growth'] = _is.EndpointConnector(
+      name: 'growth',
+      endpoint: endpoints['growth']!,
+      methodConnectors: {
+        'getSnapshots': _is.MethodConnector(
+          name: 'getSnapshots',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['growth'] as _idrisijy.GrowthEndpoint)
+                  .getSnapshots(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
+      },
+    );
     connectors['lexicon'] = _is.EndpointConnector(
       name: 'lexicon',
       endpoint: endpoints['lexicon']!,
@@ -428,5 +546,10 @@ class Endpoints extends _is.EndpointDispatch {
       ..initializeEndpoints(server);
     modules['serverpod_auth_core'] = _iacs.Endpoints()
       ..initializeEndpoints(server);
+  }
+
+  @override
+  _is.FutureCallDispatch? get futureCalls {
+    return _ix7un2io.FutureCalls();
   }
 }

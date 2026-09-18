@@ -1,0 +1,17 @@
+# Mirrors server.js's growth_history.json (takeGrowthSnapshot) -- periodic wall-clock
+# snapshots so growth is visible as a trend, not just felt moment-to-moment. Starts empty;
+# honestly can't back-fill history that predates this table.
+class: GrowthSnapshot
+table: growth_snapshot
+
+fields:
+  timestamp: DateTime
+  vocabCount: int
+  blockCount: int
+  digestPercent: double
+  curiosity: double
+  confidence: double
+
+indexes:
+  growth_snapshot_timestamp_idx:
+    fields: timestamp

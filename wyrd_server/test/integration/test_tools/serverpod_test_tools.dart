@@ -17,8 +17,13 @@ import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
 import 'package:serverpod_test/serverpod_test.dart' as _ist;
+import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import 'package:wyrd_server/src/generated/greetings/greeting.dart' as _i6wty2t7;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
+import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
+import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
+import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
+    as _iaqmuv2j;
 import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
 import 'package:wyrd_server/src/generated/mind/lexicon_stats.dart' as _iv2jt4ku;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
@@ -152,11 +157,19 @@ void withServerpod(
 }
 
 class TestEndpoints {
+  late final futureCalls = _FutureCalls();
+
   late final _EmailIdpEndpoint emailIdp;
 
   late final _JwtRefreshEndpoint jwtRefresh;
 
   late final _GreetingEndpoint greeting;
+
+  late final _DiaryEndpoint diary;
+
+  late final _DreamEndpoint dream;
+
+  late final _GrowthEndpoint growth;
 
   late final _LexiconEndpoint lexicon;
 
@@ -186,6 +199,18 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    diary = _DiaryEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    dream = _DreamEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    growth = _GrowthEndpoint(
+      endpoints,
+      serializationManager,
+    );
     lexicon = _LexiconEndpoint(
       endpoints,
       serializationManager,
@@ -203,6 +228,12 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
   }
+}
+
+class _FutureCalls {
+  late final diary = _DiaryFutureCall();
+
+  late final growth = _GrowthFutureCall();
 }
 
 class _EmailIdpEndpoint {
@@ -565,6 +596,192 @@ class _GreetingEndpoint {
   }
 }
 
+class _DiaryEndpoint {
+  _DiaryEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_idet4410.DiaryEntry>> getEntries(
+    _ist.TestSessionBuilder sessionBuilder, {
+    int? limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'diary',
+            method: 'getEntries',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'diary',
+          methodName: 'getEntries',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_idet4410.DiaryEntry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_idet4410.DiaryEntry> trigger(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'diary',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'diary',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_idet4410.DiaryEntry>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _DreamEndpoint {
+  _DreamEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_ijdvl27e.DreamEntry>> getEntries(
+    _ist.TestSessionBuilder sessionBuilder, {
+    int? limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'dream',
+            method: 'getEntries',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'dream',
+          methodName: 'getEntries',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ijdvl27e.DreamEntry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ijdvl27e.DreamEntry?> trigger(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'dream',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'dream',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ijdvl27e.DreamEntry?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _GrowthEndpoint {
+  _GrowthEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_iaqmuv2j.GrowthSnapshot>> getSnapshots(
+    _ist.TestSessionBuilder sessionBuilder, {
+    int? limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'growth',
+            method: 'getSnapshots',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'growth',
+          methodName: 'getSnapshots',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_iaqmuv2j.GrowthSnapshot>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _LexiconEndpoint {
   _LexiconEndpoint(
     this._endpointDispatch,
@@ -848,5 +1065,35 @@ class _ProfileEndpoint {
         await _localUniqueSession.close();
       }
     });
+  }
+}
+
+class _DiaryFutureCall {
+  Future<void> checkAndWrite(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.DiaryCheckAndWriteFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _GrowthFutureCall {
+  Future<void> takeSnapshot(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.GrowthTakeSnapshotFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
   }
 }

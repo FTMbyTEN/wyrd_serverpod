@@ -100,6 +100,20 @@ void run(List<String> args) async {
     ),
   );
 
+  // Recurring background ticks (mirrors server.js's setInterval calls for growth snapshots
+  // and the diary day-check). Scheduling by a fixed identifier is idempotent across restarts
+  // -- it reschedules the same recurring entry rather than stacking duplicates.
+  await pod.futureCalls
+      .callRecurring(identifier: 'growth-snapshot')
+      .every(const Duration(minutes: 30))
+      .growth
+      .takeSnapshot();
+  await pod.futureCalls
+      .callRecurring(identifier: 'diary-day-check')
+      .every(const Duration(minutes: 10))
+      .diary
+      .checkAndWrite();
+
   // Start the server.
   await pod.start();
 }

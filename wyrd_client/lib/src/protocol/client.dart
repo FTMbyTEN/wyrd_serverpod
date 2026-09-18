@@ -19,6 +19,10 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
+import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
+import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
+import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
+    as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
 import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
@@ -269,6 +273,73 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// Ports /api/diary and /api/diary/trigger from server.js. Public/unauthenticated, matching
+/// Node -- WYRD's diary is a single shared journal, not per-user.
+/// {@category Endpoint}
+class EndpointDiary extends _isc.EndpointRef {
+  EndpointDiary(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'diary';
+
+  _ida.Future<List<_iz65e3oe.DiaryEntry>> getEntries({int? limit}) =>
+      caller.callServerEndpoint<List<_iz65e3oe.DiaryEntry>>(
+        'diary',
+        'getEntries',
+        {'limit': limit},
+      );
+
+  _ida.Future<_iz65e3oe.DiaryEntry> trigger() =>
+      caller.callServerEndpoint<_iz65e3oe.DiaryEntry>(
+        'diary',
+        'trigger',
+        {},
+      );
+}
+
+/// Ports /api/dreams and /api/dreams/trigger from server.js. Public/unauthenticated, matching
+/// Node. See dream_service.dart for what's intentionally not ported yet (automatic idle-tick
+/// scheduling, which needs real chat-activity tracking).
+/// {@category Endpoint}
+class EndpointDream extends _isc.EndpointRef {
+  EndpointDream(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'dream';
+
+  _ida.Future<List<_igmpa92d.DreamEntry>> getEntries({int? limit}) =>
+      caller.callServerEndpoint<List<_igmpa92d.DreamEntry>>(
+        'dream',
+        'getEntries',
+        {'limit': limit},
+      );
+
+  _ida.Future<_igmpa92d.DreamEntry?> trigger() =>
+      caller.callServerEndpoint<_igmpa92d.DreamEntry?>(
+        'dream',
+        'trigger',
+        {},
+      );
+}
+
+/// Ports /api/growth (read) from server.js. Public/unauthenticated, matching Node. There is
+/// no manual /trigger for growth in Node -- snapshots are purely wall-clock (see
+/// growth_future_call.dart) -- so this endpoint is read-only.
+/// {@category Endpoint}
+class EndpointGrowth extends _isc.EndpointRef {
+  EndpointGrowth(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'growth';
+
+  _ida.Future<List<_ikfbn3bp.GrowthSnapshot>> getSnapshots({int? limit}) =>
+      caller.callServerEndpoint<List<_ikfbn3bp.GrowthSnapshot>>(
+        'growth',
+        'getSnapshots',
+        {'limit': limit},
+      );
+}
+
 /// Ports the read side of server.js's /api/lexicon/stats and /api/lexicon/word/:word.
 /// /api/lexicon/trigger (the LLM-backed word-learning tick) is not ported yet — it belongs
 /// with the rest of the autonomous engine, not this read-only batch. Public/unauthenticated,
@@ -412,6 +483,9 @@ class Client extends _isc.ServerpodClientShared {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
+    diary = EndpointDiary(this);
+    dream = EndpointDream(this);
+    growth = EndpointGrowth(this);
     lexicon = EndpointLexicon(this);
     memory = EndpointMemory(this);
     mind = EndpointMind(this);
@@ -424,6 +498,12 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointDiary diary;
+
+  late final EndpointDream dream;
+
+  late final EndpointGrowth growth;
 
   late final EndpointLexicon lexicon;
 
@@ -440,6 +520,9 @@ class Client extends _isc.ServerpodClientShared {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
+    'diary': diary,
+    'dream': dream,
+    'growth': growth,
     'lexicon': lexicon,
     'memory': memory,
     'mind': mind,

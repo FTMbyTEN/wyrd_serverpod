@@ -1,0 +1,13 @@
+# Mirrors server.js's diary.json (generateDiaryEntry). One entry per real calendar day WYRD
+# writes to itself, generated from real Mind/Memory/Lexicon state -- never invented events.
+class: DiaryEntry
+table: diary_entry
+
+fields:
+  date: String
+  timestamp: DateTime
+  content: String
+
+indexes:
+  diary_entry_timestamp_idx:
+    fields: timestamp
