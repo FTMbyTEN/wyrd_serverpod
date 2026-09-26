@@ -16,6 +16,7 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
@@ -28,6 +29,9 @@ import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
+import 'drone/drone_mission.dart' as _idcsjt5k;
+import 'drone/drone_plan_result.dart' as _i1bw7vkv;
+import 'drone/drone_state.dart' as _it73791y;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
@@ -63,6 +67,9 @@ import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/world_country.dart' as _iu995zpj;
+export 'drone/drone_mission.dart';
+export 'drone/drone_plan_result.dart';
+export 'drone/drone_state.dart';
 export 'greetings/greeting.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
@@ -134,6 +141,15 @@ class Protocol extends _isc.SerializationManager {
       }
     }
 
+    if (t == _idcsjt5k.DroneMission) {
+      return _idcsjt5k.DroneMission.fromJson(data) as T;
+    }
+    if (t == _i1bw7vkv.DronePlanResult) {
+      return _i1bw7vkv.DronePlanResult.fromJson(data) as T;
+    }
+    if (t == _it73791y.DroneState) {
+      return _it73791y.DroneState.fromJson(data) as T;
+    }
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
@@ -238,6 +254,16 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
+    }
+    if (t == _isc.getType<_idcsjt5k.DroneMission?>()) {
+      return (data != null ? _idcsjt5k.DroneMission.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i1bw7vkv.DronePlanResult?>()) {
+      return (data != null ? _i1bw7vkv.DronePlanResult.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_it73791y.DroneState?>()) {
+      return (data != null ? _it73791y.DroneState.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
@@ -408,6 +434,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ik7hqtb1.DroneMission>) {
+      return (data as List)
+              .map((e) => deserialize<_ik7hqtb1.DroneMission>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_i4c7ehki.AlertNote>) {
       return (data as List)
               .map((e) => deserialize<_i4c7ehki.AlertNote>(e))
@@ -479,6 +511,9 @@ class Protocol extends _isc.SerializationManager {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
+      _idcsjt5k.DroneMission => 'DroneMission',
+      _i1bw7vkv.DronePlanResult => 'DronePlanResult',
+      _it73791y.DroneState => 'DroneState',
       _izw8z7ou.Greeting => 'Greeting',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
@@ -528,6 +563,12 @@ class Protocol extends _isc.SerializationManager {
     }
 
     switch (data) {
+      case _idcsjt5k.DroneMission():
+        return 'DroneMission';
+      case _i1bw7vkv.DronePlanResult():
+        return 'DronePlanResult';
+      case _it73791y.DroneState():
+        return 'DroneState';
       case _izw8z7ou.Greeting():
         return 'Greeting';
       case _ij1ha6k5.AccountExport():
@@ -619,6 +660,15 @@ class Protocol extends _isc.SerializationManager {
     var dataClassName = data['className'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'DroneMission') {
+      return deserialize<_idcsjt5k.DroneMission>(data['data']);
+    }
+    if (dataClassName == 'DronePlanResult') {
+      return deserialize<_i1bw7vkv.DronePlanResult>(data['data']);
+    }
+    if (dataClassName == 'DroneState') {
+      return deserialize<_it73791y.DroneState>(data['data']);
     }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);

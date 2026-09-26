@@ -17,6 +17,10 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
+import 'package:wyrd_client/src/protocol/drone/drone_plan_result.dart'
+    as _ibjo0dmj;
+import 'package:wyrd_client/src/protocol/drone/drone_state.dart' as _i9y70wfa;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
 import 'package:wyrd_client/src/protocol/mind/account_export.dart' as _izg4k2n4;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
@@ -270,6 +274,98 @@ class EndpointJwtRefresh extends _iacc.EndpointRefreshJwtTokens {
         'refreshAccessToken',
         {'refreshToken': refreshToken},
         authenticated: false,
+      );
+}
+
+/// What the drone bridge (drone/bridge in the consciousness-bot repo) calls. The bridge isn't a
+/// user, so instead of a login it presents the shared secret set with
+/// `scloud password set droneBridgeToken <long random value>` (same value in the bridge's
+/// WYRD_BRIDGE_TOKEN). Without that secret configured, every call is refused.
+/// {@category Endpoint}
+class EndpointDroneBridge extends _isc.EndpointRef {
+  EndpointDroneBridge(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'droneBridge';
+
+  /// Upserts the drone's latest telemetry and hands back the oldest waiting mission (marking it
+  /// sent), or null. Called every ~2s.
+  _ida.Future<_ik7hqtb1.DroneMission?> report(
+    String token,
+    _i9y70wfa.DroneState state,
+  ) => caller.callServerEndpoint<_ik7hqtb1.DroneMission?>(
+    'droneBridge',
+    'report',
+    {
+      'token': token,
+      'state': state,
+    },
+  );
+
+  /// The bridge reporting what happened to a mission: running, done, aborted, or rejected (its
+  /// own safety check refused it).
+  _ida.Future<void> missionUpdate(
+    String token,
+    int missionId,
+    String status,
+    String? reason,
+  ) => caller.callServerEndpoint<void>(
+    'droneBridge',
+    'missionUpdate',
+    {
+      'token': token,
+      'missionId': missionId,
+      'status': status,
+      'reason': reason,
+    },
+  );
+}
+
+/// The app's side of the drone. Any signed-in user can watch it; only the operator -- the
+/// account whose email is set with `scloud password set droneOperatorEmail you@example.com` --
+/// can plan flights or abort.
+/// {@category Endpoint}
+class EndpointDrone extends _isc.EndpointRef {
+  EndpointDrone(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'drone';
+
+  _ida.Future<_i9y70wfa.DroneState?> getState() =>
+      caller.callServerEndpoint<_i9y70wfa.DroneState?>(
+        'drone',
+        'getState',
+        {},
+      );
+
+  _ida.Future<List<_ik7hqtb1.DroneMission>> getMissions({required int limit}) =>
+      caller.callServerEndpoint<List<_ik7hqtb1.DroneMission>>(
+        'drone',
+        'getMissions',
+        {'limit': limit},
+      );
+
+  _ida.Future<bool> isOperator() => caller.callServerEndpoint<bool>(
+    'drone',
+    'isOperator',
+    {},
+  );
+
+  /// WYRD plans a flight from [instruction]. The plan is stored (and flown) only if it passes
+  /// DroneSafety; otherwise the reason comes back and nothing happens.
+  _ida.Future<_ibjo0dmj.DronePlanResult> plan(String instruction) =>
+      caller.callServerEndpoint<_ibjo0dmj.DronePlanResult>(
+        'drone',
+        'plan',
+        {'instruction': instruction},
+      );
+
+  /// Cancels whatever is flying and brings the drone home. Always allowed for the operator.
+  _ida.Future<_ik7hqtb1.DroneMission> abort() =>
+      caller.callServerEndpoint<_ik7hqtb1.DroneMission>(
+        'drone',
+        'abort',
+        {},
       );
 }
 
@@ -804,6 +900,8 @@ class Client extends _isc.ServerpodClientShared {
        ) {
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
+    droneBridge = EndpointDroneBridge(this);
+    drone = EndpointDrone(this);
     greeting = EndpointGreeting(this);
     account = EndpointAccount(this);
     alerts = EndpointAlerts(this);
@@ -832,6 +930,10 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointEmailIdp emailIdp;
 
   late final EndpointJwtRefresh jwtRefresh;
+
+  late final EndpointDroneBridge droneBridge;
+
+  late final EndpointDrone drone;
 
   late final EndpointGreeting greeting;
 
@@ -883,6 +985,8 @@ class Client extends _isc.ServerpodClientShared {
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
+    'droneBridge': droneBridge,
+    'drone': drone,
     'greeting': greeting,
     'account': account,
     'alerts': alerts,

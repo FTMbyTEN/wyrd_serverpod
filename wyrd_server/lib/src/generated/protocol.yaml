@@ -9,6 +9,15 @@ emailIdp:
   - hasAccount:
 jwtRefresh:
   - refreshAccessToken:
+droneBridge:
+  - report:
+  - missionUpdate:
+drone:
+  - getState:
+  - getMissions:
+  - isOperator:
+  - plan:
+  - abort:
 greeting:
   - hello:
 account:

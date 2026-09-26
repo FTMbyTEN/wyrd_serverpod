@@ -1,0 +1,30 @@
+# The latest telemetry a drone bridge reported (one row per drone). Written by
+# droneBridge.report every ~2s; read by the app and by mission planning (home position, battery).
+class: DroneState
+table: drone_state
+
+fields:
+  droneId: String
+  connected: bool
+  armed: bool
+  mode: String?
+  lat: double?
+  lon: double?
+  relativeAltM: double?
+  headingDeg: double?
+  groundSpeedMs: double?
+  batteryPct: int?
+  gpsFix: int?
+  satellites: int?
+  homeLat: double?
+  homeLon: double?
+  # the bridge's own mission runner: idle | running | done | aborted
+  missionStatus: String?
+  missionStep: int?
+  missionError: String?
+  updatedAt: DateTime
+
+indexes:
+  drone_state_drone_id_idx:
+    fields: droneId
+    unique: true

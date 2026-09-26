@@ -15,9 +15,12 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
+import 'package:wyrd_server/src/generated/drone/drone_state.dart' as _ivnf8vdp;
 import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
+import '../drone/drone_bridge_endpoint.dart' as _igomlm42;
+import '../drone/drone_endpoint.dart' as _iec5mi4p;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 import '../mind/account_endpoint.dart' as _i45717np;
 import '../mind/alerts_endpoint.dart' as _impqu952;
@@ -56,6 +59,18 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'jwtRefresh',
+          null,
+        ),
+      'droneBridge': _igomlm42.DroneBridgeEndpoint()
+        ..initialize(
+          server,
+          'droneBridge',
+          null,
+        ),
+      'drone': _iec5mi4p.DroneEndpoint()
+        ..initialize(
+          server,
+          'drone',
           null,
         ),
       'greeting': _il624ik7.GreetingEndpoint()
@@ -394,6 +409,150 @@ class Endpoints extends _is.EndpointDispatch {
                         session,
                         refreshToken: params['refreshToken'],
                       ),
+        ),
+      },
+    );
+    connectors['droneBridge'] = _is.EndpointConnector(
+      name: 'droneBridge',
+      endpoint: endpoints['droneBridge']!,
+      methodConnectors: {
+        'report': _is.MethodConnector(
+          name: 'report',
+          params: {
+            'token': _is.ParameterDescription(
+              name: 'token',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'state': _is.ParameterDescription(
+              name: 'state',
+              type: _is.getType<_ivnf8vdp.DroneState>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['droneBridge'] as _igomlm42.DroneBridgeEndpoint)
+                      .report(
+                        session,
+                        params['token'],
+                        params['state'],
+                      ),
+        ),
+        'missionUpdate': _is.MethodConnector(
+          name: 'missionUpdate',
+          params: {
+            'token': _is.ParameterDescription(
+              name: 'token',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'missionId': _is.ParameterDescription(
+              name: 'missionId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'status': _is.ParameterDescription(
+              name: 'status',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'reason': _is.ParameterDescription(
+              name: 'reason',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['droneBridge'] as _igomlm42.DroneBridgeEndpoint)
+                      .missionUpdate(
+                        session,
+                        params['token'],
+                        params['missionId'],
+                        params['status'],
+                        params['reason'],
+                      ),
+        ),
+      },
+    );
+    connectors['drone'] = _is.EndpointConnector(
+      name: 'drone',
+      endpoint: endpoints['drone']!,
+      methodConnectors: {
+        'getState': _is.MethodConnector(
+          name: 'getState',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['drone'] as _iec5mi4p.DroneEndpoint)
+                  .getState(session),
+        ),
+        'getMissions': _is.MethodConnector(
+          name: 'getMissions',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['drone'] as _iec5mi4p.DroneEndpoint).getMissions(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
+        'isOperator': _is.MethodConnector(
+          name: 'isOperator',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['drone'] as _iec5mi4p.DroneEndpoint)
+                  .isOperator(session),
+        ),
+        'plan': _is.MethodConnector(
+          name: 'plan',
+          params: {
+            'instruction': _is.ParameterDescription(
+              name: 'instruction',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['drone'] as _iec5mi4p.DroneEndpoint).plan(
+                session,
+                params['instruction'],
+              ),
+        ),
+        'abort': _is.MethodConnector(
+          name: 'abort',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['drone'] as _iec5mi4p.DroneEndpoint).abort(
+                session,
+              ),
         ),
       },
     );

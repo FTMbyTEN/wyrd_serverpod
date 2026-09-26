@@ -1,0 +1,23 @@
+# A flight plan WYRD produced for a drone, or an abort order. Lifecycle:
+#   pending   -> created, waiting for the bridge to pick it up
+#   sent      -> handed to the bridge (on its next report)
+#   running / done / aborted / rejected -> reported back by the bridge
+# stepsJson is the bridge's own step format: [{"type":"takeoff","altitudeM":10}, {"type":"goto",...}, ...]
+class: DroneMission
+table: drone_mission
+
+fields:
+  droneId: String
+  kind: String # mission | abort
+  instruction: String # what the operator asked for, verbatim
+  summary: String # WYRD's one-line explanation of the plan
+  stepsJson: String
+  status: String
+  reason: String?
+  createdBy: UuidValue?
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  drone_mission_drone_status_idx:
+    fields: droneId, status

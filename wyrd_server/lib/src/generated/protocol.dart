@@ -17,6 +17,8 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
+import 'package:wyrd_server/src/generated/drone/drone_mission.dart'
+    as _iu8lemuv;
 import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
@@ -30,6 +32,9 @@ import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
     as _ix0xy1y5;
 import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
+import 'drone/drone_mission.dart' as _idcsjt5k;
+import 'drone/drone_plan_result.dart' as _i1bw7vkv;
+import 'drone/drone_state.dart' as _it73791y;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
@@ -65,6 +70,9 @@ import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/world_country.dart' as _iu995zpj;
+export 'drone/drone_mission.dart';
+export 'drone/drone_plan_result.dart';
+export 'drone/drone_state.dart';
 export 'greetings/greeting.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
@@ -364,6 +372,242 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'drone_mission',
+      dartName: 'DroneMission',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'droneId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'instruction',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'summary',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'stepsJson',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reason',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'drone_mission_drone_status_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'droneId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'drone_state',
+      dartName: 'DroneState',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'droneId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'connected',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'armed',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'mode',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lat',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lon',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'relativeAltM',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'headingDeg',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'groundSpeedMs',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'batteryPct',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'gpsFix',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'satellites',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'homeLat',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'homeLon',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'missionStatus',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'missionStep',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'missionError',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'drone_state_drone_id_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'droneId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -1009,6 +1253,15 @@ class Protocol extends _is.DatabaseSerializationManager {
       }
     }
 
+    if (t == _idcsjt5k.DroneMission) {
+      return _idcsjt5k.DroneMission.fromJson(data) as T;
+    }
+    if (t == _i1bw7vkv.DronePlanResult) {
+      return _i1bw7vkv.DronePlanResult.fromJson(data) as T;
+    }
+    if (t == _it73791y.DroneState) {
+      return _it73791y.DroneState.fromJson(data) as T;
+    }
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
@@ -1113,6 +1366,16 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
+    }
+    if (t == _is.getType<_idcsjt5k.DroneMission?>()) {
+      return (data != null ? _idcsjt5k.DroneMission.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i1bw7vkv.DronePlanResult?>()) {
+      return (data != null ? _i1bw7vkv.DronePlanResult.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_it73791y.DroneState?>()) {
+      return (data != null ? _it73791y.DroneState.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
@@ -1283,6 +1546,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_iu8lemuv.DroneMission>) {
+      return (data as List)
+              .map((e) => deserialize<_iu8lemuv.DroneMission>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ipgej4na.AlertNote>) {
       return (data as List)
               .map((e) => deserialize<_ipgej4na.AlertNote>(e))
@@ -1357,6 +1626,9 @@ class Protocol extends _is.DatabaseSerializationManager {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
+      _idcsjt5k.DroneMission => 'DroneMission',
+      _i1bw7vkv.DronePlanResult => 'DronePlanResult',
+      _it73791y.DroneState => 'DroneState',
       _izw8z7ou.Greeting => 'Greeting',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
@@ -1406,6 +1678,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
 
     switch (data) {
+      case _idcsjt5k.DroneMission():
+        return 'DroneMission';
+      case _i1bw7vkv.DronePlanResult():
+        return 'DronePlanResult';
+      case _it73791y.DroneState():
+        return 'DroneState';
       case _izw8z7ou.Greeting():
         return 'Greeting';
       case _ij1ha6k5.AccountExport():
@@ -1501,6 +1779,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     var dataClassName = data['className'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'DroneMission') {
+      return deserialize<_idcsjt5k.DroneMission>(data['data']);
+    }
+    if (dataClassName == 'DronePlanResult') {
+      return deserialize<_i1bw7vkv.DronePlanResult>(data['data']);
+    }
+    if (dataClassName == 'DroneState') {
+      return deserialize<_it73791y.DroneState>(data['data']);
     }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
@@ -1648,6 +1935,10 @@ class Protocol extends _is.DatabaseSerializationManager {
       }
     }
     switch (t) {
+      case _idcsjt5k.DroneMission:
+        return _idcsjt5k.DroneMission.t;
+      case _it73791y.DroneState:
+        return _it73791y.DroneState.t;
       case _i8fl0sel.ConversationTurn:
         return _i8fl0sel.ConversationTurn.t;
       case _i9dbtrq4.CopLogEntry:

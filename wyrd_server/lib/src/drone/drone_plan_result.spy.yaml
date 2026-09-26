@@ -1,0 +1,8 @@
+# Result of asking WYRD to plan a flight: the stored mission when the plan passed the safety
+# checks, or the reason it was refused (nothing is stored or flown in that case).
+class: DronePlanResult
+
+fields:
+  accepted: bool
+  reason: String?
+  mission: DroneMission?
