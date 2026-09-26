@@ -34,7 +34,7 @@ serverpod:
         && (call flutter build %ARGS% || (flutter clean && call flutter build %ARGS%))
         && xcopy /E /I /Y build\web ..\wyrd_server\web\app
       posix: |
-        rm -rf ~/wyrd_serverpod/wyrd/wyrd_server/web/app
+        rm -rf ../wyrd_server/web/app
         cd ../wyrd_flutter
         set -- web --base-href / --output ../wyrd_server/web/app
         flutter build "$@" || { flutter clean && flutter build "$@"; }
@@ -49,7 +49,7 @@ serverpod:
         & cd /D C:\Users\TEN\consciousness-bot\mobile
         & set EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space
         && npx expo export --platform web
-        && xcopy /E /I /Y dist C:\Users\TEN\Desktop\wyrd_serverpod\wyrd_server\web\app
+        && xcopy /E /I /Y dist C:\Users\TEN\wyrd_serverpod\wyrd\wyrd_server\web\app
       posix: |
         rm -rf ~/wyrd_serverpod/wyrd/wyrd_server/web/app
         cd ~/consciousness-bot/mobile
