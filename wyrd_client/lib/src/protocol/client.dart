@@ -683,8 +683,9 @@ class EndpointPhoto extends _isc.EndpointRef {
 
 /// Ports /api/profile + the getProfile/touchProfileVisit pair from server.js. Node touched the
 /// visit counter server-side at register/login; here that hook doesn't exist (the built-in email
-/// IDP endpoints aren't ours to modify), so the Flutter client calls [touchVisit] right after a
-/// successful sign-in instead.
+/// IDP endpoints aren't ours to modify), so the app calls [touchVisit] right after every sign-in,
+/// sign-up and session restore -- which is also what creates the person's WYRD profile row and
+/// records their email on it.
 /// {@category Endpoint}
 class EndpointProfile extends _isc.EndpointRef {
   EndpointProfile(_isc.EndpointCaller caller) : super(caller);

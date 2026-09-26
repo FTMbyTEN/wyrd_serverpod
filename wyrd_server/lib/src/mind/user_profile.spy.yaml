@@ -8,6 +8,9 @@ table: user_profile
 fields:
   authUserId: UuidValue
   username: String?
+  # the sign-in email, copied from the email IDP account on every sign-in so each person is
+  # identifiable in WYRD's own tables (not only in the auth tables)
+  email: String?
   facts: List<UserFact>
   visitCount: int
   firstSeen: DateTime

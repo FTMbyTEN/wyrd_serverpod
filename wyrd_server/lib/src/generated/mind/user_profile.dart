@@ -20,6 +20,7 @@ abstract class UserProfile
     this.id,
     required this.authUserId,
     this.username,
+    this.email,
     required this.facts,
     required this.visitCount,
     required this.firstSeen,
@@ -30,6 +31,7 @@ abstract class UserProfile
     int? id,
     required _is.UuidValue authUserId,
     String? username,
+    String? email,
     required List<_il0k3um2.UserFact> facts,
     required int visitCount,
     required DateTime firstSeen,
@@ -43,6 +45,7 @@ abstract class UserProfile
         jsonSerialization['authUserId'],
       ),
       username: jsonSerialization['username'] as String?,
+      email: jsonSerialization['email'] as String?,
       facts: _i9sln91s.Protocol().deserialize<List<_il0k3um2.UserFact>>(
         jsonSerialization['facts'],
       ),
@@ -67,6 +70,8 @@ abstract class UserProfile
 
   String? username;
 
+  String? email;
+
   List<_il0k3um2.UserFact> facts;
 
   int visitCount;
@@ -85,6 +90,7 @@ abstract class UserProfile
     int? id,
     _is.UuidValue? authUserId,
     String? username,
+    String? email,
     List<_il0k3um2.UserFact>? facts,
     int? visitCount,
     DateTime? firstSeen,
@@ -97,6 +103,7 @@ abstract class UserProfile
       if (id != null) 'id': id,
       'authUserId': authUserId.toJson(),
       if (username != null) 'username': username,
+      if (email != null) 'email': email,
       'facts': facts.toJson(valueToJson: (v) => v.toJson()),
       'visitCount': visitCount,
       'firstSeen': firstSeen.toJson(),
@@ -111,6 +118,7 @@ abstract class UserProfile
       if (id != null) 'id': id,
       'authUserId': authUserId.toJson(),
       if (username != null) 'username': username,
+      if (email != null) 'email': email,
       'facts': facts.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       'visitCount': visitCount,
       'firstSeen': firstSeen.toJson(),
@@ -153,6 +161,7 @@ class _UserProfileImpl extends UserProfile {
     int? id,
     required _is.UuidValue authUserId,
     String? username,
+    String? email,
     required List<_il0k3um2.UserFact> facts,
     required int visitCount,
     required DateTime firstSeen,
@@ -161,6 +170,7 @@ class _UserProfileImpl extends UserProfile {
          id: id,
          authUserId: authUserId,
          username: username,
+         email: email,
          facts: facts,
          visitCount: visitCount,
          firstSeen: firstSeen,
@@ -175,6 +185,7 @@ class _UserProfileImpl extends UserProfile {
     Object? id = _Undefined,
     _is.UuidValue? authUserId,
     Object? username = _Undefined,
+    Object? email = _Undefined,
     List<_il0k3um2.UserFact>? facts,
     int? visitCount,
     DateTime? firstSeen,
@@ -184,6 +195,7 @@ class _UserProfileImpl extends UserProfile {
       id: id is int? ? id : this.id,
       authUserId: authUserId ?? this.authUserId,
       username: username is String? ? username : this.username,
+      email: email is String? ? email : this.email,
       facts: facts ?? this.facts.map((e0) => e0.copyWith()).toList(),
       visitCount: visitCount ?? this.visitCount,
       firstSeen: firstSeen ?? this.firstSeen,
@@ -204,6 +216,11 @@ class UserProfileUpdateTable extends _is.UpdateTable<UserProfileTable> {
 
   _is.ColumnValue<String, String> username(String? value) => _is.ColumnValue(
     table.username,
+    value,
+  );
+
+  _is.ColumnValue<String, String> email(String? value) => _is.ColumnValue(
+    table.email,
     value,
   );
 
@@ -243,6 +260,10 @@ class UserProfileTable extends _is.Table<int?> {
       'username',
       this,
     );
+    email = _is.ColumnString(
+      'email',
+      this,
+    );
     facts = _is.ColumnSerializable<List<_il0k3um2.UserFact>>(
       'facts',
       this,
@@ -267,6 +288,8 @@ class UserProfileTable extends _is.Table<int?> {
 
   late final _is.ColumnString username;
 
+  late final _is.ColumnString email;
+
   late final _is.ColumnSerializable<List<_il0k3um2.UserFact>> facts;
 
   late final _is.ColumnInt visitCount;
@@ -280,6 +303,7 @@ class UserProfileTable extends _is.Table<int?> {
     id,
     authUserId,
     username,
+    email,
     facts,
     visitCount,
     firstSeen,
