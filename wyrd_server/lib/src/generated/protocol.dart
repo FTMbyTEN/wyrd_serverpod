@@ -59,6 +59,7 @@ import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/llm_usage_day.dart' as _i1bjxjal;
+import 'mind/maintenance_run.dart' as _inurj49q;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
@@ -97,6 +98,7 @@ export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
 export 'mind/llm_usage_day.dart';
+export 'mind/maintenance_run.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
@@ -794,6 +796,56 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'maintenance_run',
+      dartName: 'MaintenanceRun',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ranAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'note',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'maintenance_run_name_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'name',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'memory_block',
       dartName: 'MemoryBlock',
       schema: 'public',
@@ -1340,6 +1392,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i1bjxjal.LlmUsageDay) {
       return _i1bjxjal.LlmUsageDay.fromJson(data) as T;
     }
+    if (t == _inurj49q.MaintenanceRun) {
+      return _inurj49q.MaintenanceRun.fromJson(data) as T;
+    }
     if (t == _if349ohh.MemoryBlock) {
       return _if349ohh.MemoryBlock.fromJson(data) as T;
     }
@@ -1462,6 +1517,10 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_i1bjxjal.LlmUsageDay?>()) {
       return (data != null ? _i1bjxjal.LlmUsageDay.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_inurj49q.MaintenanceRun?>()) {
+      return (data != null ? _inurj49q.MaintenanceRun.fromJson(data) : null)
+          as T;
     }
     if (t == _is.getType<_if349ohh.MemoryBlock?>()) {
       return (data != null ? _if349ohh.MemoryBlock.fromJson(data) : null) as T;
@@ -1659,6 +1718,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _i1bjxjal.LlmUsageDay => 'LlmUsageDay',
+      _inurj49q.MaintenanceRun => 'MaintenanceRun',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
       _ix6ukv82.MindTopic => 'MindTopic',
@@ -1738,6 +1798,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'LexiconWordSummary';
       case _i1bjxjal.LlmUsageDay():
         return 'LlmUsageDay';
+      case _inurj49q.MaintenanceRun():
+        return 'MaintenanceRun';
       case _if349ohh.MemoryBlock():
         return 'MemoryBlock';
       case _iqhk00ra.Mind():
@@ -1867,6 +1929,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'LlmUsageDay') {
       return deserialize<_i1bjxjal.LlmUsageDay>(data['data']);
     }
+    if (dataClassName == 'MaintenanceRun') {
+      return deserialize<_inurj49q.MaintenanceRun>(data['data']);
+    }
     if (dataClassName == 'MemoryBlock') {
       return deserialize<_if349ohh.MemoryBlock>(data['data']);
     }
@@ -1961,6 +2026,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i37ps124.LexiconEntry.t;
       case _i1bjxjal.LlmUsageDay:
         return _i1bjxjal.LlmUsageDay.t;
+      case _inurj49q.MaintenanceRun:
+        return _inurj49q.MaintenanceRun.t;
       case _if349ohh.MemoryBlock:
         return _if349ohh.MemoryBlock.t;
       case _iqhk00ra.Mind:

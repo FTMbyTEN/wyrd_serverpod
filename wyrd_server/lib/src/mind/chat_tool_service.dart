@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
+import '../drone/drone_service.dart';
 import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'rate_limiter.dart';
@@ -79,6 +80,29 @@ class ChatToolService {
 
   static final _tools = [_worldMapTool, _webOpenTool, _webTypeTool, _webClickTool];
 
+  // Operator-only: offered to the model only when the person chatting is the drone operator.
+  static const _planDroneTool = {
+    'name': 'plan_drone_flight',
+    'description':
+        "Plan and queue a real flight for the drone, from the person's own words (e.g. 'take off to "
+        "15 m, fly a 40 m square, come home'). The flight planner and two independent safety checks "
+        '(fence, ceiling, battery, fresh telemetry) decide whether it flies; you get back either the '
+        "queued mission's summary or the reason it was refused -- relay that honestly, never claim a "
+        'refused flight is happening. Only use it when they clearly ask for a flight.',
+    'input_schema': {
+      'type': 'object',
+      'properties': {
+        'instruction': {'type': 'string', 'description': 'The flight request, in plain language.'},
+      },
+      'required': ['instruction'],
+    },
+  };
+  static const _abortDroneTool = {
+    'name': 'abort_drone_flight',
+    'description': 'Immediately cancel whatever the drone is doing and bring it home. Use whenever they ask to stop, abort, cancel, or bring the drone back.',
+    'input_schema': {'type': 'object', 'properties': <String, dynamic>{}},
+  };
+
   /// Returns null if the LLM is unavailable, the call fails, or the reply denies WYRD's
   /// premise (see LlmService.isDenialReply) -- callers fall back to a template reply.
   static Future<({String text, ChatAction? action})?> reply(
@@ -88,6 +112,7 @@ class ChatToolService {
     required List<({String userText, String botText})> history,
     required String userText,
     required int maxTokens,
+    bool droneOperator = false,
   }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
@@ -120,7 +145,7 @@ class ChatToolService {
               'max_tokens': maxTokens,
               'system': systemPrompt,
               'messages': messages,
-              'tools': _tools,
+              'tools': [..._tools, if (droneOperator) ...[_planDroneTool, _abortDroneTool]],
             }),
           );
         } catch (_) {
@@ -150,6 +175,30 @@ class ChatToolService {
                   'type': 'tool_result',
                   'tool_use_id': toolUseId,
                   'content': country.isEmpty ? 'Map opened, showing the whole world.' : 'Map opened, focused on $country.',
+                });
+                continue;
+              }
+
+              if (droneOperator && name == 'plan_drone_flight') {
+                final result = await DroneService.plan(session, input['instruction'] as String? ?? '', authUserId);
+                if (result.accepted) pendingAction = ChatAction(type: 'open_drone');
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': result.accepted
+                      ? 'Queued mission #${result.mission!.id}: ${result.mission!.summary}. The drone picks it up within '
+                          'seconds and the DRONE tab shows it live (it has been opened for them).'
+                      : 'Refused, nothing will fly: ${result.reason}',
+                });
+                continue;
+              }
+              if (droneOperator && name == 'abort_drone_flight') {
+                await DroneService.abort(session, authUserId);
+                pendingAction = ChatAction(type: 'open_drone');
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': 'Abort sent: the drone is cancelling its mission and returning home.',
                 });
                 continue;
               }

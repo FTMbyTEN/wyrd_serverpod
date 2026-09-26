@@ -1,0 +1,15 @@
+# One-time data maintenance that has been applied to this database (e.g. the self-echo memory
+# cleanup). Written by the migration that performs each step, so it runs exactly once and
+# there's a record of when.
+class: MaintenanceRun
+table: maintenance_run
+
+fields:
+  name: String
+  ranAt: DateTime
+  note: String?
+
+indexes:
+  maintenance_run_name_idx:
+    fields: name
+    unique: true

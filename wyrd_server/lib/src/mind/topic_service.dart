@@ -12,6 +12,9 @@ class TopicService {
     'enough', 'grounding', 'ground', 'grounded', 'treat', 'working', 'answer', 'rather', 'than',
     'guess', 'reconsidering', 'comparing', 'juxtaposing', 'emerges', 'inference', 'logical',
     'weight', 'future', 'replies', 'reply', 'filing', 'memory', 'reasoning', 'log',
+    // words from WYRD's canned self-answers ("ties back to a few things I've seen before -- feels
+    // like a real thread", "got at least a little to go on"); they topped its concept map
+    'ties', 'feels', 'seen', 'least', 'little', 'got', 'something', 'things', 'keeping', 'comes',
     // contractions carry no real content on their own.
     "what's", "who's", "how's", "where's", "when's", "that's", "it's", "there's", "he's",
     "she's", "i've", "you've", "we've", "they've", "i'm", "you're", "we're", "they're",

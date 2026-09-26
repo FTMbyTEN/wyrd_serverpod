@@ -323,7 +323,7 @@ class EndpointDroneBridge extends _isc.EndpointRef {
 
 /// The app's side of the drone. Any signed-in user can watch it; only the operator -- the
 /// account whose email is set with `scloud password set droneOperatorEmail you@example.com` --
-/// can plan flights or abort.
+/// can plan flights or abort. The logic lives in DroneService, shared with WYRD's chat tool.
 /// {@category Endpoint}
 class EndpointDrone extends _isc.EndpointRef {
   EndpointDrone(_isc.EndpointCaller caller) : super(caller);
@@ -351,8 +351,7 @@ class EndpointDrone extends _isc.EndpointRef {
     {},
   );
 
-  /// WYRD plans a flight from [instruction]. The plan is stored (and flown) only if it passes
-  /// DroneSafety; otherwise the reason comes back and nothing happens.
+  /// WYRD plans a flight from [instruction]; see DroneService.plan.
   _ida.Future<_ibjo0dmj.DronePlanResult> plan(String instruction) =>
       caller.callServerEndpoint<_ibjo0dmj.DronePlanResult>(
         'drone',
@@ -598,6 +597,8 @@ class EndpointLexicon extends _isc.EndpointRef {
     {},
   );
 
+  /// Two counts and the five newest understood words -- not the whole lexicon, which grows
+  /// every 30s and was being loaded in full on every poll.
   _ida.Future<_i85rewab.LexiconStats> getStats() =>
       caller.callServerEndpoint<_i85rewab.LexiconStats>(
         'lexicon',

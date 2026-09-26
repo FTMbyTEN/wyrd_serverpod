@@ -105,15 +105,20 @@ class SelfQuestionService {
       if (llmAnswer != null && !LlmService.isDenialReply(llmAnswer)) answer = llmAnswer;
     }
 
+    // A canned answer is WYRD musing, not knowing: it goes to the reasoning log only. Storing it
+    // as memory made its own boilerplate ("ties back to a few things I've seen before") the most
+    // frequent "topics" in its mind, its focus, and 'resolved' digest progress.
+    final isRealAnswer = answer != null;
     answer ??= related.isNotEmpty
         ? (related.length > 1
             ? '"$topic" ties back to a few things I\'ve run into before — feels like a real thread, not just a guess.'
             : '"$topic" connects to something I\'ve seen before, so I\'ve got at least a little to go on here.')
         : 'I don\'t have much on "$topic" yet — keeping it as an open question until more comes in.';
 
-    final topics = TopicService.extractTopics('$topic $answer');
+    final topics = isRealAnswer ? TopicService.extractTopics('$topic $answer') : [topic];
 
-    await MemoryBlock.db.insertRow(
+    if (isRealAnswer) {
+      await MemoryBlock.db.insertRow(
       session,
       MemoryBlock(
         timestamp: now,
@@ -124,6 +129,7 @@ class SelfQuestionService {
         topics: topics,
       ),
     );
+    }
 
     await ReasoningLogService.record(
       session,
@@ -139,11 +145,12 @@ class SelfQuestionService {
     final scoreGap = (related.length + 1) * 3.0;
     await MindService.recordEvent(
       session,
-      eventType: 'self',
+      // only a real answer counts as a self-answer (exploration count, answer rate, confidence)
+      eventType: isRealAnswer ? 'self' : 'musing',
       recentTopics: topics,
       newSeenTopics: [topic],
-      newResolvedTopics: [topic],
-      scoreGap: scoreGap,
+      newResolvedTopics: isRealAnswer ? [topic] : const [],
+      scoreGap: isRealAnswer ? scoreGap : null,
     );
 
     return true;

@@ -14,8 +14,8 @@ void main() {
     );
 
     test(
-      'when at least 2 memory blocks with topics exist then `trigger` asks and answers a '
-      'question, storing a new self MemoryBlock and updating Mind',
+      'when at least 2 memory blocks with topics exist and no model is configured then `trigger` '
+      'muses on a question without storing its canned answer as memory',
       () async {
         final session = sessionBuilder.build();
         await MemoryBlock.db.insertRow(
@@ -30,19 +30,15 @@ void main() {
         final ran = await endpoints.selfQuestion.trigger(sessionBuilder);
         expect(ran, isTrue);
 
-        final blocks = await MemoryBlock.db.find(
-          session,
-          where: (t) => t.source.equals('self'),
-        );
-        expect(blocks, hasLength(1));
-        expect(blocks.single.question, isNotEmpty);
-        expect(blocks.single.answer, isNotEmpty);
-        expect(blocks.single.answeredTopic, isNotEmpty);
+        // a template answer is not knowledge -- storing it is what caused the self-echo loop
+        final blocks = await MemoryBlock.db.find(session, where: (t) => t.source.equals('self'));
+        expect(blocks, isEmpty);
 
         final mind = await endpoints.mind.getMind(sessionBuilder);
-        expect(mind.lastEvent, 'self');
-        expect(mind.explorationCount, 1);
+        expect(mind.lastEvent, 'musing');
+        expect(mind.explorationCount, 0);
       },
+
     );
   });
 }
