@@ -3,6 +3,7 @@ import 'dart:math';
 import '../generated/protocol.dart';
 import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
+import 'memory_recall_service.dart';
 import '../drone/drone_service.dart';
 import 'mind_service.dart';
 import 'topic_service.dart';
@@ -18,8 +19,6 @@ import 'package:serverpod/serverpod.dart';
 /// owner-only real-Chrome tools (browse_web/search_web) -- those are separate pieces of the
 /// same chat subsystem and belong in their own follow-up batches.
 class ChatService {
-  static const _maxRelatedCandidates = 500;
-
   static const _casualAcks = [
     "Got it — I'm listening, go ahead whenever you're ready.",
     "Okay! Nothing specific to dig into yet, but I'm here.",
@@ -41,31 +40,6 @@ class ChatService {
     return templates[rand.nextInt(templates.length)];
   }
 
-  static Future<List<MemoryBlock>> _recallRelated(
-    Session session,
-    List<String> topics,
-  ) async {
-    if (topics.isEmpty) return [];
-    final topicSet = topics.toSet();
-    final recent = await MemoryBlock.db.find(
-      session,
-      orderBy: (t) => t.id.desc(),
-      limit: _maxRelatedCandidates,
-    );
-
-    final scored = <(MemoryBlock, double)>[];
-    for (final block in recent) {
-      final bSet = block.topics.toSet();
-      final intersection = topicSet.intersection(bSet).length;
-      if (intersection == 0) continue;
-      final union = topicSet.length + bSet.length - intersection;
-      final jaccard = union > 0 ? intersection / union : 0.0;
-      scored.add((block, jaccard));
-    }
-    scored.sort((a, b) => b.$2.compareTo(a.$2));
-    return scored.take(3).map((s) => s.$1).toList();
-  }
-
   static Future<
     ({String reply, ConversationTurn turn, Mind mind, ChatAction? action})
   >
@@ -82,12 +56,7 @@ class ChatService {
     }
 
     final mind = await MindService.load(session);
-    final related = await _recallRelated(session, topics);
-    final relatedSummaries = related
-        .take(2)
-        .map((b) => b.userText ?? b.title ?? b.topics.take(4).join(', '))
-        .where((s) => s.isNotEmpty)
-        .toList();
+    final recall = await MemoryRecallService.recall(session, authUserId, topics);
 
     final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
     final blockCount = await MemoryBlock.db.count(session);
@@ -149,8 +118,10 @@ class ChatService {
 
     final contextLines = [
       'Your current mood: ${mind.mood}.${mind.focusTopic != null ? ' You\'ve been mulling over "${mind.focusTopic}" in the background.' : ''}',
-      if (relatedSummaries.isNotEmpty)
-        'Things you already know that might be relevant to this specific message: ${relatedSummaries.join(' | ')}',
+      ...recall.toPromptLines(),
+      if (!recall.isEmpty)
+        'Use what you already know where it genuinely fits, in your own words -- never invent a memory '
+            "you weren't given above.",
       if (userFacts.isNotEmpty)
         'What you personally know about THIS specific person, learned from things they\'ve told you across your conversations: ${userFacts.join(' | ')}',
       curiosityHint,
@@ -213,7 +184,7 @@ class ChatService {
       ),
     );
 
-    final uniqueTopics = related.isNotEmpty
+    final uniqueTopics = !recall.isEmpty
         ? 6
         : 0; // rough scoreGap proxy without full candidate scoring
     final updatedMind = await MindService.recordEvent(
