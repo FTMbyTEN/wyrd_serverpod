@@ -46,6 +46,7 @@ import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
 import 'mind/dream_entry.dart' as _izf9406n;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
+import 'mind/gate_shape.dart' as _i00qabwy;
 import 'mind/growth_snapshot.dart' as _iyj2s79k;
 import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
@@ -55,6 +56,8 @@ import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
+import 'mind/system_status.dart' as _iw7p4jzd;
+import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/world_country.dart' as _iu995zpj;
@@ -76,6 +79,7 @@ export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
 export 'mind/dream_entry.dart';
 export 'mind/feed_ingest.dart';
+export 'mind/gate_shape.dart';
 export 'mind/growth_snapshot.dart';
 export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
@@ -85,6 +89,8 @@ export 'mind/mind.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
+export 'mind/system_status.dart';
+export 'mind/topic_info.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 export 'mind/world_country.dart';
@@ -178,6 +184,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ig20dqq5.FeedIngest) {
       return _ig20dqq5.FeedIngest.fromJson(data) as T;
     }
+    if (t == _i00qabwy.GateShape) {
+      return _i00qabwy.GateShape.fromJson(data) as T;
+    }
     if (t == _iyj2s79k.GrowthSnapshot) {
       return _iyj2s79k.GrowthSnapshot.fromJson(data) as T;
     }
@@ -204,6 +213,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ifocq1fp.SelfConfigChange) {
       return _ifocq1fp.SelfConfigChange.fromJson(data) as T;
+    }
+    if (t == _iw7p4jzd.SystemStatus) {
+      return _iw7p4jzd.SystemStatus.fromJson(data) as T;
+    }
+    if (t == _i8qpvcdz.TopicInfo) {
+      return _i8qpvcdz.TopicInfo.fromJson(data) as T;
     }
     if (t == _i8ng53gk.UserFact) {
       return _i8ng53gk.UserFact.fromJson(data) as T;
@@ -274,6 +289,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ig20dqq5.FeedIngest?>()) {
       return (data != null ? _ig20dqq5.FeedIngest.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_i00qabwy.GateShape?>()) {
+      return (data != null ? _i00qabwy.GateShape.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_iyj2s79k.GrowthSnapshot?>()) {
       return (data != null ? _iyj2s79k.GrowthSnapshot.fromJson(data) : null)
           as T;
@@ -304,6 +322,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ifocq1fp.SelfConfigChange?>()) {
       return (data != null ? _ifocq1fp.SelfConfigChange.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_iw7p4jzd.SystemStatus?>()) {
+      return (data != null ? _iw7p4jzd.SystemStatus.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i8qpvcdz.TopicInfo?>()) {
+      return (data != null ? _i8qpvcdz.TopicInfo.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i8ng53gk.UserFact?>()) {
       return (data != null ? _i8ng53gk.UserFact.fromJson(data) : null) as T;
@@ -457,6 +481,7 @@ class Protocol extends _isc.SerializationManager {
       _i9vbq77t.DigestInfo => 'DigestInfo',
       _izf9406n.DreamEntry => 'DreamEntry',
       _ig20dqq5.FeedIngest => 'FeedIngest',
+      _i00qabwy.GateShape => 'GateShape',
       _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
       _i37ps124.LexiconEntry => 'LexiconEntry',
       _ic2pi8fi.LexiconStats => 'LexiconStats',
@@ -466,6 +491,8 @@ class Protocol extends _isc.SerializationManager {
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
+      _iw7p4jzd.SystemStatus => 'SystemStatus',
+      _i8qpvcdz.TopicInfo => 'TopicInfo',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _iu995zpj.WorldCountry => 'WorldCountry',
@@ -519,6 +546,8 @@ class Protocol extends _isc.SerializationManager {
         return 'DreamEntry';
       case _ig20dqq5.FeedIngest():
         return 'FeedIngest';
+      case _i00qabwy.GateShape():
+        return 'GateShape';
       case _iyj2s79k.GrowthSnapshot():
         return 'GrowthSnapshot';
       case _i37ps124.LexiconEntry():
@@ -537,6 +566,10 @@ class Protocol extends _isc.SerializationManager {
         return 'SelfConfig';
       case _ifocq1fp.SelfConfigChange():
         return 'SelfConfigChange';
+      case _iw7p4jzd.SystemStatus():
+        return 'SystemStatus';
+      case _i8qpvcdz.TopicInfo():
+        return 'TopicInfo';
       case _i8ng53gk.UserFact():
         return 'UserFact';
       case _irc0lure.UserProfile():
@@ -619,6 +652,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'FeedIngest') {
       return deserialize<_ig20dqq5.FeedIngest>(data['data']);
     }
+    if (dataClassName == 'GateShape') {
+      return deserialize<_i00qabwy.GateShape>(data['data']);
+    }
     if (dataClassName == 'GrowthSnapshot') {
       return deserialize<_iyj2s79k.GrowthSnapshot>(data['data']);
     }
@@ -645,6 +681,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'SelfConfigChange') {
       return deserialize<_ifocq1fp.SelfConfigChange>(data['data']);
+    }
+    if (dataClassName == 'SystemStatus') {
+      return deserialize<_iw7p4jzd.SystemStatus>(data['data']);
+    }
+    if (dataClassName == 'TopicInfo') {
+      return deserialize<_i8qpvcdz.TopicInfo>(data['data']);
     }
     if (dataClassName == 'UserFact') {
       return deserialize<_i8ng53gk.UserFact>(data['data']);

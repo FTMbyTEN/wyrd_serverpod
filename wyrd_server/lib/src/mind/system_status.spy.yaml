@@ -1,0 +1,17 @@
+# Operational status (server.js's /api/turbo, /api/llm/status and /api/datasets/status in one).
+# Tick intervals are the real FutureCall schedules from server.dart. Turbo mode (Node's
+# TURBO_FACTOR speed-up) doesn't exist on Serverpod, so turboActive is always false. The Q&A
+# and dialogue reference datasets aren't ported, so their counts are 0.
+class: SystemStatus
+
+fields:
+  turboActive: bool
+  turboFactor: int
+  reasoningCycleMs: int
+  selfQuestionCycleMs: int
+  feedCycleMs: int
+  lexiconCycleMs: int
+  llmActive: bool
+  llmModel: String?
+  qaDatasetEntries: int
+  dialogueDatasetEntries: int

@@ -1,0 +1,19 @@
+# What WYRD knows about one topic (server.js GET /api/topic/:topic) -- click-to-inspect in the
+# brain view. Not stored; assembled from memory blocks and the lexicon on request.
+class: TopicInfo
+
+fields:
+  topic: String
+  seenCount: int
+  # dictionary definition, when the lexicon understood the word
+  definitionPartOfSpeech: String?
+  definition: String?
+  # the most recent self-question WYRD answered about it
+  selfQuestion: String?
+  selfAnswer: String?
+  # the most recent synthesis insight involving it
+  synthesis: String?
+  # the most recent net-ingested fact involving it
+  netFactTitle: String?
+  netFactExtract: String?
+  chatMentions: int

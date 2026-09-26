@@ -7,6 +7,7 @@ import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
+import 'src/mind/tick_schedule.dart';
 
 /// The starting point of the Serverpod server.
 void run(List<String> args) async {
@@ -111,47 +112,47 @@ void run(List<String> args) async {
   // initialized" (caught the hard way via a failed Serverpod Cloud rollout).
   await pod.futureCalls
       .callRecurring(identifier: 'growth-snapshot')
-      .every(const Duration(minutes: 30))
+      .every(TickSchedule.growthSnapshot)
       .growth
       .takeSnapshot();
   await pod.futureCalls
       .callRecurring(identifier: 'diary-day-check')
-      .every(const Duration(minutes: 10))
+      .every(TickSchedule.diaryCheck)
       .diary
       .checkAndWrite();
   await pod.futureCalls
       .callRecurring(identifier: 'reasoning-tick')
-      .every(const Duration(seconds: 30))
+      .every(TickSchedule.reasoning)
       .reasoning
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'self-question-tick')
-      .every(const Duration(seconds: 30))
+      .every(TickSchedule.selfQuestion)
       .selfQuestion
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'synthesis-tick')
-      .every(const Duration(seconds: 90))
+      .every(TickSchedule.synthesis)
       .synthesis
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'feed-tick')
-      .every(const Duration(seconds: 60))
+      .every(TickSchedule.feed)
       .feed
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'self-config-tick')
-      .every(const Duration(hours: 4))
+      .every(TickSchedule.selfConfig)
       .selfConfig
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'lexicon-tick')
-      .every(const Duration(seconds: 30))
+      .every(TickSchedule.lexicon)
       .lexicon
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'dream-idle-check')
-      .every(const Duration(minutes: 15))
+      .every(TickSchedule.dreamIdleCheck)
       .dream
       .checkIdle();
 }

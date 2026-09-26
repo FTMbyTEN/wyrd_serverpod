@@ -26,6 +26,7 @@ import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
 import '../mind/dream_endpoint.dart' as _inxbi04j;
 import '../mind/feed_endpoint.dart' as _in0i7e4k;
+import '../mind/gate_shape_endpoint.dart' as _ix7nnscc;
 import '../mind/growth_endpoint.dart' as _idrisijy;
 import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
@@ -35,7 +36,9 @@ import '../mind/profile_endpoint.dart' as _in0jvng1;
 import '../mind/reasoning_endpoint.dart' as _iovbjp1a;
 import '../mind/self_config_endpoint.dart' as _iuprx8k1;
 import '../mind/self_question_endpoint.dart' as _i4qouglj;
+import '../mind/status_endpoint.dart' as _ik9coqrp;
 import '../mind/synthesis_endpoint.dart' as _i6ave7v9;
+import '../mind/topic_endpoint.dart' as _i2t0sh8b;
 import '../mind/world_endpoint.dart' as _iaj95ngr;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
@@ -103,6 +106,12 @@ class Endpoints extends _is.EndpointDispatch {
           'feed',
           null,
         ),
+      'gateShape': _ix7nnscc.GateShapeEndpoint()
+        ..initialize(
+          server,
+          'gateShape',
+          null,
+        ),
       'growth': _idrisijy.GrowthEndpoint()
         ..initialize(
           server,
@@ -157,10 +166,22 @@ class Endpoints extends _is.EndpointDispatch {
           'selfQuestion',
           null,
         ),
+      'status': _ik9coqrp.StatusEndpoint()
+        ..initialize(
+          server,
+          'status',
+          null,
+        ),
       'synthesis': _i6ave7v9.SynthesisEndpoint()
         ..initialize(
           server,
           'synthesis',
+          null,
+        ),
+      'topic': _i2t0sh8b.TopicEndpoint()
+        ..initialize(
+          server,
+          'topic',
           null,
         ),
       'world': _iaj95ngr.WorldEndpoint()
@@ -601,6 +622,22 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['gateShape'] = _is.EndpointConnector(
+      name: 'gateShape',
+      endpoint: endpoints['gateShape']!,
+      methodConnectors: {
+        'next': _is.MethodConnector(
+          name: 'next',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['gateShape'] as _ix7nnscc.GateShapeEndpoint)
+                  .next(session),
+        ),
+      },
+    );
     connectors['growth'] = _is.EndpointConnector(
       name: 'growth',
       endpoint: endpoints['growth']!,
@@ -890,6 +927,22 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['status'] = _is.EndpointConnector(
+      name: 'status',
+      endpoint: endpoints['status']!,
+      methodConnectors: {
+        'getStatus': _is.MethodConnector(
+          name: 'getStatus',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['status'] as _ik9coqrp.StatusEndpoint)
+                  .getStatus(session),
+        ),
+      },
+    );
     connectors['synthesis'] = _is.EndpointConnector(
       name: 'synthesis',
       endpoint: endpoints['synthesis']!,
@@ -903,6 +956,31 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['synthesis'] as _i6ave7v9.SynthesisEndpoint)
                   .trigger(session),
+        ),
+      },
+    );
+    connectors['topic'] = _is.EndpointConnector(
+      name: 'topic',
+      endpoint: endpoints['topic']!,
+      methodConnectors: {
+        'getTopic': _is.MethodConnector(
+          name: 'getTopic',
+          params: {
+            'topic': _is.ParameterDescription(
+              name: 'topic',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['topic'] as _i2t0sh8b.TopicEndpoint).getTopic(
+                    session,
+                    params['topic'],
+                  ),
         ),
       },
     );

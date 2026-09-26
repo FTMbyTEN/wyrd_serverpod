@@ -8,6 +8,9 @@ import 'package:serverpod/serverpod.dart';
 /// same secret, same never-committed file, just Serverpod's idiom for it.
 class LlmService {
   static const _model = 'claude-haiku-4-5-20251001';
+  static String get model => _model;
+
+  static bool isConfigured(Session session) => (session.passwords['anthropicApiKey'] ?? '').isNotEmpty;
 
   static Future<String?> callSimple(
     Session session,

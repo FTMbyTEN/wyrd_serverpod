@@ -34,6 +34,7 @@ import 'package:wyrd_server/src/generated/mind/curriculum_status.dart'
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
 import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
 import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
+import 'package:wyrd_server/src/generated/mind/gate_shape.dart' as _ikrbpnh7;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
 import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
@@ -45,6 +46,8 @@ import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
 import 'package:wyrd_server/src/generated/mind/self_config.dart' as _ixg8jrhz;
 import 'package:wyrd_server/src/generated/mind/self_config_change.dart'
     as _ixskf8ah;
+import 'package:wyrd_server/src/generated/mind/system_status.dart' as _it4ouq1a;
+import 'package:wyrd_server/src/generated/mind/topic_info.dart' as _iwnzpkr1;
 import 'package:wyrd_server/src/generated/mind/user_profile.dart' as _ifiznghf;
 import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
 import 'package:wyrd_server/src/generated/protocol.dart';
@@ -197,6 +200,8 @@ class TestEndpoints {
 
   late final _FeedEndpoint feed;
 
+  late final _GateShapeEndpoint gateShape;
+
   late final _GrowthEndpoint growth;
 
   late final _LexiconEndpoint lexicon;
@@ -215,7 +220,11 @@ class TestEndpoints {
 
   late final _SelfQuestionEndpoint selfQuestion;
 
+  late final _StatusEndpoint status;
+
   late final _SynthesisEndpoint synthesis;
+
+  late final _TopicEndpoint topic;
 
   late final _WorldEndpoint world;
 }
@@ -267,6 +276,10 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    gateShape = _GateShapeEndpoint(
+      endpoints,
+      serializationManager,
+    );
     growth = _GrowthEndpoint(
       endpoints,
       serializationManager,
@@ -303,7 +316,15 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    status = _StatusEndpoint(
+      endpoints,
+      serializationManager,
+    );
     synthesis = _SynthesisEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    topic = _TopicEndpoint(
       endpoints,
       serializationManager,
     );
@@ -1131,6 +1152,47 @@ class _FeedEndpoint {
   }
 }
 
+class _GateShapeEndpoint {
+  _GateShapeEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_ikrbpnh7.GateShape> next(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'gateShape',
+            method: 'next',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'gateShape',
+          methodName: 'next',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ikrbpnh7.GateShape>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _GrowthEndpoint {
   _GrowthEndpoint(
     this._endpointDispatch,
@@ -1744,6 +1806,47 @@ class _SelfQuestionEndpoint {
   }
 }
 
+class _StatusEndpoint {
+  _StatusEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_it4ouq1a.SystemStatus> getStatus(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'status',
+            method: 'getStatus',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'status',
+          methodName: 'getStatus',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_it4ouq1a.SystemStatus>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _SynthesisEndpoint {
   _SynthesisEndpoint(
     this._endpointDispatch,
@@ -1775,6 +1878,48 @@ class _SynthesisEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _TopicEndpoint {
+  _TopicEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_iwnzpkr1.TopicInfo> getTopic(
+    _ist.TestSessionBuilder sessionBuilder,
+    String topic,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'topic',
+            method: 'getTopic',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'topic',
+          methodName: 'getTopic',
+          parameters: _ist.testObjectToJson({'topic': topic}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iwnzpkr1.TopicInfo>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

@@ -31,6 +31,7 @@ import 'package:wyrd_client/src/protocol/mind/curriculum_status.dart'
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
 import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
+import 'package:wyrd_client/src/protocol/mind/gate_shape.dart' as _id49marq;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
@@ -41,6 +42,8 @@ import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/self_config.dart' as _i2gzn8r6;
 import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
     as _ifqisoc8;
+import 'package:wyrd_client/src/protocol/mind/system_status.dart' as _i97zx8uk;
+import 'package:wyrd_client/src/protocol/mind/topic_info.dart' as _il2rvv3i;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'protocol.dart' as _il2as5qe;
@@ -446,6 +449,23 @@ class EndpointFeed extends _isc.EndpointRef {
   );
 }
 
+/// Ports /api/gate-vortex/shape from server.js. Public (the gate is shown before sign-in), so it's
+/// rate limited per caller like Node, since each call can cost an LLM request.
+/// {@category Endpoint}
+class EndpointGateShape extends _isc.EndpointRef {
+  EndpointGateShape(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'gateShape';
+
+  _ida.Future<_id49marq.GateShape> next() =>
+      caller.callServerEndpoint<_id49marq.GateShape>(
+        'gateShape',
+        'next',
+        {},
+      );
+}
+
 /// Ports /api/growth (read) from server.js. Public/unauthenticated, matching Node. There is
 /// no manual /trigger for growth in Node -- snapshots are purely wall-clock (see
 /// growth_future_call.dart) -- so this endpoint is read-only.
@@ -665,6 +685,24 @@ class EndpointSelfQuestion extends _isc.EndpointRef {
   );
 }
 
+/// Ports server.js's /api/turbo, /api/llm/status and /api/datasets/status as one status call.
+/// See system_status.spy.yaml for what's fixed (turbo, datasets) on this backend. Node also
+/// returned per-process LLM success/error counters; those aren't tracked here. Public, like Node.
+/// {@category Endpoint}
+class EndpointStatus extends _isc.EndpointRef {
+  EndpointStatus(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'status';
+
+  _ida.Future<_i97zx8uk.SystemStatus> getStatus() =>
+      caller.callServerEndpoint<_i97zx8uk.SystemStatus>(
+        'status',
+        'getStatus',
+        {},
+      );
+}
+
 /// Ports /api/synthesis/trigger from server.js. Public/unauthenticated, matching Node.
 /// {@category Endpoint}
 class EndpointSynthesis extends _isc.EndpointRef {
@@ -678,6 +716,23 @@ class EndpointSynthesis extends _isc.EndpointRef {
     'trigger',
     {},
   );
+}
+
+/// Ports /api/topic/:topic from server.js -- what WYRD actually knows about one topic, for
+/// click-to-inspect in the brain view. Public, like Node.
+/// {@category Endpoint}
+class EndpointTopic extends _isc.EndpointRef {
+  EndpointTopic(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'topic';
+
+  _ida.Future<_il2rvv3i.TopicInfo> getTopic(String topic) =>
+      caller.callServerEndpoint<_il2rvv3i.TopicInfo>(
+        'topic',
+        'getTopic',
+        {'topic': topic},
+      );
 }
 
 /// Ports /api/world/countries and /api/world/country/:code from server.js -- the data behind
@@ -753,6 +808,7 @@ class Client extends _isc.ServerpodClientShared {
     diary = EndpointDiary(this);
     dream = EndpointDream(this);
     feed = EndpointFeed(this);
+    gateShape = EndpointGateShape(this);
     growth = EndpointGrowth(this);
     lexicon = EndpointLexicon(this);
     memory = EndpointMemory(this);
@@ -762,7 +818,9 @@ class Client extends _isc.ServerpodClientShared {
     reasoning = EndpointReasoning(this);
     selfConfig = EndpointSelfConfig(this);
     selfQuestion = EndpointSelfQuestion(this);
+    status = EndpointStatus(this);
     synthesis = EndpointSynthesis(this);
+    topic = EndpointTopic(this);
     world = EndpointWorld(this);
     modules = Modules(this);
   }
@@ -787,6 +845,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointFeed feed;
 
+  late final EndpointGateShape gateShape;
+
   late final EndpointGrowth growth;
 
   late final EndpointLexicon lexicon;
@@ -805,7 +865,11 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointSelfQuestion selfQuestion;
 
+  late final EndpointStatus status;
+
   late final EndpointSynthesis synthesis;
+
+  late final EndpointTopic topic;
 
   late final EndpointWorld world;
 
@@ -823,6 +887,7 @@ class Client extends _isc.ServerpodClientShared {
     'diary': diary,
     'dream': dream,
     'feed': feed,
+    'gateShape': gateShape,
     'growth': growth,
     'lexicon': lexicon,
     'memory': memory,
@@ -832,7 +897,9 @@ class Client extends _isc.ServerpodClientShared {
     'reasoning': reasoning,
     'selfConfig': selfConfig,
     'selfQuestion': selfQuestion,
+    'status': status,
     'synthesis': synthesis,
+    'topic': topic,
     'world': world,
   };
 

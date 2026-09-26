@@ -30,6 +30,8 @@ dream:
 feed:
   - getRecent:
   - trigger:
+gateShape:
+  - next:
 growth:
   - getSnapshots:
 lexicon:
@@ -56,8 +58,12 @@ selfConfig:
   - trigger:
 selfQuestion:
   - trigger:
+status:
+  - getStatus:
 synthesis:
   - trigger:
+topic:
+  - getTopic:
 world:
   - getCountries:
   - getCountry:
