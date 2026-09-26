@@ -17,17 +17,20 @@ abstract class ChatAction
   ChatAction._({
     required this.type,
     this.country,
+    this.html,
   });
 
   factory ChatAction({
     required String type,
     String? country,
+    String? html,
   }) = _ChatActionImpl;
 
   factory ChatAction.fromJson(Map<String, dynamic> jsonSerialization) {
     return ChatAction(
       type: jsonSerialization['type'] as String,
       country: jsonSerialization['country'] as String?,
+      html: jsonSerialization['html'] as String?,
     );
   }
 
@@ -35,12 +38,15 @@ abstract class ChatAction
 
   String? country;
 
+  String? html;
+
   /// Returns a shallow copy of this [ChatAction]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   ChatAction copyWith({
     String? type,
     String? country,
+    String? html,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -48,6 +54,7 @@ abstract class ChatAction
       '__className__': 'ChatAction',
       'type': type,
       if (country != null) 'country': country,
+      if (html != null) 'html': html,
     };
   }
 
@@ -57,6 +64,7 @@ abstract class ChatAction
       '__className__': 'ChatAction',
       'type': type,
       if (country != null) 'country': country,
+      if (html != null) 'html': html,
     };
   }
 
@@ -72,9 +80,11 @@ class _ChatActionImpl extends ChatAction {
   _ChatActionImpl({
     required String type,
     String? country,
+    String? html,
   }) : super._(
          type: type,
          country: country,
+         html: html,
        );
 
   /// Returns a shallow copy of this [ChatAction]
@@ -84,10 +94,12 @@ class _ChatActionImpl extends ChatAction {
   ChatAction copyWith({
     String? type,
     Object? country = _Undefined,
+    Object? html = _Undefined,
   }) {
     return ChatAction(
       type: type ?? this.type,
       country: country is String? ? country : this.country,
+      html: html is String? ? html : this.html,
     );
   }
 }

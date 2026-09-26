@@ -1,4 +1,7 @@
 class: ChatAction
 fields:
   type: String
+  # open_world_map: optional country to focus on
   country: String?
+  # preview_app: one self-contained HTML document for the client to render in a sandboxed frame
+  html: String?

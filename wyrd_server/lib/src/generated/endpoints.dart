@@ -630,6 +630,16 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'lexicon',
       endpoint: endpoints['lexicon']!,
       methodConnectors: {
+        'trigger': _is.MethodConnector(
+          name: 'trigger',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['lexicon'] as _i3c3oo5r.LexiconEndpoint)
+                  .trigger(session),
+        ),
         'getStats': _is.MethodConnector(
           name: 'getStats',
           params: {},

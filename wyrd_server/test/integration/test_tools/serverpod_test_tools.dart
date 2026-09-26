@@ -317,9 +317,13 @@ class _InternalTestEndpoints extends TestEndpoints
 class _FutureCalls {
   late final diary = _DiaryFutureCall();
 
+  late final dream = _DreamFutureCall();
+
   late final feed = _FeedFutureCall();
 
   late final growth = _GrowthFutureCall();
+
+  late final lexicon = _LexiconFutureCall();
 
   late final reasoning = _ReasoningFutureCall();
 
@@ -1179,6 +1183,34 @@ class _LexiconEndpoint {
 
   final _is.SerializationManager _serializationManager;
 
+  _ida.Future<bool> trigger(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'lexicon',
+            method: 'trigger',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'lexicon',
+          methodName: 'trigger',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _ida.Future<_iv2jt4ku.LexiconStats> getStats(
     _ist.TestSessionBuilder sessionBuilder,
   ) async {
@@ -1838,6 +1870,21 @@ class _DiaryFutureCall {
   }
 }
 
+class _DreamFutureCall {
+  Future<void> checkIdle(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.DreamCheckIdleFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
 class _FeedFutureCall {
   Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
     var _localUniqueSession =
@@ -1859,6 +1906,21 @@ class _GrowthFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ix7un2io.GrowthTakeSnapshotFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _LexiconFutureCall {
+  Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.LexiconTickFutureCall().invoke(
         _localUniqueSession,
         null,
       );

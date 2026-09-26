@@ -6,9 +6,8 @@ import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's generateDream -- two random OLD memory fragments (reached across the
 /// whole memory store, not just the recent pool) blended loosely and associatively, distinct
-/// from diary's grounded reflection. Only the manual-trigger side is ported here; Node's
-/// automatic idle-detection tick (dreamTickIfIdle) depends on tracking real chat activity,
-/// which isn't ported yet -- it belongs with the chat endpoint, not this batch.
+/// from diary's grounded reflection. Called by the manual trigger and by DreamFutureCall's
+/// idle check (dream_future_call.dart).
 class DreamService {
   static Future<DreamEntry?> generateDream(Session session) async {
     final blockCount = await MemoryBlock.db.count(session);

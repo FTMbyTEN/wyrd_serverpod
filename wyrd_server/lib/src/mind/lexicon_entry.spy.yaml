@@ -1,7 +1,6 @@
 # Mirrors server.js's lexicon.json — one row per word WYRD has attempted to learn via the
-# (not yet ported) autonomous lexicon tick. Only the read side (getStats/getWord) is ported
-# here; the tick itself calls an LLM to define words and belongs with the rest of the
-# autonomous engine port, not this batch.
+# autonomous lexicon tick (lexicon_service.dart), which looks definitions up in the free
+# dictionary API. understood is false when the dictionary had no entry for the word.
 class: LexiconEntry
 table: lexicon_entry
 

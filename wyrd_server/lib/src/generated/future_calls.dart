@@ -15,8 +15,10 @@ import 'dart:async' as _ida;
 import 'package:clock/clock.dart' as _io0w16m8;
 import 'package:serverpod/serverpod.dart' as _is;
 import '../mind/diary_future_call.dart' as _i749zoke;
+import '../mind/dream_future_call.dart' as _itvv5t5m;
 import '../mind/feed_future_call.dart' as _irvvfdmu;
 import '../mind/growth_future_call.dart' as _i0cg22dz;
+import '../mind/lexicon_future_call.dart' as _ik7k7qni;
 import '../mind/reasoning_future_call.dart' as _ipbl5psg;
 import '../mind/self_config_future_call.dart' as _ishes48l;
 import '../mind/self_question_future_call.dart' as _i51wt927;
@@ -65,8 +67,10 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
   ) {
     var registeredFutureCalls = <String, _is.InvokableFutureCall>{
       'DiaryCheckAndWriteFutureCall': DiaryCheckAndWriteFutureCall(),
+      'DreamCheckIdleFutureCall': DreamCheckIdleFutureCall(),
       'FeedTickFutureCall': FeedTickFutureCall(),
       'GrowthTakeSnapshotFutureCall': GrowthTakeSnapshotFutureCall(),
+      'LexiconTickFutureCall': LexiconTickFutureCall(),
       'ReasoningTickFutureCall': ReasoningTickFutureCall(),
       'SelfConfigTickFutureCall': SelfConfigTickFutureCall(),
       'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
@@ -193,9 +197,13 @@ class _FutureCallRef {
 
   late final diary = _DiaryFutureCallDispatcher(_invokeFutureCall);
 
+  late final dream = _DreamFutureCallDispatcher(_invokeFutureCall);
+
   late final feed = _FeedFutureCallDispatcher(_invokeFutureCall);
 
   late final growth = _GrowthFutureCallDispatcher(_invokeFutureCall);
+
+  late final lexicon = _LexiconFutureCallDispatcher(_invokeFutureCall);
 
   late final reasoning = _ReasoningFutureCallDispatcher(_invokeFutureCall);
 
@@ -216,6 +224,19 @@ class _DiaryFutureCallDispatcher {
   Future<void> checkAndWrite() {
     return _invokeFutureCall(
       'DiaryCheckAndWriteFutureCall',
+      null,
+    );
+  }
+}
+
+class _DreamFutureCallDispatcher {
+  _DreamFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> checkIdle() {
+    return _invokeFutureCall(
+      'DreamCheckIdleFutureCall',
       null,
     );
   }
@@ -242,6 +263,19 @@ class _GrowthFutureCallDispatcher {
   Future<void> takeSnapshot() {
     return _invokeFutureCall(
       'GrowthTakeSnapshotFutureCall',
+      null,
+    );
+  }
+}
+
+class _LexiconFutureCallDispatcher {
+  _LexiconFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'LexiconTickFutureCall',
       null,
     );
   }
@@ -310,6 +344,17 @@ class DiaryCheckAndWriteFutureCall extends _is.FutureCall
   }
 }
 
+class DreamCheckIdleFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _itvv5t5m.DreamFutureCall().checkIdle(session);
+  }
+}
+
 class FeedTickFutureCall extends _is.FutureCall
     implements _is.InvokableFutureCall {
   @override
@@ -329,6 +374,17 @@ class GrowthTakeSnapshotFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _i0cg22dz.GrowthFutureCall().takeSnapshot(session);
+  }
+}
+
+class LexiconTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _ik7k7qni.LexiconFutureCall().tick(session);
   }
 }
 

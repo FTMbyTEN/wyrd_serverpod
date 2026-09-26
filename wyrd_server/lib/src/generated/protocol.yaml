@@ -33,6 +33,7 @@ feed:
 growth:
   - getSnapshots:
 lexicon:
+  - trigger:
   - getStats:
   - getWord:
 memory:

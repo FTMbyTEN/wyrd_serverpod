@@ -144,4 +144,14 @@ void run(List<String> args) async {
       .every(const Duration(hours: 4))
       .selfConfig
       .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'lexicon-tick')
+      .every(const Duration(seconds: 30))
+      .lexicon
+      .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'dream-idle-check')
+      .every(const Duration(minutes: 15))
+      .dream
+      .checkIdle();
 }

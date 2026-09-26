@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../generated/protocol.dart';
 import 'chat_tool_service.dart';
+import 'code_agent_service.dart';
 import 'mind_service.dart';
 import 'topic_service.dart';
 import 'user_fact_service.dart';
@@ -10,10 +11,11 @@ import 'package:serverpod/serverpod.dart';
 /// Ports the core of server.js's processChatMessage/composeReply/callLLM -- the grounded,
 /// LLM-backed conversational reply (now with the world-map and real-browsing tools, see
 /// chat_tool_service.dart), with a plain template fallback when no API key is configured, the
-/// model breaks character, or the LLM call fails outright. Intentionally NOT ported yet: the
-/// code-request bypass path, vision/photos, the dataset-matching/digested-recall candidates,
-/// and Node's owner-only real-Chrome tools (browse_web/search_web) -- those are separate
-/// pieces of the same chat subsystem and belong in their own follow-up batches.
+/// model breaks character, or the LLM call fails outright. Coding requests are routed to
+/// CodeAgentService instead (see code_agent_service.dart). Intentionally NOT ported yet:
+/// vision/photos in chat, the dataset-matching/digested-recall candidates, and Node's
+/// owner-only real-Chrome tools (browse_web/search_web) -- those are separate pieces of the
+/// same chat subsystem and belong in their own follow-up batches.
 class ChatService {
   static const _maxRelatedCandidates = 500;
 
@@ -38,7 +40,10 @@ class ChatService {
     return templates[rand.nextInt(templates.length)];
   }
 
-  static Future<List<MemoryBlock>> _recallRelated(Session session, List<String> topics) async {
+  static Future<List<MemoryBlock>> _recallRelated(
+    Session session,
+    List<String> topics,
+  ) async {
     if (topics.isEmpty) return [];
     final topicSet = topics.toSet();
     final recent = await MemoryBlock.db.find(
@@ -60,7 +65,10 @@ class ChatService {
     return scored.take(3).map((s) => s.$1).toList();
   }
 
-  static Future<({String reply, ConversationTurn turn, Mind mind, ChatAction? action})> processMessage(
+  static Future<
+    ({String reply, ConversationTurn turn, Mind mind, ChatAction? action})
+  >
+  processMessage(
     Session session,
     UuidValue authUserId,
     String text,
@@ -84,9 +92,15 @@ class ChatService {
     final vocabCount = lexiconEntries.where((e) => e.understood).length;
     final blockCount = await MemoryBlock.db.count(session);
 
-    final profile = await UserFactService.loadOrCreateProfile(session, authUserId);
+    final profile = await UserFactService.loadOrCreateProfile(
+      session,
+      authUserId,
+    );
     final facts = profile.facts;
-    final userFacts = UserFactService.mostRelevantFacts(facts, 15).map((f) => f.text).toList();
+    final userFacts = UserFactService.mostRelevantFacts(
+      facts,
+      15,
+    ).map((f) => f.text).toList();
 
     String curiosityHint;
     if (facts.isEmpty) {
@@ -111,16 +125,34 @@ class ChatService {
       session,
       where: (t) => t.authUserId.equals(authUserId),
       orderBy: (t) => t.id.desc(),
-      limit: 4,
+      limit: 6,
     );
-    final history = recentTurns.reversed
+    final codeHistory = recentTurns.reversed
         .map((t) => (userText: t.userText, botText: t.botText))
         .toList();
+    final history = codeHistory
+        .skip(codeHistory.length > 4 ? codeHistory.length - 4 : 0)
+        .toList();
+
+    // Code requests (and short follow-ups to one) skip the conversational prompt entirely; if
+    // the code path fails, fall through to it as a safety net, like Node.
+    final codeReply =
+        CodeAgentService.isCodeRequest(text) ||
+            CodeAgentService.isLikelyFollowUp(authUserId, text)
+        ? await CodeAgentService.reply(
+            session,
+            authUserId: authUserId,
+            history: codeHistory,
+            userText: text,
+          )
+        : null;
 
     final contextLines = [
       'Your current mood: ${mind.mood}.${mind.focusTopic != null ? ' You\'ve been mulling over "${mind.focusTopic}" in the background.' : ''}',
-      if (relatedSummaries.isNotEmpty) 'Things you already know that might be relevant to this specific message: ${relatedSummaries.join(' | ')}',
-      if (userFacts.isNotEmpty) 'What you personally know about THIS specific person, learned from things they\'ve told you across your conversations: ${userFacts.join(' | ')}',
+      if (relatedSummaries.isNotEmpty)
+        'Things you already know that might be relevant to this specific message: ${relatedSummaries.join(' | ')}',
+      if (userFacts.isNotEmpty)
+        'What you personally know about THIS specific person, learned from things they\'ve told you across your conversations: ${userFacts.join(' | ')}',
       curiosityHint,
     ].join('\n');
 
@@ -139,14 +171,16 @@ class ChatService {
         '(1-4 sentences) unless the question calls for more.\n\n'
         '$contextLines';
 
-    final toolReply = await ChatToolService.reply(
-      session,
-      authUserId: authUserId,
-      systemPrompt: systemPrompt,
-      history: history,
-      userText: text,
-      maxTokens: 220,
-    );
+    final toolReply =
+        codeReply ??
+        await ChatToolService.reply(
+          session,
+          authUserId: authUserId,
+          systemPrompt: systemPrompt,
+          history: history,
+          userText: text,
+          maxTokens: 220,
+        );
     final reply = toolReply?.text ?? _followUpFromTopics(topics);
     final action = toolReply?.action;
 
@@ -171,7 +205,9 @@ class ChatService {
       ),
     );
 
-    final uniqueTopics = related.isNotEmpty ? 6 : 0; // rough scoreGap proxy without full candidate scoring
+    final uniqueTopics = related.isNotEmpty
+        ? 6
+        : 0; // rough scoreGap proxy without full candidate scoring
     final updatedMind = await MindService.recordEvent(
       session,
       eventType: 'chat',

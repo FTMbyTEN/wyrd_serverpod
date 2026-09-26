@@ -464,16 +464,23 @@ class EndpointGrowth extends _isc.EndpointRef {
       );
 }
 
-/// Ports the read side of server.js's /api/lexicon/stats and /api/lexicon/word/:word.
-/// /api/lexicon/trigger (the LLM-backed word-learning tick) is not ported yet — it belongs
-/// with the rest of the autonomous engine, not this read-only batch. Public/unauthenticated,
-/// matching Node.
+/// Ports server.js's /api/lexicon/stats, /api/lexicon/word/:word and /api/lexicon/trigger.
+/// The learning tick itself lives in lexicon_service.dart. Public/unauthenticated, matching
+/// Node.
 /// {@category Endpoint}
 class EndpointLexicon extends _isc.EndpointRef {
   EndpointLexicon(_isc.EndpointCaller caller) : super(caller);
 
   @override
   String get name => 'lexicon';
+
+  /// Runs one learning tick now instead of waiting for the timer. False if there was nothing new
+  /// to learn (or the wordlist isn't loaded yet).
+  _ida.Future<bool> trigger() => caller.callServerEndpoint<bool>(
+    'lexicon',
+    'trigger',
+    {},
+  );
 
   _ida.Future<_i85rewab.LexiconStats> getStats() =>
       caller.callServerEndpoint<_i85rewab.LexiconStats>(
