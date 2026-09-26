@@ -14,13 +14,13 @@ void main() {
     );
 
     test(
-      'when no LLM is configured then it falls back to the honest "could not make it out" reply, '
+      'when no LLM is configured then it falls back to the honest "could not take a proper look" reply, '
       'still storing a photo memory block and updating Mind',
       () async {
         final fakeJpegBase64 = base64Encode(utf8.encode('not a real jpeg, just test bytes'));
         final result = await endpoints.photo.describe(authed, fakeJpegBase64, caption: 'check my outfit');
 
-        expect(result.reply, contains("couldn't make out"));
+        expect(result.reply, contains("couldn't take a proper look"));
         expect(result.mind.lastEvent, 'chat');
 
         final blocks = await endpoints.memory.getMemory(sessionBuilder);

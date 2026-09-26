@@ -927,6 +927,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String?>(),
               nullable: true,
             ),
+            'trackingNote': _is.ParameterDescription(
+              name: 'trackingNote',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
           },
           call:
               (
@@ -937,6 +942,7 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['imageBase64Jpeg'],
                     caption: params['caption'],
+                    trackingNote: params['trackingNote'],
                   ),
         ),
       },

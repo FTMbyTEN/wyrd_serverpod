@@ -669,15 +669,19 @@ class EndpointPhoto extends _isc.EndpointRef {
   @override
   String get name => 'photo';
 
+  /// [trackingNote] is what the app's on-device face tracking saw (pose, expression, distance);
+  /// it helps WYRD read the moment but is never shown as something the person said.
   _ida.Future<_is592ckh.ChatReply> describe(
     String imageBase64Jpeg, {
     String? caption,
+    String? trackingNote,
   }) => caller.callServerEndpoint<_is592ckh.ChatReply>(
     'photo',
     'describe',
     {
       'imageBase64Jpeg': imageBase64Jpeg,
       'caption': caption,
+      'trackingNote': trackingNote,
     },
   );
 }

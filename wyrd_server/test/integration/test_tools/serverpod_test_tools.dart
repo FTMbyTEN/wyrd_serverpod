@@ -1724,6 +1724,7 @@ class _PhotoEndpoint {
     _ist.TestSessionBuilder sessionBuilder,
     String imageBase64Jpeg, {
     String? caption,
+    String? trackingNote,
   }) async {
     return _ist.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1739,6 +1740,7 @@ class _PhotoEndpoint {
           parameters: _ist.testObjectToJson({
             'imageBase64Jpeg': imageBase64Jpeg,
             'caption': caption,
+            'trackingNote': trackingNote,
           }),
           serializationManager: _serializationManager,
         );

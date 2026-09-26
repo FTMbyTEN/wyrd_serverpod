@@ -18,24 +18,31 @@ class PhotoService {
     required UuidValue authUserId,
     required String imageBase64Jpeg,
     String? caption,
+    String? trackingNote,
   }) async {
     if (imageBase64Jpeg.length > _maxBase64Chars) {
       throw Exception('image too large');
     }
 
     const systemPrompt =
-        'You are WYRD. The user just showed you a live photo from their own camera, taken '
-        "right now. Describe genuinely what you see — if they're asking about their outfit or "
-        "clothing colors, name the actual colors and garments you can identify, don't hedge or "
-        'generalize. Talk like you\'re actually looking at them in this moment, first person, '
-        "2-4 sentences. If the image is unclear, dark, or you genuinely can't tell, say so "
-        'honestly instead of guessing.';
-    final userPrompt = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : 'What do you see? Describe my outfit and its colors.';
+        'You are WYRD, looking at the person you talk with through their own camera, right now, '
+        'because they opened it for you. Respond to what you actually see, first person, like '
+        "you're in the room with them: them, their expression, what they're wearing, what's around "
+        "them. If they asked something, answer that first and specifically (name real colours and "
+        "objects, don't hedge). 1-3 sentences, warm and natural, no lists. You may get notes from "
+        "the app's on-device face tracking; use them only as hints and trust the image over them. "
+        "If the image is dark or unclear, say so honestly instead of guessing. Never guess anyone's "
+        'identity, age, ethnicity or health.';
+    final question = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : 'Look at me. What do you see?';
+    final note = trackingNote?.trim();
+    final userPrompt = note != null && note.isNotEmpty
+        ? '$question\n\n(On-device tracking, for context only: ${note.length > 300 ? note.substring(0, 300) : note})'
+        : question;
 
-    final visionReply = await LlmService.callWithImage(session, systemPrompt, imageBase64Jpeg, userPrompt, 300);
-    final reply = visionReply ?? "I can see you sent a photo, but I couldn't make out anything useful in it — try again with a bit more light?";
+    final visionReply = await LlmService.callWithImage(session, systemPrompt, imageBase64Jpeg, userPrompt, 220);
+    final reply = visionReply ?? "I couldn't take a proper look just now — give it a moment and try again, maybe with a bit more light.";
 
-    final displayCaption = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : '[shared a photo from their camera]';
+    final displayCaption = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : '[let you look through their camera]';
     final topics = TopicService.extractTopics(reply);
 
     await MemoryBlock.db.insertRow(
