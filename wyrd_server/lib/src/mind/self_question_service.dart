@@ -3,6 +3,7 @@ import 'dart:math';
 import '../generated/protocol.dart';
 import 'llm_service.dart';
 import 'mind_service.dart';
+import 'reasoning_log_service.dart';
 import 'topic_service.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -120,6 +121,17 @@ class SelfQuestionService {
         answeredTopic: topic,
         topics: topics,
       ),
+    );
+
+    await ReasoningLogService.record(
+      session,
+      kind: 'self',
+      content: '# Self-questioning\n\n'
+          '- time: ${now.toIso8601String()}\n'
+          '- topic: $topic\n'
+          '- supporting blocks: ${related.isEmpty ? 'none' : related.map((r) => r.id).join(', ')}\n\n'
+          'Q: $question\n\n'
+          'A: $answer\n',
     );
 
     final scoreGap = (related.length + 1) * 3.0;

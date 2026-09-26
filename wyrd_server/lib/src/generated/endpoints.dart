@@ -20,6 +20,7 @@ import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 import '../mind/account_endpoint.dart' as _i45717np;
+import '../mind/alerts_endpoint.dart' as _impqu952;
 import '../mind/chat_endpoint.dart' as _i2b8uve4;
 import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
@@ -35,6 +36,7 @@ import '../mind/reasoning_endpoint.dart' as _iovbjp1a;
 import '../mind/self_config_endpoint.dart' as _iuprx8k1;
 import '../mind/self_question_endpoint.dart' as _i4qouglj;
 import '../mind/synthesis_endpoint.dart' as _i6ave7v9;
+import '../mind/world_endpoint.dart' as _iaj95ngr;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
 class Endpoints extends _is.EndpointDispatch {
@@ -63,6 +65,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'account',
+          null,
+        ),
+      'alerts': _impqu952.AlertsEndpoint()
+        ..initialize(
+          server,
+          'alerts',
           null,
         ),
       'chat': _i2b8uve4.ChatEndpoint()
@@ -153,6 +161,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'synthesis',
+          null,
+        ),
+      'world': _iaj95ngr.WorldEndpoint()
+        ..initialize(
+          server,
+          'world',
           null,
         ),
     };
@@ -410,6 +424,22 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['account'] as _i45717np.AccountEndpoint)
                   .deleteMyData(session),
+        ),
+      },
+    );
+    connectors['alerts'] = _is.EndpointConnector(
+      name: 'alerts',
+      endpoint: endpoints['alerts']!,
+      methodConnectors: {
+        'getAlerts': _is.MethodConnector(
+          name: 'getAlerts',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['alerts'] as _impqu952.AlertsEndpoint)
+                  .getAlerts(session),
         ),
       },
     );
@@ -764,6 +794,25 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['reasoning'] as _iovbjp1a.ReasoningEndpoint)
                   .trigger(session),
         ),
+        'getNotes': _is.MethodConnector(
+          name: 'getNotes',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['reasoning'] as _iovbjp1a.ReasoningEndpoint)
+                  .getNotes(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
       },
     );
     connectors['selfConfig'] = _is.EndpointConnector(
@@ -844,6 +893,41 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['synthesis'] as _i6ave7v9.SynthesisEndpoint)
                   .trigger(session),
+        ),
+      },
+    );
+    connectors['world'] = _is.EndpointConnector(
+      name: 'world',
+      endpoint: endpoints['world']!,
+      methodConnectors: {
+        'getCountries': _is.MethodConnector(
+          name: 'getCountries',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['world'] as _iaj95ngr.WorldEndpoint)
+                  .getCountries(session),
+        ),
+        'getCountry': _is.MethodConnector(
+          name: 'getCountry',
+          params: {
+            'code': _is.ParameterDescription(
+              name: 'code',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['world'] as _iaj95ngr.WorldEndpoint).getCountry(
+                    session,
+                    params['code'],
+                  ),
         ),
       },
     );

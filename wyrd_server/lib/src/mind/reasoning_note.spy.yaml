@@ -1,0 +1,15 @@
+# Replaces server.js's reasoning/*.md trace files: a human-readable note written by each
+# reasoning pass (kind 'reasoning') and self-question (kind 'self'). Presentation only -- the
+# functional effect of each tick is already captured in Mind/MemoryBlock. Pruned to the newest
+# entries by ReasoningLogService.
+class: ReasoningNote
+table: reasoning_note
+
+fields:
+  timestamp: DateTime
+  kind: String
+  content: String
+
+indexes:
+  reasoning_note_timestamp_idx:
+    fields: timestamp

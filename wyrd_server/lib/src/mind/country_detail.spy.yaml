@@ -1,0 +1,13 @@
+# The globe's country card (server.js GET /api/world/country/:code): static facts from the
+# bundled data plus live weather, which is null when Open-Meteo is unreachable.
+class: CountryDetail
+
+fields:
+  name: String
+  capital: String?
+  region: String
+  subregion: String
+  languages: List<String>
+  currencies: List<String>
+  flag: String?
+  weather: CountryWeather?

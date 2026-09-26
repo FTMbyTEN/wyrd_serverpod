@@ -1,0 +1,8 @@
+# One row of the ALERTS feed (server.js GET /api/alerts). Not stored -- synthesized on request
+# from diary, dreams, the COP log and digest progress. `tag` is DIARY, DREAM, COP or DIGEST.
+class: AlertNote
+
+fields:
+  tag: String
+  ago: String
+  body: String

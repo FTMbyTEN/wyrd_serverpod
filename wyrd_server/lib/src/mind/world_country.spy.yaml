@@ -1,0 +1,11 @@
+# One entry in the globe's country list (server.js GET /api/world/countries). Not stored --
+# built from the bundled world_countries_data.dart.
+class: WorldCountry
+
+fields:
+  name: String
+  cca2: String
+  cca3: String
+  region: String
+  lat: double
+  lng: double

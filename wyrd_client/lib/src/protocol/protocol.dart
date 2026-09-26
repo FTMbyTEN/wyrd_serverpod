@@ -16,6 +16,7 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
 import 'package:wyrd_client/src/protocol/mind/cop_log_entry.dart' as _iudx1gwn;
@@ -25,8 +26,11 @@ import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
+import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
+import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/account_export.dart' as _ij1ha6k5;
+import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/concept_edge.dart' as _iafou6mz;
@@ -34,6 +38,8 @@ import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/conversation_turn.dart' as _i8fl0sel;
 import 'mind/cop_log_entry.dart' as _i9dbtrq4;
+import 'mind/country_detail.dart' as _imll4whi;
+import 'mind/country_weather.dart' as _iny43g8g;
 import 'mind/curriculum_progress.dart' as _ipo2nutw;
 import 'mind/curriculum_status.dart' as _iiwgxlwr;
 import 'mind/diary_entry.dart' as _i0u3uu6s;
@@ -46,12 +52,15 @@ import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
+import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
+import 'mind/world_country.dart' as _iu995zpj;
 export 'greetings/greeting.dart';
 export 'mind/account_export.dart';
+export 'mind/alert_note.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
 export 'mind/concept_edge.dart';
@@ -59,6 +68,8 @@ export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
 export 'mind/conversation_turn.dart';
 export 'mind/cop_log_entry.dart';
+export 'mind/country_detail.dart';
+export 'mind/country_weather.dart';
 export 'mind/curriculum_progress.dart';
 export 'mind/curriculum_status.dart';
 export 'mind/diary_entry.dart';
@@ -71,10 +82,12 @@ export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
+export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
+export 'mind/world_country.dart';
 export 'client.dart';
 
 class Protocol extends _isc.SerializationManager {
@@ -117,6 +130,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ij1ha6k5.AccountExport) {
       return _ij1ha6k5.AccountExport.fromJson(data) as T;
     }
+    if (t == _itui3kw8.AlertNote) {
+      return _itui3kw8.AlertNote.fromJson(data) as T;
+    }
     if (t == _iagdrx9v.ChatAction) {
       return _iagdrx9v.ChatAction.fromJson(data) as T;
     }
@@ -137,6 +153,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i9dbtrq4.CopLogEntry) {
       return _i9dbtrq4.CopLogEntry.fromJson(data) as T;
+    }
+    if (t == _imll4whi.CountryDetail) {
+      return _imll4whi.CountryDetail.fromJson(data) as T;
+    }
+    if (t == _iny43g8g.CountryWeather) {
+      return _iny43g8g.CountryWeather.fromJson(data) as T;
     }
     if (t == _ipo2nutw.CurriculumProgress) {
       return _ipo2nutw.CurriculumProgress.fromJson(data) as T;
@@ -174,6 +196,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iqhk00ra.Mind) {
       return _iqhk00ra.Mind.fromJson(data) as T;
     }
+    if (t == _ik02x4l4.ReasoningNote) {
+      return _ik02x4l4.ReasoningNote.fromJson(data) as T;
+    }
     if (t == _ig7bxoiw.SelfConfig) {
       return _ig7bxoiw.SelfConfig.fromJson(data) as T;
     }
@@ -186,12 +211,18 @@ class Protocol extends _isc.SerializationManager {
     if (t == _irc0lure.UserProfile) {
       return _irc0lure.UserProfile.fromJson(data) as T;
     }
+    if (t == _iu995zpj.WorldCountry) {
+      return _iu995zpj.WorldCountry.fromJson(data) as T;
+    }
     if (t == _isc.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ij1ha6k5.AccountExport?>()) {
       return (data != null ? _ij1ha6k5.AccountExport.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_itui3kw8.AlertNote?>()) {
+      return (data != null ? _itui3kw8.AlertNote.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iagdrx9v.ChatAction?>()) {
       return (data != null ? _iagdrx9v.ChatAction.fromJson(data) : null) as T;
@@ -214,6 +245,14 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_i9dbtrq4.CopLogEntry?>()) {
       return (data != null ? _i9dbtrq4.CopLogEntry.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_imll4whi.CountryDetail?>()) {
+      return (data != null ? _imll4whi.CountryDetail.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iny43g8g.CountryWeather?>()) {
+      return (data != null ? _iny43g8g.CountryWeather.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_ipo2nutw.CurriculumProgress?>()) {
       return (data != null ? _ipo2nutw.CurriculumProgress.fromJson(data) : null)
@@ -255,6 +294,10 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iqhk00ra.Mind?>()) {
       return (data != null ? _iqhk00ra.Mind.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ik02x4l4.ReasoningNote?>()) {
+      return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_ig7bxoiw.SelfConfig?>()) {
       return (data != null ? _ig7bxoiw.SelfConfig.fromJson(data) : null) as T;
     }
@@ -267,6 +310,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_irc0lure.UserProfile?>()) {
       return (data != null ? _irc0lure.UserProfile.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iu995zpj.WorldCountry?>()) {
+      return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
     }
     if (t == List<_i8ng53gk.UserFact>) {
       return (data as List)
@@ -322,6 +368,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i4c7ehki.AlertNote>) {
+      return (data as List)
+              .map((e) => deserialize<_i4c7ehki.AlertNote>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ie2belbc.ConversationTurn>) {
       return (data as List)
               .map((e) => deserialize<_ie2belbc.ConversationTurn>(e))
@@ -358,9 +410,21 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ii1bv1u2.ReasoningNote>) {
+      return (data as List)
+              .map((e) => deserialize<_ii1bv1u2.ReasoningNote>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iudx1gwn.CopLogEntry>) {
       return (data as List)
               .map((e) => deserialize<_iudx1gwn.CopLogEntry>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iakrxk0g.WorldCountry>) {
+      return (data as List)
+              .map((e) => deserialize<_iakrxk0g.WorldCountry>(e))
               .toList()
           as T;
     }
@@ -377,6 +441,7 @@ class Protocol extends _isc.SerializationManager {
     return switch (type) {
       _izw8z7ou.Greeting => 'Greeting',
       _ij1ha6k5.AccountExport => 'AccountExport',
+      _itui3kw8.AlertNote => 'AlertNote',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
       _iafou6mz.ConceptEdge => 'ConceptEdge',
@@ -384,6 +449,8 @@ class Protocol extends _isc.SerializationManager {
       _iapme6ge.ConceptNode => 'ConceptNode',
       _i8fl0sel.ConversationTurn => 'ConversationTurn',
       _i9dbtrq4.CopLogEntry => 'CopLogEntry',
+      _imll4whi.CountryDetail => 'CountryDetail',
+      _iny43g8g.CountryWeather => 'CountryWeather',
       _ipo2nutw.CurriculumProgress => 'CurriculumProgress',
       _iiwgxlwr.CurriculumStatus => 'CurriculumStatus',
       _i0u3uu6s.DiaryEntry => 'DiaryEntry',
@@ -396,10 +463,12 @@ class Protocol extends _isc.SerializationManager {
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
+      _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
+      _iu995zpj.WorldCountry => 'WorldCountry',
       _ => null,
     };
   }
@@ -418,6 +487,8 @@ class Protocol extends _isc.SerializationManager {
         return 'Greeting';
       case _ij1ha6k5.AccountExport():
         return 'AccountExport';
+      case _itui3kw8.AlertNote():
+        return 'AlertNote';
       case _iagdrx9v.ChatAction():
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
@@ -432,6 +503,10 @@ class Protocol extends _isc.SerializationManager {
         return 'ConversationTurn';
       case _i9dbtrq4.CopLogEntry():
         return 'CopLogEntry';
+      case _imll4whi.CountryDetail():
+        return 'CountryDetail';
+      case _iny43g8g.CountryWeather():
+        return 'CountryWeather';
       case _ipo2nutw.CurriculumProgress():
         return 'CurriculumProgress';
       case _iiwgxlwr.CurriculumStatus():
@@ -456,6 +531,8 @@ class Protocol extends _isc.SerializationManager {
         return 'MemoryBlock';
       case _iqhk00ra.Mind():
         return 'Mind';
+      case _ik02x4l4.ReasoningNote():
+        return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
         return 'SelfConfig';
       case _ifocq1fp.SelfConfigChange():
@@ -464,6 +541,8 @@ class Protocol extends _isc.SerializationManager {
         return 'UserFact';
       case _irc0lure.UserProfile():
         return 'UserProfile';
+      case _iu995zpj.WorldCountry():
+        return 'WorldCountry';
     }
     className = _iaic.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -492,6 +571,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'AccountExport') {
       return deserialize<_ij1ha6k5.AccountExport>(data['data']);
     }
+    if (dataClassName == 'AlertNote') {
+      return deserialize<_itui3kw8.AlertNote>(data['data']);
+    }
     if (dataClassName == 'ChatAction') {
       return deserialize<_iagdrx9v.ChatAction>(data['data']);
     }
@@ -512,6 +594,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'CopLogEntry') {
       return deserialize<_i9dbtrq4.CopLogEntry>(data['data']);
+    }
+    if (dataClassName == 'CountryDetail') {
+      return deserialize<_imll4whi.CountryDetail>(data['data']);
+    }
+    if (dataClassName == 'CountryWeather') {
+      return deserialize<_iny43g8g.CountryWeather>(data['data']);
     }
     if (dataClassName == 'CurriculumProgress') {
       return deserialize<_ipo2nutw.CurriculumProgress>(data['data']);
@@ -549,6 +637,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'Mind') {
       return deserialize<_iqhk00ra.Mind>(data['data']);
     }
+    if (dataClassName == 'ReasoningNote') {
+      return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
+    }
     if (dataClassName == 'SelfConfig') {
       return deserialize<_ig7bxoiw.SelfConfig>(data['data']);
     }
@@ -560,6 +651,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'UserProfile') {
       return deserialize<_irc0lure.UserProfile>(data['data']);
+    }
+    if (dataClassName == 'WorldCountry') {
+      return deserialize<_iu995zpj.WorldCountry>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);

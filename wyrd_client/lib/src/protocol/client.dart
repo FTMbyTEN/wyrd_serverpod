@@ -19,11 +19,13 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
 import 'package:wyrd_client/src/protocol/mind/account_export.dart' as _izg4k2n4;
+import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
 import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
 import 'package:wyrd_client/src/protocol/mind/cop_log_entry.dart' as _iudx1gwn;
+import 'package:wyrd_client/src/protocol/mind/country_detail.dart' as _i3byid52;
 import 'package:wyrd_client/src/protocol/mind/curriculum_status.dart'
     as _i8wsch3q;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
@@ -35,10 +37,12 @@ import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
 import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
+import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/self_config.dart' as _i2gzn8r6;
 import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
     as _ifqisoc8;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
+import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'protocol.dart' as _il2as5qe;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
@@ -312,6 +316,23 @@ class EndpointAccount extends _isc.EndpointRef {
   );
 }
 
+/// Ports /api/alerts from server.js. Not a stored feature -- a synthesis of events already
+/// logged elsewhere (diary, dreams, COP log, digest milestones), newest first. Public, like Node.
+/// {@category Endpoint}
+class EndpointAlerts extends _isc.EndpointRef {
+  EndpointAlerts(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'alerts';
+
+  _ida.Future<List<_i4c7ehki.AlertNote>> getAlerts() =>
+      caller.callServerEndpoint<List<_i4c7ehki.AlertNote>>(
+        'alerts',
+        'getAlerts',
+        {},
+      );
+}
+
 /// Ports /api/chat from server.js (the core reply path -- see chat_service.dart for what's
 /// intentionally not ported yet). Requires login, matching Node's requireAuth.
 /// {@category Endpoint}
@@ -566,8 +587,8 @@ class EndpointProfile extends _isc.EndpointRef {
       );
 }
 
-/// Ports /api/reasoning/trigger from server.js. Public/unauthenticated, matching Node.
-/// GET /api/reasoning (the human-readable .md log) is not ported -- see reasoning_service.dart.
+/// Ports /api/reasoning and /api/reasoning/trigger from server.js. Public/unauthenticated,
+/// matching Node.
 /// {@category Endpoint}
 class EndpointReasoning extends _isc.EndpointRef {
   EndpointReasoning(_isc.EndpointCaller caller) : super(caller);
@@ -580,6 +601,15 @@ class EndpointReasoning extends _isc.EndpointRef {
     'trigger',
     {},
   );
+
+  /// Newest first: the traces written by reasoning passes (kind 'reasoning') and
+  /// self-questions (kind 'self').
+  _ida.Future<List<_ii1bv1u2.ReasoningNote>> getNotes({int? limit}) =>
+      caller.callServerEndpoint<List<_ii1bv1u2.ReasoningNote>>(
+        'reasoning',
+        'getNotes',
+        {'limit': limit},
+      );
 }
 
 /// Ports /api/self-config, /api/cop-log, and /api/self-modify/trigger from server.js.
@@ -643,6 +673,31 @@ class EndpointSynthesis extends _isc.EndpointRef {
   );
 }
 
+/// Ports /api/world/countries and /api/world/country/:code from server.js -- the data behind
+/// the globe WYRD opens via the open_world_map tool. Public, like Node.
+/// {@category Endpoint}
+class EndpointWorld extends _isc.EndpointRef {
+  EndpointWorld(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'world';
+
+  _ida.Future<List<_iakrxk0g.WorldCountry>> getCountries() =>
+      caller.callServerEndpoint<List<_iakrxk0g.WorldCountry>>(
+        'world',
+        'getCountries',
+        {},
+      );
+
+  /// [code] is a cca3 code (e.g. "NGA"). Returns null for an unknown code.
+  _ida.Future<_i3byid52.CountryDetail?> getCountry(String code) =>
+      caller.callServerEndpoint<_i3byid52.CountryDetail?>(
+        'world',
+        'getCountry',
+        {'code': code},
+      );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _iaic.Caller(client);
@@ -685,6 +740,7 @@ class Client extends _isc.ServerpodClientShared {
     jwtRefresh = EndpointJwtRefresh(this);
     greeting = EndpointGreeting(this);
     account = EndpointAccount(this);
+    alerts = EndpointAlerts(this);
     chat = EndpointChat(this);
     curriculum = EndpointCurriculum(this);
     diary = EndpointDiary(this);
@@ -700,6 +756,7 @@ class Client extends _isc.ServerpodClientShared {
     selfConfig = EndpointSelfConfig(this);
     selfQuestion = EndpointSelfQuestion(this);
     synthesis = EndpointSynthesis(this);
+    world = EndpointWorld(this);
     modules = Modules(this);
   }
 
@@ -710,6 +767,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointGreeting greeting;
 
   late final EndpointAccount account;
+
+  late final EndpointAlerts alerts;
 
   late final EndpointChat chat;
 
@@ -741,6 +800,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointSynthesis synthesis;
 
+  late final EndpointWorld world;
+
   late final Modules modules;
 
   @override
@@ -749,6 +810,7 @@ class Client extends _isc.ServerpodClientShared {
     'jwtRefresh': jwtRefresh,
     'greeting': greeting,
     'account': account,
+    'alerts': alerts,
     'chat': chat,
     'curriculum': curriculum,
     'diary': diary,
@@ -764,6 +826,7 @@ class Client extends _isc.ServerpodClientShared {
     'selfConfig': selfConfig,
     'selfQuestion': selfQuestion,
     'synthesis': synthesis,
+    'world': world,
   };
 
   @override

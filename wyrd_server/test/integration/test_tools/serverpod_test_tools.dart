@@ -21,11 +21,14 @@ import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
 import 'package:wyrd_server/src/generated/greetings/greeting.dart' as _i6wty2t7;
 import 'package:wyrd_server/src/generated/mind/account_export.dart'
     as _it0zlzes;
+import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
 import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
 import 'package:wyrd_server/src/generated/mind/cop_log_entry.dart' as _isvsvjy1;
+import 'package:wyrd_server/src/generated/mind/country_detail.dart'
+    as _ib3p4g1p;
 import 'package:wyrd_server/src/generated/mind/curriculum_status.dart'
     as _ib9ako77;
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
@@ -37,10 +40,13 @@ import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
 import 'package:wyrd_server/src/generated/mind/lexicon_stats.dart' as _iv2jt4ku;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'package:wyrd_server/src/generated/mind/mind.dart' as _i8dcpm7v;
+import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
+    as _ix0xy1y5;
 import 'package:wyrd_server/src/generated/mind/self_config.dart' as _ixg8jrhz;
 import 'package:wyrd_server/src/generated/mind/self_config_change.dart'
     as _ixskf8ah;
 import 'package:wyrd_server/src/generated/mind/user_profile.dart' as _ifiznghf;
+import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
 import 'package:wyrd_server/src/generated/protocol.dart';
 import 'package:wyrd_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -179,6 +185,8 @@ class TestEndpoints {
 
   late final _AccountEndpoint account;
 
+  late final _AlertsEndpoint alerts;
+
   late final _ChatEndpoint chat;
 
   late final _CurriculumEndpoint curriculum;
@@ -208,6 +216,8 @@ class TestEndpoints {
   late final _SelfQuestionEndpoint selfQuestion;
 
   late final _SynthesisEndpoint synthesis;
+
+  late final _WorldEndpoint world;
 }
 
 class _InternalTestEndpoints extends TestEndpoints
@@ -230,6 +240,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     account = _AccountEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    alerts = _AlertsEndpoint(
       endpoints,
       serializationManager,
     );
@@ -290,6 +304,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     synthesis = _SynthesisEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    world = _WorldEndpoint(
       endpoints,
       serializationManager,
     );
@@ -733,6 +751,47 @@ class _AccountEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<void>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _AlertsEndpoint {
+  _AlertsEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_ipgej4na.AlertNote>> getAlerts(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'alerts',
+            method: 'getAlerts',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'alerts',
+          methodName: 'getAlerts',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ipgej4na.AlertNote>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1479,6 +1538,37 @@ class _ReasoningEndpoint {
       }
     });
   }
+
+  _ida.Future<List<_ix0xy1y5.ReasoningNote>> getNotes(
+    _ist.TestSessionBuilder sessionBuilder, {
+    int? limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'reasoning',
+            method: 'getNotes',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'reasoning',
+          methodName: 'getNotes',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ix0xy1y5.ReasoningNote>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _SelfConfigEndpoint {
@@ -1653,6 +1743,78 @@ class _SynthesisEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _WorldEndpoint {
+  _WorldEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_i3qe2gpp.WorldCountry>> getCountries(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'world',
+            method: 'getCountries',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'world',
+          methodName: 'getCountries',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_i3qe2gpp.WorldCountry>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ib3p4g1p.CountryDetail?> getCountry(
+    _ist.TestSessionBuilder sessionBuilder,
+    String code,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'world',
+            method: 'getCountry',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'world',
+          methodName: 'getCountry',
+          parameters: _ist.testObjectToJson({'code': code}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ib3p4g1p.CountryDetail?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

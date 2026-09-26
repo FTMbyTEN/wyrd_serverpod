@@ -1,0 +1,7 @@
+# Current conditions at a country's centroid, from Open-Meteo (keyless). `code` is a WMO
+# weather code.
+class: CountryWeather
+
+fields:
+  tempC: double
+  code: int
