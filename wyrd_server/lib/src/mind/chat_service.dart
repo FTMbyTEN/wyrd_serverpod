@@ -88,8 +88,7 @@ class ChatService {
         .where((s) => s.isNotEmpty)
         .toList();
 
-    final lexiconEntries = await LexiconEntry.db.find(session);
-    final vocabCount = lexiconEntries.where((e) => e.understood).length;
+    final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
     final blockCount = await MemoryBlock.db.count(session);
 
     final profile = await UserFactService.loadOrCreateProfile(

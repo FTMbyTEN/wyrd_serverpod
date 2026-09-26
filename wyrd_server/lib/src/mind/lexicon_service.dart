@@ -81,15 +81,15 @@ class LexiconService {
     if (res.statusCode == 404) return null;
     if (res.statusCode != 200) throw Exception('wiktionary http ${res.statusCode}');
     final senses = (jsonDecode(res.body) as Map<String, dynamic>)['en'] as List<dynamic>? ?? [];
+    final candidates = <({String partOfSpeech, String definition})>[];
     for (final sense in senses.cast<Map<String, dynamic>>()) {
+      final pos = (sense['partOfSpeech'] as String? ?? 'unknown').toLowerCase();
       for (final d in (sense['definitions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) {
         final text = stripHtml(d['definition'] as String? ?? '');
-        if (text.isNotEmpty) {
-          return (partOfSpeech: (sense['partOfSpeech'] as String? ?? 'unknown').toLowerCase(), definition: text);
-        }
+        if (text.isNotEmpty) candidates.add((partOfSpeech: pos, definition: text));
       }
     }
-    return null;
+    return bestSense(candidates);
   }
 
   /// dictionaryapi.dev (the original server.js source). Null on a 404 (unknown word).
@@ -101,15 +101,61 @@ class LexiconService {
     if (res.statusCode != 200) throw Exception('dictionaryapi http ${res.statusCode}');
     final data = jsonDecode(res.body);
     if (data is! List || data.isEmpty) return null;
-    final meanings = (data.first as Map<String, dynamic>)['meanings'] as List<dynamic>?;
-    final meaning = meanings != null && meanings.isNotEmpty ? meanings.first as Map<String, dynamic> : null;
-    final definitions = meaning?['definitions'] as List<dynamic>?;
-    final definition = definitions != null && definitions.isNotEmpty
-        ? (definitions.first as Map<String, dynamic>)['definition'] as String?
-        : null;
-    if (definition == null || definition.trim().isEmpty) return null;
-    return (partOfSpeech: meaning!['partOfSpeech'] as String? ?? 'unknown', definition: definition.trim());
+    final candidates = <({String partOfSpeech, String definition})>[];
+    for (final m in ((data.first as Map<String, dynamic>)['meanings'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) {
+      final pos = (m['partOfSpeech'] as String? ?? 'unknown').toLowerCase();
+      for (final d in (m['definitions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) {
+        final text = (d['definition'] as String? ?? '').trim();
+        if (text.isNotEmpty) candidates.add((partOfSpeech: pos, definition: text));
+      }
+    }
+    return bestSense(candidates);
   }
+
+  // Parts of speech that describe the word as people actually use it, best first. Anything not
+  // listed (symbol, abbreviation, initialism, proper noun, letter, affix...) is a last resort --
+  // that's how "got" ended up defined as "ISO 639 language code for Gothic".
+  static const _posRank = {
+    'noun': 0, 'verb': 0, 'adjective': 0, 'adverb': 0,
+    'pronoun': 1, 'preposition': 1, 'conjunction': 1, 'determiner': 1,
+    'interjection': 1, 'numeral': 1, 'particle': 1, 'participle': 1,
+  };
+  static final _technical = RegExp(
+    r'\b(ISO 639|language code|abbreviation of|initialism of|acronym of|symbol for|chemical symbol|'
+        r'alternative (letter-case|spelling) form of|misspelling of)\b',
+    caseSensitive: false,
+  );
+  static final _marginal = RegExp(
+    r'^\(?(obsolete|archaic|rare|dated|dialectal|dialect|nonstandard|slang|vulgar|historical)\b',
+    caseSensitive: false,
+  );
+
+  /// Picks the sense a reader would expect: everyday parts of speech over symbols and codes,
+  /// current senses over obsolete or rare ones, and a real explanation over a stub. "Past tense
+  /// of get"-style entries are fine -- for inflected words that's the right answer. Earlier
+  /// entries win ties, since dictionaries list the main sense first. Null if nothing qualifies.
+  static ({String partOfSpeech, String definition})? bestSense(
+    List<({String partOfSpeech, String definition})> candidates,
+  ) {
+    ({String partOfSpeech, String definition})? best;
+    var bestScore = 1 << 30;
+    for (final c in candidates) {
+      var score = (_posRank[c.partOfSpeech] ?? 5) * 10;
+      if (_technical.hasMatch(c.definition)) score += 40;
+      if (_marginal.hasMatch(c.definition)) score += 15;
+      if (c.definition.length < 12) score += 8;
+      if (score < bestScore) {
+        bestScore = score;
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  /// True for entries learned before [bestSense] existed that are clearly the wrong sense.
+  static bool isPoorDefinition(LexiconEntry e) =>
+      e.understood &&
+      ((e.partOfSpeech != null && !_posRank.containsKey(e.partOfSpeech)) || _technical.hasMatch(e.definition ?? ''));
 
   /// Wiktionary definitions are HTML fragments (links, spans, italics). Plain text for storage.
   static String stripHtml(String html) => html
@@ -125,9 +171,50 @@ class LexiconService {
 
   /// Returns true if a word was attempted (false when there's no wordlist yet or nothing new
   /// to learn).
+  // Short and filler words ("who", "got", "into") are real English but say nothing about what
+  // WYRD is learning; its vocabulary time goes to meaningful words instead.
+  static const _minWordLength = 4;
+  static const _filler = {
+    'that', 'this', 'with', 'from', 'have', 'been', 'were', 'they', 'them', 'then', 'than', 'what', 'when',
+    'where', 'which', 'while', 'would', 'could', 'should', 'there', 'these', 'those', 'their', 'about', 'into',
+    'just', 'like', 'some', 'only', 'over', 'very', 'also', 'more', 'most', 'much', 'many', 'such', 'here',
+    'your', 'yours', 'ours', 'will', 'shall', 'does', 'done', 'being', 'each', 'every', 'other', 'another',
+    'thing', 'things', 'something', 'anything', 'nothing', 'before', 'after', 'least', 'little', 'seen',
+  };
+
+  /// Re-defines one word that was learned with the wrong sense (e.g. "got" as a language code).
+  /// Returns true if one was handled this tick.
+  static Future<bool> _repairOne(Session session) async {
+    final recent = await LexiconEntry.db.find(
+      session,
+      where: (t) => t.understood.equals(true),
+      orderBy: (t) => t.id.desc(),
+      limit: 300,
+    );
+    final poor = recent.where(isPoorDefinition).firstOrNull;
+    if (poor == null) return false;
+    final ({String partOfSpeech, String definition})? def;
+    try {
+      def = await _define(poor.word);
+    } catch (_) {
+      return false; // dictionaries unreachable -- try again later
+    }
+    final fixed = def != null && !isPoorDefinition(poor.copyWith(partOfSpeech: def.partOfSpeech, definition: def.definition));
+    await LexiconEntry.db.updateRow(
+      session,
+      fixed
+          ? poor.copyWith(partOfSpeech: def.partOfSpeech, definition: def.definition)
+          // only a code/symbol sense exists: it isn't vocabulary, so stop counting it as understood
+          : poor.copyWith(understood: false),
+    );
+    session.log('[lexicon] repaired "${poor.word}": ${fixed ? def.definition : 'no everyday sense'}');
+    return true;
+  }
+
   static Future<bool> tick(Session session) async {
     final dictionary = await _ensureDictionary(session);
     if (dictionary == null || dictionary.isEmpty) return false;
+    if (await _repairOne(session)) return true;
 
     final pool = await MemoryBlock.db.find(
       session,
@@ -136,7 +223,7 @@ class LexiconService {
     );
     final seen = pool
         .expand((b) => b.topics)
-        .where(dictionary.contains)
+        .where((w) => w.length >= _minWordLength && !_filler.contains(w) && dictionary.contains(w))
         .toSet();
     if (seen.isEmpty) return false;
 

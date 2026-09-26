@@ -17,8 +17,7 @@ class DiaryService {
     );
     final recentTopics = recentBlocks.expand((b) => b.topics).toSet().take(20).toList();
 
-    final lexiconEntries = await LexiconEntry.db.find(session);
-    final vocabCount = lexiconEntries.where((e) => e.understood).length;
+    final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
 
     final curiosityPct = (mind.curiosity * 100).round();
     final confidencePct = (mind.confidence * 100).round();

@@ -13,26 +13,27 @@ class LexiconEndpoint extends Endpoint {
   /// to learn (or the wordlist isn't loaded yet).
   Future<bool> trigger(Session session) => LexiconService.tick(session);
 
+  /// Two counts and the five newest understood words -- not the whole lexicon, which grows
+  /// every 30s and was being loaded in full on every poll.
   Future<LexiconStats> getStats(Session session) async {
-    final all = await LexiconEntry.db.find(session, orderBy: (t) => t.id.asc());
-    final understood = all.where((e) => e.understood).toList();
-    final recent = understood
-        .skip(understood.length > 5 ? understood.length - 5 : 0)
-        .map(
-          (e) => LexiconWordSummary(
-            word: e.word,
-            definition: e.definition,
-            partOfSpeech: e.partOfSpeech,
-          ),
-        )
-        .toList();
-
+    final learned = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
+    final attempted = await LexiconEntry.db.count(session);
+    final newest = await LexiconEntry.db.find(
+      session,
+      where: (t) => t.understood.equals(true),
+      orderBy: (t) => t.id.desc(),
+      limit: 5,
+    );
     return LexiconStats(
-      learned: understood.length,
-      attempted: all.length,
-      recentWords: recent,
+      learned: learned,
+      attempted: attempted,
+      recentWords: [
+        for (final e in newest.reversed)
+          LexiconWordSummary(word: e.word, definition: e.definition, partOfSpeech: e.partOfSpeech),
+      ],
     );
   }
+
 
   Future<LexiconEntry?> getWord(Session session, String word) async {
     return await LexiconEntry.db.findFirstRow(

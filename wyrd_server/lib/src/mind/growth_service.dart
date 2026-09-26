@@ -9,8 +9,7 @@ class GrowthService {
   static Future<GrowthSnapshot> takeSnapshot(Session session) async {
     final mind = await MindService.load(session);
     final blockCount = await MemoryBlock.db.count(session);
-    final lexiconEntries = await LexiconEntry.db.find(session);
-    final vocabCount = lexiconEntries.where((e) => e.understood).length;
+    final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
 
     return await GrowthSnapshot.db.insertRow(
       session,
