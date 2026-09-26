@@ -34,7 +34,7 @@ serverpod:
         && (call flutter build %ARGS% || (flutter clean && call flutter build %ARGS%))
         && xcopy /E /I /Y build\web ..\wyrd_server\web\app
       posix: |
-        rm -rf ../wyrd_server/web/app
+        rm -rf ~/wyrd_serverpod/wyrd/wyrd_server/web/app
         cd ../wyrd_flutter
         set -- web --base-href / --output ../wyrd_server/web/app
         flutter build "$@" || { flutter clean && flutter build "$@"; }
@@ -51,10 +51,10 @@ serverpod:
         && npx expo export --platform web
         && xcopy /E /I /Y dist C:\Users\TEN\Desktop\wyrd_serverpod\wyrd_server\web\app
       posix: |
-        rm -rf ../wyrd_server/web/app
+        rm -rf ~/wyrd_serverpod/wyrd/wyrd_server/web/app
         cd ~/consciousness-bot/mobile
         EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space npx expo export --platform web
-        cp -r dist ../../wyrd_serverpod/wyrd_server/web/app
+        cp -r dist ~/wyrd_serverpod/wyrd/wyrd_server/web/app
 
   # Companion Flutter apps that `serverpod start` can launch (Ctrl+R), keyed
   # by a display alias. The default device is the web server, opening the
