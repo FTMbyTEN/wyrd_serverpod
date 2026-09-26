@@ -1,0 +1,14 @@
+# Every topic WYRD has ever seen, and whether it has resolved (self-answered) it -- the
+# permanent, additive-only sets behind the digest %. Previously two JSON lists on the mind row,
+# which meant every tick and every getMind read and rewrote thousands of strings.
+class: MindTopic
+table: mind_topic
+
+fields:
+  topic: String
+  resolved: bool
+
+indexes:
+  mind_topic_topic_idx:
+    fields: topic
+    unique: true

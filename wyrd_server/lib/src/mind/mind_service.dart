@@ -6,7 +6,8 @@ import 'package:serverpod/serverpod.dart';
 /// Ports server.js's mind.json state machine (loadMind/saveMind/updateMind/pickMood/
 /// computeDigest) onto a real Postgres-backed singleton row. There is exactly one Mind row
 /// (id 1); every read/update goes through here so the digest math and mood rules stay in one
-/// place instead of being re-derived per endpoint.
+/// place instead of being re-derived per endpoint. The seen/resolved topic sets behind the
+/// digest live in the mind_topic table, not on the row.
 class MindService {
   static const _goalTemplates = <String Function(String)>[
     _goalDeepen,
@@ -46,8 +47,6 @@ class MindService {
         lastEvent: null,
         explorationCount: 0,
         updatedAt: DateTime.now().toUtc(),
-        seenTopics: [],
-        resolvedTopics: [],
         selfAnswerTimestamps: [],
       ),
     );
@@ -68,9 +67,34 @@ class MindService {
     return 'reflective';
   }
 
-  static DigestInfo _computeDigest(Mind mind) {
-    final total = mind.seenTopics.length;
-    final answered = mind.resolvedTopics.length;
+  /// Adds [seen] to the permanent topic set and marks [resolved] as resolved (inserting any
+  /// that weren't seen yet). One statement each, in Postgres, instead of rewriting the full sets.
+  static Future<void> _recordTopics(Session session, List<String> seen, List<String> resolved) async {
+    final seenOnly = seen.toSet().difference(resolved.toSet());
+    for (final (topics, isResolved) in [(seenOnly, false), (resolved.toSet(), true)]) {
+      if (topics.isEmpty) continue;
+      final params = <String, Object>{};
+      final values = <String>[];
+      var i = 0;
+      for (final t in topics) {
+        params['t$i'] = t;
+        values.add('(@t$i, $isResolved)');
+        i++;
+      }
+      await session.db.unsafeExecute(
+        'INSERT INTO "mind_topic" ("topic", "resolved") VALUES ${values.join(', ')} '
+        'ON CONFLICT ("topic") DO ${isResolved ? 'UPDATE SET "resolved" = true' : 'NOTHING'}',
+        parameters: QueryParameters.named(params),
+      );
+    }
+  }
+
+  static Future<DigestInfo> _computeDigest(Session session, Mind mind) async {
+    final counts = await session.db.unsafeQuery(
+      'SELECT count(*), count(*) FILTER (WHERE "resolved") FROM "mind_topic"',
+    );
+    final total = counts.first[0] as int;
+    final answered = counts.first[1] as int;
     final backlog = max(0, total - answered);
     final percent = total > 0 ? (answered / total * 100).round().toDouble() : 0.0;
 
@@ -157,8 +181,7 @@ class MindService {
     final goalFn = _goalTemplates[rand.nextInt(_goalTemplates.length)];
     final activeGoal = goalFn(focusTopic ?? 'the unknown');
 
-    final seenTopics = {...mind.seenTopics, ...newSeenTopics}.toList();
-    final resolvedTopics = {...mind.resolvedTopics, ...newResolvedTopics}.toList();
+    await _recordTopics(session, newSeenTopics, newResolvedTopics);
 
     var updated = mind.copyWith(
       curiosity: curiosity,
@@ -169,11 +192,9 @@ class MindService {
       lastEvent: eventType,
       explorationCount: explorationCount,
       selfAnswerTimestamps: selfAnswerTimestamps,
-      seenTopics: seenTopics,
-      resolvedTopics: resolvedTopics,
       updatedAt: DateTime.now().toUtc(),
     );
-    updated = updated.copyWith(digest: _computeDigest(updated));
+    updated = updated.copyWith(digest: await _computeDigest(session, updated));
 
     return await Mind.db.updateRow(session, updated);
   }

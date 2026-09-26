@@ -535,6 +535,10 @@ class EndpointMemory extends _isc.EndpointRef {
         {},
       );
 
+  /// Top topics by how many recent blocks mention them, and how often pairs of those top topics
+  /// co-occur. Computed in Postgres: doing it in Dart meant loading 5000 full blocks and counting
+  /// every topic pair in each, which blocked the server's single isolate for ~30s -- stalling
+  /// every other request while it ran. Cached briefly since the graph changes slowly.
   _ida.Future<_i3megjmi.ConceptGraph> getConcepts() =>
       caller.callServerEndpoint<_i3megjmi.ConceptGraph>(
         'memory',

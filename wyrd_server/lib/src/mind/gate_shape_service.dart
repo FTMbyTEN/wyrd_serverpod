@@ -61,12 +61,19 @@ class GateShapeService {
   static const _maxRecentTypes = 5;
   static var _callCount = 0;
 
+  // The gate is public and polled every few seconds per visitor, so only occasionally ask the LLM
+  // for a fresh shape; the deterministic fallback covers every call in between. See LlmBudget.
+  static const _llmMinGap = Duration(hours: 2);
+  static DateTime? _lastLlmAt;
+
   static Future<GateShape> next(Session session) async {
     _callCount++;
     final mind = await MindService.load(session);
 
     GateShape? shape;
-    if (LlmService.isConfigured(session)) {
+    final now = DateTime.now();
+    if (LlmService.isConfigured(session) && (_lastLlmAt == null || now.difference(_lastLlmAt!) >= _llmMinGap)) {
+      _lastLlmAt = now;
       final raw = await LlmService.callSimple(
         session,
         _prompt(mind),

@@ -23,6 +23,8 @@ abstract class SystemStatus
     required this.lexiconCycleMs,
     required this.llmActive,
     this.llmModel,
+    required this.llmSpentTodayUsd,
+    required this.llmDailyCapUsd,
     required this.qaDatasetEntries,
     required this.dialogueDatasetEntries,
   });
@@ -36,6 +38,8 @@ abstract class SystemStatus
     required int lexiconCycleMs,
     required bool llmActive,
     String? llmModel,
+    required double llmSpentTodayUsd,
+    required double llmDailyCapUsd,
     required int qaDatasetEntries,
     required int dialogueDatasetEntries,
   }) = _SystemStatusImpl;
@@ -52,6 +56,9 @@ abstract class SystemStatus
       lexiconCycleMs: jsonSerialization['lexiconCycleMs'] as int,
       llmActive: _is.BoolJsonExtension.fromJson(jsonSerialization['llmActive']),
       llmModel: jsonSerialization['llmModel'] as String?,
+      llmSpentTodayUsd: (jsonSerialization['llmSpentTodayUsd'] as num)
+          .toDouble(),
+      llmDailyCapUsd: (jsonSerialization['llmDailyCapUsd'] as num).toDouble(),
       qaDatasetEntries: jsonSerialization['qaDatasetEntries'] as int,
       dialogueDatasetEntries:
           jsonSerialization['dialogueDatasetEntries'] as int,
@@ -74,6 +81,10 @@ abstract class SystemStatus
 
   String? llmModel;
 
+  double llmSpentTodayUsd;
+
+  double llmDailyCapUsd;
+
   int qaDatasetEntries;
 
   int dialogueDatasetEntries;
@@ -90,6 +101,8 @@ abstract class SystemStatus
     int? lexiconCycleMs,
     bool? llmActive,
     String? llmModel,
+    double? llmSpentTodayUsd,
+    double? llmDailyCapUsd,
     int? qaDatasetEntries,
     int? dialogueDatasetEntries,
   });
@@ -105,6 +118,8 @@ abstract class SystemStatus
       'lexiconCycleMs': lexiconCycleMs,
       'llmActive': llmActive,
       if (llmModel != null) 'llmModel': llmModel,
+      'llmSpentTodayUsd': llmSpentTodayUsd,
+      'llmDailyCapUsd': llmDailyCapUsd,
       'qaDatasetEntries': qaDatasetEntries,
       'dialogueDatasetEntries': dialogueDatasetEntries,
     };
@@ -122,6 +137,8 @@ abstract class SystemStatus
       'lexiconCycleMs': lexiconCycleMs,
       'llmActive': llmActive,
       if (llmModel != null) 'llmModel': llmModel,
+      'llmSpentTodayUsd': llmSpentTodayUsd,
+      'llmDailyCapUsd': llmDailyCapUsd,
       'qaDatasetEntries': qaDatasetEntries,
       'dialogueDatasetEntries': dialogueDatasetEntries,
     };
@@ -145,6 +162,8 @@ class _SystemStatusImpl extends SystemStatus {
     required int lexiconCycleMs,
     required bool llmActive,
     String? llmModel,
+    required double llmSpentTodayUsd,
+    required double llmDailyCapUsd,
     required int qaDatasetEntries,
     required int dialogueDatasetEntries,
   }) : super._(
@@ -156,6 +175,8 @@ class _SystemStatusImpl extends SystemStatus {
          lexiconCycleMs: lexiconCycleMs,
          llmActive: llmActive,
          llmModel: llmModel,
+         llmSpentTodayUsd: llmSpentTodayUsd,
+         llmDailyCapUsd: llmDailyCapUsd,
          qaDatasetEntries: qaDatasetEntries,
          dialogueDatasetEntries: dialogueDatasetEntries,
        );
@@ -173,6 +194,8 @@ class _SystemStatusImpl extends SystemStatus {
     int? lexiconCycleMs,
     bool? llmActive,
     Object? llmModel = _Undefined,
+    double? llmSpentTodayUsd,
+    double? llmDailyCapUsd,
     int? qaDatasetEntries,
     int? dialogueDatasetEntries,
   }) {
@@ -185,6 +208,8 @@ class _SystemStatusImpl extends SystemStatus {
       lexiconCycleMs: lexiconCycleMs ?? this.lexiconCycleMs,
       llmActive: llmActive ?? this.llmActive,
       llmModel: llmModel is String? ? llmModel : this.llmModel,
+      llmSpentTodayUsd: llmSpentTodayUsd ?? this.llmSpentTodayUsd,
+      llmDailyCapUsd: llmDailyCapUsd ?? this.llmDailyCapUsd,
       qaDatasetEntries: qaDatasetEntries ?? this.qaDatasetEntries,
       dialogueDatasetEntries:
           dialogueDatasetEntries ?? this.dialogueDatasetEntries,

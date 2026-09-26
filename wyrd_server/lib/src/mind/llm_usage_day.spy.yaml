@@ -1,0 +1,15 @@
+# Estimated Anthropic spend per UTC day, in micro-dollars, summed from each response's real
+# token usage. Backs LlmBudget's daily cap; in the database (not memory) so it holds across
+# restarts, deploys and multiple server instances.
+class: LlmUsageDay
+table: llm_usage_day
+
+fields:
+  day: String
+  costMicroUsd: int
+  calls: int
+
+indexes:
+  llm_usage_day_day_idx:
+    fields: day
+    unique: true

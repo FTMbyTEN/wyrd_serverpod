@@ -1,4 +1,5 @@
 import '../generated/protocol.dart';
+import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'tick_schedule.dart';
 import 'package:serverpod/serverpod.dart';
@@ -21,6 +22,8 @@ class StatusEndpoint extends Endpoint {
       lexiconCycleMs: TickSchedule.lexicon.inMilliseconds,
       llmActive: llmActive,
       llmModel: llmActive ? LlmService.model : null,
+      llmSpentTodayUsd: await LlmBudget.spentTodayUsd(session),
+      llmDailyCapUsd: LlmBudget.dailyCapUsd(session),
       qaDatasetEntries: 0,
       dialogueDatasetEntries: 0,
     );

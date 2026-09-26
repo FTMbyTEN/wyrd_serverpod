@@ -53,8 +53,10 @@ import 'mind/growth_snapshot.dart' as _iyj2s79k;
 import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
+import 'mind/llm_usage_day.dart' as _i1bjxjal;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
+import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
@@ -86,8 +88,10 @@ export 'mind/growth_snapshot.dart';
 export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
+export 'mind/llm_usage_day.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
+export 'mind/mind_topic.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
@@ -496,6 +500,56 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'llm_usage_day',
+      dartName: 'LlmUsageDay',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'day',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'costMicroUsd',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'calls',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'llm_usage_day_day_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'day',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'memory_block',
       dartName: 'MemoryBlock',
       schema: 'public',
@@ -709,18 +763,6 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'DateTime',
         ),
         _isp.ColumnDefinition(
-          name: 'seenTopics',
-          columnType: _isp.ColumnType.json,
-          isNullable: false,
-          dartType: 'List<String>',
-        ),
-        _isp.ColumnDefinition(
-          name: 'resolvedTopics',
-          columnType: _isp.ColumnType.json,
-          isNullable: false,
-          dartType: 'List<String>',
-        ),
-        _isp.ColumnDefinition(
           name: 'selfAnswerTimestamps',
           columnType: _isp.ColumnType.json,
           isNullable: false,
@@ -729,6 +771,50 @@ class Protocol extends _is.DatabaseSerializationManager {
       ],
       foreignKeys: [],
       indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'mind_topic',
+      dartName: 'MindTopic',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'topic',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'resolved',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'mind_topic_topic_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'topic',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
       managed: true,
     ),
     _isp.TableDefinition(
@@ -992,11 +1078,17 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i7zu42sq.LexiconWordSummary) {
       return _i7zu42sq.LexiconWordSummary.fromJson(data) as T;
     }
+    if (t == _i1bjxjal.LlmUsageDay) {
+      return _i1bjxjal.LlmUsageDay.fromJson(data) as T;
+    }
     if (t == _if349ohh.MemoryBlock) {
       return _if349ohh.MemoryBlock.fromJson(data) as T;
     }
     if (t == _iqhk00ra.Mind) {
       return _iqhk00ra.Mind.fromJson(data) as T;
+    }
+    if (t == _ix6ukv82.MindTopic) {
+      return _ix6ukv82.MindTopic.fromJson(data) as T;
     }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
@@ -1099,11 +1191,17 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null ? _i7zu42sq.LexiconWordSummary.fromJson(data) : null)
           as T;
     }
+    if (t == _is.getType<_i1bjxjal.LlmUsageDay?>()) {
+      return (data != null ? _i1bjxjal.LlmUsageDay.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_if349ohh.MemoryBlock?>()) {
       return (data != null ? _if349ohh.MemoryBlock.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_iqhk00ra.Mind?>()) {
       return (data != null ? _iqhk00ra.Mind.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ix6ukv82.MindTopic?>()) {
+      return (data != null ? _ix6ukv82.MindTopic.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
@@ -1282,8 +1380,10 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i37ps124.LexiconEntry => 'LexiconEntry',
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
+      _i1bjxjal.LlmUsageDay => 'LlmUsageDay',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
+      _ix6ukv82.MindTopic => 'MindTopic',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
@@ -1352,10 +1452,14 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'LexiconStats';
       case _i7zu42sq.LexiconWordSummary():
         return 'LexiconWordSummary';
+      case _i1bjxjal.LlmUsageDay():
+        return 'LlmUsageDay';
       case _if349ohh.MemoryBlock():
         return 'MemoryBlock';
       case _iqhk00ra.Mind():
         return 'Mind';
+      case _ix6ukv82.MindTopic():
+        return 'MindTopic';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -1467,11 +1571,17 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'LexiconWordSummary') {
       return deserialize<_i7zu42sq.LexiconWordSummary>(data['data']);
     }
+    if (dataClassName == 'LlmUsageDay') {
+      return deserialize<_i1bjxjal.LlmUsageDay>(data['data']);
+    }
     if (dataClassName == 'MemoryBlock') {
       return deserialize<_if349ohh.MemoryBlock>(data['data']);
     }
     if (dataClassName == 'Mind') {
       return deserialize<_iqhk00ra.Mind>(data['data']);
+    }
+    if (dataClassName == 'MindTopic') {
+      return deserialize<_ix6ukv82.MindTopic>(data['data']);
     }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
@@ -1552,10 +1662,14 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _iyj2s79k.GrowthSnapshot.t;
       case _i37ps124.LexiconEntry:
         return _i37ps124.LexiconEntry.t;
+      case _i1bjxjal.LlmUsageDay:
+        return _i1bjxjal.LlmUsageDay.t;
       case _if349ohh.MemoryBlock:
         return _if349ohh.MemoryBlock.t;
       case _iqhk00ra.Mind:
         return _iqhk00ra.Mind.t;
+      case _ix6ukv82.MindTopic:
+        return _ix6ukv82.MindTopic.t;
       case _ik02x4l4.ReasoningNote:
         return _ik02x4l4.ReasoningNote.t;
       case _ig7bxoiw.SelfConfig:

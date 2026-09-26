@@ -17,7 +17,9 @@ import 'package:serverpod/serverpod.dart';
 /// path once that's ported.
 class SelfQuestionService {
   static const _poolSize = 40;
-  static const _llmMinGap = Duration(seconds: 20);
+  // Ticks every 30s, but only answers with the LLM this often (template answers in between) --
+  // at 20s this alone would have cost ~$2.60/day. See LlmBudget.
+  static const _llmMinGap = Duration(hours: 1);
   static DateTime? _lastLlmCallAt;
 
   static const _questionTemplates = <String Function(String)>[

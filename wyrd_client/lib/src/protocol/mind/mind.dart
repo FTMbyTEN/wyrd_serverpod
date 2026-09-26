@@ -27,8 +27,6 @@ abstract class Mind
     this.lastEvent,
     required this.explorationCount,
     required this.updatedAt,
-    required this.seenTopics,
-    required this.resolvedTopics,
     required this.selfAnswerTimestamps,
   });
 
@@ -43,8 +41,6 @@ abstract class Mind
     String? lastEvent,
     required int explorationCount,
     required DateTime updatedAt,
-    required List<String> seenTopics,
-    required List<String> resolvedTopics,
     required List<int> selfAnswerTimestamps,
   }) = _MindImpl;
 
@@ -63,12 +59,6 @@ abstract class Mind
       explorationCount: jsonSerialization['explorationCount'] as int,
       updatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
-      ),
-      seenTopics: _i2pladzn.Protocol().deserialize<List<String>>(
-        jsonSerialization['seenTopics'],
-      ),
-      resolvedTopics: _i2pladzn.Protocol().deserialize<List<String>>(
-        jsonSerialization['resolvedTopics'],
       ),
       selfAnswerTimestamps: _i2pladzn.Protocol().deserialize<List<int>>(
         jsonSerialization['selfAnswerTimestamps'],
@@ -99,10 +89,6 @@ abstract class Mind
 
   DateTime updatedAt;
 
-  List<String> seenTopics;
-
-  List<String> resolvedTopics;
-
   List<int> selfAnswerTimestamps;
 
   /// Returns a shallow copy of this [Mind]
@@ -119,8 +105,6 @@ abstract class Mind
     String? lastEvent,
     int? explorationCount,
     DateTime? updatedAt,
-    List<String>? seenTopics,
-    List<String>? resolvedTopics,
     List<int>? selfAnswerTimestamps,
   });
   @override
@@ -137,8 +121,6 @@ abstract class Mind
       if (lastEvent != null) 'lastEvent': lastEvent,
       'explorationCount': explorationCount,
       'updatedAt': updatedAt.toJson(),
-      'seenTopics': seenTopics.toJson(),
-      'resolvedTopics': resolvedTopics.toJson(),
       'selfAnswerTimestamps': selfAnswerTimestamps.toJson(),
     };
   }
@@ -157,8 +139,6 @@ abstract class Mind
       if (lastEvent != null) 'lastEvent': lastEvent,
       'explorationCount': explorationCount,
       'updatedAt': updatedAt.toJson(),
-      'seenTopics': seenTopics.toJson(),
-      'resolvedTopics': resolvedTopics.toJson(),
       'selfAnswerTimestamps': selfAnswerTimestamps.toJson(),
     };
   }
@@ -183,8 +163,6 @@ class _MindImpl extends Mind {
     String? lastEvent,
     required int explorationCount,
     required DateTime updatedAt,
-    required List<String> seenTopics,
-    required List<String> resolvedTopics,
     required List<int> selfAnswerTimestamps,
   }) : super._(
          id: id,
@@ -197,8 +175,6 @@ class _MindImpl extends Mind {
          lastEvent: lastEvent,
          explorationCount: explorationCount,
          updatedAt: updatedAt,
-         seenTopics: seenTopics,
-         resolvedTopics: resolvedTopics,
          selfAnswerTimestamps: selfAnswerTimestamps,
        );
 
@@ -217,8 +193,6 @@ class _MindImpl extends Mind {
     Object? lastEvent = _Undefined,
     int? explorationCount,
     DateTime? updatedAt,
-    List<String>? seenTopics,
-    List<String>? resolvedTopics,
     List<int>? selfAnswerTimestamps,
   }) {
     return Mind(
@@ -232,9 +206,6 @@ class _MindImpl extends Mind {
       lastEvent: lastEvent is String? ? lastEvent : this.lastEvent,
       explorationCount: explorationCount ?? this.explorationCount,
       updatedAt: updatedAt ?? this.updatedAt,
-      seenTopics: seenTopics ?? this.seenTopics.map((e0) => e0).toList(),
-      resolvedTopics:
-          resolvedTopics ?? this.resolvedTopics.map((e0) => e0).toList(),
       selfAnswerTimestamps:
           selfAnswerTimestamps ??
           this.selfAnswerTimestamps.map((e0) => e0).toList(),

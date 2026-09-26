@@ -22,50 +22,56 @@ class MemoryEndpoint extends Endpoint {
     return blocks.reversed.toList();
   }
 
+  static const _conceptsTtl = Duration(minutes: 1);
+  static ({DateTime at, ConceptGraph graph})? _conceptsCache;
+
+  /// Top topics by how many recent blocks mention them, and how often pairs of those top topics
+  /// co-occur. Computed in Postgres: doing it in Dart meant loading 5000 full blocks and counting
+  /// every topic pair in each, which blocked the server's single isolate for ~30s -- stalling
+  /// every other request while it ran. Cached briefly since the graph changes slowly.
   Future<ConceptGraph> getConcepts(Session session) async {
-    final blocks = await MemoryBlock.db.find(
-      session,
-      orderBy: (t) => t.id.desc(),
-      limit: _maxBlocks,
-    );
-
-    final freq = <String, int>{};
-    final cooccur = <String, int>{};
-
-    for (final block in blocks) {
-      final topics = block.topics.toSet().toList();
-      for (final t in topics) {
-        freq[t] = (freq[t] ?? 0) + 1;
-      }
-      for (var i = 0; i < topics.length; i++) {
-        for (var j = i + 1; j < topics.length; j++) {
-          final pair = [topics[i], topics[j]]..sort();
-          final key = '${pair[0]}|||${pair[1]}';
-          cooccur[key] = (cooccur[key] ?? 0) + 1;
-        }
-      }
+    final cached = _conceptsCache;
+    if (cached != null && DateTime.now().difference(cached.at) < _conceptsTtl) {
+      return cached.graph;
     }
 
-    final topTopics = (freq.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
-        .take(_maxConceptNodes)
-        .map((e) => e.key)
-        .toList();
-    final topSet = topTopics.toSet();
+    const recentTopics =
+        'WITH recent AS (SELECT "id", "topics" FROM "memory_block" ORDER BY "id" DESC LIMIT @maxBlocks), '
+        'bt AS (SELECT DISTINCT r."id", t.topic FROM recent r, json_array_elements_text(r."topics") AS t(topic)), '
+        'top AS (SELECT topic, count(*) AS c FROM bt GROUP BY topic ORDER BY c DESC, topic LIMIT @maxNodes) ';
+    // postgres rejects unused parameters, so each query gets exactly the ones it references
+    final base = {'maxBlocks': _maxBlocks, 'maxNodes': _maxConceptNodes};
 
-    final nodes = topTopics.map((t) => ConceptNode(id: t, count: freq[t]!)).toList();
-
-    final edges = cooccur.entries
-        .map((e) {
-          final parts = e.key.split('|||');
-          return ConceptEdge(a: parts[0], b: parts[1], weight: e.value);
-        })
-        .where((e) => topSet.contains(e.a) && topSet.contains(e.b))
-        .toList()
-      ..sort((a, b) => b.weight.compareTo(a.weight));
-
-    return ConceptGraph(
-      nodes: nodes,
-      edges: edges.take(_maxConceptEdges).toList(),
+    final nodeRows = await session.db.unsafeQuery(
+      '${recentTopics}SELECT topic, c FROM top ORDER BY c DESC, topic',
+      parameters: QueryParameters.named(base),
     );
+    final edgeRows = await session.db.unsafeQuery(
+      '${recentTopics}SELECT a.topic, b.topic, count(*) AS w '
+      'FROM bt a JOIN bt b ON a."id" = b."id" AND a.topic < b.topic '
+      'WHERE a.topic IN (SELECT topic FROM top) AND b.topic IN (SELECT topic FROM top) '
+      'GROUP BY a.topic, b.topic ORDER BY w DESC, a.topic, b.topic LIMIT @maxEdges',
+      parameters: QueryParameters.named({
+        ...base,
+        'maxEdges': _maxConceptEdges,
+      }),
+    );
+
+    final graph = ConceptGraph(
+      nodes: [
+        for (final r in nodeRows)
+          ConceptNode(id: r[0] as String, count: r[1] as int),
+      ],
+      edges: [
+        for (final r in edgeRows)
+          ConceptEdge(
+            a: r[0] as String,
+            b: r[1] as String,
+            weight: r[2] as int,
+          ),
+      ],
+    );
+    _conceptsCache = (at: DateTime.now(), graph: graph);
+    return graph;
   }
 }

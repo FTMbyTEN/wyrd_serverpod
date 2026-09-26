@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
+import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'rate_limiter.dart';
 import 'web_browse_service.dart';
@@ -90,6 +91,7 @@ class ChatToolService {
   }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
+    if (!await LlmBudget.allow(session, background: false)) return null;
 
     var messages = <Map<String, dynamic>>[
       for (final turn in history) ...[
@@ -127,6 +129,7 @@ class ChatToolService {
         if (res.statusCode != 200) return null;
 
         final data = jsonDecode(res.body) as Map<String, dynamic>;
+        await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
         final content = (data['content'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
 
         if (data['stop_reason'] == 'tool_use' && round < _maxToolRounds) {

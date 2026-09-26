@@ -26,8 +26,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.lastEvent,
     required this.explorationCount,
     required this.updatedAt,
-    required this.seenTopics,
-    required this.resolvedTopics,
     required this.selfAnswerTimestamps,
   });
 
@@ -42,8 +40,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
     String? lastEvent,
     required int explorationCount,
     required DateTime updatedAt,
-    required List<String> seenTopics,
-    required List<String> resolvedTopics,
     required List<int> selfAnswerTimestamps,
   }) = _MindImpl;
 
@@ -62,12 +58,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
       explorationCount: jsonSerialization['explorationCount'] as int,
       updatedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
-      ),
-      seenTopics: _i9sln91s.Protocol().deserialize<List<String>>(
-        jsonSerialization['seenTopics'],
-      ),
-      resolvedTopics: _i9sln91s.Protocol().deserialize<List<String>>(
-        jsonSerialization['resolvedTopics'],
       ),
       selfAnswerTimestamps: _i9sln91s.Protocol().deserialize<List<int>>(
         jsonSerialization['selfAnswerTimestamps'],
@@ -100,10 +90,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   DateTime updatedAt;
 
-  List<String> seenTopics;
-
-  List<String> resolvedTopics;
-
   List<int> selfAnswerTimestamps;
 
   @override
@@ -123,8 +109,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
     String? lastEvent,
     int? explorationCount,
     DateTime? updatedAt,
-    List<String>? seenTopics,
-    List<String>? resolvedTopics,
     List<int>? selfAnswerTimestamps,
   });
   @override
@@ -141,8 +125,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (lastEvent != null) 'lastEvent': lastEvent,
       'explorationCount': explorationCount,
       'updatedAt': updatedAt.toJson(),
-      'seenTopics': seenTopics.toJson(),
-      'resolvedTopics': resolvedTopics.toJson(),
       'selfAnswerTimestamps': selfAnswerTimestamps.toJson(),
     };
   }
@@ -161,8 +143,6 @@ abstract class Mind implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (lastEvent != null) 'lastEvent': lastEvent,
       'explorationCount': explorationCount,
       'updatedAt': updatedAt.toJson(),
-      'seenTopics': seenTopics.toJson(),
-      'resolvedTopics': resolvedTopics.toJson(),
       'selfAnswerTimestamps': selfAnswerTimestamps.toJson(),
     };
   }
@@ -209,8 +189,6 @@ class _MindImpl extends Mind {
     String? lastEvent,
     required int explorationCount,
     required DateTime updatedAt,
-    required List<String> seenTopics,
-    required List<String> resolvedTopics,
     required List<int> selfAnswerTimestamps,
   }) : super._(
          id: id,
@@ -223,8 +201,6 @@ class _MindImpl extends Mind {
          lastEvent: lastEvent,
          explorationCount: explorationCount,
          updatedAt: updatedAt,
-         seenTopics: seenTopics,
-         resolvedTopics: resolvedTopics,
          selfAnswerTimestamps: selfAnswerTimestamps,
        );
 
@@ -243,8 +219,6 @@ class _MindImpl extends Mind {
     Object? lastEvent = _Undefined,
     int? explorationCount,
     DateTime? updatedAt,
-    List<String>? seenTopics,
-    List<String>? resolvedTopics,
     List<int>? selfAnswerTimestamps,
   }) {
     return Mind(
@@ -258,9 +232,6 @@ class _MindImpl extends Mind {
       lastEvent: lastEvent is String? ? lastEvent : this.lastEvent,
       explorationCount: explorationCount ?? this.explorationCount,
       updatedAt: updatedAt ?? this.updatedAt,
-      seenTopics: seenTopics ?? this.seenTopics.map((e0) => e0).toList(),
-      resolvedTopics:
-          resolvedTopics ?? this.resolvedTopics.map((e0) => e0).toList(),
       selfAnswerTimestamps:
           selfAnswerTimestamps ??
           this.selfAnswerTimestamps.map((e0) => e0).toList(),
@@ -319,19 +290,6 @@ class MindUpdateTable extends _is.UpdateTable<MindTable> {
         value,
       );
 
-  _is.ColumnValue<List<String>, List<String>> seenTopics(List<String> value) =>
-      _is.ColumnValue(
-        table.seenTopics,
-        value,
-      );
-
-  _is.ColumnValue<List<String>, List<String>> resolvedTopics(
-    List<String> value,
-  ) => _is.ColumnValue(
-    table.resolvedTopics,
-    value,
-  );
-
   _is.ColumnValue<List<int>, List<int>> selfAnswerTimestamps(List<int> value) =>
       _is.ColumnValue(
         table.selfAnswerTimestamps,
@@ -378,14 +336,6 @@ class MindTable extends _is.Table<int?> {
       'updatedAt',
       this,
     );
-    seenTopics = _is.ColumnSerializable<List<String>>(
-      'seenTopics',
-      this,
-    );
-    resolvedTopics = _is.ColumnSerializable<List<String>>(
-      'resolvedTopics',
-      this,
-    );
     selfAnswerTimestamps = _is.ColumnSerializable<List<int>>(
       'selfAnswerTimestamps',
       this,
@@ -412,10 +362,6 @@ class MindTable extends _is.Table<int?> {
 
   late final _is.ColumnDateTime updatedAt;
 
-  late final _is.ColumnSerializable<List<String>> seenTopics;
-
-  late final _is.ColumnSerializable<List<String>> resolvedTopics;
-
   late final _is.ColumnSerializable<List<int>> selfAnswerTimestamps;
 
   @override
@@ -430,8 +376,6 @@ class MindTable extends _is.Table<int?> {
     lastEvent,
     explorationCount,
     updatedAt,
-    seenTopics,
-    resolvedTopics,
     selfAnswerTimestamps,
   ];
 }

@@ -13,5 +13,8 @@ fields:
   lexiconCycleMs: int
   llmActive: bool
   llmModel: String?
+  # estimated Anthropic spend so far today (UTC) and the daily cap it is held to -- see LlmBudget
+  llmSpentTodayUsd: double
+  llmDailyCapUsd: double
   qaDatasetEntries: int
   dialogueDatasetEntries: int

@@ -15,9 +15,6 @@ fields:
   explorationCount: int
   updatedAt: DateTime
 
-  # Permanent, additive-only topic sets backing digest math — never trimmed, unlike the rolling
-  # memory window, so a resolved topic can't lose credit just because it aged out of recent memory.
-  seenTopics: List<String>
-  resolvedTopics: List<String>
+  # (seen/resolved topic sets live in the mind_topic table -- see mind_topic.spy.yaml)
   # Epoch-millisecond timestamps of the last ~20 self-driven answers, used to estimate ratePerMin.
   selfAnswerTimestamps: List<int>

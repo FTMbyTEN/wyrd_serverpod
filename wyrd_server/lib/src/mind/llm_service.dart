@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 
+import 'llm_budget.dart';
+
 /// Ports server.js's callLLMSimple + isDenialReply. Reads the API key from
 /// session.passwords['anthropicApiKey'] (config/passwords.yaml) instead of an env var --
-/// same secret, same never-committed file, just Serverpod's idiom for it.
+/// same secret, same never-committed file, just Serverpod's idiom for it. Every call goes through
+/// LlmBudget's daily spending cap; [callSimple] defaults to the (smaller) background share.
 class LlmService {
   static const _model = 'claude-haiku-4-5-20251001';
   static String get model => _model;
@@ -16,9 +19,10 @@ class LlmService {
     Session session,
     String systemPrompt,
     String userPrompt,
-    int maxTokens,
-  ) async {
-    return callWithHistory(session, systemPrompt, [], userPrompt, maxTokens);
+    int maxTokens, {
+    bool background = true,
+  }) async {
+    return callWithHistory(session, systemPrompt, [], userPrompt, maxTokens, background: background);
   }
 
   /// Like [callSimple] but with real prior turns in the messages array (ports the [history]
@@ -29,10 +33,12 @@ class LlmService {
     String systemPrompt,
     List<({String userText, String botText})> history,
     String userText,
-    int maxTokens,
-  ) async {
+    int maxTokens, {
+    bool background = true,
+  }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
+    if (!await LlmBudget.allow(session, background: background)) return null;
 
     final messages = [
       for (final turn in history) ...[
@@ -60,6 +66,7 @@ class LlmService {
       if (res.statusCode != 200) return null;
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
+      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
       final content = data['content'] as List<dynamic>?;
       final block = content?.firstWhere(
         (b) => b['type'] == 'text',
@@ -83,6 +90,7 @@ class LlmService {
   ) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
+    if (!await LlmBudget.allow(session, background: false)) return null;
 
     try {
       final res = await http.post(
@@ -113,6 +121,7 @@ class LlmService {
       if (res.statusCode != 200) return null;
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
+      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
       final content = data['content'] as List<dynamic>?;
       final block = content?.firstWhere(
         (b) => b['type'] == 'text',
