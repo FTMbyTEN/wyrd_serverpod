@@ -31,6 +31,10 @@ class _FetchedItem {
 /// other tick. [recentIngests] is deliberately in-memory/transient (matches Node's
 /// recentIngests array) -- it's a short "what just happened" feed for the UI, not history.
 class FeedService {
+  /// Wikipedia/curriculum learning is paused for now: every tick reads Hacker News instead, and
+  /// the curriculum keeps its place so flipping this back resumes where it left off.
+  static const wikipediaEnabled = false;
+
   static int _netIndex = 0;
   static final List<FeedIngest> _recentIngests = [];
   static const _maxRecentIngests = 20;
@@ -96,7 +100,7 @@ class FeedService {
     _netIndex = (_netIndex + 1) % 2;
 
     try {
-      final item = _netIndex == 0 ? await _fetchWikipedia(session) : await _fetchHackerNews();
+      final item = wikipediaEnabled && _netIndex == 0 ? await _fetchWikipedia(session) : await _fetchHackerNews();
       final text = '${item.title}. ${item.extract}';
       final truncated = text.substring(0, min(2000, text.length));
       final topics = TopicService.extractTopics(truncated);
