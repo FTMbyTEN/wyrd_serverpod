@@ -47,7 +47,7 @@ serverpod:
       windows: >-
         (if exist web\app rmdir /S /Q web\app)
         & cd /D C:\Users\TEN\consciousness-bot\mobile
-        & set EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space
+        & set "EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space"
         && npx expo export --platform web
         && xcopy /E /I /Y dist C:\Users\TEN\wyrd_serverpod\wyrd\wyrd_server\web\app
       posix: |
