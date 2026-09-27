@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:test/test.dart';
 
+import 'package:wyrd_server/src/generated/protocol.dart';
+
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
@@ -23,7 +25,9 @@ void main() {
         expect(result.reply, contains("couldn't take a proper look"));
         expect(result.mind.lastEvent, 'sight');
 
-        final blocks = await endpoints.memory.getMemory(sessionBuilder);
+        // stored privately: the public memory endpoint never returns photo memories
+        expect(await endpoints.memory.getMemory(sessionBuilder), isEmpty);
+        final blocks = await MemoryBlock.db.find(sessionBuilder.build());
         expect(blocks, hasLength(1));
         expect(blocks.single.source, 'photo');
         expect(blocks.single.userText, 'check my outfit');

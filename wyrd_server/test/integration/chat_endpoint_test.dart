@@ -1,5 +1,7 @@
 import 'package:test/test.dart';
 
+import 'package:wyrd_server/src/generated/protocol.dart';
+
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
@@ -29,7 +31,9 @@ void main() {
         expect(reply.reply, isNotEmpty);
         expect(reply.mind.lastEvent, 'chat');
 
-        final blocks = await endpoints.memory.getMemory(sessionBuilder);
+        // stored privately: the public memory endpoint never returns chat memories
+        expect(await endpoints.memory.getMemory(sessionBuilder), isEmpty);
+        final blocks = await MemoryBlock.db.find(sessionBuilder.build());
         expect(blocks, hasLength(1));
         expect(blocks.single.source, 'chat');
 

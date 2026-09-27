@@ -14,9 +14,13 @@ class MemoryEndpoint extends Endpoint {
   static const _maxConceptNodes = 40;
   static const _maxConceptEdges = 120;
 
+  /// WYRD's shared knowledge only -- what it read, worked out or connected. This endpoint is
+  /// public, and memory rows don't record whose they are, so chat and photo memories (people's
+  /// own words and what WYRD saw of them) are never returned here.
   Future<List<MemoryBlock>> getMemory(Session session) async {
     final blocks = await MemoryBlock.db.find(
       session,
+      where: (t) => t.source.inSet(_sharedSources.toSet()),
       orderBy: (t) => t.id.desc(),
       limit: _maxBlocks,
     );
