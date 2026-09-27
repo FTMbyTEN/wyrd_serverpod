@@ -8,7 +8,7 @@ import 'package:wyrd_server/src/mind/wordnet_service.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
-// The real WordNet lines for these words (as built into data/wordnet.tsv.gz).
+// The real WordNet lines for these words (as built into web/data/wordnet.tsv.gz).
 const _lines = [
   'programming\tnoun\t0\t1\tsetting an order and time for planned events\t\tscheduling,programing\tplanning',
   'programming\tnoun\t1\t1\tcreating a sequence of instructions to enable the computer to do something\t\tprograming\tcreating by mental acts',
@@ -62,7 +62,7 @@ void main() {
 
     test('the shipped data file imports completely', () async {
       final session = sessionBuilder.build();
-      final lines = const LineSplitter().convert(utf8.decode(gzip.decode(File('data/wordnet.tsv.gz').readAsBytesSync())));
+      final lines = const LineSplitter().convert(utf8.decode(gzip.decode(File('web/data/wordnet.tsv.gz').readAsBytesSync())));
       final n = await WordNetService.importLines(session, lines);
       expect(n, greaterThan(100000));
       expect(await WordSense.db.count(session), n);

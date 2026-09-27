@@ -6,14 +6,15 @@ import '../generated/protocol.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// WYRD's own dictionary: WordNet 3.1, imported once into `word_sense` from
-/// data/wordnet.tsv.gz (built from the official Princeton files; see data/WORDNET_LICENSE.txt).
+/// web/data/wordnet.tsv.gz (built from the official Princeton files; see web/data/WORDNET_LICENSE.txt).
 ///
 /// Words are looked up locally -- no dictionary websites, no AI calls -- and the right sense is
 /// chosen with the Lesk algorithm: the sense whose definition, example, synonyms and broader
 /// term share the most words with what WYRD read around that word wins. So "programming" next
 /// to "languages" and "code" means writing software, not scheduling TV.
 class WordNetService {
-  static const _dataFile = 'data/wordnet.tsv.gz';
+  // under web/ because the server image only copies config/, web/ and migrations/
+  static const _dataFile = 'web/data/wordnet.tsv.gz';
   static const _importMark = 'wordnet-3.1';
   static const _batch = 800;
 

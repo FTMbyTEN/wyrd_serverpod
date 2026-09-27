@@ -111,7 +111,7 @@ void run(List<String> args) async {
   // deploy used to stack one more copy of every tick. Cancel each identifier first so exactly one
   // remains; TickSchedule.claim covers the brief deploy overlap. This must run AFTER pod.start()
   // -- the generated FutureCalls dispatcher isn't initialized until the server has started.
-  // WYRD's own dictionary: imported once from data/wordnet.tsv.gz, in the background so startup
+  // WYRD's own dictionary: imported once from web/data/wordnet.tsv.gz, in the background so startup
   // (and the health check) isn't held up. See WordNetService.
   unawaited(() async {
     final session = await pod.createSession(enableLogging: true);
