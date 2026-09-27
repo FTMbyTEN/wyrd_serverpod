@@ -43,6 +43,7 @@ gateShape:
   - next:
 growth:
   - getSnapshots:
+  - getHistory:
 lexicon:
   - trigger:
   - getStats:
@@ -50,6 +51,7 @@ lexicon:
 memory:
   - getMemory:
   - getConcepts:
+  - getConceptDetail:
 mind:
   - getMind:
 photo:

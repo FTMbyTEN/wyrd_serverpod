@@ -40,7 +40,9 @@ import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
+import 'mind/concept_detail.dart' as _idm2402p;
 import 'mind/concept_edge.dart' as _iafou6mz;
+import 'mind/concept_example.dart' as _igv7j4aa;
 import 'mind/concept_graph.dart' as _iggcgqw1;
 import 'mind/concept_node.dart' as _iapme6ge;
 import 'mind/conversation_turn.dart' as _i8fl0sel;
@@ -79,7 +81,9 @@ export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
+export 'mind/concept_detail.dart';
 export 'mind/concept_edge.dart';
+export 'mind/concept_example.dart';
 export 'mind/concept_graph.dart';
 export 'mind/concept_node.dart';
 export 'mind/conversation_turn.dart';
@@ -1335,8 +1339,14 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iav0lzqw.ChatReply) {
       return _iav0lzqw.ChatReply.fromJson(data) as T;
     }
+    if (t == _idm2402p.ConceptDetail) {
+      return _idm2402p.ConceptDetail.fromJson(data) as T;
+    }
     if (t == _iafou6mz.ConceptEdge) {
       return _iafou6mz.ConceptEdge.fromJson(data) as T;
+    }
+    if (t == _igv7j4aa.ConceptExample) {
+      return _igv7j4aa.ConceptExample.fromJson(data) as T;
     }
     if (t == _iggcgqw1.ConceptGraph) {
       return _iggcgqw1.ConceptGraph.fromJson(data) as T;
@@ -1454,8 +1464,16 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iav0lzqw.ChatReply?>()) {
       return (data != null ? _iav0lzqw.ChatReply.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_idm2402p.ConceptDetail?>()) {
+      return (data != null ? _idm2402p.ConceptDetail.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_iafou6mz.ConceptEdge?>()) {
       return (data != null ? _iafou6mz.ConceptEdge.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_igv7j4aa.ConceptExample?>()) {
+      return (data != null ? _igv7j4aa.ConceptExample.fromJson(data) : null)
+          as T;
     }
     if (t == _is.getType<_iggcgqw1.ConceptGraph?>()) {
       return (data != null ? _iggcgqw1.ConceptGraph.fromJson(data) : null) as T;
@@ -1572,6 +1590,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_iapme6ge.ConceptNode>) {
       return (data as List)
               .map((e) => deserialize<_iapme6ge.ConceptNode>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_igv7j4aa.ConceptExample>) {
+      return (data as List)
+              .map((e) => deserialize<_igv7j4aa.ConceptExample>(e))
               .toList()
           as T;
     }
@@ -1699,7 +1723,9 @@ class Protocol extends _is.DatabaseSerializationManager {
       _itui3kw8.AlertNote => 'AlertNote',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
+      _idm2402p.ConceptDetail => 'ConceptDetail',
       _iafou6mz.ConceptEdge => 'ConceptEdge',
+      _igv7j4aa.ConceptExample => 'ConceptExample',
       _iggcgqw1.ConceptGraph => 'ConceptGraph',
       _iapme6ge.ConceptNode => 'ConceptNode',
       _i8fl0sel.ConversationTurn => 'ConversationTurn',
@@ -1760,8 +1786,12 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
         return 'ChatReply';
+      case _idm2402p.ConceptDetail():
+        return 'ConceptDetail';
       case _iafou6mz.ConceptEdge():
         return 'ConceptEdge';
+      case _igv7j4aa.ConceptExample():
+        return 'ConceptExample';
       case _iggcgqw1.ConceptGraph():
         return 'ConceptGraph';
       case _iapme6ge.ConceptNode():
@@ -1872,8 +1902,14 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'ChatReply') {
       return deserialize<_iav0lzqw.ChatReply>(data['data']);
     }
+    if (dataClassName == 'ConceptDetail') {
+      return deserialize<_idm2402p.ConceptDetail>(data['data']);
+    }
     if (dataClassName == 'ConceptEdge') {
       return deserialize<_iafou6mz.ConceptEdge>(data['data']);
+    }
+    if (dataClassName == 'ConceptExample') {
+      return deserialize<_igv7j4aa.ConceptExample>(data['data']);
     }
     if (dataClassName == 'ConceptGraph') {
       return deserialize<_iggcgqw1.ConceptGraph>(data['data']);

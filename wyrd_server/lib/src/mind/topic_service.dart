@@ -22,6 +22,9 @@ class TopicService {
     "wouldn't", "couldn't", "shouldn't",
   };
 
+  /// Words too common to be a real subject (shared with the concept map's filter).
+  static Set<String> get stopwords => _stopwords;
+
   static final _wordPattern = RegExp(r"[a-z0-9']+");
 
   static List<String> extractTopics(String text) {

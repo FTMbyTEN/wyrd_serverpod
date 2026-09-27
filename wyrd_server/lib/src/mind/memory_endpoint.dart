@@ -1,4 +1,6 @@
 import '../generated/protocol.dart';
+import 'memory_recall_service.dart';
+import 'topic_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/memory and /api/concepts from server.js. Public/unauthenticated, matching Node.
@@ -22,6 +24,19 @@ class MemoryEndpoint extends Endpoint {
     return blocks.reversed.toList();
   }
 
+  static const _sharedSources = ['net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum'];
+  static final _stoplist = {
+    ...TopicService.stopwords, ...MemoryRecallService.scaffold,
+    'from', 'like', 'later', 'years', 'other', 'help', 'work', 'just', 'more', 'also', 'into', 'than', 'then',
+    'them', 'they', 'this', 'that', 'what', 'with', 'your', 'about', 'which', 'there', 'their', 'would', 'could',
+    'should', 'being', 'been', 'have', 'here', 'when', 'where', 'while', 'will', 'were', 'some', 'many', 'much',
+    'most', 'very', 'over', 'only', 'even', 'each', 'make', 'made', 'first', 'new', 'one', 'two', 'use', 'used',
+    'using', 'way', 'get', 'gets', 'still', 'show', 'says', 'said', 'these', 'those', 'does', 'did', 'doing',
+    'after', 'before', 'because', 'through', 'between', 'among', 'during', 'without', 'within', 'part', 'known',
+    'per', 'our', 'its', 'might', 'every', 'same', 'may', 'can', 'any', 'all', 'own', 'via', 'etc', 'yet', 'ever',
+    'less', 'far', 'lot', 'lots', 'got', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'you',
+  }.toList();
+
   static const _conceptsTtl = Duration(minutes: 1);
   static ({DateTime at, ConceptGraph graph})? _conceptsCache;
 
@@ -35,12 +50,16 @@ class MemoryEndpoint extends Endpoint {
       return cached.graph;
     }
 
+    // Shared knowledge only (never chats or photos), and no filler words: those made up most of
+    // the old map ("how", "what", "from") and meant nothing to a reader.
     const recentTopics =
-        'WITH recent AS (SELECT "id", "topics" FROM "memory_block" ORDER BY "id" DESC LIMIT @maxBlocks), '
-        'bt AS (SELECT DISTINCT r."id", t.topic FROM recent r, json_array_elements_text(r."topics") AS t(topic)), '
+        'WITH recent AS (SELECT "id", "topics" FROM "memory_block" WHERE "source" = ANY(@sources::text[]) '
+        'ORDER BY "id" DESC LIMIT @maxBlocks), '
+        'bt AS (SELECT DISTINCT r."id", t.topic FROM recent r, json_array_elements_text(r."topics") AS t(topic) '
+        "WHERE t.topic <> ALL(@stop::text[]) AND length(t.topic) > 2 AND t.topic !~ '^[0-9]+\$'), "
         'top AS (SELECT topic, count(*) AS c FROM bt GROUP BY topic ORDER BY c DESC, topic LIMIT @maxNodes) ';
     // postgres rejects unused parameters, so each query gets exactly the ones it references
-    final base = {'maxBlocks': _maxBlocks, 'maxNodes': _maxConceptNodes};
+    final base = {'maxBlocks': _maxBlocks, 'maxNodes': _maxConceptNodes, 'sources': _sharedSources, 'stop': _stoplist};
 
     final nodeRows = await session.db.unsafeQuery(
       '${recentTopics}SELECT topic, c FROM top ORDER BY c DESC, topic',
@@ -73,5 +92,70 @@ class MemoryEndpoint extends Endpoint {
     );
     _conceptsCache = (at: DateTime.now(), graph: graph);
     return graph;
+  }
+
+  /// Everything the CONCEPT_MAP shows for one concept, in plain terms (see ConceptDetail).
+  Future<ConceptDetail> getConceptDetail(Session session, String topic) async {
+    final t = topic.trim().toLowerCase();
+    final params = {'t': t, 'sources': _sharedSources, 'maxBlocks': _maxBlocks};
+    const recent =
+        'WITH recent AS (SELECT "id", "source", "feedSource", "title", "extract", "question", "answer", "insight", '
+        '"url", "timestamp", "topics" FROM "memory_block" WHERE "source" = ANY(@sources::text[]) '
+        'ORDER BY "id" DESC LIMIT @maxBlocks), '
+        'hit AS (SELECT * FROM recent WHERE "topics"::jsonb ? @t) ';
+
+    final mentions = await session.db.unsafeQuery('${recent}SELECT count(*) FROM hit', parameters: QueryParameters.named(params));
+    final related = await session.db.unsafeQuery(
+      '${recent}SELECT x AS topic, count(*) AS c FROM hit, json_array_elements_text(hit."topics") AS x '
+      'WHERE x <> @t AND x <> ALL(@stop::text[]) AND length(x) > 2 GROUP BY x ORDER BY c DESC, x LIMIT 8',
+      parameters: QueryParameters.named({...params, 'stop': _stoplist}),
+    );
+    final examples = await session.db.unsafeQuery(
+      '${recent}SELECT "source", "feedSource", "title", "extract", "question", "answer", "insight", "url", "timestamp" '
+      'FROM hit ORDER BY "timestamp" DESC LIMIT 12',
+      parameters: QueryParameters.named(params),
+    );
+    final word = await LexiconEntry.db.findFirstRow(session, where: (e) => e.word.equals(t) & e.understood.equals(true));
+
+    String clip(String? s, int n) {
+      final flat = (s ?? '').replaceAll(RegExp(r'\s+'), ' ').trim();
+      return flat.length <= n ? flat : '${flat.substring(0, n - 1).trimRight()}…';
+    }
+
+    final seen = <String>{};
+    final out = <ConceptExample>[];
+    for (final r in examples) {
+      final source = r[0] as String;
+      final String title;
+      final String? snippet;
+      if (source == 'self') {
+        title = clip(r[4] as String?, 140);
+        snippet = clip(r[5] as String?, 220);
+      } else if (source == 'synthesis') {
+        title = 'A connection WYRD made';
+        snippet = clip(r[6] as String?, 220);
+      } else {
+        title = clip(r[2] as String?, 140);
+        snippet = r[3] == null ? null : clip(r[3] as String?, 220);
+      }
+      if (title.isEmpty || !seen.add(title)) continue;
+      out.add(ConceptExample(
+        source: source == 'net' ? ((r[1] as String?) ?? 'web') : source,
+        title: title,
+        snippet: (snippet == null || snippet.isEmpty) ? null : snippet,
+        url: r[7] as String?,
+        timestamp: r[8] as DateTime,
+      ));
+      if (out.length == 4) break;
+    }
+
+    return ConceptDetail(
+      topic: t,
+      mentions: mentions.first[0] as int,
+      definition: word?.definition,
+      partOfSpeech: word?.partOfSpeech,
+      related: [for (final r in related) ConceptNode(id: r[0] as String, count: r[1] as int)],
+      examples: out,
+    );
   }
 }

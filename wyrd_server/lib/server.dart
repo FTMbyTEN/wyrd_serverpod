@@ -104,12 +104,17 @@ void run(List<String> args) async {
   // Start the server.
   await pod.start();
 
-  // Recurring background ticks (mirrors server.js's setInterval calls for growth snapshots
-  // and the diary day-check). Scheduling by a fixed identifier is idempotent across restarts
-  // -- it reschedules the same recurring entry rather than stacking duplicates. This must run
-  // AFTER pod.start() -- the generated FutureCalls dispatcher isn't initialized until the
-  // server has actually started, and calling it earlier throws "FutureCalls is not
-  // initialized" (caught the hard way via a failed Serverpod Cloud rollout).
+  // Recurring background ticks (mirrors server.js's setInterval calls). Scheduling by identifier
+  // is NOT idempotent in Serverpod 4 -- each callRecurring inserts another entry -- so every
+  // deploy used to stack one more copy of every tick. Cancel each identifier first so exactly one
+  // remains; TickSchedule.claim covers the brief deploy overlap. This must run AFTER pod.start()
+  // -- the generated FutureCalls dispatcher isn't initialized until the server has started.
+  for (final id in const [
+    'growth-snapshot', 'diary-day-check', 'reasoning-tick', 'self-question-tick', 'synthesis-tick',
+    'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check',
+  ]) {
+    await pod.futureCalls.cancel(id);
+  }
   await pod.futureCalls
       .callRecurring(identifier: 'growth-snapshot')
       .every(TickSchedule.growthSnapshot)

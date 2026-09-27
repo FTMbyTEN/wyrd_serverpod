@@ -1,0 +1,9 @@
+# One real memory a concept came from, for ConceptDetail.
+class: ConceptExample
+
+fields:
+  source: String
+  title: String
+  snippet: String?
+  url: String?
+  timestamp: DateTime

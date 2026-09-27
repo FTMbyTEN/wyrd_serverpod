@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'diary_service.dart';
+import 'tick_schedule.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's diaryTickIfNewDay (checked every 10 real minutes): write one diary entry
@@ -7,6 +8,7 @@ import 'package:serverpod/serverpod.dart';
 /// reflect on. Scheduled recurring from server.dart.
 class DiaryFutureCall extends FutureCall {
   Future<void> checkAndWrite(Session session) async {
+    if (!TickSchedule.claim('diaryCheck', TickSchedule.diaryCheck)) return;
     final blockCount = await MemoryBlock.db.count(session);
     if (blockCount == 0) return;
 

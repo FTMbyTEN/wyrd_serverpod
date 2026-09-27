@@ -28,6 +28,8 @@ import 'package:wyrd_server/src/generated/mind/account_export.dart'
     as _it0zlzes;
 import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
 import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
+import 'package:wyrd_server/src/generated/mind/concept_detail.dart'
+    as _i5v8vu24;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
@@ -1496,6 +1498,37 @@ class _GrowthEndpoint {
       }
     });
   }
+
+  _ida.Future<List<_iaqmuv2j.GrowthSnapshot>> getHistory(
+    _ist.TestSessionBuilder sessionBuilder,
+    String range,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'growth',
+            method: 'getHistory',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'growth',
+          methodName: 'getHistory',
+          parameters: _ist.testObjectToJson({'range': range}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_iaqmuv2j.GrowthSnapshot>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _LexiconEndpoint {
@@ -1661,6 +1694,37 @@ class _MemoryEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i3bmgye1.ConceptGraph>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i5v8vu24.ConceptDetail> getConceptDetail(
+    _ist.TestSessionBuilder sessionBuilder,
+    String topic,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'memory',
+            method: 'getConceptDetail',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'memory',
+          methodName: 'getConceptDetail',
+          parameters: _ist.testObjectToJson({'topic': topic}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i5v8vu24.ConceptDetail>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

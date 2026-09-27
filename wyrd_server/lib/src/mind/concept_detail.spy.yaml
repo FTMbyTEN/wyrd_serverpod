@@ -1,0 +1,12 @@
+# What the CONCEPT_MAP panel shows when someone taps a concept: how often WYRD has met it, what
+# it means (if the word is in its vocabulary), what it tends to appear with, and a few real
+# places it came from. Built only from shared knowledge -- never from anyone's chats or photos.
+class: ConceptDetail
+
+fields:
+  topic: String
+  mentions: int
+  definition: String?
+  partOfSpeech: String?
+  related: List<ConceptNode>
+  examples: List<ConceptExample>

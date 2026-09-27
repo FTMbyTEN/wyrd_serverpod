@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'dream_service.dart';
+import 'tick_schedule.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's dreamTickIfIdle (checked every 15 real minutes): dream only when nobody
@@ -11,6 +12,7 @@ class DreamFutureCall extends FutureCall {
   static const _minGap = Duration(hours: 4); // each dream is an LLM call; see LlmBudget
 
   Future<void> checkIdle(Session session) async {
+    if (!TickSchedule.claim('dreamIdleCheck', TickSchedule.dreamIdleCheck)) return;
     final now = DateTime.now().toUtc();
 
     final lastChat = await ConversationTurn.db.findFirstRow(

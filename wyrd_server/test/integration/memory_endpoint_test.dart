@@ -21,7 +21,7 @@ void main() {
           session,
           MemoryBlock(
             timestamp: DateTime.now().toUtc(),
-            source: 'chat',
+            source: 'self', // concepts come from shared knowledge, never chats
             topics: ['determinism', 'free-will'],
           ),
         );

@@ -820,6 +820,25 @@ class Endpoints extends _is.EndpointDispatch {
                     limit: params['limit'],
                   ),
         ),
+        'getHistory': _is.MethodConnector(
+          name: 'getHistory',
+          params: {
+            'range': _is.ParameterDescription(
+              name: 'range',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['growth'] as _idrisijy.GrowthEndpoint).getHistory(
+                    session,
+                    params['range'],
+                  ),
+        ),
       },
     );
     connectors['lexicon'] = _is.EndpointConnector(
@@ -890,6 +909,25 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['memory'] as _ibdzbeap.MemoryEndpoint)
                   .getConcepts(session),
+        ),
+        'getConceptDetail': _is.MethodConnector(
+          name: 'getConceptDetail',
+          params: {
+            'topic': _is.ParameterDescription(
+              name: 'topic',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['memory'] as _ibdzbeap.MemoryEndpoint)
+                  .getConceptDetail(
+                    session,
+                    params['topic'],
+                  ),
         ),
       },
     );

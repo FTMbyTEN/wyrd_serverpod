@@ -25,6 +25,7 @@ import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
 import 'package:wyrd_client/src/protocol/mind/account_export.dart' as _izg4k2n4;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
 import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
+import 'package:wyrd_client/src/protocol/mind/concept_detail.dart' as _iea588cs;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
@@ -577,6 +578,15 @@ class EndpointGrowth extends _isc.EndpointRef {
         'getSnapshots',
         {'limit': limit},
       );
+
+  /// Growth over a readable span -- 'day', 'week', 'month' or 'all' -- averaged into at most
+  /// ~120 points, so the panel can show days and weeks instead of only the newest few hours.
+  _ida.Future<List<_ikfbn3bp.GrowthSnapshot>> getHistory(String range) =>
+      caller.callServerEndpoint<List<_ikfbn3bp.GrowthSnapshot>>(
+        'growth',
+        'getHistory',
+        {'range': range},
+      );
 }
 
 /// Ports server.js's /api/lexicon/stats, /api/lexicon/word/:word and /api/lexicon/trigger.
@@ -641,6 +651,14 @@ class EndpointMemory extends _isc.EndpointRef {
         'memory',
         'getConcepts',
         {},
+      );
+
+  /// Everything the CONCEPT_MAP shows for one concept, in plain terms (see ConceptDetail).
+  _ida.Future<_iea588cs.ConceptDetail> getConceptDetail(String topic) =>
+      caller.callServerEndpoint<_iea588cs.ConceptDetail>(
+        'memory',
+        'getConceptDetail',
+        {'topic': topic},
       );
 }
 
