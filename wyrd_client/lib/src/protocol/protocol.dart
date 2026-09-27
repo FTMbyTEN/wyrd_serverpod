@@ -71,6 +71,7 @@ import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
+import 'mind/word_sense.dart' as _itj7bvl5;
 import 'mind/world_country.dart' as _iu995zpj;
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
@@ -113,6 +114,7 @@ export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
+export 'mind/word_sense.dart';
 export 'mind/world_country.dart';
 export 'client.dart';
 
@@ -273,6 +275,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _irc0lure.UserProfile) {
       return _irc0lure.UserProfile.fromJson(data) as T;
     }
+    if (t == _itj7bvl5.WordSense) {
+      return _itj7bvl5.WordSense.fromJson(data) as T;
+    }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
     }
@@ -412,6 +417,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_irc0lure.UserProfile?>()) {
       return (data != null ? _irc0lure.UserProfile.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_itj7bvl5.WordSense?>()) {
+      return (data != null ? _itj7bvl5.WordSense.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
@@ -600,6 +608,7 @@ class Protocol extends _isc.SerializationManager {
       _i8qpvcdz.TopicInfo => 'TopicInfo',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
+      _itj7bvl5.WordSense => 'WordSense',
       _iu995zpj.WorldCountry => 'WorldCountry',
       _ => null,
     };
@@ -697,6 +706,8 @@ class Protocol extends _isc.SerializationManager {
         return 'UserFact';
       case _irc0lure.UserProfile():
         return 'UserProfile';
+      case _itj7bvl5.WordSense():
+        return 'WordSense';
       case _iu995zpj.WorldCountry():
         return 'WorldCountry';
     }
@@ -843,6 +854,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'UserProfile') {
       return deserialize<_irc0lure.UserProfile>(data['data']);
+    }
+    if (dataClassName == 'WordSense') {
+      return deserialize<_itj7bvl5.WordSense>(data['data']);
     }
     if (dataClassName == 'WorldCountry') {
       return deserialize<_iu995zpj.WorldCountry>(data['data']);

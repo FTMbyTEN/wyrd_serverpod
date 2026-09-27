@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:http/http.dart' as http;
+import 'wordnet_service.dart';
 import '../generated/protocol.dart';
 import 'mind_service.dart';
 import 'package:serverpod/serverpod.dart';
@@ -211,7 +212,102 @@ class LexiconService {
     return true;
   }
 
+  static const _wordsPerTick = 6;
+  static const _relearnPerTick = 40;
+  static const _relearnMark = 'wordnet-relearn';
+
+  /// Learns from WordNet (local, no web or AI calls) once it's loaded; until then, the old
+  /// one-word-per-tick web dictionary path below.
   static Future<bool> tick(Session session) async {
+    if (await WordNetService.isReady(session)) return _tickWordNet(session);
+    return _tickWeb(session);
+  }
+
+  static Future<bool> _tickWordNet(Session session) async {
+    if (await _relearnSome(session)) return true;
+
+    final pool = await MemoryBlock.db.find(
+      session,
+      where: (t) => t.source.notEquals('chat') & t.source.notEquals('photo'),
+      orderBy: (t) => t.id.desc(),
+      limit: 200,
+    );
+    final seen = pool
+        .expand((b) => b.topics)
+        .where((w) => w.length >= _minWordLength && !_filler.contains(w))
+        .toSet();
+    if (seen.isEmpty) return false;
+    final already = (await LexiconEntry.db.find(session, where: (t) => t.word.inSet(seen))).map((e) => e.word).toSet();
+    final fresh = seen.difference(already);
+    if (fresh.isEmpty) return false;
+    final inWordNet = await WordNetService.known(session, fresh);
+    if (inWordNet.isEmpty) return false;
+
+    final words = inWordNet.keys.toList()..shuffle();
+    var learned = 0;
+    for (final word in words.take(_wordsPerTick)) {
+      final context = pool.where((b) => b.topics.contains(word)).expand((b) => b.topics).toList();
+      final def = await WordNetService.define(session, word, context: context);
+      if (def == null) continue;
+      await session.db.unsafeExecute(
+        'INSERT INTO "lexicon_entry" ("word", "understood", "definition", "partOfSpeech", "learnedAt") '
+        'VALUES (@w, true, @d, @p, @t) ON CONFLICT ("word") DO NOTHING',
+        parameters: QueryParameters.named({'w': word, 'd': def.definition, 'p': def.partOfSpeech, 't': DateTime.now().toUtc()}),
+      );
+      learned++;
+    }
+    if (learned > 0) await _nudgeConfidence(session);
+    return learned > 0;
+  }
+
+  /// Once WordNet is loaded, re-defines the words learned earlier from the web, choosing the
+  /// sense that fits what WYRD actually read (fixes e.g. "programming" as TV scheduling).
+  static Future<bool> _relearnSome(Session session) async {
+    final mark = await MaintenanceRun.db.findFirstRow(session, where: (t) => t.name.equals(_relearnMark));
+    if (mark?.note == 'done') return false;
+    final lastId = int.tryParse(mark?.note ?? '') ?? 0;
+    final batch = await LexiconEntry.db.find(
+      session,
+      where: (t) => t.id > lastId,
+      orderBy: (t) => t.id,
+      limit: _relearnPerTick,
+    );
+    for (final e in batch) {
+      final ctxRows = await session.db.unsafeQuery(
+        'SELECT "topics"::text FROM "memory_block" WHERE "source" NOT IN (\'chat\', \'photo\') '
+        'AND "topics"::jsonb ? @w ORDER BY "id" DESC LIMIT 15',
+        parameters: QueryParameters.named({'w': e.word}),
+      );
+      final context = ctxRows.expand((r) => (jsonDecode(r[0] as String) as List).cast<String>()).toList();
+      final def = await WordNetService.define(session, e.word, context: context);
+      if (def != null) {
+        await LexiconEntry.db.updateRow(session, e.copyWith(understood: true, definition: def.definition, partOfSpeech: def.partOfSpeech));
+      }
+    }
+    final note = batch.length < _relearnPerTick ? 'done' : '${batch.last.id}';
+    await session.db.unsafeExecute(
+      'INSERT INTO "maintenance_run" ("name", "ranAt", "note") VALUES (@n, @t, @note) '
+      'ON CONFLICT ("name") DO UPDATE SET "note" = @note, "ranAt" = @t',
+      parameters: QueryParameters.named({'n': _relearnMark, 't': DateTime.now().toUtc(), 'note': note}),
+    );
+    if (note == 'done') session.log('[lexicon] relearned existing vocabulary from WordNet');
+    return batch.isNotEmpty;
+  }
+
+  static Future<void> _nudgeConfidence(Session session) async {
+    final mind = await MindService.load(session);
+    const pull = 0.15;
+    await Mind.db.updateRow(
+      session,
+      mind.copyWith(
+        confidence: min(0.98, ((mind.confidence * (1 - pull) + 0.9 * pull) * 100).round() / 100),
+        lastEvent: 'lexicon',
+        updatedAt: DateTime.now().toUtc(),
+      ),
+    );
+  }
+
+  static Future<bool> _tickWeb(Session session) async {
     final dictionary = await _ensureDictionary(session);
     if (dictionary == null || dictionary.isEmpty) return false;
     if (await _repairOne(session)) return true;

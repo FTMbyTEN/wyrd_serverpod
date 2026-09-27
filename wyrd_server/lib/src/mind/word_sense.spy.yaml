@@ -1,0 +1,20 @@
+# WordNet 3.1 (Princeton, see data/WORDNET_LICENSE.txt), loaded once from data/wordnet.tsv.gz by
+# WordNetService: up to two senses per word and part of speech, so WYRD learns vocabulary from
+# its own database instead of calling dictionary websites.
+class: WordSense
+table: word_sense
+
+fields:
+  lemma: String
+  pos: String
+  rank: int
+  tagCount: int
+  definition: String
+  example: String?
+  synonyms: List<String>
+  hypernym: String?
+
+indexes:
+  word_sense_lemma_idx:
+    fields: lemma, pos, rank
+    unique: true

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:serverpod_auth_idp_server/core.dart';
@@ -8,6 +9,7 @@ import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/mind/tick_schedule.dart';
+import 'src/mind/wordnet_service.dart';
 
 /// The starting point of the Serverpod server.
 void run(List<String> args) async {
@@ -109,6 +111,19 @@ void run(List<String> args) async {
   // deploy used to stack one more copy of every tick. Cancel each identifier first so exactly one
   // remains; TickSchedule.claim covers the brief deploy overlap. This must run AFTER pod.start()
   // -- the generated FutureCalls dispatcher isn't initialized until the server has started.
+  // WYRD's own dictionary: imported once from data/wordnet.tsv.gz, in the background so startup
+  // (and the health check) isn't held up. See WordNetService.
+  unawaited(() async {
+    final session = await pod.createSession(enableLogging: true);
+    try {
+      await WordNetService.ensureImported(session);
+    } catch (e) {
+      session.log('[wordnet] import failed: $e', level: LogLevel.warning);
+    } finally {
+      await session.close();
+    }
+  }());
+
   for (final id in const [
     'growth-snapshot', 'diary-day-check', 'reasoning-tick', 'self-question-tick', 'synthesis-tick',
     'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check',
