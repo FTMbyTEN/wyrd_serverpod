@@ -53,6 +53,7 @@ import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
 import 'package:wyrd_server/src/generated/mind/self_config.dart' as _ixg8jrhz;
 import 'package:wyrd_server/src/generated/mind/self_config_change.dart'
     as _ixskf8ah;
+import 'package:wyrd_server/src/generated/mind/sighting.dart' as _ixz0p0ha;
 import 'package:wyrd_server/src/generated/mind/system_status.dart' as _it4ouq1a;
 import 'package:wyrd_server/src/generated/mind/topic_info.dart' as _iwnzpkr1;
 import 'package:wyrd_server/src/generated/mind/user_profile.dart' as _ifiznghf;
@@ -1814,6 +1815,37 @@ class _PhotoEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i6oasa27.ChatReply>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_ixz0p0ha.Sighting>> getSightings(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required int limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'photo',
+            method: 'getSightings',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'photo',
+          methodName: 'getSightings',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ixz0p0ha.Sighting>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

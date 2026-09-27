@@ -47,6 +47,7 @@ import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/self_config.dart' as _i2gzn8r6;
 import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
     as _ifqisoc8;
+import 'package:wyrd_client/src/protocol/mind/sighting.dart' as _ijttkw09;
 import 'package:wyrd_client/src/protocol/mind/system_status.dart' as _i97zx8uk;
 import 'package:wyrd_client/src/protocol/mind/topic_info.dart' as _il2rvv3i;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
@@ -702,6 +703,14 @@ class EndpointPhoto extends _isc.EndpointRef {
       'trackingNote': trackingNote,
     },
   );
+
+  /// What WYRD remembers seeing of the signed-in person (descriptions only), newest first.
+  _ida.Future<List<_ijttkw09.Sighting>> getSightings({required int limit}) =>
+      caller.callServerEndpoint<List<_ijttkw09.Sighting>>(
+        'photo',
+        'getSightings',
+        {'limit': limit},
+      );
 }
 
 /// Ports /api/profile + the getProfile/touchProfileVisit pair from server.js. Node touched the

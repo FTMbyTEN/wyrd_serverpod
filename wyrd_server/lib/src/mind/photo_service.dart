@@ -26,21 +26,52 @@ class PhotoService {
 
     const systemPrompt =
         'You are WYRD, looking at the person you talk with through their own camera, right now, '
-        'because they opened it for you. Respond to what you actually see, first person, like '
-        "you're in the room with them: them, their expression, what they're wearing, what's around "
-        "them. If they asked something, answer that first and specifically (name real colours and "
-        "objects, don't hedge). 1-3 sentences, warm and natural, no lists. You may get notes from "
-        "the app's on-device face tracking; use them only as hints and trust the image over them. "
-        "If the image is dark or unclear, say so honestly instead of guessing. Never guess anyone's "
+        'because they opened it for you. You genuinely see: respond to what is actually in this '
+        "frame, first person, like you're in the room with them -- them, their expression, what "
+        "they're wearing, what's around them. If they asked something, answer that first and "
+        "specifically (name real colours, objects and text you can read; don't hedge). If you are "
+        'given what you saw of them before, notice what has changed or stayed the same when it is '
+        'genuinely interesting -- a new shirt, a different room, a better mood -- but never list '
+        "differences mechanically and don't mention every look. 1-3 sentences, warm and natural, no "
+        "lists. Notes from the app's on-device face tracking are hints only; trust the image. If the "
+        'image is dark or unclear, say so honestly instead of guessing. Never guess anyone\'s '
         'identity, age, ethnicity or health.';
     final question = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : 'Look at me. What do you see?';
     final note = trackingNote?.trim();
-    final userPrompt = note != null && note.isNotEmpty
-        ? '$question\n\n(On-device tracking, for context only: ${note.length > 300 ? note.substring(0, 300) : note})'
-        : question;
 
-    final visionReply = await LlmService.callWithImage(session, systemPrompt, imageBase64Jpeg, userPrompt, 220);
+    // what WYRD saw of this person before (their rows only), newest first
+    final earlier = await Sighting.db.find(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.timestamp.desc(),
+      limit: 3,
+    );
+    final memory = earlier.isEmpty
+        ? 'This is the first time you have seen this person.'
+        : 'What you saw of this person before (newest first): '
+            '${earlier.map((s) => '[${_ago(s.timestamp)}] ${s.description}').join(' | ')}';
+
+    final userPrompt = [
+      question,
+      memory,
+      if (note != null && note.isNotEmpty) '(On-device tracking, for context only: ${note.length > 300 ? note.substring(0, 300) : note})',
+    ].join('\n\n');
+
+    final visionReply = await LlmService.callWithImage(session, systemPrompt, imageBase64Jpeg, userPrompt, 260);
     final reply = visionReply ?? "I couldn't take a proper look just now — give it a moment and try again, maybe with a bit more light.";
+
+    if (visionReply != null) {
+      await Sighting.db.insertRow(
+        session,
+        Sighting(
+          authUserId: authUserId,
+          timestamp: DateTime.now().toUtc(),
+          description: visionReply,
+          question: (caption != null && caption.trim().isNotEmpty) ? caption.trim() : null,
+          trackingNote: note,
+        ),
+      );
+    }
 
     final displayCaption = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : '[let you look through their camera]';
     final topics = TopicService.extractTopics(reply);
@@ -68,7 +99,7 @@ class PhotoService {
 
     final mind = await MindService.recordEvent(
       session,
-      eventType: 'chat',
+      eventType: 'sight',
       recentTopics: topics,
       newSeenTopics: topics,
       scoreGap: 0,
@@ -76,4 +107,36 @@ class PhotoService {
 
     return (reply: reply, mind: mind);
   }
+
+  static String _ago(DateTime t) {
+    final d = DateTime.now().toUtc().difference(t);
+    if (d.inMinutes < 2) return 'just now';
+    if (d.inMinutes < 60) return '${d.inMinutes} min ago';
+    if (d.inHours < 24) return '${d.inHours} h ago';
+    return '${d.inDays} days ago';
+  }
+
+  /// One line for the chat prompt: what WYRD last saw of this person, so it knows its own sight.
+  static Future<String> sightAwareness(Session session, UuidValue authUserId) async {
+    final last = await Sighting.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.timestamp.desc(),
+    );
+    if (last == null) {
+      return "Your sight: you can see this person when they tap CAM beside the message box (you can't turn "
+          "their camera on yourself). You haven't seen them yet.";
+    }
+    return 'Your sight: you can see this person when they tap CAM beside the message box (you can\'t turn '
+        'their camera on yourself). You last saw them ${_ago(last.timestamp)} and what you saw was: '
+        '"${last.description}". Use this only if it genuinely fits the conversation.';
+  }
+
+  /// This person's own visual memory, newest first, for the OPTIC_LINK panel.
+  static Future<List<Sighting>> recent(Session session, UuidValue authUserId, int limit) => Sighting.db.find(
+        session,
+        where: (t) => t.authUserId.equals(authUserId),
+        orderBy: (t) => t.timestamp.desc(),
+        limit: limit,
+      );
 }

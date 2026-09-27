@@ -31,6 +31,7 @@ import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
     as _ix0xy1y5;
+import 'package:wyrd_server/src/generated/mind/sighting.dart' as _ixz0p0ha;
 import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
@@ -68,6 +69,7 @@ import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
+import 'mind/sighting.dart' as _isgvgh6k;
 import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
@@ -109,6 +111,7 @@ export 'mind/mind_topic.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
+export 'mind/sighting.dart';
 export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
 export 'mind/user_fact.dart';
@@ -1210,6 +1213,72 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'sighting',
+      dartName: 'Sighting',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'timestamp',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'description',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'question',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'trackingNote',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'sighting_user_time_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'timestamp',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'user_profile',
       dartName: 'UserProfile',
       schema: 'public',
@@ -1423,6 +1492,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ifocq1fp.SelfConfigChange) {
       return _ifocq1fp.SelfConfigChange.fromJson(data) as T;
     }
+    if (t == _isgvgh6k.Sighting) {
+      return _isgvgh6k.Sighting.fromJson(data) as T;
+    }
     if (t == _iw7p4jzd.SystemStatus) {
       return _iw7p4jzd.SystemStatus.fromJson(data) as T;
     }
@@ -1560,6 +1632,9 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null ? _ifocq1fp.SelfConfigChange.fromJson(data) : null)
           as T;
     }
+    if (t == _is.getType<_isgvgh6k.Sighting?>()) {
+      return (data != null ? _isgvgh6k.Sighting.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_iw7p4jzd.SystemStatus?>()) {
       return (data != null ? _iw7p4jzd.SystemStatus.fromJson(data) : null) as T;
     }
@@ -1683,6 +1758,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ixz0p0ha.Sighting>) {
+      return (data as List)
+              .map((e) => deserialize<_ixz0p0ha.Sighting>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ix0xy1y5.ReasoningNote>) {
       return (data as List)
               .map((e) => deserialize<_ix0xy1y5.ReasoningNote>(e))
@@ -1751,6 +1832,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
+      _isgvgh6k.Sighting => 'Sighting',
       _iw7p4jzd.SystemStatus => 'SystemStatus',
       _i8qpvcdz.TopicInfo => 'TopicInfo',
       _i8ng53gk.UserFact => 'UserFact',
@@ -1842,6 +1924,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'SelfConfig';
       case _ifocq1fp.SelfConfigChange():
         return 'SelfConfigChange';
+      case _isgvgh6k.Sighting():
+        return 'Sighting';
       case _iw7p4jzd.SystemStatus():
         return 'SystemStatus';
       case _i8qpvcdz.TopicInfo():
@@ -1986,6 +2070,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'SelfConfigChange') {
       return deserialize<_ifocq1fp.SelfConfigChange>(data['data']);
     }
+    if (dataClassName == 'Sighting') {
+      return deserialize<_isgvgh6k.Sighting>(data['data']);
+    }
     if (dataClassName == 'SystemStatus') {
       return deserialize<_iw7p4jzd.SystemStatus>(data['data']);
     }
@@ -2074,6 +2161,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ik02x4l4.ReasoningNote.t;
       case _ig7bxoiw.SelfConfig:
         return _ig7bxoiw.SelfConfig.t;
+      case _isgvgh6k.Sighting:
+        return _isgvgh6k.Sighting.t;
       case _irc0lure.UserProfile:
         return _irc0lure.UserProfile.t;
     }

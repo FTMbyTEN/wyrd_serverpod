@@ -29,4 +29,10 @@ class PhotoEndpoint extends Endpoint {
     );
     return ChatReply(reply: result.reply, mind: result.mind);
   }
+
+  /// What WYRD remembers seeing of the signed-in person (descriptions only), newest first.
+  Future<List<Sighting>> getSightings(Session session, {int limit = 5}) async {
+    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+    return PhotoService.recent(session, authUserId, limit.clamp(1, 20));
+  }
 }

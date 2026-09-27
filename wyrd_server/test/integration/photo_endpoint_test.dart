@@ -21,7 +21,7 @@ void main() {
         final result = await endpoints.photo.describe(authed, fakeJpegBase64, caption: 'check my outfit');
 
         expect(result.reply, contains("couldn't take a proper look"));
-        expect(result.mind.lastEvent, 'chat');
+        expect(result.mind.lastEvent, 'sight');
 
         final blocks = await endpoints.memory.getMemory(sessionBuilder);
         expect(blocks, hasLength(1));

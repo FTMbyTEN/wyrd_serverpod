@@ -1,0 +1,16 @@
+# WYRD's visual memory of one person: what it saw each time it looked through their camera.
+# Only its own description is kept -- never the image -- and only that person's rows are ever
+# read back (into their next look and their own chats), so it can notice what changed.
+class: Sighting
+table: sighting
+
+fields:
+  authUserId: UuidValue
+  timestamp: DateTime
+  description: String
+  question: String?
+  trackingNote: String?
+
+indexes:
+  sighting_user_time_idx:
+    fields: authUserId, timestamp

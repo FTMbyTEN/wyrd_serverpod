@@ -983,6 +983,25 @@ class Endpoints extends _is.EndpointDispatch {
                     trackingNote: params['trackingNote'],
                   ),
         ),
+        'getSightings': _is.MethodConnector(
+          name: 'getSightings',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['photo'] as _ij44nk8s.PhotoEndpoint).getSightings(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
       },
     );
     connectors['profile'] = _is.EndpointConnector(

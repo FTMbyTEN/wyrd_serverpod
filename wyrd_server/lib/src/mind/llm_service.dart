@@ -81,6 +81,10 @@ class LlmService {
 
   /// Ports server.js's describePhotoWithVision -- a single-turn call with a base64 JPEG image
   /// attached alongside the text prompt.
+  /// Vision gets a stronger model than text: seeing well is most of what a look is for, and a
+  /// look is rare and deliberate (the budget prices it accordingly -- see LlmBudget).
+  static const visionModel = 'claude-sonnet-5';
+
   static Future<String?> callWithImage(
     Session session,
     String systemPrompt,
@@ -101,7 +105,7 @@ class LlmService {
           'anthropic-version': '2023-06-01',
         },
         body: jsonEncode({
-          'model': _model,
+          'model': visionModel,
           'max_tokens': maxTokens,
           'system': systemPrompt,
           'messages': [
@@ -121,7 +125,7 @@ class LlmService {
       if (res.statusCode != 200) return null;
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
+      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: visionModel);
       final content = data['content'] as List<dynamic>?;
       final block = content?.firstWhere(
         (b) => b['type'] == 'text',

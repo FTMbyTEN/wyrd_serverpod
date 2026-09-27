@@ -28,6 +28,7 @@ import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
+import 'package:wyrd_client/src/protocol/mind/sighting.dart' as _ijttkw09;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
@@ -65,6 +66,7 @@ import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
+import 'mind/sighting.dart' as _isgvgh6k;
 import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
@@ -106,6 +108,7 @@ export 'mind/mind_topic.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
+export 'mind/sighting.dart';
 export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
 export 'mind/user_fact.dart';
@@ -255,6 +258,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ifocq1fp.SelfConfigChange) {
       return _ifocq1fp.SelfConfigChange.fromJson(data) as T;
     }
+    if (t == _isgvgh6k.Sighting) {
+      return _isgvgh6k.Sighting.fromJson(data) as T;
+    }
     if (t == _iw7p4jzd.SystemStatus) {
       return _iw7p4jzd.SystemStatus.fromJson(data) as T;
     }
@@ -392,6 +398,9 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _ifocq1fp.SelfConfigChange.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_isgvgh6k.Sighting?>()) {
+      return (data != null ? _isgvgh6k.Sighting.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_iw7p4jzd.SystemStatus?>()) {
       return (data != null ? _iw7p4jzd.SystemStatus.fromJson(data) : null) as T;
     }
@@ -515,6 +524,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ijttkw09.Sighting>) {
+      return (data as List)
+              .map((e) => deserialize<_ijttkw09.Sighting>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ii1bv1u2.ReasoningNote>) {
       return (data as List)
               .map((e) => deserialize<_ii1bv1u2.ReasoningNote>(e))
@@ -580,6 +595,7 @@ class Protocol extends _isc.SerializationManager {
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
+      _isgvgh6k.Sighting => 'Sighting',
       _iw7p4jzd.SystemStatus => 'SystemStatus',
       _i8qpvcdz.TopicInfo => 'TopicInfo',
       _i8ng53gk.UserFact => 'UserFact',
@@ -671,6 +687,8 @@ class Protocol extends _isc.SerializationManager {
         return 'SelfConfig';
       case _ifocq1fp.SelfConfigChange():
         return 'SelfConfigChange';
+      case _isgvgh6k.Sighting():
+        return 'Sighting';
       case _iw7p4jzd.SystemStatus():
         return 'SystemStatus';
       case _i8qpvcdz.TopicInfo():
@@ -810,6 +828,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'SelfConfigChange') {
       return deserialize<_ifocq1fp.SelfConfigChange>(data['data']);
+    }
+    if (dataClassName == 'Sighting') {
+      return deserialize<_isgvgh6k.Sighting>(data['data']);
     }
     if (dataClassName == 'SystemStatus') {
       return deserialize<_iw7p4jzd.SystemStatus>(data['data']);
