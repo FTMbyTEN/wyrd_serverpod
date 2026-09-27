@@ -652,6 +652,9 @@ class EndpointMemory extends _isc.EndpointRef {
   @override
   String get name => 'memory';
 
+  /// WYRD's shared knowledge only -- what it read, worked out or connected. This endpoint is
+  /// public, and memory rows don't record whose they are, so chat and photo memories (people's
+  /// own words and what WYRD saw of them) are never returned here.
   _ida.Future<List<_ij6z6xwm.MemoryBlock>> getMemory() =>
       caller.callServerEndpoint<List<_ij6z6xwm.MemoryBlock>>(
         'memory',

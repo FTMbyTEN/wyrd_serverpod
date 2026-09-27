@@ -214,7 +214,7 @@ class LexiconService {
 
   static const _wordsPerTick = 6;
   static const _relearnPerTick = 40;
-  static const _relearnMark = 'wordnet-relearn';
+  static const _relearnMark = 'wordnet-relearn-2'; // re-run with extended Lesk
 
   /// Learns from WordNet (local, no web or AI calls) once it's loaded; until then, the old
   /// one-word-per-tick web dictionary path below.
@@ -239,7 +239,7 @@ class LexiconService {
       session,
       where: (t) => t.source.notEquals('chat') & t.source.notEquals('photo'),
       orderBy: (t) => t.id.desc(),
-      limit: 200,
+      limit: 1000,
     );
     final seen = pool
         .expand((b) => b.topics)
@@ -291,6 +291,10 @@ class LexiconService {
       final def = await WordNetService.define(session, e.word, context: context);
       if (def != null) {
         await LexiconEntry.db.updateRow(session, e.copyWith(understood: true, definition: def.definition, partOfSpeech: def.partOfSpeech));
+      } else if ((await WordNetService.known(session, [e.word])).isNotEmpty) {
+        // WordNet knows the word but none of its meanings fit how WYRD meets it (e.g. "llms" as a
+        // law degree): better not understood than wrong
+        await LexiconEntry.db.updateRow(session, e.copyWith(understood: false));
       }
     }
     final note = batch.length < _relearnPerTick ? 'done' : '${batch.last.id}';

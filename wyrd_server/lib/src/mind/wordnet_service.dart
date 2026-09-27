@@ -15,7 +15,7 @@ import 'package:serverpod/serverpod.dart';
 class WordNetService {
   // under web/ because the server image only copies config/, web/ and migrations/
   static const _dataFile = 'web/data/wordnet.tsv.gz';
-  static const _importMark = 'wordnet-3.1';
+  static const _importMark = 'wordnet-3.1-s4'; // up to 4 senses per word and part of speech
   static const _batch = 800;
 
   static bool? _ready;
@@ -169,6 +169,9 @@ class WordNetService {
       .expand(baseForms)
       .toSet();
 
+  static Set<String> _signature(WordSense s) =>
+      _words([s.definition, s.example ?? '', s.synonyms.join(' '), s.hypernym ?? ''].join(' '));
+
   /// Defines [word] from WordNet, choosing the sense that best fits [context] (the words WYRD
   /// read around it). Null if WordNet doesn't know the word.
   static Future<({String partOfSpeech, String definition, String lemma})?> define(
@@ -181,19 +184,41 @@ class WordNetService {
     final senses = await WordSense.db.find(session, where: (t) => t.lemma.equals(lemma));
     if (senses.isEmpty) return null;
 
-    final ctx = context.expand((c) => _words(c)).toSet()..removeAll(baseForms(word));
-    final maxTag = senses.map((s) => s.tagCount).fold(0, max);
-    double score(WordSense s) {
-      final gloss = _words([s.definition, s.example ?? '', s.synonyms.join(' '), s.hypernym ?? ''].join(' '));
-      final overlap = gloss.intersection(ctx).length;
-      return overlap * 3 // Lesk: shared words with what WYRD read around it
-          + (s.rank == 0 ? 1 : 0) // WordNet lists a word's commonest sense first
-          + (maxTag > 0 ? 1.5 * s.tagCount / maxTag : 0) // how common this part of speech is for the word
-          + (s.pos == 'noun' ? 0.3 : 0); // topics are mostly things, not actions
+    final own = baseForms(word);
+    final ctx = context.expand((c) => _words(c)).toSet()..removeAll(own);
+
+    // Extended Lesk: the context also includes what the surrounding words *mean*. "code" and
+    // "software" are defined with "computer", "instructions" and "program" -- which is what
+    // separates programming-as-coding from programming-as-scheduling.
+    final around = ctx.where((w) => w.length > 3).take(40).toList();
+    final extended = <String>{};
+    if (around.isNotEmpty) {
+      final rows = await session.db.unsafeQuery(
+        'SELECT "definition", "hypernym" FROM "word_sense" WHERE "lemma" = ANY(@w::text[]) AND "rank" = 0',
+        parameters: QueryParameters.named({'w': around}),
+      );
+      for (final r in rows) {
+        extended.addAll(_words('${r[0]} ${r[1] ?? ''}'));
+      }
+      extended.removeAll(own);
     }
+
+    final maxTag = senses.map((s) => s.tagCount).fold(0, max);
+    int direct(WordSense s) => _signature(s).intersection(ctx).length;
+    int indirect(WordSense s) => _signature(s).intersection(extended).length;
+    double score(WordSense s) =>
+        direct(s) * 3 // Lesk: shared words with what WYRD read around it
+        + indirect(s) * 1.0 // extended Lesk: shared words with what those words mean
+        + (s.rank == 0 ? 1 : 0) // WordNet lists a word's commonest sense first
+        + (maxTag > 0 ? 1.5 * s.tagCount / maxTag : 0) // how common this part of speech is for the word
+        + (s.pos == 'noun' ? 0.3 : 0); // topics are mostly things, not actions
 
     senses.sort((a, b) => score(b).compareTo(score(a)));
     final best = senses.first;
+
+    // A rare word whose every sense is unrelated to a rich context is probably something else
+    // here (e.g. "llms" -> LL.M., a law degree, among AI topics): better unknown than wrong.
+    if (ctx.length >= 10 && maxTag == 0 && direct(best) == 0 && indirect(best) == 0) return null;
     final def = best.definition[0].toUpperCase() + best.definition.substring(1);
     return (partOfSpeech: best.pos, definition: def.endsWith('.') ? def : '$def.', lemma: lemma);
   }
