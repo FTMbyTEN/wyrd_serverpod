@@ -30,6 +30,8 @@ import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
 import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
 import 'package:wyrd_server/src/generated/mind/concept_detail.dart'
     as _i5v8vu24;
+import 'package:wyrd_server/src/generated/mind/concept_example.dart'
+    as _izhnae4e;
 import 'package:wyrd_server/src/generated/mind/concept_graph.dart' as _i3bmgye1;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
@@ -48,6 +50,8 @@ import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
 import 'package:wyrd_server/src/generated/mind/lexicon_stats.dart' as _iv2jt4ku;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'package:wyrd_server/src/generated/mind/mind.dart' as _i8dcpm7v;
+import 'package:wyrd_server/src/generated/mind/neural_network.dart'
+    as _ib9uyyq2;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
     as _ix0xy1y5;
 import 'package:wyrd_server/src/generated/mind/self_config.dart' as _ixg8jrhz;
@@ -1347,6 +1351,37 @@ class _DreamEndpoint {
       }
     });
   }
+
+  _ida.Future<List<_izhnae4e.ConceptExample>> getStars(
+    _ist.TestSessionBuilder sessionBuilder,
+    int dreamId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'dream',
+            method: 'getStars',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'dream',
+          methodName: 'getStars',
+          parameters: _ist.testObjectToJson({'dreamId': dreamId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_izhnae4e.ConceptExample>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _FeedEndpoint {
@@ -1563,6 +1598,36 @@ class _LexiconEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<String> wordnetStatus(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'lexicon',
+            method: 'wordnetStatus',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'lexicon',
+          methodName: 'wordnetStatus',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<String>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -2018,6 +2083,37 @@ class _ReasoningEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_ix0xy1y5.ReasoningNote>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ib9uyyq2.NeuralNetwork> getNetwork(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required int limit,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'reasoning',
+            method: 'getNetwork',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'reasoning',
+          methodName: 'getNetwork',
+          parameters: _ist.testObjectToJson({'limit': limit}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ib9uyyq2.NeuralNetwork>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

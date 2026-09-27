@@ -1,0 +1,7 @@
+# The strongest part of WYRD's neural network, for the REASONING view.
+class: NeuralNetwork
+
+fields:
+  neurons: List<ConceptNode>
+  synapses: List<Synapse>
+  totalSynapses: int

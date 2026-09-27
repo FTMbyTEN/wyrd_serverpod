@@ -18,6 +18,8 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
+import 'package:wyrd_client/src/protocol/mind/concept_example.dart'
+    as _ihzd15h8;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
 import 'package:wyrd_client/src/protocol/mind/cop_log_entry.dart' as _iudx1gwn;
@@ -63,10 +65,12 @@ import 'mind/maintenance_run.dart' as _inurj49q;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
+import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
 import 'mind/sighting.dart' as _isgvgh6k;
+import 'mind/synapse.dart' as _i0pqq4fp;
 import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
@@ -106,10 +110,12 @@ export 'mind/maintenance_run.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
+export 'mind/neural_network.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
 export 'mind/sighting.dart';
+export 'mind/synapse.dart';
 export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
 export 'mind/user_fact.dart';
@@ -251,6 +257,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ix6ukv82.MindTopic) {
       return _ix6ukv82.MindTopic.fromJson(data) as T;
     }
+    if (t == _ievgcfdd.NeuralNetwork) {
+      return _ievgcfdd.NeuralNetwork.fromJson(data) as T;
+    }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
     }
@@ -262,6 +271,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isgvgh6k.Sighting) {
       return _isgvgh6k.Sighting.fromJson(data) as T;
+    }
+    if (t == _i0pqq4fp.Synapse) {
+      return _i0pqq4fp.Synapse.fromJson(data) as T;
     }
     if (t == _iw7p4jzd.SystemStatus) {
       return _iw7p4jzd.SystemStatus.fromJson(data) as T;
@@ -392,6 +404,10 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ix6ukv82.MindTopic?>()) {
       return (data != null ? _ix6ukv82.MindTopic.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ievgcfdd.NeuralNetwork?>()) {
+      return (data != null ? _ievgcfdd.NeuralNetwork.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
           as T;
@@ -405,6 +421,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_isgvgh6k.Sighting?>()) {
       return (data != null ? _isgvgh6k.Sighting.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i0pqq4fp.Synapse?>()) {
+      return (data != null ? _i0pqq4fp.Synapse.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iw7p4jzd.SystemStatus?>()) {
       return (data != null ? _iw7p4jzd.SystemStatus.fromJson(data) : null) as T;
@@ -478,6 +497,12 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == List<_i0pqq4fp.Synapse>) {
+      return (data as List)
+              .map((e) => deserialize<_i0pqq4fp.Synapse>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ifocq1fp.SelfConfigChange>) {
       return (data as List)
               .map((e) => deserialize<_ifocq1fp.SelfConfigChange>(e))
@@ -511,6 +536,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<_igmpa92d.DreamEntry>) {
       return (data as List)
               .map((e) => deserialize<_igmpa92d.DreamEntry>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ihzd15h8.ConceptExample>) {
+      return (data as List)
+              .map((e) => deserialize<_ihzd15h8.ConceptExample>(e))
               .toList()
           as T;
     }
@@ -600,10 +631,12 @@ class Protocol extends _isc.SerializationManager {
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
       _ix6ukv82.MindTopic => 'MindTopic',
+      _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
       _isgvgh6k.Sighting => 'Sighting',
+      _i0pqq4fp.Synapse => 'Synapse',
       _iw7p4jzd.SystemStatus => 'SystemStatus',
       _i8qpvcdz.TopicInfo => 'TopicInfo',
       _i8ng53gk.UserFact => 'UserFact',
@@ -690,6 +723,8 @@ class Protocol extends _isc.SerializationManager {
         return 'Mind';
       case _ix6ukv82.MindTopic():
         return 'MindTopic';
+      case _ievgcfdd.NeuralNetwork():
+        return 'NeuralNetwork';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -698,6 +733,8 @@ class Protocol extends _isc.SerializationManager {
         return 'SelfConfigChange';
       case _isgvgh6k.Sighting():
         return 'Sighting';
+      case _i0pqq4fp.Synapse():
+        return 'Synapse';
       case _iw7p4jzd.SystemStatus():
         return 'SystemStatus';
       case _i8qpvcdz.TopicInfo():
@@ -831,6 +868,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'MindTopic') {
       return deserialize<_ix6ukv82.MindTopic>(data['data']);
     }
+    if (dataClassName == 'NeuralNetwork') {
+      return deserialize<_ievgcfdd.NeuralNetwork>(data['data']);
+    }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
     }
@@ -842,6 +882,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'Sighting') {
       return deserialize<_isgvgh6k.Sighting>(data['data']);
+    }
+    if (dataClassName == 'Synapse') {
+      return deserialize<_i0pqq4fp.Synapse>(data['data']);
     }
     if (dataClassName == 'SystemStatus') {
       return deserialize<_iw7p4jzd.SystemStatus>(data['data']);

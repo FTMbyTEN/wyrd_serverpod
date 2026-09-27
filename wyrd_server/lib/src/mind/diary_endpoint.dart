@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'diary_service.dart';
+import 'rate_limiter.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/diary and /api/diary/trigger from server.js. Public/unauthenticated, matching
@@ -21,6 +22,10 @@ class DiaryEndpoint extends Endpoint {
   }
 
   Future<DiaryEntry> trigger(Session session) async {
+    // public and AI-backed: a few per 10 minutes, so nobody can spend WYRD's budget on demand
+    if (RateLimiter.isLimited('trigger:diary', 3, const Duration(minutes: 10))) {
+      throw Exception('slow down — try again in a few minutes');
+    }
     return await DiaryService.generateEntry(session);
   }
 }

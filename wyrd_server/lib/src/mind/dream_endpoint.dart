@@ -2,9 +2,7 @@ import '../generated/protocol.dart';
 import 'dream_service.dart';
 import 'package:serverpod/serverpod.dart';
 
-/// Ports /api/dreams and /api/dreams/trigger from server.js. Public/unauthenticated, matching
-/// Node. See dream_service.dart for what's intentionally not ported yet (automatic idle-tick
-/// scheduling, which needs real chat-activity tracking).
+/// Dreams: read them, see what they were made of, or (rate-limited) ask for one. Public, like Node.
 class DreamEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
@@ -22,6 +20,10 @@ class DreamEndpoint extends Endpoint {
   }
 
   Future<DreamEntry?> trigger(Session session) async {
-    return await DreamService.generateDream(session);
+    // public trigger: at most one dream per DreamService.minGap, so it can't spend the AI budget on demand
+    return await DreamService.generateDream(session, respectGap: true);
   }
+
+  /// The memories a dream was made of (its stars), shared knowledge only.
+  Future<List<ConceptExample>> getStars(Session session, int dreamId) => DreamService.stars(session, dreamId);
 }

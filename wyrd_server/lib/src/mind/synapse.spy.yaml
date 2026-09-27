@@ -1,0 +1,19 @@
+# A connection between two ideas in WYRD's neural network (see ReasoningService). Ideas that keep
+# appearing and firing together strengthen their synapse (Hebbian learning); unused ones fade.
+# Endpoints are stored in alphabetical order (a < b), so each pair has exactly one row.
+class: Synapse
+table: synapse
+
+fields:
+  a: String
+  b: String
+  weight: double
+  fires: int
+  lastFired: DateTime
+
+indexes:
+  synapse_pair_idx:
+    fields: a, b
+    unique: true
+  synapse_weight_idx:
+    fields: weight

@@ -14,17 +14,22 @@ void main() {
     );
 
     test(
-      'when at least 2 memory blocks exist then `trigger` blends two of them into a dream entry',
+      'when at least 3 shared memories exist then `trigger` dreams them as a constellation',
       () async {
         final session = sessionBuilder.build();
         await MemoryBlock.db.insertRow(
           session,
           MemoryBlock(
             timestamp: DateTime.now().toUtc(),
-            source: 'chat',
-            userText: 'what is time',
+            source: 'self',
+            question: 'What is time?',
+            answer: 'A measure of change.',
             topics: ['time'],
           ),
+        );
+        await MemoryBlock.db.insertRow(
+          session,
+          MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'net', title: 'Comets', topics: ['comets']),
         );
         await MemoryBlock.db.insertRow(
           session,
@@ -38,7 +43,7 @@ void main() {
 
         final entry = await endpoints.dream.trigger(sessionBuilder);
         expect(entry, isNotNull);
-        expect(entry!.sourceBlockIds, hasLength(2));
+        expect(entry!.sourceBlockIds.length, inInclusiveRange(2, 3));
 
         final entries = await endpoints.dream.getEntries(sessionBuilder);
         expect(entries, hasLength(1));

@@ -18,6 +18,28 @@ class WordNetService {
   static const _batch = 800;
 
   static bool? _ready;
+  static bool _importing = false;
+  static DateTime? _lastAttempt;
+
+  /// Human-readable import state, for LexiconEndpoint.wordnetStatus and the logs.
+  static String status = 'not started';
+
+  static void _say(Session session, String msg, {bool warn = false}) {
+    status = msg;
+    // ignore: avoid_print
+    print('[wordnet] $msg'); // container log, in case session logs are sampled
+    session.log('[wordnet] $msg', level: warn ? LogLevel.warning : LogLevel.info);
+  }
+
+  /// Starts an import in the background if WordNet isn't loaded, none is running, and the last
+  /// attempt was over 10 minutes ago -- so a failed startup import heals itself.
+  static void retryIfNeeded(Future<void> Function() run) {
+    if (_ready == true || _importing) return;
+    final last = _lastAttempt;
+    if (last != null && DateTime.now().difference(last) < const Duration(minutes: 10)) return;
+    _lastAttempt = DateTime.now();
+    run();
+  }
 
   /// True once the import has finished (cached after the first positive check).
   static Future<bool> isReady(Session session) async {
@@ -29,12 +51,29 @@ class WordNetService {
   /// Imports the data file if it hasn't been yet. Safe to call on every start and from several
   /// servers at once: rows are keyed (lemma, pos, rank) and inserted with ON CONFLICT DO NOTHING.
   static Future<void> ensureImported(Session session) async {
-    if (await isReady(session)) return;
-    final file = File(_dataFile);
-    if (!file.existsSync()) {
-      session.log('[wordnet] $_dataFile not found; vocabulary falls back to web dictionaries', level: LogLevel.warning);
+    if (await isReady(session)) {
+      status = 'ready';
       return;
     }
+    if (_importing) return;
+    _importing = true;
+    _lastAttempt = DateTime.now();
+    try {
+      final file = File(_dataFile);
+      if (!file.existsSync()) {
+        _say(session, '$_dataFile not found (looked in ${file.absolute.path}); using web dictionaries', warn: true);
+        return;
+      }
+      _say(session, 'importing from ${file.absolute.path}');
+      await _import(session, file);
+    } catch (e) {
+      _say(session, 'import failed: $e', warn: true);
+    } finally {
+      _importing = false;
+    }
+  }
+
+  static Future<void> _import(Session session, File file) async {
     final sw = Stopwatch()..start();
     final lines = const LineSplitter().convert(utf8.decode(gzip.decode(await file.readAsBytes())));
     final n = await importLines(session, lines);
@@ -43,7 +82,7 @@ class WordNetService {
       parameters: QueryParameters.named({'n': _importMark, 't': DateTime.now().toUtc(), 'note': '$n senses'}),
     );
     _ready = true;
-    session.log('[wordnet] imported $n senses in ${sw.elapsed.inSeconds}s');
+    _say(session, 'ready: imported $n senses in ${sw.elapsed.inSeconds}s');
   }
 
   /// Inserts TSV lines (lemma, pos, rank, tagCount, definition, example, synonyms, hypernym).

@@ -36,6 +36,7 @@ diary:
 dream:
   - getEntries:
   - trigger:
+  - getStars:
 feed:
   - getRecent:
   - trigger:
@@ -46,6 +47,7 @@ growth:
   - getHistory:
 lexicon:
   - trigger:
+  - wordnetStatus:
   - getStats:
   - getWord:
 memory:
@@ -64,6 +66,7 @@ profile:
 reasoning:
   - trigger:
   - getNotes:
+  - getNetwork:
 selfConfig:
   - getConfig:
   - getCopLog:

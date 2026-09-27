@@ -13,8 +13,12 @@ class ReasoningEndpoint extends Endpoint {
     return await ReasoningService.tick(session);
   }
 
-  /// Newest first: the traces written by reasoning passes (kind 'reasoning') and
-  /// self-questions (kind 'self').
+  /// Newest first: neural firings (kind 'firing', JSON), self-questions (kind 'self') and older
+  /// reasoning traces (kind 'reasoning').
   Future<List<ReasoningNote>> getNotes(Session session, {int? limit}) =>
       ReasoningLogService.recent(session, limit ?? 50);
+
+  /// The strongest part of WYRD's neural network of ideas (see ReasoningService).
+  Future<NeuralNetwork> getNetwork(Session session, {int limit = 60}) =>
+      ReasoningService.network(session, limit.clamp(10, 200));
 }

@@ -9,7 +9,7 @@ void main() {
   withServerpod('Given the dream idle check', (sessionBuilder, endpoints) {
     Future<void> seedMemory() async {
       final session = sessionBuilder.build();
-      for (final t in ['tides', 'lanterns']) {
+      for (final t in ['tides', 'lanterns', 'comets']) {
         await MemoryBlock.db.insertRow(
           session,
           MemoryBlock(

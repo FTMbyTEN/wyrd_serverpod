@@ -22,7 +22,7 @@ void main() {
           session,
           MemoryBlock(
             timestamp: DateTime.now().toUtc(),
-            source: 'chat',
+            source: 'net',
             topics: ['gravity', 'orbits'],
           ),
         );
@@ -43,9 +43,9 @@ void main() {
 
         final notes = await endpoints.reasoning.getNotes(sessionBuilder);
         expect(notes, hasLength(1));
-        expect(notes.first.kind, 'reasoning');
-        expect(notes.first.content, startsWith('# Autonomous reasoning'));
-        expect(notes.first.content, contains('-> pairing['));
+        expect(notes.first.kind, 'firing');
+        expect(notes.first.content, contains('"summary"'));
+        expect(notes.first.content, contains('gravity'));
       },
     );
 

@@ -1,5 +1,4 @@
 import '../generated/protocol.dart';
-import 'memory_recall_service.dart';
 import 'topic_service.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -25,17 +24,7 @@ class MemoryEndpoint extends Endpoint {
   }
 
   static const _sharedSources = ['net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum'];
-  static final _stoplist = {
-    ...TopicService.stopwords, ...MemoryRecallService.scaffold,
-    'from', 'like', 'later', 'years', 'other', 'help', 'work', 'just', 'more', 'also', 'into', 'than', 'then',
-    'them', 'they', 'this', 'that', 'what', 'with', 'your', 'about', 'which', 'there', 'their', 'would', 'could',
-    'should', 'being', 'been', 'have', 'here', 'when', 'where', 'while', 'will', 'were', 'some', 'many', 'much',
-    'most', 'very', 'over', 'only', 'even', 'each', 'make', 'made', 'first', 'new', 'one', 'two', 'use', 'used',
-    'using', 'way', 'get', 'gets', 'still', 'show', 'says', 'said', 'these', 'those', 'does', 'did', 'doing',
-    'after', 'before', 'because', 'through', 'between', 'among', 'during', 'without', 'within', 'part', 'known',
-    'per', 'our', 'its', 'might', 'every', 'same', 'may', 'can', 'any', 'all', 'own', 'via', 'etc', 'yet', 'ever',
-    'less', 'far', 'lot', 'lots', 'got', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'you',
-  }.toList();
+  static final _stoplist = TopicService.noise.toList();
 
   static const _conceptsTtl = Duration(minutes: 1);
   static ({DateTime at, ConceptGraph graph})? _conceptsCache;

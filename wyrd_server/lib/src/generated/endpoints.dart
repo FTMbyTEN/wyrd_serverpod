@@ -752,6 +752,25 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['dream'] as _inxbi04j.DreamEndpoint)
                   .trigger(session),
         ),
+        'getStars': _is.MethodConnector(
+          name: 'getStars',
+          params: {
+            'dreamId': _is.ParameterDescription(
+              name: 'dreamId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['dream'] as _inxbi04j.DreamEndpoint).getStars(
+                    session,
+                    params['dreamId'],
+                  ),
+        ),
       },
     );
     connectors['feed'] = _is.EndpointConnector(
@@ -854,6 +873,16 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['lexicon'] as _i3c3oo5r.LexiconEndpoint)
                   .trigger(session),
+        ),
+        'wordnetStatus': _is.MethodConnector(
+          name: 'wordnetStatus',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['lexicon'] as _i3c3oo5r.LexiconEndpoint)
+                  .wordnetStatus(session),
         ),
         'getStats': _is.MethodConnector(
           name: 'getStats',
@@ -1078,6 +1107,25 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['reasoning'] as _iovbjp1a.ReasoningEndpoint)
                   .getNotes(
+                    session,
+                    limit: params['limit'],
+                  ),
+        ),
+        'getNetwork': _is.MethodConnector(
+          name: 'getNetwork',
+          params: {
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['reasoning'] as _iovbjp1a.ReasoningEndpoint)
+                  .getNetwork(
                     session,
                     limit: params['limit'],
                   ),

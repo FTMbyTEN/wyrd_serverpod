@@ -20,6 +20,8 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import 'package:wyrd_server/src/generated/drone/drone_mission.dart'
     as _iu8lemuv;
 import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
+import 'package:wyrd_server/src/generated/mind/concept_example.dart'
+    as _izhnae4e;
 import 'package:wyrd_server/src/generated/mind/conversation_turn.dart'
     as _i619x11i;
 import 'package:wyrd_server/src/generated/mind/cop_log_entry.dart' as _isvsvjy1;
@@ -66,10 +68,12 @@ import 'mind/maintenance_run.dart' as _inurj49q;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
+import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
 import 'mind/sighting.dart' as _isgvgh6k;
+import 'mind/synapse.dart' as _i0pqq4fp;
 import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/user_fact.dart' as _i8ng53gk;
@@ -109,10 +113,12 @@ export 'mind/maintenance_run.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
+export 'mind/neural_network.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
 export 'mind/sighting.dart';
+export 'mind/synapse.dart';
 export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
 export 'mind/user_fact.dart';
@@ -1281,6 +1287,85 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'synapse',
+      dartName: 'Synapse',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'a',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'b',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'weight',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'fires',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastFired',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'synapse_pair_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'a',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'b',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'synapse_weight_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'weight',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'user_profile',
       dartName: 'UserProfile',
       schema: 'public',
@@ -1573,6 +1658,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ix6ukv82.MindTopic) {
       return _ix6ukv82.MindTopic.fromJson(data) as T;
     }
+    if (t == _ievgcfdd.NeuralNetwork) {
+      return _ievgcfdd.NeuralNetwork.fromJson(data) as T;
+    }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
     }
@@ -1584,6 +1672,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _isgvgh6k.Sighting) {
       return _isgvgh6k.Sighting.fromJson(data) as T;
+    }
+    if (t == _i0pqq4fp.Synapse) {
+      return _i0pqq4fp.Synapse.fromJson(data) as T;
     }
     if (t == _iw7p4jzd.SystemStatus) {
       return _iw7p4jzd.SystemStatus.fromJson(data) as T;
@@ -1714,6 +1805,10 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_ix6ukv82.MindTopic?>()) {
       return (data != null ? _ix6ukv82.MindTopic.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_ievgcfdd.NeuralNetwork?>()) {
+      return (data != null ? _ievgcfdd.NeuralNetwork.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
           as T;
@@ -1727,6 +1822,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_isgvgh6k.Sighting?>()) {
       return (data != null ? _isgvgh6k.Sighting.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i0pqq4fp.Synapse?>()) {
+      return (data != null ? _i0pqq4fp.Synapse.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_iw7p4jzd.SystemStatus?>()) {
       return (data != null ? _iw7p4jzd.SystemStatus.fromJson(data) : null) as T;
@@ -1800,6 +1898,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               : null)
           as T;
     }
+    if (t == List<_i0pqq4fp.Synapse>) {
+      return (data as List)
+              .map((e) => deserialize<_i0pqq4fp.Synapse>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ifocq1fp.SelfConfigChange>) {
       return (data as List)
               .map((e) => deserialize<_ifocq1fp.SelfConfigChange>(e))
@@ -1833,6 +1937,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_ijdvl27e.DreamEntry>) {
       return (data as List)
               .map((e) => deserialize<_ijdvl27e.DreamEntry>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_izhnae4e.ConceptExample>) {
+      return (data as List)
+              .map((e) => deserialize<_izhnae4e.ConceptExample>(e))
               .toList()
           as T;
     }
@@ -1925,10 +2035,12 @@ class Protocol extends _is.DatabaseSerializationManager {
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
       _ix6ukv82.MindTopic => 'MindTopic',
+      _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
       _isgvgh6k.Sighting => 'Sighting',
+      _i0pqq4fp.Synapse => 'Synapse',
       _iw7p4jzd.SystemStatus => 'SystemStatus',
       _i8qpvcdz.TopicInfo => 'TopicInfo',
       _i8ng53gk.UserFact => 'UserFact',
@@ -2015,6 +2127,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'Mind';
       case _ix6ukv82.MindTopic():
         return 'MindTopic';
+      case _ievgcfdd.NeuralNetwork():
+        return 'NeuralNetwork';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -2023,6 +2137,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'SelfConfigChange';
       case _isgvgh6k.Sighting():
         return 'Sighting';
+      case _i0pqq4fp.Synapse():
+        return 'Synapse';
       case _iw7p4jzd.SystemStatus():
         return 'SystemStatus';
       case _i8qpvcdz.TopicInfo():
@@ -2160,6 +2276,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'MindTopic') {
       return deserialize<_ix6ukv82.MindTopic>(data['data']);
     }
+    if (dataClassName == 'NeuralNetwork') {
+      return deserialize<_ievgcfdd.NeuralNetwork>(data['data']);
+    }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
     }
@@ -2171,6 +2290,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'Sighting') {
       return deserialize<_isgvgh6k.Sighting>(data['data']);
+    }
+    if (dataClassName == 'Synapse') {
+      return deserialize<_i0pqq4fp.Synapse>(data['data']);
     }
     if (dataClassName == 'SystemStatus') {
       return deserialize<_iw7p4jzd.SystemStatus>(data['data']);
@@ -2265,6 +2387,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ig7bxoiw.SelfConfig.t;
       case _isgvgh6k.Sighting:
         return _isgvgh6k.Sighting.t;
+      case _i0pqq4fp.Synapse:
+        return _i0pqq4fp.Synapse.t;
       case _irc0lure.UserProfile:
         return _irc0lure.UserProfile.t;
       case _itj7bvl5.WordSense:

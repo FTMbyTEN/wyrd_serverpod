@@ -1,3 +1,5 @@
+import 'memory_recall_service.dart';
+
 /// Ports server.js's extractTopics/STOPWORDS. Node also filtered out its own generated block
 /// ids (base36 timestamp+random strings) leaking into topic lists -- not needed here, since
 /// Serverpod rows use plain integer ids that can't collide with extracted English words.
@@ -24,6 +26,23 @@ class TopicService {
 
   /// Words too common to be a real subject (shared with the concept map's filter).
   static Set<String> get stopwords => _stopwords;
+
+  /// Words that are never an idea worth showing or wiring (the concept map and the neural
+  /// network both skip them): stopwords, question scaffolding and common filler.
+  static final Set<String> noise = {
+    ..._stopwords, ...MemoryRecallService.scaffold,
+    'from', 'like', 'later', 'years', 'other', 'help', 'work', 'just', 'more', 'also', 'into', 'than', 'then',
+    'them', 'they', 'this', 'that', 'what', 'with', 'your', 'about', 'which', 'there', 'their', 'would', 'could',
+    'should', 'being', 'been', 'have', 'here', 'when', 'where', 'while', 'will', 'were', 'some', 'many', 'much',
+    'most', 'very', 'over', 'only', 'even', 'each', 'make', 'made', 'first', 'new', 'one', 'two', 'use', 'used',
+    'using', 'way', 'get', 'gets', 'still', 'show', 'says', 'said', 'these', 'those', 'does', 'did', 'doing',
+    'after', 'before', 'because', 'through', 'between', 'among', 'during', 'without', 'within', 'part', 'known',
+    'per', 'our', 'its', 'might', 'every', 'same', 'may', 'can', 'any', 'all', 'own', 'via', 'etc', 'yet', 'ever',
+    'less', 'far', 'lot', 'lots', 'got', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'you',
+  };
+
+  /// True for a topic that can be a real idea: not filler, not a number, long enough.
+  static bool isIdea(String w) => w.length > 2 && !noise.contains(w) && !RegExp(r'^[0-9]+$').hasMatch(w);
 
   static final _wordPattern = RegExp(r"[a-z0-9']+");
 

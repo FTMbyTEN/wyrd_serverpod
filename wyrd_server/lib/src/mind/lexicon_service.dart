@@ -220,6 +220,15 @@ class LexiconService {
   /// one-word-per-tick web dictionary path below.
   static Future<bool> tick(Session session) async {
     if (await WordNetService.isReady(session)) return _tickWordNet(session);
+    // not loaded yet: (re)start the import in the background, then carry on the old way
+    WordNetService.retryIfNeeded(() async {
+      final s = await Serverpod.instance.createSession(enableLogging: true);
+      try {
+        await WordNetService.ensureImported(s);
+      } finally {
+        await s.close();
+      }
+    });
     return _tickWeb(session);
   }
 

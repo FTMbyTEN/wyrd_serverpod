@@ -26,6 +26,8 @@ import 'package:wyrd_client/src/protocol/mind/account_export.dart' as _izg4k2n4;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
 import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_detail.dart' as _iea588cs;
+import 'package:wyrd_client/src/protocol/mind/concept_example.dart'
+    as _ihzd15h8;
 import 'package:wyrd_client/src/protocol/mind/concept_graph.dart' as _i3megjmi;
 import 'package:wyrd_client/src/protocol/mind/conversation_turn.dart'
     as _ie2belbc;
@@ -43,6 +45,7 @@ import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
 import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
+import 'package:wyrd_client/src/protocol/mind/neural_network.dart' as _idlunu5o;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/self_config.dart' as _i2gzn8r6;
 import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
@@ -497,9 +500,7 @@ class EndpointDiary extends _isc.EndpointRef {
       );
 }
 
-/// Ports /api/dreams and /api/dreams/trigger from server.js. Public/unauthenticated, matching
-/// Node. See dream_service.dart for what's intentionally not ported yet (automatic idle-tick
-/// scheduling, which needs real chat-activity tracking).
+/// Dreams: read them, see what they were made of, or (rate-limited) ask for one. Public, like Node.
 /// {@category Endpoint}
 class EndpointDream extends _isc.EndpointRef {
   EndpointDream(_isc.EndpointCaller caller) : super(caller);
@@ -519,6 +520,14 @@ class EndpointDream extends _isc.EndpointRef {
         'dream',
         'trigger',
         {},
+      );
+
+  /// The memories a dream was made of (its stars), shared knowledge only.
+  _ida.Future<List<_ihzd15h8.ConceptExample>> getStars(int dreamId) =>
+      caller.callServerEndpoint<List<_ihzd15h8.ConceptExample>>(
+        'dream',
+        'getStars',
+        {'dreamId': dreamId},
       );
 }
 
@@ -605,6 +614,13 @@ class EndpointLexicon extends _isc.EndpointRef {
   _ida.Future<bool> trigger() => caller.callServerEndpoint<bool>(
     'lexicon',
     'trigger',
+    {},
+  );
+
+  /// Whether WYRD's own dictionary (WordNet) is loaded, importing, or missing -- and why.
+  _ida.Future<String> wordnetStatus() => caller.callServerEndpoint<String>(
+    'lexicon',
+    'wordnetStatus',
     {},
   );
 
@@ -762,12 +778,20 @@ class EndpointReasoning extends _isc.EndpointRef {
     {},
   );
 
-  /// Newest first: the traces written by reasoning passes (kind 'reasoning') and
-  /// self-questions (kind 'self').
+  /// Newest first: neural firings (kind 'firing', JSON), self-questions (kind 'self') and older
+  /// reasoning traces (kind 'reasoning').
   _ida.Future<List<_ii1bv1u2.ReasoningNote>> getNotes({int? limit}) =>
       caller.callServerEndpoint<List<_ii1bv1u2.ReasoningNote>>(
         'reasoning',
         'getNotes',
+        {'limit': limit},
+      );
+
+  /// The strongest part of WYRD's neural network of ideas (see ReasoningService).
+  _ida.Future<_idlunu5o.NeuralNetwork> getNetwork({required int limit}) =>
+      caller.callServerEndpoint<_idlunu5o.NeuralNetwork>(
+        'reasoning',
+        'getNetwork',
         {'limit': limit},
       );
 }

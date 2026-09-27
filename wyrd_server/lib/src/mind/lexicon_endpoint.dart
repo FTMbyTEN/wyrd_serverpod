@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'lexicon_service.dart';
+import 'wordnet_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's /api/lexicon/stats, /api/lexicon/word/:word and /api/lexicon/trigger.
@@ -12,6 +13,10 @@ class LexiconEndpoint extends Endpoint {
   /// Runs one learning tick now instead of waiting for the timer. False if there was nothing new
   /// to learn (or the wordlist isn't loaded yet).
   Future<bool> trigger(Session session) => LexiconService.tick(session);
+
+  /// Whether WYRD's own dictionary (WordNet) is loaded, importing, or missing -- and why.
+  Future<String> wordnetStatus(Session session) async =>
+      await WordNetService.isReady(session) ? 'ready' : WordNetService.status;
 
   /// Two counts and the five newest understood words -- not the whole lexicon, which grows
   /// every 30s and was being loaded in full on every poll.
