@@ -787,9 +787,31 @@ class Protocol extends _is.DatabaseSerializationManager {
           isNullable: false,
           dartType: 'DateTime',
         ),
+        _isp.ColumnDefinition(
+          name: 'embedding',
+          columnType: _isp.ColumnType.vector,
+          isNullable: true,
+          dartType: 'Vector(512)?',
+          vectorDimension: 512,
+        ),
       ],
       foreignKeys: [],
       indexes: [
+        _isp.IndexDefinition(
+          indexName: 'learned_answer_embedding_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'embedding',
+            ),
+          ],
+          type: 'hnsw',
+          isUnique: false,
+          isPrimary: false,
+          vectorDistanceFunction: _isp.VectorDistanceFunction.cosine,
+          vectorColumnType: _isp.ColumnType.vector,
+        ),
         _isp.IndexDefinition(
           indexName: 'learned_answer_intent_idx',
           tableSpace: null,
@@ -1099,9 +1121,31 @@ class Protocol extends _is.DatabaseSerializationManager {
           isNullable: true,
           dartType: 'List<String>?',
         ),
+        _isp.ColumnDefinition(
+          name: 'embedding',
+          columnType: _isp.ColumnType.vector,
+          isNullable: true,
+          dartType: 'Vector(512)?',
+          vectorDimension: 512,
+        ),
       ],
       foreignKeys: [],
       indexes: [
+        _isp.IndexDefinition(
+          indexName: 'memory_block_embedding_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'embedding',
+            ),
+          ],
+          type: 'hnsw',
+          isUnique: false,
+          isPrimary: false,
+          vectorDistanceFunction: _isp.VectorDistanceFunction.cosine,
+          vectorColumnType: _isp.ColumnType.vector,
+        ),
         _isp.IndexDefinition(
           indexName: 'memory_block_timestamp_idx',
           tableSpace: null,

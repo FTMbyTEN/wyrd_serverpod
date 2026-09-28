@@ -126,7 +126,7 @@ void run(List<String> args) async {
 
   for (final id in const [
     'growth-snapshot', 'diary-day-check', 'reasoning-tick', 'self-question-tick', 'synthesis-tick',
-    'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check',
+    'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check', 'sleep-check',
   ]) {
     await pod.futureCalls.cancel(id);
   }
@@ -169,6 +169,11 @@ void run(List<String> args) async {
       .callRecurring(identifier: 'lexicon-tick')
       .every(TickSchedule.lexicon)
       .lexicon
+      .tick();
+  await pod.futureCalls
+      .callRecurring(identifier: 'sleep-check')
+      .every(TickSchedule.sleepCheck)
+      .sleep
       .tick();
   await pod.futureCalls
       .callRecurring(identifier: 'dream-idle-check')

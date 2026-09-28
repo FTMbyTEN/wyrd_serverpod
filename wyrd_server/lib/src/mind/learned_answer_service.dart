@@ -78,10 +78,32 @@ class LearnedAnswerService {
     String text,
     List<String> topics, {
     bool aiAvailable = true,
+    Vector? meaning,
   }) async {
     if (!isLearnable(text, topics)) return null;
     final ideas = _ideas(topics);
     final intent = intentOf(text);
+
+    // By meaning first: a rephrasing of a learned question ("what keeps planes in the air" /
+    // "how do aircraft stay up") is the same question even with no words in common.
+    if (meaning != null) {
+      final maxDistance = aiAvailable ? 0.12 : 0.2; // cosine similarity >= 0.88 (0.8 as a fallback)
+      final near = await session.db.unsafeQuery(
+        'SELECT "id" FROM "learned_answer" WHERE "retired" = false AND "embedding" IS NOT NULL '
+        'AND "intent" = @intent AND ("authUserId" IS NULL OR "authUserId" = @me) AND "score" >= @min '
+        'AND ("embedding" <=> @q::vector) < @max ORDER BY "embedding" <=> @q::vector LIMIT 1',
+        parameters: QueryParameters.named({
+          'intent': intent, 'me': authUserId.uuid, 'min': _minScore, 'max': maxDistance,
+          'q': '[${meaning.toList().join(',')}]',
+        }),
+      );
+      if (near.isNotEmpty) {
+        final hit = await LearnedAnswer.db.findById(session, near.first[0] as int);
+        if (hit != null) {
+          return LearnedAnswer.db.updateRow(session, hit.copyWith(uses: hit.uses + 1, updatedAt: DateTime.now().toUtc()));
+        }
+      }
+    }
     final rows = await session.db.unsafeQuery(
       'SELECT "id" FROM "learned_answer" WHERE "retired" = false AND "intent" = @intent '
       'AND ("authUserId" IS NULL OR "authUserId" = @me) AND "topics"::jsonb ?| @t::text[] '
@@ -114,6 +136,7 @@ class LearnedAnswerService {
     List<String> topics,
     String answer, {
     required List<String> userFacts,
+    Vector? meaning,
   }) async {
     if (!isLearnable(text, topics) || _unsure.hasMatch(answer) || answer.trim().length < 20) return;
     final ideas = _ideas(topics);
@@ -140,6 +163,7 @@ class LearnedAnswerService {
             retired: false,
             version: existing.version + 1,
             authUserId: private ? authUserId : existing.authUserId,
+            embedding: meaning ?? existing.embedding,
             updatedAt: now,
           ),
         );
@@ -160,6 +184,7 @@ class LearnedAnswerService {
         retired: false,
         createdAt: now,
         updatedAt: now,
+        embedding: meaning,
       ),
     );
   }

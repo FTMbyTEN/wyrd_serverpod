@@ -36,6 +36,7 @@ abstract class MemoryBlock
     this.insight,
     this.sourceBlockIds,
     this.sourceTopics,
+    this.embedding,
   });
 
   factory MemoryBlock({
@@ -59,6 +60,7 @@ abstract class MemoryBlock
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    _is.Vector? embedding,
   }) = _MemoryBlockImpl;
 
   factory MemoryBlock.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -95,6 +97,9 @@ abstract class MemoryBlock
           : _i9sln91s.Protocol().deserialize<List<String>>(
               jsonSerialization['sourceTopics'],
             ),
+      embedding: jsonSerialization['embedding'] == null
+          ? null
+          : _is.VectorJsonExtension.fromJson(jsonSerialization['embedding']),
     );
   }
 
@@ -143,6 +148,8 @@ abstract class MemoryBlock
 
   List<String>? sourceTopics;
 
+  _is.Vector? embedding;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -170,6 +177,7 @@ abstract class MemoryBlock
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    _is.Vector? embedding,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -195,6 +203,7 @@ abstract class MemoryBlock
       if (insight != null) 'insight': insight,
       if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
+      if (embedding != null) 'embedding': embedding?.toJson(),
     };
   }
 
@@ -277,6 +286,7 @@ class _MemoryBlockImpl extends MemoryBlock {
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    _is.Vector? embedding,
   }) : super._(
          id: id,
          legacyId: legacyId,
@@ -298,6 +308,7 @@ class _MemoryBlockImpl extends MemoryBlock {
          insight: insight,
          sourceBlockIds: sourceBlockIds,
          sourceTopics: sourceTopics,
+         embedding: embedding,
        );
 
   /// Returns a shallow copy of this [MemoryBlock]
@@ -325,6 +336,7 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? insight = _Undefined,
     Object? sourceBlockIds = _Undefined,
     Object? sourceTopics = _Undefined,
+    Object? embedding = _Undefined,
   }) {
     return MemoryBlock(
       id: id is int? ? id : this.id,
@@ -357,6 +369,7 @@ class _MemoryBlockImpl extends MemoryBlock {
       sourceTopics: sourceTopics is List<String>?
           ? sourceTopics
           : this.sourceTopics?.map((e0) => e0).toList(),
+      embedding: embedding is _is.Vector? ? embedding : this.embedding?.clone(),
     );
   }
 }
@@ -466,6 +479,12 @@ class MemoryBlockUpdateTable extends _is.UpdateTable<MemoryBlockTable> {
     table.sourceTopics,
     value,
   );
+
+  _is.ColumnValue<_is.Vector, _is.Vector> embedding(_is.Vector? value) =>
+      _is.ColumnValue(
+        table.embedding,
+        value,
+      );
 }
 
 class MemoryBlockTable extends _is.Table<int?> {
@@ -547,6 +566,11 @@ class MemoryBlockTable extends _is.Table<int?> {
       'sourceTopics',
       this,
     );
+    embedding = _is.ColumnVector(
+      'embedding',
+      this,
+      dimension: 512,
+    );
   }
 
   late final MemoryBlockUpdateTable updateTable;
@@ -589,6 +613,8 @@ class MemoryBlockTable extends _is.Table<int?> {
 
   late final _is.ColumnSerializable<List<String>> sourceTopics;
 
+  late final _is.ColumnVector embedding;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -611,6 +637,7 @@ class MemoryBlockTable extends _is.Table<int?> {
     insight,
     sourceBlockIds,
     sourceTopics,
+    embedding,
   ];
 }
 

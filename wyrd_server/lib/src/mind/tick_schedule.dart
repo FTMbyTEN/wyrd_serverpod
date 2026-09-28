@@ -11,6 +11,7 @@ class TickSchedule {
   static const selfConfig = Duration(hours: 4);
   static const lexicon = Duration(seconds: 30);
   static const dreamIdleCheck = Duration(minutes: 15);
+  static const sleepCheck = Duration(minutes: 10); // new fingerprints; nightly sleep (SleepService)
 
   static final _lastRun = <String, DateTime>{};
 

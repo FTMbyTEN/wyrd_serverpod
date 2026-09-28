@@ -3,6 +3,7 @@ import 'dart:math';
 import '../generated/protocol.dart';
 import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
+import 'embedding_service.dart';
 import 'learned_answer_service.dart';
 import 'memory_recall_service.dart';
 import 'photo_service.dart';
@@ -58,7 +59,11 @@ class ChatService {
     }
 
     final mind = await MindService.load(session);
-    final recall = await MemoryRecallService.recall(session, authUserId, topics);
+    // the message's meaning fingerprint, once, for recall and learned answers (null when off)
+    final meaning = text.trim().length >= 8 && EmbeddingService.enabled(session)
+        ? await EmbeddingService.embedQuery(session, text)
+        : null;
+    final recall = await MemoryRecallService.recall(session, authUserId, topics, meaning: meaning);
 
     final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
     final blockCount = await MemoryBlock.db.count(session);
@@ -109,7 +114,7 @@ class ChatService {
     // one), then WYRD tries its own learned answers before spending an AI call.
     await LearnedAnswerService.feedback(session, recentTurns.firstOrNull, text);
     final isCode = CodeAgentService.isCodeRequest(text) || CodeAgentService.isLikelyFollowUp(authUserId, text);
-    final learned = isCode ? null : await LearnedAnswerService.recall(session, authUserId, text, topics);
+    final learned = isCode ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
 
     // Code requests (and short follow-ups to one) skip the conversational prompt entirely; if
     // the code path fails, fall through to it as a safety net, like Node.
@@ -171,14 +176,14 @@ class ChatService {
 
     // The AI couldn't answer (budget spent, no key, error): a looser learned answer beats a template.
     final fallback = learned == null && toolReply == null && !isCode
-        ? await LearnedAnswerService.recall(session, authUserId, text, topics, aiAvailable: false)
+        ? await LearnedAnswerService.recall(session, authUserId, text, topics, aiAvailable: false, meaning: meaning)
         : null;
     final usedLearned = learned ?? fallback;
     final reply = usedLearned?.answer ?? toolReply?.text ?? _followUpFromTopics(topics);
 
     // A fresh AI answer to a general question is kept, so next time WYRD knows it.
     if (toolReply != null && codeReply == null && action == null) {
-      await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList());
+      await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
     }
 
     final turn = await ConversationTurn.db.insertRow(

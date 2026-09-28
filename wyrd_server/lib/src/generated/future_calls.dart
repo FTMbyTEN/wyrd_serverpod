@@ -22,6 +22,7 @@ import '../mind/lexicon_future_call.dart' as _ik7k7qni;
 import '../mind/reasoning_future_call.dart' as _ipbl5psg;
 import '../mind/self_config_future_call.dart' as _ishes48l;
 import '../mind/self_question_future_call.dart' as _i51wt927;
+import '../mind/sleep_future_call.dart' as _iunmcnpr;
 import '../mind/synthesis_future_call.dart' as _i5fxv39a;
 
 /// Invokes a future call.
@@ -74,6 +75,7 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
       'ReasoningTickFutureCall': ReasoningTickFutureCall(),
       'SelfConfigTickFutureCall': SelfConfigTickFutureCall(),
       'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
+      'SleepTickFutureCall': SleepTickFutureCall(),
       'SynthesisTickFutureCall': SynthesisTickFutureCall(),
     };
     _futureCallManager = futureCallManager;
@@ -213,6 +215,8 @@ class _FutureCallRef {
     _invokeFutureCall,
   );
 
+  late final sleep = _SleepFutureCallDispatcher(_invokeFutureCall);
+
   late final synthesis = _SynthesisFutureCallDispatcher(_invokeFutureCall);
 }
 
@@ -320,6 +324,19 @@ class _SelfQuestionFutureCallDispatcher {
   }
 }
 
+class _SleepFutureCallDispatcher {
+  _SleepFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'SleepTickFutureCall',
+      null,
+    );
+  }
+}
+
 class _SynthesisFutureCallDispatcher {
   _SynthesisFutureCallDispatcher(this._invokeFutureCall);
 
@@ -418,6 +435,17 @@ class SelfQuestionTickFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _i51wt927.SelfQuestionFutureCall().tick(session);
+  }
+}
+
+class SleepTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _iunmcnpr.SleepFutureCall().tick(session);
   }
 }
 

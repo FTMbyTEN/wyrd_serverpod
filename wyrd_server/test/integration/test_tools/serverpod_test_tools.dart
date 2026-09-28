@@ -378,6 +378,8 @@ class _FutureCalls {
 
   late final selfQuestion = _SelfQuestionFutureCall();
 
+  late final sleep = _SleepFutureCall();
+
   late final synthesis = _SynthesisFutureCall();
 }
 
@@ -2600,6 +2602,21 @@ class _SelfQuestionFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ix7un2io.SelfQuestionTickFutureCall().invoke(
+        _localUniqueSession,
+        null,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _SleepFutureCall {
+  Future<void> tick(_ist.TestSessionBuilder sessionBuilder) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ix7un2io.SleepTickFutureCall().invoke(
         _localUniqueSession,
         null,
       );

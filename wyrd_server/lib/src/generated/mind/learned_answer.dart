@@ -28,6 +28,7 @@ abstract class LearnedAnswer
     required this.retired,
     required this.createdAt,
     required this.updatedAt,
+    this.embedding,
   });
 
   factory LearnedAnswer({
@@ -43,6 +44,7 @@ abstract class LearnedAnswer
     required bool retired,
     required DateTime createdAt,
     required DateTime updatedAt,
+    _is.Vector? embedding,
   }) = _LearnedAnswerImpl;
 
   factory LearnedAnswer.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -69,6 +71,9 @@ abstract class LearnedAnswer
       updatedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
+      embedding: jsonSerialization['embedding'] == null
+          ? null
+          : _is.VectorJsonExtension.fromJson(jsonSerialization['embedding']),
     );
   }
 
@@ -101,6 +106,8 @@ abstract class LearnedAnswer
 
   DateTime updatedAt;
 
+  _is.Vector? embedding;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -120,6 +127,7 @@ abstract class LearnedAnswer
     bool? retired,
     DateTime? createdAt,
     DateTime? updatedAt,
+    _is.Vector? embedding,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -137,6 +145,7 @@ abstract class LearnedAnswer
       'retired': retired,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
+      if (embedding != null) 'embedding': embedding?.toJson(),
     };
   }
 
@@ -203,6 +212,7 @@ class _LearnedAnswerImpl extends LearnedAnswer {
     required bool retired,
     required DateTime createdAt,
     required DateTime updatedAt,
+    _is.Vector? embedding,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -216,6 +226,7 @@ class _LearnedAnswerImpl extends LearnedAnswer {
          retired: retired,
          createdAt: createdAt,
          updatedAt: updatedAt,
+         embedding: embedding,
        );
 
   /// Returns a shallow copy of this [LearnedAnswer]
@@ -235,6 +246,7 @@ class _LearnedAnswerImpl extends LearnedAnswer {
     bool? retired,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Object? embedding = _Undefined,
   }) {
     return LearnedAnswer(
       id: id is int? ? id : this.id,
@@ -249,6 +261,7 @@ class _LearnedAnswerImpl extends LearnedAnswer {
       retired: retired ?? this.retired,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      embedding: embedding is _is.Vector? ? embedding : this.embedding?.clone(),
     );
   }
 }
@@ -315,6 +328,12 @@ class LearnedAnswerUpdateTable extends _is.UpdateTable<LearnedAnswerTable> {
         table.updatedAt,
         value,
       );
+
+  _is.ColumnValue<_is.Vector, _is.Vector> embedding(_is.Vector? value) =>
+      _is.ColumnValue(
+        table.embedding,
+        value,
+      );
 }
 
 class LearnedAnswerTable extends _is.Table<int?> {
@@ -365,6 +384,11 @@ class LearnedAnswerTable extends _is.Table<int?> {
       'updatedAt',
       this,
     );
+    embedding = _is.ColumnVector(
+      'embedding',
+      this,
+      dimension: 512,
+    );
   }
 
   late final LearnedAnswerUpdateTable updateTable;
@@ -391,6 +415,8 @@ class LearnedAnswerTable extends _is.Table<int?> {
 
   late final _is.ColumnDateTime updatedAt;
 
+  late final _is.ColumnVector embedding;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -405,6 +431,7 @@ class LearnedAnswerTable extends _is.Table<int?> {
     retired,
     createdAt,
     updatedAt,
+    embedding,
   ];
 }
 

@@ -18,7 +18,13 @@ fields:
   retired: bool
   createdAt: DateTime
   updatedAt: DateTime
+  # meaning fingerprint (Voyage voyage-3.5-lite, 512 dims) for search by meaning; see EmbeddingService
+  embedding: Vector(512)?, scope=serverOnly
 
 indexes:
+  learned_answer_embedding_idx:
+    fields: embedding
+    type: hnsw
+    distanceFunction: cosine
   learned_answer_intent_idx:
     fields: intent, retired

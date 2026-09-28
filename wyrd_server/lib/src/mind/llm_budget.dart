@@ -22,6 +22,7 @@ class LlmBudget {
   // List prices per million tokens (input, output). Unknown models are priced like the most
   // expensive listed one, so an estimate never undercounts.
   static const _prices = <String, (double, double)>{
+    'voyage': (0.02, 0.0),
     'haiku': (1.0, 5.0),
     'sonnet': (3.0, 15.0),
     'opus': (15.0, 75.0),

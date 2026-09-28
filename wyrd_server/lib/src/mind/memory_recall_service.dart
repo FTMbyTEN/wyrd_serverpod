@@ -53,22 +53,52 @@ class MemoryRecallService {
     return flat.length <= _maxItemChars ? flat : '${flat.substring(0, _maxItemChars - 1).trimRight()}…';
   }
 
-  static Future<RecallContext> recall(Session session, UuidValue authUserId, List<String> topics) async {
+  /// [meaning] is the message's embedding (see EmbeddingService), when available: the memories
+  /// closest in meaning come first, so "how do planes stay up" finds an article about lift.
+  static Future<RecallContext> recall(Session session, UuidValue authUserId, List<String> topics, {Vector? meaning}) async {
     final t = contentTopics(topics).take(12).toList();
-    if (t.isEmpty) return RecallContext(digested: [], knowledge: [], pastChats: [], definitions: []);
+    if (t.isEmpty && meaning == null) return RecallContext(digested: [], knowledge: [], pastChats: [], definitions: []);
 
     final results = await Future.wait([
-      _sharedMemory(session, t),
-      _ownChats(session, authUserId, t),
-      _definitions(session, t),
+      t.isEmpty ? Future.value((digested: <String>[], knowledge: <String>[])) : _sharedMemory(session, t),
+      t.isEmpty ? Future.value(<String>[]) : _ownChats(session, authUserId, t),
+      t.isEmpty ? Future.value(<String>[]) : _definitions(session, t),
+      meaning == null ? Future.value((digested: <String>[], knowledge: <String>[])) : _byMeaning(session, meaning),
     ]);
-    final shared = results[0] as ({List<String> digested, List<String> knowledge});
+    final words = results[0] as ({List<String> digested, List<String> knowledge});
+    final near = results[3] as ({List<String> digested, List<String> knowledge});
+    List<String> merge(List<String> a, List<String> b, int n) => {...a, ...b}.take(n).toList();
     return RecallContext(
-      digested: shared.digested,
-      knowledge: shared.knowledge,
+      digested: merge(near.digested, words.digested, 2),
+      knowledge: merge(near.knowledge, words.knowledge, 4),
       pastChats: results[1] as List<String>,
       definitions: results[2] as List<String>,
     );
+  }
+
+  /// The shared memories nearest in meaning to [meaning] (cosine distance), if close enough.
+  static Future<({List<String> digested, List<String> knowledge})> _byMeaning(Session session, Vector meaning) async {
+    const maxDistance = 0.55; // cosine similarity >= 0.45
+    final rows = await session.db.unsafeQuery(
+      'SELECT "id" FROM "memory_block" WHERE "embedding" IS NOT NULL AND "source" = ANY(@sources::text[]) '
+      'AND ("embedding" <=> @q::vector) < @max ORDER BY "embedding" <=> @q::vector LIMIT 6',
+      parameters: QueryParameters.named({'q': '[${meaning.toList().join(',')}]', 'sources': _sharedSources, 'max': maxDistance}),
+    );
+    if (rows.isEmpty) return (digested: <String>[], knowledge: <String>[]);
+    final order = [for (final r in rows) r[0] as int];
+    final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(order.toSet()));
+    blocks.sort((a, b) => order.indexOf(a.id!).compareTo(order.indexOf(b.id!)));
+    final digested = <String>[], knowledge = <String>[];
+    for (final b in blocks) {
+      if (b.source == 'self' && b.question != null && b.answer != null) {
+        digested.add(_clip('Q: ${b.question} A: ${b.answer}'));
+      } else if (b.source == 'synthesis' && b.insight != null) {
+        knowledge.add(_clip(b.insight!));
+      } else if (b.title != null) {
+        knowledge.add(_clip(b.extract != null ? '${b.title}: ${b.extract}' : b.title!));
+      }
+    }
+    return (digested: digested, knowledge: knowledge);
   }
 
   /// Ranks shared memory by topic overlap (Jaccard, like Node), newest first on ties.
