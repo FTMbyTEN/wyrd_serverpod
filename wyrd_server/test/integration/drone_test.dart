@@ -268,5 +268,22 @@ void main() {
         );
       },
     );
+    test('a flight the restarted bridge no longer has is closed, so it stops blocking new plans', () async {
+      final session = sessionBuilder.build();
+      final old = DateTime.now().toUtc().subtract(const Duration(minutes: 5));
+      final lost = await DroneMission.db.insertRow(session, mission('mission', [{'type': 'land'}]).copyWith(status: 'running', updatedAt: old));
+      final fresh = await DroneMission.db.insertRow(session, mission('mission', [{'type': 'land'}]).copyWith(status: 'sent'));
+
+      // the bridge is still flying: nothing is touched
+      await endpoints.droneBridge.report(sessionBuilder, token, stateAt(armed: true).copyWith(missionStatus: 'running'));
+      expect((await DroneMission.db.findById(session, lost.id!))!.status, 'running');
+
+      // the bridge reports idle: the old one is closed, the just-sent one is left alone
+      await endpoints.droneBridge.report(sessionBuilder, token, stateAt().copyWith(missionStatus: 'idle'));
+      final closed = (await DroneMission.db.findById(session, lost.id!))!;
+      expect(closed.status, 'aborted');
+      expect(closed.reason, contains('restarted'));
+      expect((await DroneMission.db.findById(session, fresh.id!))!.status, 'sent');
+    });
   });
 }

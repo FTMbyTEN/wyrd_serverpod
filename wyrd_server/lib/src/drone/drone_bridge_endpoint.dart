@@ -12,6 +12,9 @@ class DroneBridgeEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
+  /// A mission 'sent' this long ago that the bridge still isn't running was lost.
+  static const _orphanAfter = Duration(seconds: 60);
+
   /// Upserts the drone's latest telemetry and hands back the oldest waiting mission (marking it
   /// sent), or null. Called every ~2s.
   Future<DroneMission?> report(
@@ -30,6 +33,24 @@ class DroneBridgeEndpoint extends Endpoint {
       await DroneState.db.insertRow(session, row.copyWith(id: null));
     } else {
       await DroneState.db.updateRow(session, row.copyWith(id: existing.id));
+    }
+
+    // The bridge says it isn't flying anything, yet a mission is still marked sent/running: the
+    // bridge restarted (or lost it) mid-flight. Close it, or it blocks every new plan forever.
+    if (state.missionStatus != 'running') {
+      final stuck = await DroneMission.db.find(
+        session,
+        where: (t) =>
+            t.droneId.equals(state.droneId) &
+            t.status.inSet({'sent', 'running'}) &
+            (t.updatedAt < now.subtract(_orphanAfter)),
+      );
+      for (final m in stuck) {
+        await DroneMission.db.updateRow(
+          session,
+          m.copyWith(status: 'aborted', reason: 'the drone bridge restarted and no longer has this flight', updatedAt: now),
+        );
+      }
     }
 
     // an abort always jumps the queue
