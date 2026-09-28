@@ -1,0 +1,12 @@
+# A work found for the Academy: an OpenStax textbook, a Wikisource text or a Gutenberg book.
+class: WorkHit
+fields:
+  # 'openstax', 'wikisource' or 'gutenberg'
+  source: String
+  id: String
+  title: String
+  author: String?
+  subjects: List<String>
+  coverUrl: String?
+  language: String?
+  blurb: String?

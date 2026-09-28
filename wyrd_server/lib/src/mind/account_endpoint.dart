@@ -33,6 +33,7 @@ class AccountEndpoint extends Endpoint {
     final learned = await LearnedAnswer.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
     final memories = await MemoryBlock.db.find(session, where: (t) => t.ownerId.equals(authUserId), orderBy: (t) => t.id);
     final thread = await ChatThread.db.findFirstRow(session, where: (t) => t.authUserId.equals(authUserId));
+    final reading = await ReadingItem.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
 
     return AccountExport(
       email: email?.email,
@@ -45,6 +46,7 @@ class AccountEndpoint extends Endpoint {
       learnedAnswers: learned,
       memories: memories,
       thread: thread,
+      readingList: reading,
     );
   }
 
@@ -62,5 +64,6 @@ class AccountEndpoint extends Endpoint {
     await LearnedAnswer.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await MemoryBlock.db.deleteWhere(session, where: (t) => t.ownerId.equals(authUserId));
     await ChatThread.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await ReadingItem.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
   }
 }

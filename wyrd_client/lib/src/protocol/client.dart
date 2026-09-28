@@ -50,6 +50,8 @@ import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
 import 'package:wyrd_client/src/protocol/mind/neural_network.dart' as _idlunu5o;
+import 'package:wyrd_client/src/protocol/mind/reading_item.dart' as _iqdaexua;
+import 'package:wyrd_client/src/protocol/mind/reading_slice.dart' as _ihcpac93;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/self_config.dart' as _i2gzn8r6;
 import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
@@ -59,6 +61,8 @@ import 'package:wyrd_client/src/protocol/mind/system_status.dart' as _i97zx8uk;
 import 'package:wyrd_client/src/protocol/mind/topic_info.dart' as _il2rvv3i;
 import 'package:wyrd_client/src/protocol/mind/trust_report.dart' as _iv8ct9z9;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
+import 'package:wyrd_client/src/protocol/mind/work_hit.dart' as _iv7njdft;
+import 'package:wyrd_client/src/protocol/mind/work_part_info.dart' as _iepby0e1;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'protocol.dart' as _il2as5qe;
 
@@ -695,6 +699,120 @@ class EndpointLexicon extends _isc.EndpointRef {
       );
 }
 
+/// The Academy and My Library: free books (Project Gutenberg), open textbooks (OpenStax) and
+/// Wikisource's library in many languages, with each person's place kept. Nothing here calls an AI.
+/// {@category Endpoint}
+class EndpointLibrary extends _isc.EndpointRef {
+  EndpointLibrary(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'library';
+
+  _ida.Future<List<_iqdaexua.ReadingItem>> list() =>
+      caller.callServerEndpoint<List<_iqdaexua.ReadingItem>>(
+        'library',
+        'list',
+        {},
+      );
+
+  /// The next part of item [id] (or its start with [restart], or the start of section [part]).
+  _ida.Future<_ihcpac93.ReadingSlice> readOn(
+    int id, {
+    required bool restart,
+    int? part,
+  }) => caller.callServerEndpoint<_ihcpac93.ReadingSlice>(
+    'library',
+    'readOn',
+    {
+      'id': id,
+      'restart': restart,
+      'part': part,
+    },
+  );
+
+  /// The passage shown last for item [id], again, without moving on (Dialogue Link's "open in
+  /// the Academy").
+  _ida.Future<_ihcpac93.ReadingSlice> current(int id) =>
+      caller.callServerEndpoint<_ihcpac93.ReadingSlice>(
+        'library',
+        'current',
+        {'id': id},
+      );
+
+  /// A work's table of contents (sections of a textbook, chapters on Wikisource).
+  _ida.Future<List<_iepby0e1.WorkPartInfo>> contents(int id) =>
+      caller.callServerEndpoint<List<_iepby0e1.WorkPartInfo>>(
+        'library',
+        'contents',
+        {'id': id},
+      );
+
+  /// Opens a free public-domain book by title/author (Project Gutenberg), picking up where you
+  /// stopped if you've started it. Null when no free copy exists.
+  _ida.Future<_ihcpac93.ReadingSlice?> openBook(String query) =>
+      caller.callServerEndpoint<_ihcpac93.ReadingSlice?>(
+        'library',
+        'openBook',
+        {'query': query},
+      );
+
+  /// Opens a work found through [textbooks], [searchWikisource] or [searchBooks].
+  _ida.Future<_ihcpac93.ReadingSlice?> openWork(
+    String source,
+    String id,
+  ) => caller.callServerEndpoint<_ihcpac93.ReadingSlice?>(
+    'library',
+    'openWork',
+    {
+      'source': source,
+      'id': id,
+    },
+  );
+
+  /// Every OpenStax open textbook (free, CC BY 4.0), with subjects and covers.
+  _ida.Future<List<_iv7njdft.WorkHit>> textbooks() =>
+      caller.callServerEndpoint<List<_iv7njdft.WorkHit>>(
+        'library',
+        'textbooks',
+        {},
+      );
+
+  /// Wikisource works in [lang] matching [query].
+  _ida.Future<List<_iv7njdft.WorkHit>> searchWikisource(
+    String lang,
+    String query,
+  ) => caller.callServerEndpoint<List<_iv7njdft.WorkHit>>(
+    'library',
+    'searchWikisource',
+    {
+      'lang': lang,
+      'query': query,
+    },
+  );
+
+  /// The Wikisource languages on offer, as "code|name in its own script".
+  _ida.Future<List<String>> wikisourceLanguages() =>
+      caller.callServerEndpoint<List<String>>(
+        'library',
+        'wikisourceLanguages',
+        {},
+      );
+
+  /// Free books on Project Gutenberg matching [query].
+  _ida.Future<List<_iv7njdft.WorkHit>> searchBooks(String query) =>
+      caller.callServerEndpoint<List<_iv7njdft.WorkHit>>(
+        'library',
+        'searchBooks',
+        {'query': query},
+      );
+
+  _ida.Future<void> remove(int id) => caller.callServerEndpoint<void>(
+    'library',
+    'remove',
+    {'id': id},
+  );
+}
+
 /// Ports /api/memory and /api/concepts from server.js. Public/unauthenticated, matching Node.
 /// Node trims memory.json to the last 5000 blocks on every write (MAX_BLOCKS); rather than
 /// enforce that at write time here too, both reads below just cap the query to the newest 5000
@@ -1034,6 +1152,7 @@ class Client extends _isc.ServerpodClientShared {
     gateShape = EndpointGateShape(this);
     growth = EndpointGrowth(this);
     lexicon = EndpointLexicon(this);
+    library = EndpointLibrary(this);
     memory = EndpointMemory(this);
     mind = EndpointMind(this);
     photo = EndpointPhoto(this);
@@ -1078,6 +1197,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointLexicon lexicon;
 
+  late final EndpointLibrary library;
+
   late final EndpointMemory memory;
 
   late final EndpointMind mind;
@@ -1119,6 +1240,7 @@ class Client extends _isc.ServerpodClientShared {
     'gateShape': gateShape,
     'growth': growth,
     'lexicon': lexicon,
+    'library': library,
     'memory': memory,
     'mind': mind,
     'photo': photo,

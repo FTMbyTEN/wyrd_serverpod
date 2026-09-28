@@ -10,7 +10,7 @@ import 'package:serverpod/serverpod.dart';
 /// (its reading, self-answers and syntheses), never anyone's chats or photos, since dreams are
 /// public. One background-budgeted LLM call per dream, at most every few hours.
 class DreamService {
-  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum'};
+  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum', 'library'};
 
   /// Manual triggers are public, so they can't be used to spend the AI budget on demand.
   static const minGap = Duration(hours: 1);

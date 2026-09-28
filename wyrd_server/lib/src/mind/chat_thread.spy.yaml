@@ -9,6 +9,9 @@ fields:
   subject: List<String>
   lastReadUrl: String?
   lastReadTitle: String?
+  # the My Library item being read, and the passage last shown, so WYRD can talk about it
+  lastReadItemId: int?
+  lastPassage: String?
   nextOffset: int?
   updatedAt: DateTime
 

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../drone/drone_service.dart';
 import '../generated/protocol.dart';
+import 'local_brain_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// A hard daily cap on estimated Anthropic spend, so a small API balance lasts the month.
@@ -92,6 +93,7 @@ class LlmBudget {
   /// [estimateUsd], when given, must also fit under the cap: one big call (a long page, several
   /// book slices) can't push the day past it.
   static Future<bool> allow(Session session, {required bool background, double estimateUsd = 0}) async {
+    if (LlmMode.off(session)) return false; // running on WYRD's own brain alone
     // Background thinking is paced across the day: by hour h it may have used (h+1)/24 of its
     // share. Unpaced, the 30-second ticks spent the whole share in the first hour of each day and
     // WYRD thought on templates for the other 23.

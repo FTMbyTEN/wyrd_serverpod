@@ -10,3 +10,4 @@ fields:
   learnedAnswers: List<LearnedAnswer>?
   memories: List<MemoryBlock>?
   thread: ChatThread?
+  readingList: List<ReadingItem>?

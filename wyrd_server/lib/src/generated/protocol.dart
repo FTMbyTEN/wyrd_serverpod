@@ -31,9 +31,13 @@ import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
+import 'package:wyrd_server/src/generated/mind/reading_item.dart' as _ijabq8az;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
     as _ix0xy1y5;
 import 'package:wyrd_server/src/generated/mind/sighting.dart' as _ixz0p0ha;
+import 'package:wyrd_server/src/generated/mind/work_hit.dart' as _ixzzqok1;
+import 'package:wyrd_server/src/generated/mind/work_part_info.dart'
+    as _ikde1sdn;
 import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
@@ -78,6 +82,8 @@ import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/quarantined_item.dart' as _i80jr0fe;
 import 'mind/rating_vote.dart' as _i50atwt4;
+import 'mind/reading_item.dart' as _igsakn5u;
+import 'mind/reading_slice.dart' as _i8yd85bs;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
@@ -90,6 +96,8 @@ import 'mind/trust_score.dart' as _i79dz7me;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/word_sense.dart' as _itj7bvl5;
+import 'mind/work_hit.dart' as _i3gwmipu;
+import 'mind/work_part_info.dart' as _ijuqu3gj;
 import 'mind/world_country.dart' as _iu995zpj;
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
@@ -134,6 +142,8 @@ export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
 export 'mind/quarantined_item.dart';
 export 'mind/rating_vote.dart';
+export 'mind/reading_item.dart';
+export 'mind/reading_slice.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
@@ -146,6 +156,8 @@ export 'mind/trust_score.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 export 'mind/word_sense.dart';
+export 'mind/work_hit.dart';
+export 'mind/work_part_info.dart';
 export 'mind/world_country.dart';
 
 class Protocol extends _is.DatabaseSerializationManager {
@@ -189,6 +201,18 @@ class Protocol extends _is.DatabaseSerializationManager {
         ),
         _isp.ColumnDefinition(
           name: 'lastReadTitle',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastReadItemId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastPassage',
           columnType: _isp.ColumnType.text,
           isNullable: true,
           dartType: 'String?',
@@ -1680,6 +1704,149 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'reading_item',
+      dartName: 'ReadingItem',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'url',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nextOffset',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastOffset',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'total',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'source',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'author',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'partIndex',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'partCount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'partTitle',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'partUrl',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'startedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reading_item_user_url_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'url',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reading_item_user_time_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'updatedAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'reasoning_note',
       dartName: 'ReasoningNote',
       schema: 'public',
@@ -2311,6 +2478,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i50atwt4.RatingVote) {
       return _i50atwt4.RatingVote.fromJson(data) as T;
     }
+    if (t == _igsakn5u.ReadingItem) {
+      return _igsakn5u.ReadingItem.fromJson(data) as T;
+    }
+    if (t == _i8yd85bs.ReadingSlice) {
+      return _i8yd85bs.ReadingSlice.fromJson(data) as T;
+    }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
     }
@@ -2346,6 +2519,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _itj7bvl5.WordSense) {
       return _itj7bvl5.WordSense.fromJson(data) as T;
+    }
+    if (t == _i3gwmipu.WorkHit) {
+      return _i3gwmipu.WorkHit.fromJson(data) as T;
+    }
+    if (t == _ijuqu3gj.WorkPartInfo) {
+      return _ijuqu3gj.WorkPartInfo.fromJson(data) as T;
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
@@ -2496,6 +2675,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i50atwt4.RatingVote?>()) {
       return (data != null ? _i50atwt4.RatingVote.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_igsakn5u.ReadingItem?>()) {
+      return (data != null ? _igsakn5u.ReadingItem.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i8yd85bs.ReadingSlice?>()) {
+      return (data != null ? _i8yd85bs.ReadingSlice.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
           as T;
@@ -2533,6 +2718,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_itj7bvl5.WordSense?>()) {
       return (data != null ? _itj7bvl5.WordSense.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i3gwmipu.WorkHit?>()) {
+      return (data != null ? _i3gwmipu.WorkHit.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ijuqu3gj.WorkPartInfo?>()) {
+      return (data != null ? _ijuqu3gj.WorkPartInfo.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
@@ -2587,6 +2778,20 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null
               ? (data as List)
                     .map((e) => deserialize<_if349ohh.MemoryBlock>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_igsakn5u.ReadingItem>) {
+      return (data as List)
+              .map((e) => deserialize<_igsakn5u.ReadingItem>(e))
+              .toList()
+          as T;
+    }
+    if (t == _is.getType<List<_igsakn5u.ReadingItem>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_igsakn5u.ReadingItem>(e))
                     .toList()
               : null)
           as T;
@@ -2711,6 +2916,27 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ijabq8az.ReadingItem>) {
+      return (data as List)
+              .map((e) => deserialize<_ijabq8az.ReadingItem>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ikde1sdn.WorkPartInfo>) {
+      return (data as List)
+              .map((e) => deserialize<_ikde1sdn.WorkPartInfo>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ixzzqok1.WorkHit>) {
+      return (data as List)
+              .map((e) => deserialize<_ixzzqok1.WorkHit>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_i5d4cblk.MemoryBlock>) {
       return (data as List)
               .map((e) => deserialize<_i5d4cblk.MemoryBlock>(e))
@@ -2798,6 +3024,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
       _i50atwt4.RatingVote => 'RatingVote',
+      _igsakn5u.ReadingItem => 'ReadingItem',
+      _i8yd85bs.ReadingSlice => 'ReadingSlice',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
@@ -2810,6 +3038,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _itj7bvl5.WordSense => 'WordSense',
+      _i3gwmipu.WorkHit => 'WorkHit',
+      _ijuqu3gj.WorkPartInfo => 'WorkPartInfo',
       _iu995zpj.WorldCountry => 'WorldCountry',
       _ => null,
     };
@@ -2911,6 +3141,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'QuarantinedItem';
       case _i50atwt4.RatingVote():
         return 'RatingVote';
+      case _igsakn5u.ReadingItem():
+        return 'ReadingItem';
+      case _i8yd85bs.ReadingSlice():
+        return 'ReadingSlice';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -2935,6 +3169,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'UserProfile';
       case _itj7bvl5.WordSense():
         return 'WordSense';
+      case _i3gwmipu.WorkHit():
+        return 'WorkHit';
+      case _ijuqu3gj.WorkPartInfo():
+        return 'WorkPartInfo';
       case _iu995zpj.WorldCountry():
         return 'WorldCountry';
     }
@@ -3092,6 +3330,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'RatingVote') {
       return deserialize<_i50atwt4.RatingVote>(data['data']);
     }
+    if (dataClassName == 'ReadingItem') {
+      return deserialize<_igsakn5u.ReadingItem>(data['data']);
+    }
+    if (dataClassName == 'ReadingSlice') {
+      return deserialize<_i8yd85bs.ReadingSlice>(data['data']);
+    }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
     }
@@ -3127,6 +3371,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'WordSense') {
       return deserialize<_itj7bvl5.WordSense>(data['data']);
+    }
+    if (dataClassName == 'WorkHit') {
+      return deserialize<_i3gwmipu.WorkHit>(data['data']);
+    }
+    if (dataClassName == 'WorkPartInfo') {
+      return deserialize<_ijuqu3gj.WorkPartInfo>(data['data']);
     }
     if (dataClassName == 'WorldCountry') {
       return deserialize<_iu995zpj.WorldCountry>(data['data']);
@@ -3212,6 +3462,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i80jr0fe.QuarantinedItem.t;
       case _i50atwt4.RatingVote:
         return _i50atwt4.RatingVote.t;
+      case _igsakn5u.ReadingItem:
+        return _igsakn5u.ReadingItem.t;
       case _ik02x4l4.ReasoningNote:
         return _ik02x4l4.ReasoningNote.t;
       case _ig7bxoiw.SelfConfig:

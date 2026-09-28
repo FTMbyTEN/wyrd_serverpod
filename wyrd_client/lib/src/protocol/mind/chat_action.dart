@@ -18,12 +18,14 @@ abstract class ChatAction
     required this.type,
     this.country,
     this.html,
+    this.readingItemId,
   });
 
   factory ChatAction({
     required String type,
     String? country,
     String? html,
+    int? readingItemId,
   }) = _ChatActionImpl;
 
   factory ChatAction.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -31,6 +33,7 @@ abstract class ChatAction
       type: jsonSerialization['type'] as String,
       country: jsonSerialization['country'] as String?,
       html: jsonSerialization['html'] as String?,
+      readingItemId: jsonSerialization['readingItemId'] as int?,
     );
   }
 
@@ -40,6 +43,8 @@ abstract class ChatAction
 
   String? html;
 
+  int? readingItemId;
+
   /// Returns a shallow copy of this [ChatAction]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -47,6 +52,7 @@ abstract class ChatAction
     String? type,
     String? country,
     String? html,
+    int? readingItemId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -55,6 +61,7 @@ abstract class ChatAction
       'type': type,
       if (country != null) 'country': country,
       if (html != null) 'html': html,
+      if (readingItemId != null) 'readingItemId': readingItemId,
     };
   }
 
@@ -65,6 +72,7 @@ abstract class ChatAction
       'type': type,
       if (country != null) 'country': country,
       if (html != null) 'html': html,
+      if (readingItemId != null) 'readingItemId': readingItemId,
     };
   }
 
@@ -81,10 +89,12 @@ class _ChatActionImpl extends ChatAction {
     required String type,
     String? country,
     String? html,
+    int? readingItemId,
   }) : super._(
          type: type,
          country: country,
          html: html,
+         readingItemId: readingItemId,
        );
 
   /// Returns a shallow copy of this [ChatAction]
@@ -95,11 +105,13 @@ class _ChatActionImpl extends ChatAction {
     String? type,
     Object? country = _Undefined,
     Object? html = _Undefined,
+    Object? readingItemId = _Undefined,
   }) {
     return ChatAction(
       type: type ?? this.type,
       country: country is String? ? country : this.country,
       html: html is String? ? html : this.html,
+      readingItemId: readingItemId is int? ? readingItemId : this.readingItemId,
     );
   }
 }

@@ -29,8 +29,11 @@ import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
+import 'package:wyrd_client/src/protocol/mind/reading_item.dart' as _iqdaexua;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/sighting.dart' as _ijttkw09;
+import 'package:wyrd_client/src/protocol/mind/work_hit.dart' as _iv7njdft;
+import 'package:wyrd_client/src/protocol/mind/work_part_info.dart' as _iepby0e1;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
@@ -75,6 +78,8 @@ import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/quarantined_item.dart' as _i80jr0fe;
 import 'mind/rating_vote.dart' as _i50atwt4;
+import 'mind/reading_item.dart' as _igsakn5u;
+import 'mind/reading_slice.dart' as _i8yd85bs;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
@@ -87,6 +92,8 @@ import 'mind/trust_score.dart' as _i79dz7me;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/word_sense.dart' as _itj7bvl5;
+import 'mind/work_hit.dart' as _i3gwmipu;
+import 'mind/work_part_info.dart' as _ijuqu3gj;
 import 'mind/world_country.dart' as _iu995zpj;
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
@@ -131,6 +138,8 @@ export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
 export 'mind/quarantined_item.dart';
 export 'mind/rating_vote.dart';
+export 'mind/reading_item.dart';
+export 'mind/reading_slice.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
@@ -143,6 +152,8 @@ export 'mind/trust_score.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 export 'mind/word_sense.dart';
+export 'mind/work_hit.dart';
+export 'mind/work_part_info.dart';
 export 'mind/world_country.dart';
 export 'client.dart';
 
@@ -309,6 +320,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i50atwt4.RatingVote) {
       return _i50atwt4.RatingVote.fromJson(data) as T;
     }
+    if (t == _igsakn5u.ReadingItem) {
+      return _igsakn5u.ReadingItem.fromJson(data) as T;
+    }
+    if (t == _i8yd85bs.ReadingSlice) {
+      return _i8yd85bs.ReadingSlice.fromJson(data) as T;
+    }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
     }
@@ -344,6 +361,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _itj7bvl5.WordSense) {
       return _itj7bvl5.WordSense.fromJson(data) as T;
+    }
+    if (t == _i3gwmipu.WorkHit) {
+      return _i3gwmipu.WorkHit.fromJson(data) as T;
+    }
+    if (t == _ijuqu3gj.WorkPartInfo) {
+      return _ijuqu3gj.WorkPartInfo.fromJson(data) as T;
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
@@ -494,6 +517,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i50atwt4.RatingVote?>()) {
       return (data != null ? _i50atwt4.RatingVote.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_igsakn5u.ReadingItem?>()) {
+      return (data != null ? _igsakn5u.ReadingItem.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i8yd85bs.ReadingSlice?>()) {
+      return (data != null ? _i8yd85bs.ReadingSlice.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
           as T;
@@ -531,6 +560,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_itj7bvl5.WordSense?>()) {
       return (data != null ? _itj7bvl5.WordSense.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i3gwmipu.WorkHit?>()) {
+      return (data != null ? _i3gwmipu.WorkHit.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ijuqu3gj.WorkPartInfo?>()) {
+      return (data != null ? _ijuqu3gj.WorkPartInfo.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
@@ -585,6 +620,20 @@ class Protocol extends _isc.SerializationManager {
       return (data != null
               ? (data as List)
                     .map((e) => deserialize<_if349ohh.MemoryBlock>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_igsakn5u.ReadingItem>) {
+      return (data as List)
+              .map((e) => deserialize<_igsakn5u.ReadingItem>(e))
+              .toList()
+          as T;
+    }
+    if (t == _isc.getType<List<_igsakn5u.ReadingItem>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_igsakn5u.ReadingItem>(e))
                     .toList()
               : null)
           as T;
@@ -709,6 +758,27 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_iqdaexua.ReadingItem>) {
+      return (data as List)
+              .map((e) => deserialize<_iqdaexua.ReadingItem>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iepby0e1.WorkPartInfo>) {
+      return (data as List)
+              .map((e) => deserialize<_iepby0e1.WorkPartInfo>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iv7njdft.WorkHit>) {
+      return (data as List)
+              .map((e) => deserialize<_iv7njdft.WorkHit>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_ij6z6xwm.MemoryBlock>) {
       return (data as List)
               .map((e) => deserialize<_ij6z6xwm.MemoryBlock>(e))
@@ -793,6 +863,8 @@ class Protocol extends _isc.SerializationManager {
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
       _i50atwt4.RatingVote => 'RatingVote',
+      _igsakn5u.ReadingItem => 'ReadingItem',
+      _i8yd85bs.ReadingSlice => 'ReadingSlice',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
@@ -805,6 +877,8 @@ class Protocol extends _isc.SerializationManager {
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _itj7bvl5.WordSense => 'WordSense',
+      _i3gwmipu.WorkHit => 'WorkHit',
+      _ijuqu3gj.WorkPartInfo => 'WorkPartInfo',
       _iu995zpj.WorldCountry => 'WorldCountry',
       _ => null,
     };
@@ -906,6 +980,10 @@ class Protocol extends _isc.SerializationManager {
         return 'QuarantinedItem';
       case _i50atwt4.RatingVote():
         return 'RatingVote';
+      case _igsakn5u.ReadingItem():
+        return 'ReadingItem';
+      case _i8yd85bs.ReadingSlice():
+        return 'ReadingSlice';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -930,6 +1008,10 @@ class Protocol extends _isc.SerializationManager {
         return 'UserProfile';
       case _itj7bvl5.WordSense():
         return 'WordSense';
+      case _i3gwmipu.WorkHit():
+        return 'WorkHit';
+      case _ijuqu3gj.WorkPartInfo():
+        return 'WorkPartInfo';
       case _iu995zpj.WorldCountry():
         return 'WorldCountry';
     }
@@ -1083,6 +1165,12 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'RatingVote') {
       return deserialize<_i50atwt4.RatingVote>(data['data']);
     }
+    if (dataClassName == 'ReadingItem') {
+      return deserialize<_igsakn5u.ReadingItem>(data['data']);
+    }
+    if (dataClassName == 'ReadingSlice') {
+      return deserialize<_i8yd85bs.ReadingSlice>(data['data']);
+    }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
     }
@@ -1118,6 +1206,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'WordSense') {
       return deserialize<_itj7bvl5.WordSense>(data['data']);
+    }
+    if (dataClassName == 'WorkHit') {
+      return deserialize<_i3gwmipu.WorkHit>(data['data']);
+    }
+    if (dataClassName == 'WorkPartInfo') {
+      return deserialize<_ijuqu3gj.WorkPartInfo>(data['data']);
     }
     if (dataClassName == 'WorldCountry') {
       return deserialize<_iu995zpj.WorldCountry>(data['data']);

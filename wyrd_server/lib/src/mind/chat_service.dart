@@ -5,6 +5,8 @@ import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
 import 'embedding_service.dart';
 import 'learned_answer_service.dart';
+import 'library_service.dart';
+import 'local_brain_service.dart';
 import 'page_reader_service.dart';
 import 'thread_service.dart';
 import 'trust_service.dart';
@@ -131,6 +133,14 @@ class ChatService {
     // a follow-up depends on the conversation, so it's never answered from a learned answer
     final learned = isCode || followUp ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
 
+    // No API first: WYRD's own brain handles what it can (reading, meanings, places, what it
+    // knows about you) before any AI is called.
+    final aboutReading = ThreadService.aboutReading(thread, text, followUp: followUp);
+    final local = learned == null && !isCode
+        ? await LocalBrainService.answer(session, authUserId: authUserId, text: text, thread: thread, facts: facts.map((f) => f.text).toList(), followUp: followUp)
+        : null;
+    if (local != null) session.log('[local-brain] answered without an API (${local.kind})');
+
     // Code requests (and short follow-ups to one) skip the conversational prompt entirely; if
     // the code path fails, fall through to it as a safety net, like Node.
     final codeReply =
@@ -146,6 +156,8 @@ class ChatService {
     final contextLines = [
       'Your current mood: ${mind.mood}.${mind.focusTopic != null ? ' You\'ve been mulling over "${mind.focusTopic}" in the background.' : ''}',
       ...ThreadService.promptLines(thread, followUp: followUp, threadTopics: threadTopics),
+      // Academy: when they ask about the book they are reading, the passage is in front of WYRD
+      if (aboutReading) ...ThreadService.readingLines(thread!),
       ...recall.toPromptLines(),
       if (!recall.isEmpty)
         'Use what you already know where it genuinely fits, in your own words -- never invent a memory '
@@ -180,8 +192,8 @@ class ChatService {
 
     final readUrls = <String>[];
     final reads = <PageSlice>[];
-    final toolReply = learned != null
-        ? null // answered from what WYRD already learned: no AI call
+    final toolReply = learned != null || local != null
+        ? null // answered from what WYRD already learned, or by its own brain: no AI call
         : codeReply ??
             await ChatToolService.reply(
               session,
@@ -194,10 +206,19 @@ class ChatService {
               readUrls: readUrls,
               reads: reads,
             );
-    final action = toolReply?.action;
+    final action = local?.action ?? toolReply?.action;
+    // everything read goes into the person's library; the local brain has already recorded its own
+    ReadingItem? readItem;
+    for (final slice in reads) {
+      readItem = await LibraryService.record(session, authUserId, slice);
+    }
+    if (local?.read != null) {
+      reads.add(local!.read!);
+      readItem = local.item;
+    }
 
     // The AI couldn't answer (budget spent, no key, error): a looser learned answer beats a template.
-    final fallback = learned == null && toolReply == null && !isCode && !followUp
+    final fallback = learned == null && local == null && toolReply == null && !isCode && !followUp
         ? await LearnedAnswerService.recall(session, authUserId, text, topics, aiAvailable: false, meaning: meaning)
         : null;
     final usedLearned = learned ?? fallback;
@@ -209,7 +230,7 @@ class ChatService {
       judgement = JudgementService.judge(
         reply: toolReply.text,
         question: text,
-        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}')].join(' '),
+        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}'), if (aboutReading) thread!.lastPassage!].join(' '),
         readWeb: readUrls.isNotEmpty,
         action: action?.type,
         askerEmail: profile.email,
@@ -218,12 +239,19 @@ class ChatService {
       );
       if (!judgement.passed) session.log('[judgement] ${judgement.summary}');
     }
-    final reply = usedLearned?.answer ?? judgement?.text ?? toolReply?.text ?? _followUpFromTopics(topics);
+    final reply = usedLearned?.answer ??
+        local?.text ??
+        judgement?.text ??
+        toolReply?.text ??
+        (aboutReading ? LocalBrainService.fromPassage(thread, text) : null) ?? // no AI: what the book says
+        LocalBrainService.fromMemory(recall) ?? // no AI available: say what it knows
+        _followUpFromTopics(topics);
 
     // A fresh AI answer to a general question is kept, so next time WYRD knows it -- but only one
     // the gate passed: unverified or corrected answers are never learned.
     int? learnedNow;
-    if (toolReply != null && codeReply == null && action == null && (judgement?.passed ?? true)) {
+    // answers about the passage someone is reading depend on that passage, so they are not learned
+    if (toolReply != null && codeReply == null && action == null && !aboutReading && (judgement?.passed ?? true)) {
       learnedNow = await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
     }
 
@@ -236,6 +264,7 @@ class ChatService {
         ...recentTurns,
       ]),
       lastRead: reads.lastOrNull,
+      item: reads.isEmpty ? null : readItem,
     );
 
     final turn = await ConversationTurn.db.insertRow(
@@ -275,7 +304,7 @@ class ChatService {
       scoreGap: uniqueTopics.toDouble(),
     );
 
-    return (reply: reply, turn: turn, mind: updatedMind, action: action, fromMemory: usedLearned != null, judgement: judgement != null && !judgement.passed ? judgement.verdict : null);
+    return (reply: reply, turn: turn, mind: updatedMind, action: action, fromMemory: usedLearned != null || local != null, judgement: judgement != null && !judgement.passed ? judgement.verdict : null);
   }
 
   /// Average trust (Bias 2) of the sources behind the recalled memories, or null when none.

@@ -16,6 +16,7 @@ import '../mind/chat_thread.dart' as _i0zx8u49;
 import '../mind/conversation_turn.dart' as _igyss20b;
 import '../mind/learned_answer.dart' as _ilehim93;
 import '../mind/memory_block.dart' as _i0t6eg5q;
+import '../mind/reading_item.dart' as _iq1pc8u4;
 import '../mind/sighting.dart' as _i3snlpz5;
 import '../mind/user_fact.dart' as _il0k3um2;
 
@@ -32,6 +33,7 @@ abstract class AccountExport
     this.learnedAnswers,
     this.memories,
     this.thread,
+    this.readingList,
   });
 
   factory AccountExport({
@@ -45,6 +47,7 @@ abstract class AccountExport
     List<_ilehim93.LearnedAnswer>? learnedAnswers,
     List<_i0t6eg5q.MemoryBlock>? memories,
     _i0zx8u49.ChatThread? thread,
+    List<_iq1pc8u4.ReadingItem>? readingList,
   }) = _AccountExportImpl;
 
   factory AccountExport.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -84,6 +87,11 @@ abstract class AccountExport
           : _i2pladzn.Protocol().deserialize<_i0zx8u49.ChatThread>(
               jsonSerialization['thread'],
             ),
+      readingList: jsonSerialization['readingList'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<_iq1pc8u4.ReadingItem>>(
+              jsonSerialization['readingList'],
+            ),
     );
   }
 
@@ -107,6 +115,8 @@ abstract class AccountExport
 
   _i0zx8u49.ChatThread? thread;
 
+  List<_iq1pc8u4.ReadingItem>? readingList;
+
   /// Returns a shallow copy of this [AccountExport]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -121,6 +131,7 @@ abstract class AccountExport
     List<_ilehim93.LearnedAnswer>? learnedAnswers,
     List<_i0t6eg5q.MemoryBlock>? memories,
     _i0zx8u49.ChatThread? thread,
+    List<_iq1pc8u4.ReadingItem>? readingList,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -141,6 +152,8 @@ abstract class AccountExport
       if (memories != null)
         'memories': memories?.toJson(valueToJson: (v) => v.toJson()),
       if (thread != null) 'thread': thread?.toJson(),
+      if (readingList != null)
+        'readingList': readingList?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -167,6 +180,10 @@ abstract class AccountExport
       if (memories != null)
         'memories': memories?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       if (thread != null) 'thread': thread?.toJsonForProtocol(),
+      if (readingList != null)
+        'readingList': readingList?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
     };
   }
 
@@ -190,6 +207,7 @@ class _AccountExportImpl extends AccountExport {
     List<_ilehim93.LearnedAnswer>? learnedAnswers,
     List<_i0t6eg5q.MemoryBlock>? memories,
     _i0zx8u49.ChatThread? thread,
+    List<_iq1pc8u4.ReadingItem>? readingList,
   }) : super._(
          email: email,
          facts: facts,
@@ -201,6 +219,7 @@ class _AccountExportImpl extends AccountExport {
          learnedAnswers: learnedAnswers,
          memories: memories,
          thread: thread,
+         readingList: readingList,
        );
 
   /// Returns a shallow copy of this [AccountExport]
@@ -218,6 +237,7 @@ class _AccountExportImpl extends AccountExport {
     Object? learnedAnswers = _Undefined,
     Object? memories = _Undefined,
     Object? thread = _Undefined,
+    Object? readingList = _Undefined,
   }) {
     return AccountExport(
       email: email is String? ? email : this.email,
@@ -239,6 +259,9 @@ class _AccountExportImpl extends AccountExport {
       thread: thread is _i0zx8u49.ChatThread?
           ? thread
           : this.thread?.copyWith(),
+      readingList: readingList is List<_iq1pc8u4.ReadingItem>?
+          ? readingList
+          : this.readingList?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

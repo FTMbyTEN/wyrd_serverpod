@@ -47,7 +47,7 @@ class _Found {
 }
 
 class MemoryRecallService {
-  static const _sharedSources = ['self', 'net', 'feed', 'ingest', 'synthesis', 'curriculum'];
+  static const _sharedSources = ['self', 'net', 'feed', 'ingest', 'synthesis', 'curriculum', 'library'];
   static const _maxItemChars = 240;
 
   /// Words that shape a question but aren't its subject (Node's QUESTION_SCAFFOLD).

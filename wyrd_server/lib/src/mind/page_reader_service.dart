@@ -75,20 +75,26 @@ class PageReaderService {
       final title = isHtml ? _title(raw) : _gutenbergTitle(raw) ?? uri.pathSegments.lastOrNull ?? uri.host;
       final text = _gutenbergBody(isHtml ? htmlToText(raw) : raw.replaceAll('\r\n', '\n'));
 
-      final start = offset.clamp(0, text.length);
-      final end = (start + sliceChars).clamp(0, text.length);
-      // end the slice at a paragraph or sentence break when there's one nearby
-      var cut = end;
-      if (end < text.length) {
-        final para = text.lastIndexOf('\n\n', end);
-        final sentence = text.lastIndexOf('. ', end);
-        final best = para > start + sliceChars * 0.6 ? para : (sentence > start + sliceChars * 0.6 ? sentence + 1 : end);
-        cut = best;
-      }
-      return PageSlice(url: uri.toString(), title: title, text: text.substring(start, cut).trim(), offset: start, total: text.length);
+      return sliceText(url: uri.toString(), title: title, text: text, offset: offset);
     } finally {
       client.close();
     }
+  }
+
+  /// One reading-sized slice of [text] from [offset], ending at a paragraph, line or sentence
+  /// break when there's one nearby.
+  static PageSlice sliceText({required String url, required String title, required String text, required int offset}) {
+    final start = offset.clamp(0, text.length);
+    final end = (start + sliceChars).clamp(0, text.length);
+    var cut = end;
+    if (end < text.length) {
+      final floor = start + sliceChars * 0.6;
+      final para = text.lastIndexOf('\n\n', end);
+      final line = text.lastIndexOf('\n', end);
+      final sentence = text.lastIndexOf('. ', end);
+      cut = para > floor ? para : line > floor ? line : (sentence > floor ? sentence + 1 : end);
+    }
+    return PageSlice(url: url, title: title, text: text.substring(start, cut).trim(), offset: start, total: text.length);
   }
 
   /// Searches Project Gutenberg's own catalogue feed (OPDS) for public-domain books. (The
@@ -155,6 +161,8 @@ class PageReaderService {
         .join('\n')
         .replaceAll(RegExp(r'\n{3,}'), '\n\n');
   }
+
+  static String entities(String s) => _entities(s);
 
   static String _entities(String s) => s
       .replaceAll('&nbsp;', ' ')

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../generated/protocol.dart';
+import 'local_brain_service.dart';
 import 'llm_budget.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -40,7 +41,8 @@ class EmbeddingService {
     ].join(' | ');
   }
 
-  static bool enabled(Session session) => (session.passwords['voyageApiKey'] ?? '').isNotEmpty;
+  static bool enabled(Session session) =>
+      (session.passwords['voyageApiKey'] ?? '').isNotEmpty && !LlmMode.off(session); // off: topic recall only
 
   /// Text that stands for a memory when it's embedded: its title and gist, never chat text.
   static String? textOf(MemoryBlock b) {
@@ -115,7 +117,7 @@ class EmbeddingService {
     return out;
   }
 
-  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum'};
+  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum', 'library'};
 
   /// Embeds up to [limit] shared memories that don't have a fingerprint yet, newest first.
   /// Returns how many were embedded (0 when off or out of budget).

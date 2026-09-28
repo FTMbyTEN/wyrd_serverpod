@@ -1,0 +1,6 @@
+# One entry in a work's table of contents (a textbook section, a chapter).
+class: WorkPartInfo
+fields:
+  index: int
+  title: String
+  url: String

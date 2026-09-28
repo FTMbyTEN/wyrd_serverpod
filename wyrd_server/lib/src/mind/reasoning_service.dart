@@ -30,7 +30,7 @@ class ReasoningService {
   static const _pruneBelow = 0.03;
   static DateTime? _lastDecay;
 
-  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum'};
+  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum', 'library'};
 
   /// Returns true if a firing happened (false if there's nothing to reason about yet).
   static Future<bool> tick(Session session) async {

@@ -21,6 +21,8 @@ abstract class ChatThread
     required this.subject,
     this.lastReadUrl,
     this.lastReadTitle,
+    this.lastReadItemId,
+    this.lastPassage,
     this.nextOffset,
     required this.updatedAt,
   });
@@ -31,6 +33,8 @@ abstract class ChatThread
     required List<String> subject,
     String? lastReadUrl,
     String? lastReadTitle,
+    int? lastReadItemId,
+    String? lastPassage,
     int? nextOffset,
     required DateTime updatedAt,
   }) = _ChatThreadImpl;
@@ -46,6 +50,8 @@ abstract class ChatThread
       ),
       lastReadUrl: jsonSerialization['lastReadUrl'] as String?,
       lastReadTitle: jsonSerialization['lastReadTitle'] as String?,
+      lastReadItemId: jsonSerialization['lastReadItemId'] as int?,
+      lastPassage: jsonSerialization['lastPassage'] as String?,
       nextOffset: jsonSerialization['nextOffset'] as int?,
       updatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
@@ -66,6 +72,10 @@ abstract class ChatThread
 
   String? lastReadTitle;
 
+  int? lastReadItemId;
+
+  String? lastPassage;
+
   int? nextOffset;
 
   DateTime updatedAt;
@@ -79,6 +89,8 @@ abstract class ChatThread
     List<String>? subject,
     String? lastReadUrl,
     String? lastReadTitle,
+    int? lastReadItemId,
+    String? lastPassage,
     int? nextOffset,
     DateTime? updatedAt,
   });
@@ -91,6 +103,8 @@ abstract class ChatThread
       'subject': subject.toJson(),
       if (lastReadUrl != null) 'lastReadUrl': lastReadUrl,
       if (lastReadTitle != null) 'lastReadTitle': lastReadTitle,
+      if (lastReadItemId != null) 'lastReadItemId': lastReadItemId,
+      if (lastPassage != null) 'lastPassage': lastPassage,
       if (nextOffset != null) 'nextOffset': nextOffset,
       'updatedAt': updatedAt.toJson(),
     };
@@ -105,6 +119,8 @@ abstract class ChatThread
       'subject': subject.toJson(),
       if (lastReadUrl != null) 'lastReadUrl': lastReadUrl,
       if (lastReadTitle != null) 'lastReadTitle': lastReadTitle,
+      if (lastReadItemId != null) 'lastReadItemId': lastReadItemId,
+      if (lastPassage != null) 'lastPassage': lastPassage,
       if (nextOffset != null) 'nextOffset': nextOffset,
       'updatedAt': updatedAt.toJson(),
     };
@@ -125,6 +141,8 @@ class _ChatThreadImpl extends ChatThread {
     required List<String> subject,
     String? lastReadUrl,
     String? lastReadTitle,
+    int? lastReadItemId,
+    String? lastPassage,
     int? nextOffset,
     required DateTime updatedAt,
   }) : super._(
@@ -133,6 +151,8 @@ class _ChatThreadImpl extends ChatThread {
          subject: subject,
          lastReadUrl: lastReadUrl,
          lastReadTitle: lastReadTitle,
+         lastReadItemId: lastReadItemId,
+         lastPassage: lastPassage,
          nextOffset: nextOffset,
          updatedAt: updatedAt,
        );
@@ -147,6 +167,8 @@ class _ChatThreadImpl extends ChatThread {
     List<String>? subject,
     Object? lastReadUrl = _Undefined,
     Object? lastReadTitle = _Undefined,
+    Object? lastReadItemId = _Undefined,
+    Object? lastPassage = _Undefined,
     Object? nextOffset = _Undefined,
     DateTime? updatedAt,
   }) {
@@ -158,6 +180,10 @@ class _ChatThreadImpl extends ChatThread {
       lastReadTitle: lastReadTitle is String?
           ? lastReadTitle
           : this.lastReadTitle,
+      lastReadItemId: lastReadItemId is int?
+          ? lastReadItemId
+          : this.lastReadItemId,
+      lastPassage: lastPassage is String? ? lastPassage : this.lastPassage,
       nextOffset: nextOffset is int? ? nextOffset : this.nextOffset,
       updatedAt: updatedAt ?? this.updatedAt,
     );

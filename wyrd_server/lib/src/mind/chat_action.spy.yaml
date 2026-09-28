@@ -5,3 +5,5 @@ fields:
   country: String?
   # preview_app: one self-contained HTML document for the client to render in a sandboxed frame
   html: String?
+  # open_book: the My Library item the Academy should show
+  readingItemId: int?

@@ -1,0 +1,32 @@
+# One book or page a person is reading with WYRD, and how far they've got (My Library).
+class: ReadingItem
+table: reading_item
+
+fields:
+  authUserId: UuidValue
+  url: String
+  title: String
+  # 'book' (Project Gutenberg) or 'page'
+  kind: String
+  # where the next slice starts; null once they've reached the end
+  nextOffset: int?
+  # where the passage shown last started (to show it again without moving on)
+  lastOffset: int?
+  total: int
+  # where it comes from: gutenberg, page, openstax, wikisource (null on older rows: gutenberg/page)
+  source: String?
+  author: String?
+  # works in parts (textbook sections, chapters): which part, of how many, and its own address
+  partIndex: int?
+  partCount: int?
+  partTitle: String?
+  partUrl: String?
+  startedAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  reading_item_user_url_idx:
+    fields: authUserId, url
+    unique: true
+  reading_item_user_time_idx:
+    fields: authUserId, updatedAt

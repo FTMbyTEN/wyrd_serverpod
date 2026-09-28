@@ -32,6 +32,7 @@ import '../mind/feed_endpoint.dart' as _in0i7e4k;
 import '../mind/gate_shape_endpoint.dart' as _ix7nnscc;
 import '../mind/growth_endpoint.dart' as _idrisijy;
 import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
+import '../mind/library_endpoint.dart' as _ifaqo2up;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
 import '../mind/photo_endpoint.dart' as _ij44nk8s;
@@ -137,6 +138,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'lexicon',
+          null,
+        ),
+      'library': _ifaqo2up.LibraryEndpoint()
+        ..initialize(
+          server,
+          'library',
           null,
         ),
       'memory': _ibdzbeap.MemoryEndpoint()
@@ -976,6 +983,218 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['lexicon'] as _i3c3oo5r.LexiconEndpoint).getWord(
                     session,
                     params['word'],
+                  ),
+        ),
+      },
+    );
+    connectors['library'] = _is.EndpointConnector(
+      name: 'library',
+      endpoint: endpoints['library']!,
+      methodConnectors: {
+        'list': _is.MethodConnector(
+          name: 'list',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['library'] as _ifaqo2up.LibraryEndpoint)
+                  .list(session),
+        ),
+        'readOn': _is.MethodConnector(
+          name: 'readOn',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'restart': _is.ParameterDescription(
+              name: 'restart',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'part': _is.ParameterDescription(
+              name: 'part',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).readOn(
+                    session,
+                    params['id'],
+                    restart: params['restart'],
+                    part: params['part'],
+                  ),
+        ),
+        'current': _is.MethodConnector(
+          name: 'current',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).current(
+                    session,
+                    params['id'],
+                  ),
+        ),
+        'contents': _is.MethodConnector(
+          name: 'contents',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).contents(
+                    session,
+                    params['id'],
+                  ),
+        ),
+        'openBook': _is.MethodConnector(
+          name: 'openBook',
+          params: {
+            'query': _is.ParameterDescription(
+              name: 'query',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).openBook(
+                    session,
+                    params['query'],
+                  ),
+        ),
+        'openWork': _is.MethodConnector(
+          name: 'openWork',
+          params: {
+            'source': _is.ParameterDescription(
+              name: 'source',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).openWork(
+                    session,
+                    params['source'],
+                    params['id'],
+                  ),
+        ),
+        'textbooks': _is.MethodConnector(
+          name: 'textbooks',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['library'] as _ifaqo2up.LibraryEndpoint)
+                  .textbooks(session),
+        ),
+        'searchWikisource': _is.MethodConnector(
+          name: 'searchWikisource',
+          params: {
+            'lang': _is.ParameterDescription(
+              name: 'lang',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'query': _is.ParameterDescription(
+              name: 'query',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['library'] as _ifaqo2up.LibraryEndpoint)
+                  .searchWikisource(
+                    session,
+                    params['lang'],
+                    params['query'],
+                  ),
+        ),
+        'wikisourceLanguages': _is.MethodConnector(
+          name: 'wikisourceLanguages',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['library'] as _ifaqo2up.LibraryEndpoint)
+                  .wikisourceLanguages(session),
+        ),
+        'searchBooks': _is.MethodConnector(
+          name: 'searchBooks',
+          params: {
+            'query': _is.ParameterDescription(
+              name: 'query',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['library'] as _ifaqo2up.LibraryEndpoint)
+                  .searchBooks(
+                    session,
+                    params['query'],
+                  ),
+        ),
+        'remove': _is.MethodConnector(
+          name: 'remove',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).remove(
+                    session,
+                    params['id'],
                   ),
         ),
       },

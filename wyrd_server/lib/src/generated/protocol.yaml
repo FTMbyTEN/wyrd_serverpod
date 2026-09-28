@@ -55,6 +55,18 @@ lexicon:
   - wordnetStatus:
   - getStats:
   - getWord:
+library:
+  - list:
+  - readOn:
+  - current:
+  - contents:
+  - openBook:
+  - openWork:
+  - textbooks:
+  - searchWikisource:
+  - wikisourceLanguages:
+  - searchBooks:
+  - remove:
 memory:
   - getMemory:
   - getConcepts:

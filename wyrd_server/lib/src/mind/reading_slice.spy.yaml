@@ -1,0 +1,7 @@
+# One part of a book or page read from My Library.
+class: ReadingSlice
+fields:
+  item: ReadingItem
+  text: String
+  offset: int
+  finished: bool

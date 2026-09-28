@@ -28,7 +28,7 @@ class MemoryEndpoint extends Endpoint {
     return blocks.reversed.toList();
   }
 
-  static const _sharedSources = ['net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum'];
+  static const _sharedSources = ['net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum', 'library'];
   static final _stoplist = TopicService.noise.toList();
 
   static const _conceptsTtl = Duration(minutes: 1);
