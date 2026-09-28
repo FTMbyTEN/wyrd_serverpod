@@ -47,6 +47,20 @@ void main() {
       },
     );
 
+    test('a call that would push the day past the cap is refused before it is sent', () async {
+      final session = sessionBuilder.build();
+      final cap = LlmBudget.dailyCapUsd(session);
+      // spend all but ~a cent of the cap
+      final inputTokens = ((cap - 0.01) * 1000000).round(); // haiku input is  per million
+      await LlmBudget.record(session, {'input_tokens': inputTokens, 'output_tokens': 0});
+      final small = LlmBudget.estimateUsd(model: 'claude-haiku-4-5', inputChars: 3500, maxOutputTokens: 200); // ~/usr/bin/bash.002
+      final huge = LlmBudget.estimateUsd(model: 'claude-haiku-4-5', inputChars: 3500 * 20000, maxOutputTokens: 200); // ~/usr/bin/bash.02
+      expect(small, lessThan(0.01));
+      expect(huge, greaterThan(0.01));
+      expect(await LlmBudget.allow(session, background: false, estimateUsd: small), isTrue);
+      expect(await LlmBudget.allow(session, background: false, estimateUsd: huge), isFalse);
+    });
+
     test('the status endpoint reports today\'s spend and the cap', () async {
       final session = sessionBuilder.build();
       await LlmBudget.record(session, {

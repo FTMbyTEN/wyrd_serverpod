@@ -83,7 +83,7 @@ class ChatToolService {
     'name': 'read_page',
     'description':
         'Reads a web page or a plain-text file directly (fast, no browser) and returns its text, one '
-        'slice of up to 12,000 characters at a time. Best for reading articles and books. For long '
+        'slice of up to 6,000 characters at a time. Best for reading articles and books. For long '
         'texts, the result says where the next slice starts: call again with that offset to keep reading.',
     'input_schema': {
       'type': 'object',
@@ -112,6 +112,53 @@ class ChatToolService {
   /// Set once the headless browser has failed to start on this server, so later calls go
   /// straight to reading pages directly.
   static bool _browserBroken = false;
+
+  /// Every step of a reply re-sends the whole conversation, so three book slices would cost
+  /// 1 + 2 + 3 slices of input. Earlier page text is swapped for a one-line note (the AI can
+  /// read it again if it needs to); only the newest read stays in full.
+  static List<Map<String, dynamic>> _compactOldReads(List<Map<String, dynamic>> messages) => [
+        for (final m in messages)
+          if (m['role'] == 'user' && m['content'] is List)
+            {
+              ...m,
+              'content': [
+                for (final b in (m['content'] as List).cast<Map<String, dynamic>>())
+                  if (b['type'] == 'tool_result') {...b, 'content': _trimmedResult(b['content'])} else b,
+              ],
+            }
+          else
+            m,
+      ];
+
+  static Object? _trimmedResult(Object? content) {
+    String? text;
+    if (content is String) text = content;
+    if (content is List) {
+      text = content.whereType<Map>().where((c) => c['type'] == 'text').map((c) => c['text']).join('\n');
+    }
+    if (text == null || text.length < 400) return content; // short results (maps, errors) stay
+    final firstLine = text.split('\n').first;
+    return '${firstLine.length > 300 ? firstLine.substring(0, 300) : firstLine}\n[earlier page text trimmed to save the AI budget; read it again if needed]';
+  }
+
+  /// Characters of text and number of images a request would send, for the cost estimate.
+  static (int, int) _size(String system, List<Map<String, dynamic>> messages, List<Object> tools) {
+    var images = 0;
+    Object? strip(Object? v) {
+      if (v is Map) {
+        if (v['type'] == 'image') {
+          images++;
+          return null;
+        }
+        return {for (final e in v.entries) e.key: strip(e.value)};
+      }
+      if (v is List) return [for (final x in v) strip(x)];
+      return v;
+    }
+
+    final chars = system.length + jsonEncode(strip(messages)).length + jsonEncode(tools).length;
+    return (chars, images);
+  }
 
   static String _sliceText(PageSlice s) {
     final pct = s.total == 0 ? 100 : ((s.offset + s.text.length) * 100 / s.total).round();
@@ -173,6 +220,13 @@ class ChatToolService {
 
     try {
       for (var round = 0; round <= _maxToolRounds; round++) {
+        final tools = [..._tools, if (droneOperator) ...[_planDroneTool, _abortDroneTool]];
+        final (chars, images) = _size(systemPrompt, messages, tools);
+        final estimate = LlmBudget.estimateUsd(model: _model, inputChars: chars, images: images, maxOutputTokens: maxTokens);
+        if (!await LlmBudget.allow(session, background: false, estimateUsd: estimate)) {
+          session.log('[llm-budget] chat call skipped: ~\$${estimate.toStringAsFixed(4)} would pass the daily cap', level: LogLevel.info);
+          return null;
+        }
         final http.Response res;
         try {
           res = await http.post(
@@ -187,7 +241,7 @@ class ChatToolService {
               'max_tokens': maxTokens,
               'system': systemPrompt,
               'messages': messages,
-              'tools': [..._tools, if (droneOperator) ...[_planDroneTool, _abortDroneTool]],
+              'tools': tools,
             }),
           );
         } catch (_) {
@@ -326,7 +380,7 @@ class ChatToolService {
           }
 
           messages = [
-            ...messages,
+            ..._compactOldReads(messages),
             {'role': 'assistant', 'content': content},
             {'role': 'user', 'content': toolResults},
           ];

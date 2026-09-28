@@ -32,10 +32,10 @@ class BookHit {
 /// Every address, including each redirect, goes through BrowserSafety, so nothing can bounce
 /// the server onto a private or internal network.
 class PageReaderService {
-  static const sliceChars = 12000;
+  static const sliceChars = 6000; // ~1,700 tokens: a passage, not a chapter, per step
   static const _maxBytes = 6 * 1024 * 1024;
   static const _maxRedirects = 5;
-  static const _timeout = Duration(seconds: 20);
+  static const _timeout = Duration(seconds: 45); // a whole book is ~400 KB
   static const _userAgent = 'wyrd-bot/1.0 (+https://wryd00.serverpod.space; reading public pages)';
 
   static Future<PageSlice> read(String rawUrl, {int offset = 0}) async {
@@ -113,7 +113,8 @@ class PageReaderService {
         id: int.parse(id),
         title: _entities(title ?? 'untitled').trim(),
         authors: author == null || author.trim().isEmpty ? [] : [_entities(author).trim()],
-        textUrl: 'https://www.gutenberg.org/ebooks/$id.txt.utf-8',
+        // the file itself, skipping the redirect (and slower mirror) behind /ebooks/<id>.txt.utf-8
+        textUrl: 'https://www.gutenberg.org/cache/epub/$id/pg$id.txt',
       ));
       if (out.length == 6) break;
     }

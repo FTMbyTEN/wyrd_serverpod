@@ -51,7 +51,17 @@ class LlmBudget {
     return (row?.costMicroUsd ?? 0) / 1000000;
   }
 
-  static Future<bool> allow(Session session, {required bool background}) async {
+  /// Rough cost of a call before it's made: [inputChars] of prompt text (~3.5 chars a token),
+  /// [images] attached, up to [maxOutputTokens] back.
+  static double estimateUsd({required String model, required int inputChars, int images = 0, required int maxOutputTokens}) {
+    final (inPerM, outPerM) = _priceFor(model);
+    final inputTokens = inputChars / 3.5 + images * 1600;
+    return (inputTokens * inPerM + maxOutputTokens * outPerM) / 1000000;
+  }
+
+  /// [estimateUsd], when given, must also fit under the cap: one big call (a long page, several
+  /// book slices) can't push the day past it.
+  static Future<bool> allow(Session session, {required bool background, double estimateUsd = 0}) async {
     // Background thinking is paced across the day: by hour h it may have used (h+1)/24 of its
     // share. Unpaced, the 30-second ticks spent the whole share in the first hour of each day and
     // WYRD thought on templates for the other 23.
@@ -59,7 +69,7 @@ class LlmBudget {
     final dayFraction = min(1.0, (now.hour + now.minute / 60 + 1) / 24);
     final cap = dailyCapUsd(session) * (background ? _backgroundShare * dayFraction : 1);
     final spent = await spentTodayUsd(session);
-    if (spent < cap) return true;
+    if (spent + estimateUsd <= cap) return true;
     session.log(
       '[llm-budget] ${background ? 'background' : 'interactive'} call skipped: '
       '\$${spent.toStringAsFixed(4)} spent today, cap \$${cap.toStringAsFixed(4)}',

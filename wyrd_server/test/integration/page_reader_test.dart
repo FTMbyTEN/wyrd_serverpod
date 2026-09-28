@@ -20,7 +20,7 @@ void main() {
     expect(books, hasLength(1));
     expect(books.single.id, 84);
     expect(books.single.authors.single, 'Mary Wollstonecraft Shelley');
-    expect(books.single.textUrl, 'https://www.gutenberg.org/ebooks/84.txt.utf-8');
+    expect(books.single.textUrl, 'https://www.gutenberg.org/cache/epub/84/pg84.txt');
   });
 
   test('private and non-web addresses are refused', () async {
