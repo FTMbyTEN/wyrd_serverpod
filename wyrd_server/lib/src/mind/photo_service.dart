@@ -33,7 +33,9 @@ class PhotoService {
         'given what you saw of them before, notice what has changed or stayed the same when it is '
         'genuinely interesting -- a new shirt, a different room, a better mood -- but never list '
         "differences mechanically and don't mention every look. 1-3 sentences, warm and natural, no "
-        "lists. Notes from the app's on-device face tracking are hints only; trust the image. If the "
+        "lists. If the notes say it's the back camera, they're showing you what's in front of them "
+        '(a place, an object, a view): describe that, not them. Notes from the app\'s on-device face '
+        'tracking are hints only; trust the image. If the '
         'image is dark or unclear, say so honestly instead of guessing. Never guess anyone\'s '
         'identity, age, ethnicity or health.';
     final question = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : 'Look at me. What do you see?';
