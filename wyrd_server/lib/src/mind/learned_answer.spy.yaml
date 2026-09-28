@@ -1,0 +1,24 @@
+# WYRD's recycled answers: every good AI answer to a general question is kept, so the next time
+# the same question comes up it answers from memory instead of calling the API. Feedback moves
+# `score`: carrying on raises it, a correction lowers it; a retired answer is relearned from the
+# AI the next time and replaced -- so each answer gets better over time (LearnedAnswerService).
+# authUserId null = shared by everyone; set = learned from one person and only reused for them.
+class: LearnedAnswer
+table: learned_answer
+
+fields:
+  authUserId: UuidValue?
+  question: String
+  intent: String
+  topics: List<String>
+  answer: String
+  score: double
+  uses: int
+  version: int
+  retired: bool
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  learned_answer_intent_idx:
+    fields: intent, retired

@@ -46,6 +46,8 @@ import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
 import 'package:wyrd_server/src/generated/mind/gate_shape.dart' as _ikrbpnh7;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
+import 'package:wyrd_server/src/generated/mind/learning_stats.dart'
+    as _i0lsrakn;
 import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
 import 'package:wyrd_server/src/generated/mind/lexicon_stats.dart' as _iv2jt4ku;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
@@ -1559,6 +1561,36 @@ class _GrowthEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_iaqmuv2j.GrowthSnapshot>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i0lsrakn.LearningStats> getLearning(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'growth',
+            method: 'getLearning',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'growth',
+          methodName: 'getLearning',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_i0lsrakn.LearningStats>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

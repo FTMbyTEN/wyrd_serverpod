@@ -9,6 +9,7 @@ fields:
   userText: String
   botText: String
   timestamp: DateTime
+  learnedAnswerId: int? # set when WYRD answered from a learned answer, for feedback
 
 indexes:
   conversation_turn_auth_user_id_idx:

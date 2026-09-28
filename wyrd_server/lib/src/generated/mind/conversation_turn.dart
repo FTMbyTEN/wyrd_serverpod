@@ -20,6 +20,7 @@ abstract class ConversationTurn
     required this.userText,
     required this.botText,
     required this.timestamp,
+    this.learnedAnswerId,
   });
 
   factory ConversationTurn({
@@ -28,6 +29,7 @@ abstract class ConversationTurn
     required String userText,
     required String botText,
     required DateTime timestamp,
+    int? learnedAnswerId,
   }) = _ConversationTurnImpl;
 
   factory ConversationTurn.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -41,6 +43,7 @@ abstract class ConversationTurn
       timestamp: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['timestamp'],
       ),
+      learnedAnswerId: jsonSerialization['learnedAnswerId'] as int?,
     );
   }
 
@@ -59,6 +62,8 @@ abstract class ConversationTurn
 
   DateTime timestamp;
 
+  int? learnedAnswerId;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -71,6 +76,7 @@ abstract class ConversationTurn
     String? userText,
     String? botText,
     DateTime? timestamp,
+    int? learnedAnswerId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,6 +87,7 @@ abstract class ConversationTurn
       'userText': userText,
       'botText': botText,
       'timestamp': timestamp.toJson(),
+      if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
     };
   }
 
@@ -93,6 +100,7 @@ abstract class ConversationTurn
       'userText': userText,
       'botText': botText,
       'timestamp': timestamp.toJson(),
+      if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
     };
   }
 
@@ -133,12 +141,14 @@ class _ConversationTurnImpl extends ConversationTurn {
     required String userText,
     required String botText,
     required DateTime timestamp,
+    int? learnedAnswerId,
   }) : super._(
          id: id,
          authUserId: authUserId,
          userText: userText,
          botText: botText,
          timestamp: timestamp,
+         learnedAnswerId: learnedAnswerId,
        );
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -151,6 +161,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     String? userText,
     String? botText,
     DateTime? timestamp,
+    Object? learnedAnswerId = _Undefined,
   }) {
     return ConversationTurn(
       id: id is int? ? id : this.id,
@@ -158,6 +169,9 @@ class _ConversationTurnImpl extends ConversationTurn {
       userText: userText ?? this.userText,
       botText: botText ?? this.botText,
       timestamp: timestamp ?? this.timestamp,
+      learnedAnswerId: learnedAnswerId is int?
+          ? learnedAnswerId
+          : this.learnedAnswerId,
     );
   }
 }
@@ -188,6 +202,11 @@ class ConversationTurnUpdateTable
         table.timestamp,
         value,
       );
+
+  _is.ColumnValue<int, int> learnedAnswerId(int? value) => _is.ColumnValue(
+    table.learnedAnswerId,
+    value,
+  );
 }
 
 class ConversationTurnTable extends _is.Table<int?> {
@@ -210,6 +229,10 @@ class ConversationTurnTable extends _is.Table<int?> {
       'timestamp',
       this,
     );
+    learnedAnswerId = _is.ColumnInt(
+      'learnedAnswerId',
+      this,
+    );
   }
 
   late final ConversationTurnUpdateTable updateTable;
@@ -222,6 +245,8 @@ class ConversationTurnTable extends _is.Table<int?> {
 
   late final _is.ColumnDateTime timestamp;
 
+  late final _is.ColumnInt learnedAnswerId;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -229,6 +254,7 @@ class ConversationTurnTable extends _is.Table<int?> {
     userText,
     botText,
     timestamp,
+    learnedAnswerId,
   ];
 }
 

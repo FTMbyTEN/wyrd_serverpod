@@ -21,12 +21,14 @@ abstract class ChatReply
     required this.reply,
     required this.mind,
     this.action,
+    this.fromMemory,
   });
 
   factory ChatReply({
     required String reply,
     required _is7qzfkp.Mind mind,
     _i3mvbw8t.ChatAction? action,
+    bool? fromMemory,
   }) = _ChatReplyImpl;
 
   factory ChatReply.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -40,6 +42,9 @@ abstract class ChatReply
           : _i9sln91s.Protocol().deserialize<_i3mvbw8t.ChatAction>(
               jsonSerialization['action'],
             ),
+      fromMemory: jsonSerialization['fromMemory'] == null
+          ? null
+          : _is.BoolJsonExtension.fromJson(jsonSerialization['fromMemory']),
     );
   }
 
@@ -49,6 +54,8 @@ abstract class ChatReply
 
   _i3mvbw8t.ChatAction? action;
 
+  bool? fromMemory;
+
   /// Returns a shallow copy of this [ChatReply]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
@@ -56,6 +63,7 @@ abstract class ChatReply
     String? reply,
     _is7qzfkp.Mind? mind,
     _i3mvbw8t.ChatAction? action,
+    bool? fromMemory,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -64,6 +72,7 @@ abstract class ChatReply
       'reply': reply,
       'mind': mind.toJson(),
       if (action != null) 'action': action?.toJson(),
+      if (fromMemory != null) 'fromMemory': fromMemory,
     };
   }
 
@@ -74,6 +83,7 @@ abstract class ChatReply
       'reply': reply,
       'mind': mind.toJsonForProtocol(),
       if (action != null) 'action': action?.toJsonForProtocol(),
+      if (fromMemory != null) 'fromMemory': fromMemory,
     };
   }
 
@@ -90,10 +100,12 @@ class _ChatReplyImpl extends ChatReply {
     required String reply,
     required _is7qzfkp.Mind mind,
     _i3mvbw8t.ChatAction? action,
+    bool? fromMemory,
   }) : super._(
          reply: reply,
          mind: mind,
          action: action,
+         fromMemory: fromMemory,
        );
 
   /// Returns a shallow copy of this [ChatReply]
@@ -104,6 +116,7 @@ class _ChatReplyImpl extends ChatReply {
     String? reply,
     _is7qzfkp.Mind? mind,
     Object? action = _Undefined,
+    Object? fromMemory = _Undefined,
   }) {
     return ChatReply(
       reply: reply ?? this.reply,
@@ -111,6 +124,7 @@ class _ChatReplyImpl extends ChatReply {
       action: action is _i3mvbw8t.ChatAction?
           ? action
           : this.action?.copyWith(),
+      fromMemory: fromMemory is bool? ? fromMemory : this.fromMemory,
     );
   }
 }

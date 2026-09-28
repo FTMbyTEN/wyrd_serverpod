@@ -57,6 +57,8 @@ import 'mind/dream_entry.dart' as _izf9406n;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
 import 'mind/gate_shape.dart' as _i00qabwy;
 import 'mind/growth_snapshot.dart' as _iyj2s79k;
+import 'mind/learned_answer.dart' as _iexdo29m;
+import 'mind/learning_stats.dart' as _icoxjjkt;
 import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
@@ -102,6 +104,8 @@ export 'mind/dream_entry.dart';
 export 'mind/feed_ingest.dart';
 export 'mind/gate_shape.dart';
 export 'mind/growth_snapshot.dart';
+export 'mind/learned_answer.dart';
+export 'mind/learning_stats.dart';
 export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
@@ -232,6 +236,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iyj2s79k.GrowthSnapshot) {
       return _iyj2s79k.GrowthSnapshot.fromJson(data) as T;
+    }
+    if (t == _iexdo29m.LearnedAnswer) {
+      return _iexdo29m.LearnedAnswer.fromJson(data) as T;
+    }
+    if (t == _icoxjjkt.LearningStats) {
+      return _icoxjjkt.LearningStats.fromJson(data) as T;
     }
     if (t == _i37ps124.LexiconEntry) {
       return _i37ps124.LexiconEntry.fromJson(data) as T;
@@ -376,6 +386,14 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iyj2s79k.GrowthSnapshot?>()) {
       return (data != null ? _iyj2s79k.GrowthSnapshot.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iexdo29m.LearnedAnswer?>()) {
+      return (data != null ? _iexdo29m.LearnedAnswer.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_icoxjjkt.LearningStats?>()) {
+      return (data != null ? _icoxjjkt.LearningStats.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_i37ps124.LexiconEntry?>()) {
@@ -623,6 +641,8 @@ class Protocol extends _isc.SerializationManager {
       _ig20dqq5.FeedIngest => 'FeedIngest',
       _i00qabwy.GateShape => 'GateShape',
       _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
+      _iexdo29m.LearnedAnswer => 'LearnedAnswer',
+      _icoxjjkt.LearningStats => 'LearningStats',
       _i37ps124.LexiconEntry => 'LexiconEntry',
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
@@ -707,6 +727,10 @@ class Protocol extends _isc.SerializationManager {
         return 'GateShape';
       case _iyj2s79k.GrowthSnapshot():
         return 'GrowthSnapshot';
+      case _iexdo29m.LearnedAnswer():
+        return 'LearnedAnswer';
+      case _icoxjjkt.LearningStats():
+        return 'LearningStats';
       case _i37ps124.LexiconEntry():
         return 'LexiconEntry';
       case _ic2pi8fi.LexiconStats():
@@ -843,6 +867,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'GrowthSnapshot') {
       return deserialize<_iyj2s79k.GrowthSnapshot>(data['data']);
+    }
+    if (dataClassName == 'LearnedAnswer') {
+      return deserialize<_iexdo29m.LearnedAnswer>(data['data']);
+    }
+    if (dataClassName == 'LearningStats') {
+      return deserialize<_icoxjjkt.LearningStats>(data['data']);
     }
     if (dataClassName == 'LexiconEntry') {
       return deserialize<_i37ps124.LexiconEntry>(data['data']);

@@ -858,6 +858,16 @@ class Endpoints extends _is.EndpointDispatch {
                     params['range'],
                   ),
         ),
+        'getLearning': _is.MethodConnector(
+          name: 'getLearning',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['growth'] as _idrisijy.GrowthEndpoint)
+                  .getLearning(session),
+        ),
       },
     );
     connectors['lexicon'] = _is.EndpointConnector(

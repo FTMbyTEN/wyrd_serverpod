@@ -1,4 +1,5 @@
 import '../generated/protocol.dart';
+import 'learned_answer_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/growth (read) from server.js. Public/unauthenticated, matching Node. There is
@@ -58,4 +59,7 @@ class GrowthEndpoint extends Endpoint {
         ),
     ];
   }
+
+  /// How much WYRD has learned from its own answers: kept, shared, reused (AI calls saved), improved.
+  Future<LearningStats> getLearning(Session session) => LearnedAnswerService.stats(session);
 }

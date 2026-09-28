@@ -60,6 +60,8 @@ import 'mind/dream_entry.dart' as _izf9406n;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
 import 'mind/gate_shape.dart' as _i00qabwy;
 import 'mind/growth_snapshot.dart' as _iyj2s79k;
+import 'mind/learned_answer.dart' as _iexdo29m;
+import 'mind/learning_stats.dart' as _icoxjjkt;
 import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
@@ -105,6 +107,8 @@ export 'mind/dream_entry.dart';
 export 'mind/feed_ingest.dart';
 export 'mind/gate_shape.dart';
 export 'mind/growth_snapshot.dart';
+export 'mind/learned_answer.dart';
+export 'mind/learning_stats.dart';
 export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
@@ -170,6 +174,12 @@ class Protocol extends _is.DatabaseSerializationManager {
           columnType: _isp.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
           dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'learnedAnswerId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
         ),
       ],
       foreignKeys: [],
@@ -689,6 +699,108 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'timestamp',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'learned_answer',
+      dartName: 'LearnedAnswer',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'question',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'intent',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'topics',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<String>',
+        ),
+        _isp.ColumnDefinition(
+          name: 'answer',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'score',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'uses',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'version',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'retired',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'learned_answer_intent_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'intent',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'retired',
             ),
           ],
           type: 'btree',
@@ -1634,6 +1746,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iyj2s79k.GrowthSnapshot) {
       return _iyj2s79k.GrowthSnapshot.fromJson(data) as T;
     }
+    if (t == _iexdo29m.LearnedAnswer) {
+      return _iexdo29m.LearnedAnswer.fromJson(data) as T;
+    }
+    if (t == _icoxjjkt.LearningStats) {
+      return _icoxjjkt.LearningStats.fromJson(data) as T;
+    }
     if (t == _i37ps124.LexiconEntry) {
       return _i37ps124.LexiconEntry.fromJson(data) as T;
     }
@@ -1777,6 +1895,14 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_iyj2s79k.GrowthSnapshot?>()) {
       return (data != null ? _iyj2s79k.GrowthSnapshot.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_iexdo29m.LearnedAnswer?>()) {
+      return (data != null ? _iexdo29m.LearnedAnswer.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_icoxjjkt.LearningStats?>()) {
+      return (data != null ? _icoxjjkt.LearningStats.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_i37ps124.LexiconEntry?>()) {
@@ -2027,6 +2153,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ig20dqq5.FeedIngest => 'FeedIngest',
       _i00qabwy.GateShape => 'GateShape',
       _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
+      _iexdo29m.LearnedAnswer => 'LearnedAnswer',
+      _icoxjjkt.LearningStats => 'LearningStats',
       _i37ps124.LexiconEntry => 'LexiconEntry',
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
@@ -2111,6 +2239,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'GateShape';
       case _iyj2s79k.GrowthSnapshot():
         return 'GrowthSnapshot';
+      case _iexdo29m.LearnedAnswer():
+        return 'LearnedAnswer';
+      case _icoxjjkt.LearningStats():
+        return 'LearningStats';
       case _i37ps124.LexiconEntry():
         return 'LexiconEntry';
       case _ic2pi8fi.LexiconStats():
@@ -2252,6 +2384,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'GrowthSnapshot') {
       return deserialize<_iyj2s79k.GrowthSnapshot>(data['data']);
     }
+    if (dataClassName == 'LearnedAnswer') {
+      return deserialize<_iexdo29m.LearnedAnswer>(data['data']);
+    }
+    if (dataClassName == 'LearningStats') {
+      return deserialize<_icoxjjkt.LearningStats>(data['data']);
+    }
     if (dataClassName == 'LexiconEntry') {
       return deserialize<_i37ps124.LexiconEntry>(data['data']);
     }
@@ -2369,6 +2507,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _izf9406n.DreamEntry.t;
       case _iyj2s79k.GrowthSnapshot:
         return _iyj2s79k.GrowthSnapshot.t;
+      case _iexdo29m.LearnedAnswer:
+        return _iexdo29m.LearnedAnswer.t;
       case _i37ps124.LexiconEntry:
         return _i37ps124.LexiconEntry.t;
       case _i1bjxjal.LlmUsageDay:

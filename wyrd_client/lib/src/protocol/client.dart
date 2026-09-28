@@ -41,6 +41,7 @@ import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/gate_shape.dart' as _id49marq;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
+import 'package:wyrd_client/src/protocol/mind/learning_stats.dart' as _i41i9jez;
 import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
 import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
@@ -596,6 +597,14 @@ class EndpointGrowth extends _isc.EndpointRef {
         'growth',
         'getHistory',
         {'range': range},
+      );
+
+  /// How much WYRD has learned from its own answers: kept, shared, reused (AI calls saved), improved.
+  _ida.Future<_i41i9jez.LearningStats> getLearning() =>
+      caller.callServerEndpoint<_i41i9jez.LearningStats>(
+        'growth',
+        'getLearning',
+        {},
       );
 }
 

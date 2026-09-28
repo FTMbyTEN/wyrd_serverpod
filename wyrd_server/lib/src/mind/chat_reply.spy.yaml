@@ -3,3 +3,4 @@ fields:
   reply: String
   mind: Mind
   action: ChatAction?
+  fromMemory: bool? # answered from a learned answer, without calling the AI

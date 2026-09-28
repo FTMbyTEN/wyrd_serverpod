@@ -1,0 +1,8 @@
+# How much WYRD has learned from its own answers, for the GROWTH panel.
+class: LearningStats
+
+fields:
+  answers: int
+  shared: int
+  reuses: int
+  improved: int

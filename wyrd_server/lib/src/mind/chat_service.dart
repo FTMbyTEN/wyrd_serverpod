@@ -3,6 +3,7 @@ import 'dart:math';
 import '../generated/protocol.dart';
 import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
+import 'learned_answer_service.dart';
 import 'memory_recall_service.dart';
 import 'photo_service.dart';
 import '../drone/drone_service.dart';
@@ -42,7 +43,7 @@ class ChatService {
   }
 
   static Future<
-    ({String reply, ConversationTurn turn, Mind mind, ChatAction? action})
+    ({String reply, ConversationTurn turn, Mind mind, ChatAction? action, bool fromMemory})
   >
   processMessage(
     Session session,
@@ -104,11 +105,16 @@ class ChatService {
         .skip(codeHistory.length > 4 ? codeHistory.length - 4 : 0)
         .toList();
 
+    // Recycle as learning: this message judges the learned answer WYRD gave last (if it gave
+    // one), then WYRD tries its own learned answers before spending an AI call.
+    await LearnedAnswerService.feedback(session, recentTurns.firstOrNull, text);
+    final isCode = CodeAgentService.isCodeRequest(text) || CodeAgentService.isLikelyFollowUp(authUserId, text);
+    final learned = isCode ? null : await LearnedAnswerService.recall(session, authUserId, text, topics);
+
     // Code requests (and short follow-ups to one) skip the conversational prompt entirely; if
     // the code path fails, fall through to it as a safety net, like Node.
     final codeReply =
-        CodeAgentService.isCodeRequest(text) ||
-            CodeAgentService.isLikelyFollowUp(authUserId, text)
+        isCode
         ? await CodeAgentService.reply(
             session,
             authUserId: authUserId,
@@ -149,19 +155,31 @@ class ChatService {
         '(1-4 sentences) unless the question calls for more.\n\n'
         '$contextLines';
 
-    final toolReply =
-        codeReply ??
-        await ChatToolService.reply(
-          session,
-          authUserId: authUserId,
-          systemPrompt: systemPrompt,
-          history: history,
-          userText: text,
-          maxTokens: 220,
-          droneOperator: droneOperator,
-        );
-    final reply = toolReply?.text ?? _followUpFromTopics(topics);
+    final toolReply = learned != null
+        ? null // answered from what WYRD already learned: no AI call
+        : codeReply ??
+            await ChatToolService.reply(
+              session,
+              authUserId: authUserId,
+              systemPrompt: systemPrompt,
+              history: history,
+              userText: text,
+              maxTokens: 220,
+              droneOperator: droneOperator,
+            );
     final action = toolReply?.action;
+
+    // The AI couldn't answer (budget spent, no key, error): a looser learned answer beats a template.
+    final fallback = learned == null && toolReply == null && !isCode
+        ? await LearnedAnswerService.recall(session, authUserId, text, topics, aiAvailable: false)
+        : null;
+    final usedLearned = learned ?? fallback;
+    final reply = usedLearned?.answer ?? toolReply?.text ?? _followUpFromTopics(topics);
+
+    // A fresh AI answer to a general question is kept, so next time WYRD knows it.
+    if (toolReply != null && codeReply == null && action == null) {
+      await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList());
+    }
 
     final turn = await ConversationTurn.db.insertRow(
       session,
@@ -170,6 +188,7 @@ class ChatService {
         userText: text,
         botText: reply,
         timestamp: DateTime.now().toUtc(),
+        learnedAnswerId: usedLearned?.id,
       ),
     );
 
@@ -195,6 +214,6 @@ class ChatService {
       scoreGap: uniqueTopics.toDouble(),
     );
 
-    return (reply: reply, turn: turn, mind: updatedMind, action: action);
+    return (reply: reply, turn: turn, mind: updatedMind, action: action, fromMemory: usedLearned != null);
   }
 }

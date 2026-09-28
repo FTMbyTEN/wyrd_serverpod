@@ -45,6 +45,7 @@ gateShape:
 growth:
   - getSnapshots:
   - getHistory:
+  - getLearning:
 lexicon:
   - trigger:
   - wordnetStatus:
