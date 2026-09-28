@@ -49,7 +49,7 @@ class TopicEndpoint extends Endpoint {
       synthesis: synthesisBlock?.insight,
       netFactTitle: netBlock?.title,
       netFactExtract: netBlock?.extract,
-      chatMentions: matches.where((m) => m.fromChat).length,
+      chatMentions: 0, // public endpoint: how often people chat about a topic stays private
     );
   }
 }

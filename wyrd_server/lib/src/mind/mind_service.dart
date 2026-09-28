@@ -9,6 +9,10 @@ import 'package:serverpod/serverpod.dart';
 /// place instead of being re-derived per endpoint. The seen/resolved topic sets behind the
 /// digest live in the mind_topic table, not on the row.
 class MindService {
+  /// Memory sources that come from people (their chats, their photos) and must never reach
+  /// anything public: self-questions, insights, the diary, the focus.
+  static const privateSources = {'chat', 'photo'};
+
   static const _goalTemplates = <String Function(String)>[
     _goalDeepen,
     _goalContradictions,
@@ -142,6 +146,7 @@ class MindService {
     List<String> newResolvedTopics = const [],
     double? scoreGap,
     bool recentErrors = false,
+    bool private = false,
   }) async {
     final mind = await load(session);
 
@@ -150,7 +155,8 @@ class MindService {
       freq[t] = (freq[t] ?? 0) + 1;
     }
     final ranked = freq.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    final focusTopic = ranked.isNotEmpty ? ranked.first.key : mind.focusTopic;
+    // the focus is shown publicly, so a private event (a chat, a photo) never sets it
+    final focusTopic = ranked.isNotEmpty && !private ? ranked.first.key : mind.focusTopic;
 
     final uniqueTopics = recentTopics.toSet().length;
     final curiosityRaw = min(1.0, uniqueTopics / 20);

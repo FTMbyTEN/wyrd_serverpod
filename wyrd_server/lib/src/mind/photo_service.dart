@@ -102,6 +102,7 @@ class PhotoService {
     final mind = await MindService.recordEvent(
       session,
       eventType: 'sight',
+      private: true,
       recentTopics: topics,
       newSeenTopics: topics,
       scoreGap: 0,

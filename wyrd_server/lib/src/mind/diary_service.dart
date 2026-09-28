@@ -12,6 +12,8 @@ class DiaryService {
 
     final recentBlocks = await MemoryBlock.db.find(
       session,
+      // the diary is public, so only what WYRD read or thought, never people's chats or photos
+      where: (t) => t.source.notInSet(MindService.privateSources),
       orderBy: (t) => t.id.desc(),
       limit: 30,
     );

@@ -91,7 +91,7 @@ void main() {
         expect(info.synthesis, 'I.');
         expect(info.definition, 'a cloud');
         expect(info.definitionPartOfSpeech, 'noun');
-        expect(info.chatMentions, 1);
+        expect(info.chatMentions, 0); // kept private on the public endpoint
       },
     );
   });

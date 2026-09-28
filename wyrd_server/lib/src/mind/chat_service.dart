@@ -268,6 +268,7 @@ class ChatService {
     final updatedMind = await MindService.recordEvent(
       session,
       eventType: 'chat',
+      private: true,
       recentTopics: topics,
       newSeenTopics: topics,
       scoreGap: uniqueTopics.toDouble(),

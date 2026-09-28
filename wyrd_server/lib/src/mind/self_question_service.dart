@@ -49,6 +49,8 @@ class SelfQuestionService {
   static Future<bool> tick(Session session) async {
     final pool = await MemoryBlock.db.find(
       session,
+      // never people's chats or photos: what comes out of here is public
+      where: (t) => t.source.notInSet(MindService.privateSources),
       orderBy: (t) => t.id.desc(),
       limit: _poolSize,
     );
