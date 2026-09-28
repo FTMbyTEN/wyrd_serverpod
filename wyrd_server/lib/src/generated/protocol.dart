@@ -43,6 +43,7 @@ import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
+import 'mind/chat_thread.dart' as _ildoeobn;
 import 'mind/concept_detail.dart' as _idm2402p;
 import 'mind/concept_edge.dart' as _iafou6mz;
 import 'mind/concept_example.dart' as _igv7j4aa;
@@ -96,6 +97,7 @@ export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
+export 'mind/chat_thread.dart';
 export 'mind/concept_detail.dart';
 export 'mind/concept_edge.dart';
 export 'mind/concept_example.dart';
@@ -150,6 +152,74 @@ class Protocol extends _is.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._().._registerHostProtocols();
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
+    _isp.TableDefinition(
+      name: 'chat_thread',
+      dartName: 'ChatThread',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'subject',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<String>',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastReadUrl',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastReadTitle',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nextOffset',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'chat_thread_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     _isp.TableDefinition(
       name: 'conversation_turn',
       dartName: 'ConversationTurn',
@@ -1995,6 +2065,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iav0lzqw.ChatReply) {
       return _iav0lzqw.ChatReply.fromJson(data) as T;
     }
+    if (t == _ildoeobn.ChatThread) {
+      return _ildoeobn.ChatThread.fromJson(data) as T;
+    }
     if (t == _idm2402p.ConceptDetail) {
       return _idm2402p.ConceptDetail.fromJson(data) as T;
     }
@@ -2155,6 +2228,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_iav0lzqw.ChatReply?>()) {
       return (data != null ? _iav0lzqw.ChatReply.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ildoeobn.ChatThread?>()) {
+      return (data != null ? _ildoeobn.ChatThread.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_idm2402p.ConceptDetail?>()) {
       return (data != null ? _idm2402p.ConceptDetail.fromJson(data) : null)
@@ -2320,6 +2396,9 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_iapme6ge.ConceptNode>) {
       return (data as List)
               .map((e) => deserialize<_iapme6ge.ConceptNode>(e))
@@ -2346,9 +2425,6 @@ class Protocol extends _is.DatabaseSerializationManager {
               ? (data as List).map((e) => deserialize<int>(e)).toList()
               : null)
           as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == Map<String, int>) {
       return (data as Map).map(
@@ -2492,6 +2568,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _itui3kw8.AlertNote => 'AlertNote',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
+      _ildoeobn.ChatThread => 'ChatThread',
       _idm2402p.ConceptDetail => 'ConceptDetail',
       _iafou6mz.ConceptEdge => 'ConceptEdge',
       _igv7j4aa.ConceptExample => 'ConceptExample',
@@ -2567,6 +2644,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
         return 'ChatReply';
+      case _ildoeobn.ChatThread():
+        return 'ChatThread';
       case _idm2402p.ConceptDetail():
         return 'ConceptDetail';
       case _iafou6mz.ConceptEdge():
@@ -2706,6 +2785,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'ChatReply') {
       return deserialize<_iav0lzqw.ChatReply>(data['data']);
+    }
+    if (dataClassName == 'ChatThread') {
+      return deserialize<_ildoeobn.ChatThread>(data['data']);
     }
     if (dataClassName == 'ConceptDetail') {
       return deserialize<_idm2402p.ConceptDetail>(data['data']);
@@ -2887,6 +2969,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _idcsjt5k.DroneMission.t;
       case _it73791y.DroneState:
         return _it73791y.DroneState.t;
+      case _ildoeobn.ChatThread:
+        return _ildoeobn.ChatThread.t;
       case _i8fl0sel.ConversationTurn:
         return _i8fl0sel.ConversationTurn.t;
       case _i9dbtrq4.CopLogEntry:

@@ -203,6 +203,7 @@ class ChatToolService {
     required int maxTokens,
     bool droneOperator = false,
     List<String>? readUrls, // filled with the pages and books read while answering
+    List<PageSlice>? reads, // ...and the slices themselves, so a later "continue" knows where it stopped
   }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
@@ -319,6 +320,7 @@ class ChatToolService {
                 } else {
                   final slice = await PageReaderService.read(input['url'] as String? ?? '', offset: (input['offset'] as num?)?.toInt() ?? 0);
                   readUrls?.add(slice.url);
+                    reads?.add(slice);
                     toolResults.add({'type': 'tool_result', 'tool_use_id': toolUseId, 'content': _sliceText(slice)});
                 }
                 continue;
@@ -343,6 +345,7 @@ class ChatToolService {
                   if (name == 'web_open') {
                     final slice = await PageReaderService.read(input['url'] as String? ?? '');
                     readUrls?.add(slice.url);
+                    reads?.add(slice);
                     toolResults.add({'type': 'tool_result', 'tool_use_id': toolUseId, 'content': _sliceText(slice)});
                   } else {
                     toolResults.add({

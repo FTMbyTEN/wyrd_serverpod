@@ -1,0 +1,18 @@
+# One person's ongoing conversation with WYRD, carried between messages and sessions: what the
+# two of them have been talking about, and what WYRD was last reading for them (so "continue"
+# picks up where it stopped). See ThreadService.
+class: ChatThread
+table: chat_thread
+
+fields:
+  authUserId: UuidValue
+  subject: List<String>
+  lastReadUrl: String?
+  lastReadTitle: String?
+  nextOffset: int?
+  updatedAt: DateTime
+
+indexes:
+  chat_thread_user_idx:
+    fields: authUserId
+    unique: true

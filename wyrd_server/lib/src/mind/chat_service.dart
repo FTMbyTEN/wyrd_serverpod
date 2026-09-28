@@ -5,6 +5,8 @@ import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
 import 'embedding_service.dart';
 import 'learned_answer_service.dart';
+import 'page_reader_service.dart';
+import 'thread_service.dart';
 import 'trust_service.dart';
 import 'judgement_service.dart';
 import 'memory_recall_service.dart';
@@ -45,6 +47,9 @@ class ChatService {
     return templates[rand.nextInt(templates.length)];
   }
 
+  /// How many recent exchanges the AI sees (was 4: long conversations lost their thread).
+  static const _historyTurns = 8;
+
   static Future<
     ({String reply, ConversationTurn turn, Mind mind, ChatAction? action, bool fromMemory, String? judgement})
   >
@@ -61,11 +66,26 @@ class ChatService {
     }
 
     final mind = await MindService.load(session);
-    // the message's meaning fingerprint, once, for recall and learned answers (null when off)
-    final meaning = text.trim().length >= 8 && EmbeddingService.enabled(session)
-        ? await EmbeddingService.embedQuery(session, text)
+
+    // Continuity: the conversation so far (newest first), and whether this message leans on it.
+    final recentTurns = await ConversationTurn.db.find(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.id.desc(),
+      limit: _historyTurns,
+    );
+    final thread = await ThreadService.load(session, authUserId);
+    final followUp = ThreadService.isFollowUp(text, hasHistory: recentTurns.isNotEmpty);
+    final threadTopics = ThreadService.threadTopics(recentTurns);
+    final recallTopics = ThreadService.effectiveTopics(topics, threadTopics, followUp: followUp);
+
+    // the message's meaning fingerprint, once, for recall and learned answers (null when off);
+    // a follow-up is embedded together with the question it follows, so "tell me more" means something
+    final meaningText = followUp && recentTurns.isNotEmpty ? '${recentTurns.first.userText}\n$text' : text;
+    final meaning = meaningText.trim().length >= 8 && EmbeddingService.enabled(session)
+        ? await EmbeddingService.embedQuery(session, meaningText)
         : null;
-    final recall = await MemoryRecallService.recall(session, authUserId, topics, meaning: meaning);
+    final recall = await MemoryRecallService.recall(session, authUserId, recallTopics, meaning: meaning);
 
     final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
     final blockCount = await MemoryBlock.db.count(session);
@@ -99,24 +119,17 @@ class ChatService {
           'about them comes up, follow up on it for real.';
     }
 
-    final recentTurns = await ConversationTurn.db.find(
-      session,
-      where: (t) => t.authUserId.equals(authUserId),
-      orderBy: (t) => t.id.desc(),
-      limit: 6,
-    );
     final codeHistory = recentTurns.reversed
         .map((t) => (userText: t.userText, botText: t.botText))
         .toList();
-    final history = codeHistory
-        .skip(codeHistory.length > 4 ? codeHistory.length - 4 : 0)
-        .toList();
+    final history = codeHistory; // the last _historyTurns exchanges, oldest first
 
     // Recycle as learning: this message judges the learned answer WYRD gave last (if it gave
     // one), then WYRD tries its own learned answers before spending an AI call.
     await LearnedAnswerService.feedback(session, recentTurns.firstOrNull, text);
     final isCode = CodeAgentService.isCodeRequest(text) || CodeAgentService.isLikelyFollowUp(authUserId, text);
-    final learned = isCode ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
+    // a follow-up depends on the conversation, so it's never answered from a learned answer
+    final learned = isCode || followUp ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
 
     // Code requests (and short follow-ups to one) skip the conversational prompt entirely; if
     // the code path fails, fall through to it as a safety net, like Node.
@@ -132,6 +145,7 @@ class ChatService {
 
     final contextLines = [
       'Your current mood: ${mind.mood}.${mind.focusTopic != null ? ' You\'ve been mulling over "${mind.focusTopic}" in the background.' : ''}',
+      ...ThreadService.promptLines(thread, followUp: followUp, threadTopics: threadTopics),
       ...recall.toPromptLines(),
       if (!recall.isEmpty)
         'Use what you already know where it genuinely fits, in your own words -- never invent a memory '
@@ -165,6 +179,7 @@ class ChatService {
         '$contextLines';
 
     final readUrls = <String>[];
+    final reads = <PageSlice>[];
     final toolReply = learned != null
         ? null // answered from what WYRD already learned: no AI call
         : codeReply ??
@@ -177,11 +192,12 @@ class ChatService {
               maxTokens: 220,
               droneOperator: droneOperator,
               readUrls: readUrls,
+              reads: reads,
             );
     final action = toolReply?.action;
 
     // The AI couldn't answer (budget spent, no key, error): a looser learned answer beats a template.
-    final fallback = learned == null && toolReply == null && !isCode
+    final fallback = learned == null && toolReply == null && !isCode && !followUp
         ? await LearnedAnswerService.recall(session, authUserId, text, topics, aiAvailable: false, meaning: meaning)
         : null;
     final usedLearned = learned ?? fallback;
@@ -210,6 +226,17 @@ class ChatService {
     if (toolReply != null && codeReply == null && action == null && (judgement?.passed ?? true)) {
       learnedNow = await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
     }
+
+    // keep the thread: what this exchange was about, and where any reading stopped
+    await ThreadService.update(
+      session,
+      authUserId,
+      subject: ThreadService.threadTopics([
+        ConversationTurn(authUserId: authUserId, userText: text, botText: reply, timestamp: DateTime.now().toUtc()),
+        ...recentTurns,
+      ]),
+      lastRead: reads.lastOrNull,
+    );
 
     final turn = await ConversationTurn.db.insertRow(
       session,

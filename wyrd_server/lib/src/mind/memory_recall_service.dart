@@ -191,9 +191,9 @@ class MemoryRecallService {
       SELECT "userText", "botText" FROM "conversation_turn"
       WHERE "authUserId" = @id AND "userText" ~* @re
       ORDER BY "id" DESC
-      OFFSET 4 LIMIT 3
+      OFFSET 8 LIMIT 3
       ''',
-      // the 4 newest turns are already in the prompt as live history
+      // the 8 newest turns are already in the prompt as live history (ChatService._historyTurns)
       parameters: QueryParameters.named({'id': authUserId.uuid, 're': '\\m($pattern)\\M'}),
     );
     return rows.map((r) => _clip('they said "${r[0]}" and you said "${r[1]}"')).toList();

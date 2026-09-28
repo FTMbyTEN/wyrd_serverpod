@@ -24,9 +24,9 @@ void main() {
         MemoryBlock(timestamp: now, source: 'chat', topics: ['entropy'], userText: 'my secret entropy diary', botText: 'noted'),
       ]);
 
-      // conversations: an old one of mine on the subject, then 4 newer ones (already live history)
+      // conversations: an old one of mine on the subject, then 8 newer ones (already live history)
       await ConversationTurn.db.insertRow(session, ConversationTurn(authUserId: me, userText: 'I was reading about entropy yesterday', botText: 'What caught your eye?', timestamp: now));
-      for (var i = 0; i < 4; i++) {
+      for (var i = 0; i < 8; i++) { // newer than the prompt's live history
         await ConversationTurn.db.insertRow(session, ConversationTurn(authUserId: me, userText: 'entropy again $i', botText: 'ok', timestamp: now));
       }
       await ConversationTurn.db.insertRow(session, ConversationTurn(authUserId: someoneElse, userText: 'entropy is my password', botText: 'hm', timestamp: now));
