@@ -20,7 +20,8 @@ import 'package:serverpod/serverpod.dart';
 /// Each firing is written to the reasoning log as structured JSON (kind 'firing') with a
 /// plain-English summary, which the app draws as neural tissue.
 class ReasoningService {
-  static const _learnRate = 0.08;
+  static const _learnRate = 0.05;
+  static const _maxStepsPerBatch = 2; // one popular article re-read ten times isn't ten lessons
   static const _ltpRate = 0.04;
   static const _topicsPerBlock = 6;
   static const _cursorMark = 'neural-cursor';
@@ -47,7 +48,7 @@ class ReasoningService {
   static Future<void> _strengthen(Session session, Iterable<(String, String)> pairs, double rate) async {
     final counts = <(String, String), int>{};
     for (final p in pairs) {
-      counts[p] = (counts[p] ?? 0) + 1;
+      counts[p] = min((counts[p] ?? 0) + 1, _maxStepsPerBatch);
     }
     final list = counts.entries.toList();
     for (var start = 0; start < list.length; start += 300) {
@@ -89,7 +90,9 @@ class ReasoningService {
     );
     if (fresh.isEmpty) return;
     final pairs = <(String, String)>[];
+    final seenTitles = <String>{};
     for (final b in fresh) {
+      if (b.title != null && !seenTitles.add(b.title!)) continue; // the same article again
       final ideas = _ideas(b).toSet().toList();
       for (var i = 0; i < ideas.length; i++) {
         for (var j = i + 1; j < ideas.length; j++) {
@@ -109,6 +112,14 @@ class ReasoningService {
     final now = DateTime.now();
     if (_lastDecay != null && now.difference(_lastDecay!) < _decayEvery) return;
     _lastDecay = now;
+    // one-time: links saturated at 1.0 under the old learning rate are scaled back, so strength
+    // means something again
+    final rescaled = await session.db.unsafeQuery(
+      'INSERT INTO "maintenance_run" ("name", "ranAt", "note") VALUES (\'synapse-rescale-1\', @t, \'x0.6\') '
+      'ON CONFLICT ("name") DO NOTHING RETURNING "id"',
+      parameters: QueryParameters.named({'t': now.toUtc()}),
+    );
+    if (rescaled.isNotEmpty) await session.db.unsafeExecute('UPDATE "synapse" SET "weight" = "weight" * 0.6');
     await session.db.unsafeExecute(
       'UPDATE "synapse" SET "weight" = "weight" * @f WHERE "lastFired" < @cut',
       parameters: QueryParameters.named({'f': _decayFactor, 'cut': now.toUtc().subtract(const Duration(days: 1))}),

@@ -28,6 +28,7 @@ alerts:
 chat:
   - sendMessage:
   - getHistory:
+  - rate:
 curriculum:
   - getStatus:
 diary:

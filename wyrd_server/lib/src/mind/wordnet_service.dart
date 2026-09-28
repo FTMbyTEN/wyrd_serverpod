@@ -218,7 +218,7 @@ class WordNetService {
 
     // A rare word whose every sense is unrelated to a rich context is probably something else
     // here (e.g. "llms" -> LL.M., a law degree, among AI topics): better unknown than wrong.
-    if (ctx.length >= 10 && maxTag == 0 && direct(best) == 0 && indirect(best) == 0) return null;
+    if (ctx.length >= 10 && maxTag == 0 && direct(best) == 0 && indirect(best) <= 1) return null;
     final def = best.definition[0].toUpperCase() + best.definition.substring(1);
     return (partOfSpeech: best.pos, definition: def.endsWith('.') ? def : '$def.', lemma: lemma);
   }

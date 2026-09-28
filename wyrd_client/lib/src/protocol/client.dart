@@ -459,6 +459,20 @@ class EndpointChat extends _isc.EndpointRef {
         'getHistory',
         {'limit': limit},
       );
+
+  /// 👍 (1), 👎 (-1) or clear (0) one of your own conversation turns. Trains the learned answer
+  /// behind it, and is kept on the turn as a record of what helped.
+  _ida.Future<void> rate(
+    int turnId,
+    int rating,
+  ) => caller.callServerEndpoint<void>(
+    'chat',
+    'rate',
+    {
+      'turnId': turnId,
+      'rating': rating,
+    },
+  );
 }
 
 /// Ports /api/curriculum from server.js. Public/unauthenticated, matching Node.

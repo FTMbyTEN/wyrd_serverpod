@@ -214,7 +214,7 @@ class LexiconService {
 
   static const _wordsPerTick = 6;
   static const _relearnPerTick = 40;
-  static const _relearnMark = 'wordnet-relearn-2'; // re-run with extended Lesk
+  static const _relearnMark = 'wordnet-relearn-3'; // re-run with extended Lesk
 
   /// Learns from WordNet (local, no web or AI calls) once it's loaded; until then, the old
   /// one-word-per-tick web dictionary path below.

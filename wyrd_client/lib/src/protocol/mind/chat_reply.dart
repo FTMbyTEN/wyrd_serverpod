@@ -22,6 +22,7 @@ abstract class ChatReply
     required this.mind,
     this.action,
     this.fromMemory,
+    this.turnId,
   });
 
   factory ChatReply({
@@ -29,6 +30,7 @@ abstract class ChatReply
     required _is7qzfkp.Mind mind,
     _i3mvbw8t.ChatAction? action,
     bool? fromMemory,
+    int? turnId,
   }) = _ChatReplyImpl;
 
   factory ChatReply.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -45,6 +47,7 @@ abstract class ChatReply
       fromMemory: jsonSerialization['fromMemory'] == null
           ? null
           : _isc.BoolJsonExtension.fromJson(jsonSerialization['fromMemory']),
+      turnId: jsonSerialization['turnId'] as int?,
     );
   }
 
@@ -56,6 +59,8 @@ abstract class ChatReply
 
   bool? fromMemory;
 
+  int? turnId;
+
   /// Returns a shallow copy of this [ChatReply]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -64,6 +69,7 @@ abstract class ChatReply
     _is7qzfkp.Mind? mind,
     _i3mvbw8t.ChatAction? action,
     bool? fromMemory,
+    int? turnId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -73,6 +79,7 @@ abstract class ChatReply
       'mind': mind.toJson(),
       if (action != null) 'action': action?.toJson(),
       if (fromMemory != null) 'fromMemory': fromMemory,
+      if (turnId != null) 'turnId': turnId,
     };
   }
 
@@ -84,6 +91,7 @@ abstract class ChatReply
       'mind': mind.toJsonForProtocol(),
       if (action != null) 'action': action?.toJsonForProtocol(),
       if (fromMemory != null) 'fromMemory': fromMemory,
+      if (turnId != null) 'turnId': turnId,
     };
   }
 
@@ -101,11 +109,13 @@ class _ChatReplyImpl extends ChatReply {
     required _is7qzfkp.Mind mind,
     _i3mvbw8t.ChatAction? action,
     bool? fromMemory,
+    int? turnId,
   }) : super._(
          reply: reply,
          mind: mind,
          action: action,
          fromMemory: fromMemory,
+         turnId: turnId,
        );
 
   /// Returns a shallow copy of this [ChatReply]
@@ -117,6 +127,7 @@ class _ChatReplyImpl extends ChatReply {
     _is7qzfkp.Mind? mind,
     Object? action = _Undefined,
     Object? fromMemory = _Undefined,
+    Object? turnId = _Undefined,
   }) {
     return ChatReply(
       reply: reply ?? this.reply,
@@ -125,6 +136,7 @@ class _ChatReplyImpl extends ChatReply {
           ? action
           : this.action?.copyWith(),
       fromMemory: fromMemory is bool? ? fromMemory : this.fromMemory,
+      turnId: turnId is int? ? turnId : this.turnId,
     );
   }
 }

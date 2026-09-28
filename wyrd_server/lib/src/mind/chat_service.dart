@@ -182,8 +182,9 @@ class ChatService {
     final reply = usedLearned?.answer ?? toolReply?.text ?? _followUpFromTopics(topics);
 
     // A fresh AI answer to a general question is kept, so next time WYRD knows it.
+    int? learnedNow;
     if (toolReply != null && codeReply == null && action == null) {
-      await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
+      learnedNow = await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
     }
 
     final turn = await ConversationTurn.db.insertRow(
@@ -193,7 +194,7 @@ class ChatService {
         userText: text,
         botText: reply,
         timestamp: DateTime.now().toUtc(),
-        learnedAnswerId: usedLearned?.id,
+        learnedAnswerId: usedLearned?.id ?? learnedNow,
       ),
     );
 

@@ -665,6 +665,30 @@ class Endpoints extends _is.EndpointDispatch {
                     limit: params['limit'],
                   ),
         ),
+        'rate': _is.MethodConnector(
+          name: 'rate',
+          params: {
+            'turnId': _is.ParameterDescription(
+              name: 'turnId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'rating': _is.ParameterDescription(
+              name: 'rating',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['chat'] as _i2b8uve4.ChatEndpoint).rate(
+                session,
+                params['turnId'],
+                params['rating'],
+              ),
+        ),
       },
     );
     connectors['curriculum'] = _is.EndpointConnector(

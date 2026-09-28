@@ -128,8 +128,9 @@ class LearnedAnswerService {
   }
 
   /// Keeps a fresh AI [answer] to [text]: a new learned answer, or a better version of an
-  /// existing one for the same question.
-  static Future<void> learn(
+  /// existing one for the same question. Returns the learned answer's id (null if not kept), so
+  /// ratings and corrections of this reply reach it.
+  static Future<int?> learn(
     Session session,
     UuidValue authUserId,
     String text,
@@ -138,7 +139,7 @@ class LearnedAnswerService {
     required List<String> userFacts,
     Vector? meaning,
   }) async {
-    if (!isLearnable(text, topics) || _unsure.hasMatch(answer) || answer.trim().length < 20) return;
+    if (!isLearnable(text, topics) || _unsure.hasMatch(answer) || answer.trim().length < 20) return null;
     final ideas = _ideas(topics);
     final intent = intentOf(text);
     final now = DateTime.now().toUtc();
@@ -167,10 +168,11 @@ class LearnedAnswerService {
             updatedAt: now,
           ),
         );
+        return existing.id;
       }
-      return;
+      return null; // a proven answer already stands; this reply isn't kept
     }
-    await LearnedAnswer.db.insertRow(
+    final row = await LearnedAnswer.db.insertRow(
       session,
       LearnedAnswer(
         authUserId: private ? authUserId : null,
@@ -186,6 +188,25 @@ class LearnedAnswerService {
         updatedAt: now,
         embedding: meaning,
       ),
+    );
+    return row.id;
+  }
+
+  // what a thumb is worth to a learned answer's score
+  static double _thumb(int? rating) => rating == 1 ? 1.0 : rating == -1 ? -2.0 : 0.0;
+
+  /// A person's explicit 👍 (1) / 👎 (-1) / cleared (0) on one of WYRD's replies. Moves the
+  /// learned answer behind it (a thumbs-down can retire it at once, so it's relearned); a
+  /// changed mind only counts the difference.
+  static Future<void> rate(Session session, ConversationTurn turn, int rating) async {
+    final id = turn.learnedAnswerId;
+    if (id == null) return;
+    final a = await LearnedAnswer.db.findById(session, id);
+    if (a == null) return;
+    final score = a.score + _thumb(rating) - _thumb(turn.rating);
+    await LearnedAnswer.db.updateRow(
+      session,
+      a.copyWith(score: score, retired: score < _minScore, updatedAt: DateTime.now().toUtc()),
     );
   }
 

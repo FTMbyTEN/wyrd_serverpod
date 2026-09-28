@@ -21,6 +21,7 @@ abstract class ConversationTurn
     required this.botText,
     required this.timestamp,
     this.learnedAnswerId,
+    this.rating,
   });
 
   factory ConversationTurn({
@@ -30,6 +31,7 @@ abstract class ConversationTurn
     required String botText,
     required DateTime timestamp,
     int? learnedAnswerId,
+    int? rating,
   }) = _ConversationTurnImpl;
 
   factory ConversationTurn.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -44,6 +46,7 @@ abstract class ConversationTurn
         jsonSerialization['timestamp'],
       ),
       learnedAnswerId: jsonSerialization['learnedAnswerId'] as int?,
+      rating: jsonSerialization['rating'] as int?,
     );
   }
 
@@ -62,6 +65,8 @@ abstract class ConversationTurn
 
   int? learnedAnswerId;
 
+  int? rating;
+
   /// Returns a shallow copy of this [ConversationTurn]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -72,6 +77,7 @@ abstract class ConversationTurn
     String? botText,
     DateTime? timestamp,
     int? learnedAnswerId,
+    int? rating,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -83,6 +89,7 @@ abstract class ConversationTurn
       'botText': botText,
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
+      if (rating != null) 'rating': rating,
     };
   }
 
@@ -96,6 +103,7 @@ abstract class ConversationTurn
       'botText': botText,
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
+      if (rating != null) 'rating': rating,
     };
   }
 
@@ -115,6 +123,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     required String botText,
     required DateTime timestamp,
     int? learnedAnswerId,
+    int? rating,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -122,6 +131,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          botText: botText,
          timestamp: timestamp,
          learnedAnswerId: learnedAnswerId,
+         rating: rating,
        );
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -135,6 +145,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     String? botText,
     DateTime? timestamp,
     Object? learnedAnswerId = _Undefined,
+    Object? rating = _Undefined,
   }) {
     return ConversationTurn(
       id: id is int? ? id : this.id,
@@ -145,6 +156,7 @@ class _ConversationTurnImpl extends ConversationTurn {
       learnedAnswerId: learnedAnswerId is int?
           ? learnedAnswerId
           : this.learnedAnswerId,
+      rating: rating is int? ? rating : this.rating,
     );
   }
 }

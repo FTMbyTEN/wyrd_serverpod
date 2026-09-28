@@ -24,7 +24,7 @@ void main() {
       expect(pairs, containsAll(['ownership-rust', 'ownership-safety', 'rust-safety']));
       expect(pairs.where((p) => p.contains('what') || p.contains('secret')), isEmpty); // filler and chats never wire
       final rustOwnership = synapses.firstWhere((s) => s.a == 'ownership' && s.b == 'rust');
-      expect(rustOwnership.weight, greaterThan(0.3)); // 5 co-occurrences, Hebbian
+      expect(rustOwnership.weight, greaterThan(0.05)); // co-occurrences count at most twice per batch
 
       final notes = await endpoints.reasoning.getNotes(sessionBuilder, limit: 5);
       final firing = notes.firstWhere((n) => n.kind == 'firing');

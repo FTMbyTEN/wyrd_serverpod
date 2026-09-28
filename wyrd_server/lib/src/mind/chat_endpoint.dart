@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'chat_service.dart';
+import 'learned_answer_service.dart';
 import 'rate_limiter.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -23,7 +24,7 @@ class ChatEndpoint extends Endpoint {
     }
 
     final result = await ChatService.processMessage(session, authUserId, text);
-    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory);
+    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id);
   }
 
   Future<List<ConversationTurn>> getHistory(Session session, {int? limit}) async {
@@ -36,5 +37,16 @@ class ChatEndpoint extends Endpoint {
       limit: take,
     );
     return turns.reversed.toList();
+  }
+
+  /// 👍 (1), 👎 (-1) or clear (0) one of your own conversation turns. Trains the learned answer
+  /// behind it, and is kept on the turn as a record of what helped.
+  Future<void> rate(Session session, int turnId, int rating) async {
+    if (rating < -1 || rating > 1) throw Exception('rating must be -1, 0 or 1');
+    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+    final turn = await ConversationTurn.db.findById(session, turnId);
+    if (turn == null || turn.authUserId != authUserId) throw Exception('no such reply');
+    await LearnedAnswerService.rate(session, turn, rating);
+    await ConversationTurn.db.updateRow(session, turn.copyWith(rating: rating == 0 ? null : rating), columns: (t) => [t.rating]);
   }
 }
