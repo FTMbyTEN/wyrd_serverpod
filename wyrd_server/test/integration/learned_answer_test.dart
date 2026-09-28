@@ -41,6 +41,7 @@ void main() {
 
     test('a learned answer is reused without the AI, and feedback trains it', () async {
       final session = sessionBuilder.build();
+      await established(session, aliceId);
       final a = await LearnedAnswer.db.insertRow(session, answer());
 
       // no AI key in tests: WYRD answers from what it learned instead of a template
@@ -98,4 +99,16 @@ void main() {
       expect(stats.improved, 1);
     });
   });
+}
+
+/// Makes [id] an established account, so its ratings count in full (new ones count half).
+Future<void> established(Session s, String id) async {
+  final uid = UuidValue.fromString(id);
+  final old = DateTime.now().toUtc().subtract(const Duration(days: 10));
+  final p = await UserProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(uid));
+  if (p == null) {
+    await UserProfile.db.insertRow(s, UserProfile(authUserId: uid, facts: const [], visitCount: 1, firstSeen: old, lastSeen: old));
+  } else {
+    await UserProfile.db.updateRow(s, p.copyWith(firstSeen: old));
+  }
 }

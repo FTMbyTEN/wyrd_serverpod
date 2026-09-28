@@ -1,0 +1,16 @@
+# One person's standing opinion of one thing their thumbs have judged: a learned answer, a
+# source or a topic. However many replies they rate, their say is capped (see RatingVoteService),
+# so a single account can't push shared answers or trust around on its own.
+class: RatingVote
+table: rating_vote
+
+fields:
+  authUserId: UuidValue
+  kind: String
+  key: String
+  value: double
+
+indexes:
+  rating_vote_idx:
+    fields: authUserId, kind, key
+    unique: true

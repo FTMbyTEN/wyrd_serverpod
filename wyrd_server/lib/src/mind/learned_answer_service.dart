@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../generated/protocol.dart';
+import 'rating_vote_service.dart';
 import 'memory_recall_service.dart';
 import 'topic_service.dart';
 import 'trust_service.dart';
@@ -204,7 +205,14 @@ class LearnedAnswerService {
     if (id == null) return;
     final a = await LearnedAnswer.db.findById(session, id);
     if (a == null) return;
-    final score = a.score + _thumb(rating) - _thumb(turn.rating);
+    // shared answers: one person's thumbs count once, capped (see RatingVoteService)
+    final delta = _thumb(rating) - _thumb(turn.rating);
+    final change = a.authUserId != null
+        ? delta
+        : await RatingVoteService.apply(session, turn.authUserId, 'answer', '${a.id}',
+            delta * await RatingVoteService.weightFor(session, turn.authUserId), limit: 2);
+    if (change == 0) return;
+    final score = a.score + change;
     await LearnedAnswer.db.updateRow(
       session,
       a.copyWith(score: score, retired: score < _minScore, updatedAt: DateTime.now().toUtc()),
@@ -218,12 +226,21 @@ class LearnedAnswerService {
     final a = await LearnedAnswer.db.findById(session, id);
     if (a == null) return;
     final corrected = _correction.hasMatch(text);
+    final person = previous!.authUserId;
+    // capped per person, like thumbs (see RatingVoteService)
+    final weight = await RatingVoteService.weightFor(session, person);
     if (corrected) {
       for (final t in a.topics.take(6)) {
-        await TrustService.record(session, TrustService.topic, t, -0.5); // Bias 2
+        final change = await RatingVoteService.apply(session, person, TrustService.topic, t, -0.5 * weight, limit: 0.5);
+        await TrustService.record(session, TrustService.topic, t, change); // Bias 2
       }
     }
-    final score = corrected ? a.score - _penaltyCorrection : a.score + _rewardCarryOn;
+    final delta = corrected ? -_penaltyCorrection : _rewardCarryOn;
+    final change = a.authUserId != null
+        ? delta
+        : await RatingVoteService.apply(session, person, 'answer', '${a.id}', delta * weight, limit: 2);
+    if (change == 0) return;
+    final score = a.score + change;
     await LearnedAnswer.db.updateRow(
       session,
       a.copyWith(score: score, retired: score < _minScore, updatedAt: DateTime.now().toUtc()),

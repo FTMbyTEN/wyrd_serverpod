@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'chat_service.dart';
+import 'rating_vote_service.dart';
 import 'learned_answer_service.dart';
 import 'memory_recall_service.dart';
 import 'topic_service.dart';
@@ -58,17 +59,21 @@ class ChatEndpoint extends Endpoint {
   /// [delta] is the change (a changed mind only counts the difference).
   static Future<void> _trustFromRating(Session session, ConversationTurn turn, int delta) async {
     if (delta == 0) return;
+    // each person has one capped vote per source and topic, however many replies they rate
+    final weight = await RatingVoteService.weightFor(session, turn.authUserId);
     final ids = turn.groundingIds ?? const [];
     if (ids.isNotEmpty) {
       final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(ids.toSet()));
       final sources = blocks.map((b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource)).whereType<String>().toSet();
       for (final s in sources) {
-        await TrustService.record(session, TrustService.source, s, delta.toDouble());
+        final change = await RatingVoteService.apply(session, turn.authUserId, TrustService.source, s, delta * weight, limit: 1);
+        await TrustService.record(session, TrustService.source, s, change);
       }
     }
     final topics = MemoryRecallService.contentTopics(TopicService.extractTopics(turn.userText)).where(TopicService.isIdea).toSet();
     for (final t in topics.take(6)) {
-      await TrustService.record(session, TrustService.topic, t, delta * 0.5);
+      final change = await RatingVoteService.apply(session, turn.authUserId, TrustService.topic, t, delta * 0.5 * weight, limit: 0.5);
+      await TrustService.record(session, TrustService.topic, t, change);
     }
   }
 }

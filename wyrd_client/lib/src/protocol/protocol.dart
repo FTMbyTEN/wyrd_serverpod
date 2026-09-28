@@ -74,6 +74,7 @@ import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/quarantined_item.dart' as _i80jr0fe;
+import 'mind/rating_vote.dart' as _i50atwt4;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
@@ -129,6 +130,7 @@ export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
 export 'mind/quarantined_item.dart';
+export 'mind/rating_vote.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
@@ -303,6 +305,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i80jr0fe.QuarantinedItem) {
       return _i80jr0fe.QuarantinedItem.fromJson(data) as T;
+    }
+    if (t == _i50atwt4.RatingVote) {
+      return _i50atwt4.RatingVote.fromJson(data) as T;
     }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
@@ -485,6 +490,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i80jr0fe.QuarantinedItem?>()) {
       return (data != null ? _i80jr0fe.QuarantinedItem.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i50atwt4.RatingVote?>()) {
+      return (data != null ? _i50atwt4.RatingVote.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
@@ -784,6 +792,7 @@ class Protocol extends _isc.SerializationManager {
       _ix6ukv82.MindTopic => 'MindTopic',
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
+      _i50atwt4.RatingVote => 'RatingVote',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
@@ -895,6 +904,8 @@ class Protocol extends _isc.SerializationManager {
         return 'NeuralNetwork';
       case _i80jr0fe.QuarantinedItem():
         return 'QuarantinedItem';
+      case _i50atwt4.RatingVote():
+        return 'RatingVote';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -1068,6 +1079,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'QuarantinedItem') {
       return deserialize<_i80jr0fe.QuarantinedItem>(data['data']);
+    }
+    if (dataClassName == 'RatingVote') {
+      return deserialize<_i50atwt4.RatingVote>(data['data']);
     }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);

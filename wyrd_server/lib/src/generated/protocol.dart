@@ -77,6 +77,7 @@ import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/quarantined_item.dart' as _i80jr0fe;
+import 'mind/rating_vote.dart' as _i50atwt4;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
@@ -132,6 +133,7 @@ export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
 export 'mind/quarantined_item.dart';
+export 'mind/rating_vote.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
@@ -1614,6 +1616,70 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'rating_vote',
+      dartName: 'RatingVote',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'key',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'rating_vote_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'kind',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'key',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'reasoning_note',
       dartName: 'ReasoningNote',
       schema: 'public',
@@ -2242,6 +2308,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i80jr0fe.QuarantinedItem) {
       return _i80jr0fe.QuarantinedItem.fromJson(data) as T;
     }
+    if (t == _i50atwt4.RatingVote) {
+      return _i50atwt4.RatingVote.fromJson(data) as T;
+    }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
     }
@@ -2423,6 +2492,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i80jr0fe.QuarantinedItem?>()) {
       return (data != null ? _i80jr0fe.QuarantinedItem.fromJson(data) : null)
           as T;
+    }
+    if (t == _is.getType<_i50atwt4.RatingVote?>()) {
+      return (data != null ? _i50atwt4.RatingVote.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ik02x4l4.ReasoningNote?>()) {
       return (data != null ? _ik02x4l4.ReasoningNote.fromJson(data) : null)
@@ -2725,6 +2797,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ix6ukv82.MindTopic => 'MindTopic',
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
+      _i50atwt4.RatingVote => 'RatingVote',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
@@ -2836,6 +2909,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'NeuralNetwork';
       case _i80jr0fe.QuarantinedItem():
         return 'QuarantinedItem';
+      case _i50atwt4.RatingVote():
+        return 'RatingVote';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -3014,6 +3089,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'QuarantinedItem') {
       return deserialize<_i80jr0fe.QuarantinedItem>(data['data']);
     }
+    if (dataClassName == 'RatingVote') {
+      return deserialize<_i50atwt4.RatingVote>(data['data']);
+    }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);
     }
@@ -3132,6 +3210,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ix6ukv82.MindTopic.t;
       case _i80jr0fe.QuarantinedItem:
         return _i80jr0fe.QuarantinedItem.t;
+      case _i50atwt4.RatingVote:
+        return _i50atwt4.RatingVote.t;
       case _ik02x4l4.ReasoningNote:
         return _ik02x4l4.ReasoningNote.t;
       case _ig7bxoiw.SelfConfig:

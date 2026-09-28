@@ -14,6 +14,7 @@ void main() {
 
     test('a thumbs-down retires the learned answer behind a reply; changing your mind counts the difference', () async {
       final session = sessionBuilder.build();
+      await established(session, aliceId);
       final now = DateTime.now().toUtc();
       final a = await LearnedAnswer.db.insertRow(session, LearnedAnswer(
         question: 'What is a comet?', intent: 'what', topics: ['comet'], answer: 'A comet is an icy body that grows a tail near the Sun.',
@@ -53,4 +54,16 @@ void main() {
       expect(s!.weight, lessThan(0.1)); // one lesson (+ at most a firing's potentiation), not ten
     });
   });
+}
+
+/// Makes [id] an established account, so its ratings count in full (new ones count half).
+Future<void> established(Session s, String id) async {
+  final uid = UuidValue.fromString(id);
+  final old = DateTime.now().toUtc().subtract(const Duration(days: 10));
+  final p = await UserProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(uid));
+  if (p == null) {
+    await UserProfile.db.insertRow(s, UserProfile(authUserId: uid, facts: const [], visitCount: 1, firstSeen: old, lastSeen: old));
+  } else {
+    await UserProfile.db.updateRow(s, p.copyWith(firstSeen: old));
+  }
 }

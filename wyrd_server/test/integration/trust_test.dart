@@ -46,6 +46,7 @@ void main() {
 
     test('a rating reaches the sources that grounded the reply and the topics asked about', () async {
       final session = sessionBuilder.build();
+      await established(session, meId);
       final now = DateTime.now().toUtc();
       await MemoryBlock.db.insertRow(session, MemoryBlock(
         timestamp: now, source: 'net', feedSource: 'hackernews', title: 'Volcanoes: how magma chambers erupt',
@@ -94,4 +95,16 @@ void main() {
       expect(r.tracked, 4);
     });
   });
+}
+
+/// Makes [id] an established account, so its ratings count in full (new ones count half).
+Future<void> established(Session s, String id) async {
+  final uid = UuidValue.fromString(id);
+  final old = DateTime.now().toUtc().subtract(const Duration(days: 10));
+  final p = await UserProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(uid));
+  if (p == null) {
+    await UserProfile.db.insertRow(s, UserProfile(authUserId: uid, facts: const [], visitCount: 1, firstSeen: old, lastSeen: old));
+  } else {
+    await UserProfile.db.updateRow(s, p.copyWith(firstSeen: old));
+  }
 }
