@@ -689,6 +689,13 @@ class EndpointMemory extends _isc.EndpointRef {
         'getConceptDetail',
         {'topic': topic},
       );
+
+  /// Whether search by meaning is working: key seen, share of memory fingerprinted, last problem.
+  _ida.Future<String> embeddingStatus() => caller.callServerEndpoint<String>(
+    'memory',
+    'embeddingStatus',
+    {},
+  );
 }
 
 /// Real GET /mind, backed by the persisted singleton row (see [MindService]) instead of the

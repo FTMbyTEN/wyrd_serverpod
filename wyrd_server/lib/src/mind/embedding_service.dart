@@ -21,6 +21,25 @@ class EmbeddingService {
   static const _batch = 128;
   static const _maxChars = 1500;
 
+  /// The last problem an embedding call hit (null once a call works), for [status].
+  static String? lastError;
+
+  /// Plain-language status: is the key seen, how much memory has a fingerprint, last problem.
+  static Future<String> status(Session session) async {
+    final rows = await session.db.unsafeQuery(
+      'SELECT count(*) FILTER (WHERE "embedding" IS NOT NULL), count(*) FROM "memory_block" '
+      'WHERE "source" = ANY(@s::text[])',
+      parameters: QueryParameters.named({'s': _sharedSources.toList()}),
+    );
+    final done = rows.first[0] as int, total = rows.first[1] as int;
+    final pct = total == 0 ? '0' : (100 * done / total).toStringAsFixed(1);
+    return [
+      enabled(session) ? 'key: set' : 'key: NOT SET',
+      'fingerprinted: $done of $total shared memories ($pct%)',
+      'last problem: ${lastError ?? 'none'}',
+    ].join(' | ');
+  }
+
   static bool enabled(Session session) => (session.passwords['voyageApiKey'] ?? '').isNotEmpty;
 
   /// Text that stands for a memory when it's embedded: its title and gist, never chat text.
@@ -51,7 +70,12 @@ class EmbeddingService {
     if (texts.isEmpty) return [];
     final key = session.passwords['voyageApiKey'];
     if (key == null || key.isEmpty) return null;
-    if (!await LlmBudget.allow(session, background: background)) return null;
+    // Embeddings cost ~1/1000th of an AI call, so background pacing (meant for expensive
+    // thinking) doesn't apply: they run as long as the whole daily cap isn't spent.
+    if (!await LlmBudget.allow(session, background: false)) {
+      lastError = 'daily AI budget used up';
+      return null;
+    }
 
     final out = <Vector>[];
     for (var i = 0; i < texts.length; i += _batch) {
@@ -70,6 +94,8 @@ class EmbeddingService {
             )
             .timeout(const Duration(seconds: 30));
         if (res.statusCode != 200) {
+          lastError = 'Voyage answered HTTP ${res.statusCode}: '
+              '${res.body.length > 160 ? res.body.substring(0, 160) : res.body}';
           session.log('[embed] voyage http ${res.statusCode}: ${res.body.length > 200 ? res.body.substring(0, 200) : res.body}',
               level: LogLevel.warning);
           return null;
@@ -79,7 +105,9 @@ class EmbeddingService {
         out.addAll(rows.map((r) => Vector((r['embedding'] as List).map((x) => (x as num).toDouble()).toList())));
         final tokens = (data['usage'] as Map<String, dynamic>?)?['total_tokens'] as num? ?? 0;
         await LlmBudget.record(session, {'input_tokens': tokens, 'output_tokens': 0}, model: model);
+        lastError = null;
       } catch (e) {
+        lastError = 'Voyage call failed: $e';
         session.log('[embed] voyage call failed: $e', level: LogLevel.warning);
         return null;
       }

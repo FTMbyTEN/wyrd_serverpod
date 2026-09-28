@@ -1,4 +1,5 @@
 import '../generated/protocol.dart';
+import 'embedding_service.dart';
 import 'topic_service.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -151,4 +152,7 @@ class MemoryEndpoint extends Endpoint {
       examples: out,
     );
   }
+
+  /// Whether search by meaning is working: key seen, share of memory fingerprinted, last problem.
+  Future<String> embeddingStatus(Session session) => EmbeddingService.status(session);
 }

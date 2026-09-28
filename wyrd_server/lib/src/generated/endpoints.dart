@@ -968,6 +968,16 @@ class Endpoints extends _is.EndpointDispatch {
                     params['topic'],
                   ),
         ),
+        'embeddingStatus': _is.MethodConnector(
+          name: 'embeddingStatus',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['memory'] as _ibdzbeap.MemoryEndpoint)
+                  .embeddingStatus(session),
+        ),
       },
     );
     connectors['mind'] = _is.EndpointConnector(

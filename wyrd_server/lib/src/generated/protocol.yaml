@@ -55,6 +55,7 @@ memory:
   - getMemory:
   - getConcepts:
   - getConceptDetail:
+  - embeddingStatus:
 mind:
   - getMind:
 photo:
