@@ -1,6 +1,7 @@
 import '../generated/protocol.dart';
 import 'lexicon_service.dart';
 import 'wordnet_service.dart';
+import 'rate_limiter.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's /api/lexicon/stats, /api/lexicon/word/:word and /api/lexicon/trigger.
@@ -12,7 +13,13 @@ class LexiconEndpoint extends Endpoint {
 
   /// Runs one learning tick now instead of waiting for the timer. False if there was nothing new
   /// to learn (or the wordlist isn't loaded yet).
-  Future<bool> trigger(Session session) => LexiconService.tick(session);
+  Future<bool> trigger(Session session) async {
+    // public: a few per 10 minutes, so nobody can hammer it (the scheduler runs it anyway)
+    if (RateLimiter.isLimited('trigger:lexicon', 6, const Duration(minutes: 10))) {
+      throw Exception('slow down — try again in a few minutes');
+    }
+    return LexiconService.tick(session);
+  }
 
   /// Whether WYRD's own dictionary (WordNet) is loaded, importing, or missing -- and why.
   Future<String> wordnetStatus(Session session) async =>

@@ -2,6 +2,7 @@ import '../generated/protocol.dart';
 import 'feed_service.dart';
 import 'ingest_filter.dart';
 import 'trust_service.dart';
+import 'rate_limiter.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/feed/recent and /api/feed/trigger from server.js. Public/unauthenticated,
@@ -16,6 +17,10 @@ class FeedEndpoint extends Endpoint {
   }
 
   Future<bool> trigger(Session session) async {
+    // public: a few per 10 minutes, so nobody can hammer it (the scheduler runs it anyway)
+    if (RateLimiter.isLimited('trigger:feed', 3, const Duration(minutes: 10))) {
+      throw Exception('slow down — try again in a few minutes');
+    }
     return await FeedService.tick(session);
   }
 

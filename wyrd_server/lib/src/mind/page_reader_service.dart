@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 
 import 'browser_safety.dart';
 
@@ -40,7 +41,7 @@ class PageReaderService {
 
   static Future<PageSlice> read(String rawUrl, {int offset = 0}) async {
     var uri = await BrowserSafety.assertSafePublicUrl(rawUrl);
-    final client = http.Client();
+    final client = IOClient(BrowserSafety.pinnedClient()); // connects only to checked addresses
     try {
       http.StreamedResponse res;
       for (var hop = 0;; hop++) {
