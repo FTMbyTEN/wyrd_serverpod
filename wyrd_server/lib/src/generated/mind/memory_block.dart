@@ -36,6 +36,8 @@ abstract class MemoryBlock
     this.insight,
     this.sourceBlockIds,
     this.sourceTopics,
+    this.quality,
+    this.category,
     this.embedding,
   });
 
@@ -60,6 +62,8 @@ abstract class MemoryBlock
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    double? quality,
+    String? category,
     _is.Vector? embedding,
   }) = _MemoryBlockImpl;
 
@@ -97,6 +101,8 @@ abstract class MemoryBlock
           : _i9sln91s.Protocol().deserialize<List<String>>(
               jsonSerialization['sourceTopics'],
             ),
+      quality: (jsonSerialization['quality'] as num?)?.toDouble(),
+      category: jsonSerialization['category'] as String?,
       embedding: jsonSerialization['embedding'] == null
           ? null
           : _is.VectorJsonExtension.fromJson(jsonSerialization['embedding']),
@@ -148,6 +154,10 @@ abstract class MemoryBlock
 
   List<String>? sourceTopics;
 
+  double? quality;
+
+  String? category;
+
   _is.Vector? embedding;
 
   @override
@@ -177,6 +187,8 @@ abstract class MemoryBlock
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    double? quality,
+    String? category,
     _is.Vector? embedding,
   });
   @override
@@ -203,6 +215,8 @@ abstract class MemoryBlock
       if (insight != null) 'insight': insight,
       if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
+      if (quality != null) 'quality': quality,
+      if (category != null) 'category': category,
       if (embedding != null) 'embedding': embedding?.toJson(),
     };
   }
@@ -231,6 +245,8 @@ abstract class MemoryBlock
       if (insight != null) 'insight': insight,
       if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
+      if (quality != null) 'quality': quality,
+      if (category != null) 'category': category,
     };
   }
 
@@ -286,6 +302,8 @@ class _MemoryBlockImpl extends MemoryBlock {
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    double? quality,
+    String? category,
     _is.Vector? embedding,
   }) : super._(
          id: id,
@@ -308,6 +326,8 @@ class _MemoryBlockImpl extends MemoryBlock {
          insight: insight,
          sourceBlockIds: sourceBlockIds,
          sourceTopics: sourceTopics,
+         quality: quality,
+         category: category,
          embedding: embedding,
        );
 
@@ -336,6 +356,8 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? insight = _Undefined,
     Object? sourceBlockIds = _Undefined,
     Object? sourceTopics = _Undefined,
+    Object? quality = _Undefined,
+    Object? category = _Undefined,
     Object? embedding = _Undefined,
   }) {
     return MemoryBlock(
@@ -369,6 +391,8 @@ class _MemoryBlockImpl extends MemoryBlock {
       sourceTopics: sourceTopics is List<String>?
           ? sourceTopics
           : this.sourceTopics?.map((e0) => e0).toList(),
+      quality: quality is double? ? quality : this.quality,
+      category: category is String? ? category : this.category,
       embedding: embedding is _is.Vector? ? embedding : this.embedding?.clone(),
     );
   }
@@ -480,6 +504,16 @@ class MemoryBlockUpdateTable extends _is.UpdateTable<MemoryBlockTable> {
     value,
   );
 
+  _is.ColumnValue<double, double> quality(double? value) => _is.ColumnValue(
+    table.quality,
+    value,
+  );
+
+  _is.ColumnValue<String, String> category(String? value) => _is.ColumnValue(
+    table.category,
+    value,
+  );
+
   _is.ColumnValue<_is.Vector, _is.Vector> embedding(_is.Vector? value) =>
       _is.ColumnValue(
         table.embedding,
@@ -566,6 +600,14 @@ class MemoryBlockTable extends _is.Table<int?> {
       'sourceTopics',
       this,
     );
+    quality = _is.ColumnDouble(
+      'quality',
+      this,
+    );
+    category = _is.ColumnString(
+      'category',
+      this,
+    );
     embedding = _is.ColumnVector(
       'embedding',
       this,
@@ -613,6 +655,10 @@ class MemoryBlockTable extends _is.Table<int?> {
 
   late final _is.ColumnSerializable<List<String>> sourceTopics;
 
+  late final _is.ColumnDouble quality;
+
+  late final _is.ColumnString category;
+
   late final _is.ColumnVector embedding;
 
   @override
@@ -637,6 +683,8 @@ class MemoryBlockTable extends _is.Table<int?> {
     insight,
     sourceBlockIds,
     sourceTopics,
+    quality,
+    category,
     embedding,
   ];
 }

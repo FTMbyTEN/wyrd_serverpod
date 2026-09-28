@@ -36,6 +36,8 @@ abstract class MemoryBlock
     this.insight,
     this.sourceBlockIds,
     this.sourceTopics,
+    this.quality,
+    this.category,
   });
 
   factory MemoryBlock({
@@ -59,6 +61,8 @@ abstract class MemoryBlock
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    double? quality,
+    String? category,
   }) = _MemoryBlockImpl;
 
   factory MemoryBlock.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -95,6 +99,8 @@ abstract class MemoryBlock
           : _i2pladzn.Protocol().deserialize<List<String>>(
               jsonSerialization['sourceTopics'],
             ),
+      quality: (jsonSerialization['quality'] as num?)?.toDouble(),
+      category: jsonSerialization['category'] as String?,
     );
   }
 
@@ -141,6 +147,10 @@ abstract class MemoryBlock
 
   List<String>? sourceTopics;
 
+  double? quality;
+
+  String? category;
+
   /// Returns a shallow copy of this [MemoryBlock]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -165,6 +175,8 @@ abstract class MemoryBlock
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    double? quality,
+    String? category,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -190,6 +202,8 @@ abstract class MemoryBlock
       if (insight != null) 'insight': insight,
       if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
+      if (quality != null) 'quality': quality,
+      if (category != null) 'category': category,
     };
   }
 
@@ -217,6 +231,8 @@ abstract class MemoryBlock
       if (insight != null) 'insight': insight,
       if (sourceBlockIds != null) 'sourceBlockIds': sourceBlockIds?.toJson(),
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
+      if (quality != null) 'quality': quality,
+      if (category != null) 'category': category,
     };
   }
 
@@ -250,6 +266,8 @@ class _MemoryBlockImpl extends MemoryBlock {
     String? insight,
     List<int>? sourceBlockIds,
     List<String>? sourceTopics,
+    double? quality,
+    String? category,
   }) : super._(
          id: id,
          legacyId: legacyId,
@@ -271,6 +289,8 @@ class _MemoryBlockImpl extends MemoryBlock {
          insight: insight,
          sourceBlockIds: sourceBlockIds,
          sourceTopics: sourceTopics,
+         quality: quality,
+         category: category,
        );
 
   /// Returns a shallow copy of this [MemoryBlock]
@@ -298,6 +318,8 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? insight = _Undefined,
     Object? sourceBlockIds = _Undefined,
     Object? sourceTopics = _Undefined,
+    Object? quality = _Undefined,
+    Object? category = _Undefined,
   }) {
     return MemoryBlock(
       id: id is int? ? id : this.id,
@@ -330,6 +352,8 @@ class _MemoryBlockImpl extends MemoryBlock {
       sourceTopics: sourceTopics is List<String>?
           ? sourceTopics
           : this.sourceTopics?.map((e0) => e0).toList(),
+      quality: quality is double? ? quality : this.quality,
+      category: category is String? ? category : this.category,
     );
   }
 }

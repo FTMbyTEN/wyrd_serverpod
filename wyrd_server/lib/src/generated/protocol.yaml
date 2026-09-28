@@ -41,6 +41,7 @@ dream:
 feed:
   - getRecent:
   - trigger:
+  - getFilterReport:
 gateShape:
   - next:
 growth:

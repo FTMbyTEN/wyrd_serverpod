@@ -1,0 +1,11 @@
+# Today's ingest filter decisions and the latest items it kept out, for the FEED tab.
+class: FilterReport
+
+fields:
+  day: String
+  kept: int
+  duplicates: int
+  quarantined: int
+  reasons: Map<String, int>
+  categories: Map<String, int>
+  recent: List<QuarantinedItem>

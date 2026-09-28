@@ -25,6 +25,9 @@ fields:
   insight: String?
   sourceBlockIds: List<int>?
   sourceTopics: List<String>?
+  # set by IngestFilter for outside data: a 0..1 quality score and a topic category
+  quality: double?
+  category: String?
   # meaning fingerprint (Voyage voyage-3.5-lite, 512 dims) for search by meaning; see EmbeddingService
   embedding: Vector(512)?, scope=serverOnly
 

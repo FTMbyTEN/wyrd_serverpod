@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
 import 'curriculum_data.dart';
 import 'curriculum_service.dart';
+import 'ingest_filter.dart';
 import 'mind_service.dart';
 import 'topic_service.dart';
 import 'package:serverpod/serverpod.dart';
@@ -36,6 +37,7 @@ class FeedService {
   static const wikipediaEnabled = false;
 
   static int _netIndex = 0;
+  static const _maxAttempts = 5;
   static final List<FeedIngest> _recentIngests = [];
   static const _maxRecentIngests = 20;
 
@@ -100,10 +102,29 @@ class FeedService {
     _netIndex = (_netIndex + 1) % 2;
 
     try {
-      final item = wikipediaEnabled && _netIndex == 0 ? await _fetchWikipedia(session) : await _fetchHackerNews();
-      final text = '${item.title}. ${item.extract}';
-      final truncated = text.substring(0, min(2000, text.length));
-      final topics = TopicService.extractTopics(truncated);
+      // Filter + sort (IngestFilter): a story already in memory is skipped and another tried --
+      // the feed re-offers the same top stories every minute -- and anything low-quality is
+      // quarantined instead of becoming knowledge.
+      _FetchedItem? item;
+      late List<String> topics;
+      late IngestVerdict verdict;
+      for (var attempt = 0; attempt < _maxAttempts; attempt++) {
+        final candidate = wikipediaEnabled && _netIndex == 0 ? await _fetchWikipedia(session) : await _fetchHackerNews();
+        final text = '${candidate.title}. ${candidate.extract}';
+        topics = TopicService.extractTopics(text.substring(0, min(2000, text.length)));
+        verdict = await IngestFilter.judge(
+          session,
+          source: candidate.source,
+          title: candidate.title,
+          extract: candidate.extract,
+          url: candidate.url,
+          topics: topics,
+        );
+        if (verdict.duplicate) continue;
+        if (verdict.keep) item = candidate;
+        break;
+      }
+      if (item == null) return false; // only duplicates on offer, or it was quarantined
       final now = DateTime.now().toUtc();
 
       await MemoryBlock.db.insertRow(
@@ -118,6 +139,8 @@ class FeedService {
           topics: topics,
           curriculumSubject: item.curriculum?.subject,
           curriculumLevel: item.curriculum?.level,
+          quality: verdict.score,
+          category: verdict.category,
         ),
       );
 

@@ -1,0 +1,17 @@
+# Outside data the ingest filter kept out of WYRD's memory, with why (IngestFilter). Duplicates
+# aren't stored here -- only counted -- since the feeds re-offer the same stories constantly.
+class: QuarantinedItem
+table: quarantined_item
+
+fields:
+  timestamp: DateTime
+  source: String
+  title: String
+  url: String?
+  extract: String?
+  score: double
+  reasons: List<String>
+
+indexes:
+  quarantined_item_time_idx:
+    fields: timestamp

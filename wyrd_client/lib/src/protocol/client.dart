@@ -38,6 +38,7 @@ import 'package:wyrd_client/src/protocol/mind/curriculum_status.dart'
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
 import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
+import 'package:wyrd_client/src/protocol/mind/filter_report.dart' as _iikqy3kr;
 import 'package:wyrd_client/src/protocol/mind/gate_shape.dart' as _id49marq;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
@@ -568,6 +569,15 @@ class EndpointFeed extends _isc.EndpointRef {
     'trigger',
     {},
   );
+
+  /// Today's filter decisions (kept, duplicates skipped, quarantined and why, by category) and
+  /// the latest items kept out.
+  _ida.Future<_iikqy3kr.FilterReport> getFilterReport() =>
+      caller.callServerEndpoint<_iikqy3kr.FilterReport>(
+        'feed',
+        'getFilterReport',
+        {},
+      );
 }
 
 /// Ports /api/gate-vortex/shape from server.js. Public (the gate is shown before sign-in), so it's

@@ -93,6 +93,7 @@ class ReasoningService {
     final seenTitles = <String>{};
     for (final b in fresh) {
       if (b.title != null && !seenTitles.add(b.title!)) continue; // the same article again
+      if ((b.quality ?? 1) < 0.6) continue; // the ingest filter judged it weak: don't learn from it
       final ideas = _ideas(b).toSet().toList();
       for (var i = 0; i < ideas.length; i++) {
         for (var j = i + 1; j < ideas.length; j++) {

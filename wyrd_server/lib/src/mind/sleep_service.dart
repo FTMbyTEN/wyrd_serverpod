@@ -77,9 +77,12 @@ class SleepService {
     );
 
     // 4. the same article stored twice (feeds re-reading it)
+    // numbered within each article (window function, not a self-join: one story stored a
+    // thousand times would otherwise mean a million comparisons), keeping the first copy
     final dupes = await session.db.unsafeQuery(
-      'DELETE FROM "memory_block" m USING "memory_block" k WHERE m."source" = \'net\' AND k."source" = \'net\' '
-      'AND m."title" = k."title" AND m."url" IS NOT DISTINCT FROM k."url" AND m."id" > k."id" RETURNING m."id"',
+      'DELETE FROM "memory_block" WHERE "id" IN (SELECT "id" FROM (SELECT "id", row_number() OVER '
+      '(PARTITION BY lower("title"), "url" ORDER BY "id") AS n FROM "memory_block" '
+      'WHERE "source" = \'net\' AND "title" IS NOT NULL) x WHERE n > 1) RETURNING "id"',
     );
 
     // 5. the faintest synapses

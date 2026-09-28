@@ -43,6 +43,7 @@ import 'package:wyrd_server/src/generated/mind/curriculum_status.dart'
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
 import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
 import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
+import 'package:wyrd_server/src/generated/mind/filter_report.dart' as _imy4srv1;
 import 'package:wyrd_server/src/generated/mind/gate_shape.dart' as _ikrbpnh7;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
@@ -1484,6 +1485,36 @@ class _FeedEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<bool>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_imy4srv1.FilterReport> getFilterReport(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'feed',
+            method: 'getFilterReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'feed',
+          methodName: 'getFilterReport',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_imy4srv1.FilterReport>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

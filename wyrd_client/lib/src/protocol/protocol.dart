@@ -55,8 +55,10 @@ import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
 import 'mind/dream_entry.dart' as _izf9406n;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
+import 'mind/filter_report.dart' as _idq6t4e8;
 import 'mind/gate_shape.dart' as _i00qabwy;
 import 'mind/growth_snapshot.dart' as _iyj2s79k;
+import 'mind/ingest_day.dart' as _i6r7yxin;
 import 'mind/learned_answer.dart' as _iexdo29m;
 import 'mind/learning_stats.dart' as _icoxjjkt;
 import 'mind/lexicon_entry.dart' as _i37ps124;
@@ -68,6 +70,7 @@ import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
+import 'mind/quarantined_item.dart' as _i80jr0fe;
 import 'mind/reasoning_note.dart' as _ik02x4l4;
 import 'mind/self_config.dart' as _ig7bxoiw;
 import 'mind/self_config_change.dart' as _ifocq1fp;
@@ -102,8 +105,10 @@ export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
 export 'mind/dream_entry.dart';
 export 'mind/feed_ingest.dart';
+export 'mind/filter_report.dart';
 export 'mind/gate_shape.dart';
 export 'mind/growth_snapshot.dart';
+export 'mind/ingest_day.dart';
 export 'mind/learned_answer.dart';
 export 'mind/learning_stats.dart';
 export 'mind/lexicon_entry.dart';
@@ -115,6 +120,7 @@ export 'mind/memory_block.dart';
 export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
+export 'mind/quarantined_item.dart';
 export 'mind/reasoning_note.dart';
 export 'mind/self_config.dart';
 export 'mind/self_config_change.dart';
@@ -231,11 +237,17 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ig20dqq5.FeedIngest) {
       return _ig20dqq5.FeedIngest.fromJson(data) as T;
     }
+    if (t == _idq6t4e8.FilterReport) {
+      return _idq6t4e8.FilterReport.fromJson(data) as T;
+    }
     if (t == _i00qabwy.GateShape) {
       return _i00qabwy.GateShape.fromJson(data) as T;
     }
     if (t == _iyj2s79k.GrowthSnapshot) {
       return _iyj2s79k.GrowthSnapshot.fromJson(data) as T;
+    }
+    if (t == _i6r7yxin.IngestDay) {
+      return _i6r7yxin.IngestDay.fromJson(data) as T;
     }
     if (t == _iexdo29m.LearnedAnswer) {
       return _iexdo29m.LearnedAnswer.fromJson(data) as T;
@@ -269,6 +281,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ievgcfdd.NeuralNetwork) {
       return _ievgcfdd.NeuralNetwork.fromJson(data) as T;
+    }
+    if (t == _i80jr0fe.QuarantinedItem) {
+      return _i80jr0fe.QuarantinedItem.fromJson(data) as T;
     }
     if (t == _ik02x4l4.ReasoningNote) {
       return _ik02x4l4.ReasoningNote.fromJson(data) as T;
@@ -381,12 +396,18 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ig20dqq5.FeedIngest?>()) {
       return (data != null ? _ig20dqq5.FeedIngest.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_idq6t4e8.FilterReport?>()) {
+      return (data != null ? _idq6t4e8.FilterReport.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_i00qabwy.GateShape?>()) {
       return (data != null ? _i00qabwy.GateShape.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iyj2s79k.GrowthSnapshot?>()) {
       return (data != null ? _iyj2s79k.GrowthSnapshot.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i6r7yxin.IngestDay?>()) {
+      return (data != null ? _i6r7yxin.IngestDay.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iexdo29m.LearnedAnswer?>()) {
       return (data != null ? _iexdo29m.LearnedAnswer.fromJson(data) : null)
@@ -424,6 +445,10 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ievgcfdd.NeuralNetwork?>()) {
       return (data != null ? _ievgcfdd.NeuralNetwork.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i80jr0fe.QuarantinedItem?>()) {
+      return (data != null ? _i80jr0fe.QuarantinedItem.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_ik02x4l4.ReasoningNote?>()) {
@@ -496,6 +521,18 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == List<int>) {
       return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
+    if (t == Map<String, int>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(deserialize<String>(k), deserialize<int>(v)),
+          )
+          as T;
+    }
+    if (t == List<_i80jr0fe.QuarantinedItem>) {
+      return (data as List)
+              .map((e) => deserialize<_i80jr0fe.QuarantinedItem>(e))
+              .toList()
+          as T;
     }
     if (t == List<_i7zu42sq.LexiconWordSummary>) {
       return (data as List)
@@ -639,8 +676,10 @@ class Protocol extends _isc.SerializationManager {
       _i9vbq77t.DigestInfo => 'DigestInfo',
       _izf9406n.DreamEntry => 'DreamEntry',
       _ig20dqq5.FeedIngest => 'FeedIngest',
+      _idq6t4e8.FilterReport => 'FilterReport',
       _i00qabwy.GateShape => 'GateShape',
       _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
+      _i6r7yxin.IngestDay => 'IngestDay',
       _iexdo29m.LearnedAnswer => 'LearnedAnswer',
       _icoxjjkt.LearningStats => 'LearningStats',
       _i37ps124.LexiconEntry => 'LexiconEntry',
@@ -652,6 +691,7 @@ class Protocol extends _isc.SerializationManager {
       _iqhk00ra.Mind => 'Mind',
       _ix6ukv82.MindTopic => 'MindTopic',
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
+      _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
       _ik02x4l4.ReasoningNote => 'ReasoningNote',
       _ig7bxoiw.SelfConfig => 'SelfConfig',
       _ifocq1fp.SelfConfigChange => 'SelfConfigChange',
@@ -723,10 +763,14 @@ class Protocol extends _isc.SerializationManager {
         return 'DreamEntry';
       case _ig20dqq5.FeedIngest():
         return 'FeedIngest';
+      case _idq6t4e8.FilterReport():
+        return 'FilterReport';
       case _i00qabwy.GateShape():
         return 'GateShape';
       case _iyj2s79k.GrowthSnapshot():
         return 'GrowthSnapshot';
+      case _i6r7yxin.IngestDay():
+        return 'IngestDay';
       case _iexdo29m.LearnedAnswer():
         return 'LearnedAnswer';
       case _icoxjjkt.LearningStats():
@@ -749,6 +793,8 @@ class Protocol extends _isc.SerializationManager {
         return 'MindTopic';
       case _ievgcfdd.NeuralNetwork():
         return 'NeuralNetwork';
+      case _i80jr0fe.QuarantinedItem():
+        return 'QuarantinedItem';
       case _ik02x4l4.ReasoningNote():
         return 'ReasoningNote';
       case _ig7bxoiw.SelfConfig():
@@ -862,11 +908,17 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'FeedIngest') {
       return deserialize<_ig20dqq5.FeedIngest>(data['data']);
     }
+    if (dataClassName == 'FilterReport') {
+      return deserialize<_idq6t4e8.FilterReport>(data['data']);
+    }
     if (dataClassName == 'GateShape') {
       return deserialize<_i00qabwy.GateShape>(data['data']);
     }
     if (dataClassName == 'GrowthSnapshot') {
       return deserialize<_iyj2s79k.GrowthSnapshot>(data['data']);
+    }
+    if (dataClassName == 'IngestDay') {
+      return deserialize<_i6r7yxin.IngestDay>(data['data']);
     }
     if (dataClassName == 'LearnedAnswer') {
       return deserialize<_iexdo29m.LearnedAnswer>(data['data']);
@@ -900,6 +952,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'NeuralNetwork') {
       return deserialize<_ievgcfdd.NeuralNetwork>(data['data']);
+    }
+    if (dataClassName == 'QuarantinedItem') {
+      return deserialize<_i80jr0fe.QuarantinedItem>(data['data']);
     }
     if (dataClassName == 'ReasoningNote') {
       return deserialize<_ik02x4l4.ReasoningNote>(data['data']);

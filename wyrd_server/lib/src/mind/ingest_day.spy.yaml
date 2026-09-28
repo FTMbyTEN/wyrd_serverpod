@@ -1,0 +1,16 @@
+# One day of the ingest filter's decisions, for the FEED tab's filter report.
+class: IngestDay
+table: ingest_day
+
+fields:
+  day: String
+  kept: int
+  duplicates: int
+  quarantined: int
+  reasons: Map<String, int>
+  categories: Map<String, int>
+
+indexes:
+  ingest_day_day_idx:
+    fields: day
+    unique: true

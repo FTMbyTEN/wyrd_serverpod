@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'feed_service.dart';
+import 'ingest_filter.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/feed/recent and /api/feed/trigger from server.js. Public/unauthenticated,
@@ -16,4 +17,8 @@ class FeedEndpoint extends Endpoint {
   Future<bool> trigger(Session session) async {
     return await FeedService.tick(session);
   }
+
+  /// Today's filter decisions (kept, duplicates skipped, quarantined and why, by category) and
+  /// the latest items kept out.
+  Future<FilterReport> getFilterReport(Session session) => IngestFilter.report(session);
 }
