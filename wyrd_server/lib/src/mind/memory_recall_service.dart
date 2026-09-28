@@ -1,9 +1,14 @@
 import '../generated/protocol.dart';
+import 'trust_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// What chat recall hands the model: short, labelled lines of things WYRD actually knows.
 class RecallContext {
-  RecallContext({required this.digested, required this.knowledge, required this.pastChats, required this.definitions});
+  RecallContext({required this.digested, required this.knowledge, required this.pastChats, required this.definitions, this.groundingIds = const []});
+
+  /// The shared memories behind [digested] and [knowledge], so a rating of the reply can reach
+  /// their sources (Bias 2).
+  final List<int> groundingIds;
 
   /// Answers WYRD's own self-questioning already worked out ("digested" understanding).
   final List<String> digested;
@@ -32,6 +37,15 @@ class RecallContext {
 /// whole memory, not just the newest rows. Memory rows don't record who they came from, so chat
 /// and photo blocks are never recalled here -- another person's conversation must not surface
 /// in your reply. Your own history comes from conversation_turn, which is keyed by user.
+/// Recalled lines plus the memories they came from.
+class _Found {
+  _Found(this.digested, this.knowledge, this.ids);
+  static final empty = _Found(const [], const [], const []);
+  final List<String> digested;
+  final List<String> knowledge;
+  final List<int> ids;
+}
+
 class MemoryRecallService {
   static const _sharedSources = ['self', 'net', 'feed', 'ingest', 'synthesis', 'curriculum'];
   static const _maxItemChars = 240;
@@ -60,36 +74,43 @@ class MemoryRecallService {
     if (t.isEmpty && meaning == null) return RecallContext(digested: [], knowledge: [], pastChats: [], definitions: []);
 
     final results = await Future.wait([
-      t.isEmpty ? Future.value((digested: <String>[], knowledge: <String>[])) : _sharedMemory(session, t),
+      t.isEmpty ? Future.value(_Found.empty) : _sharedMemory(session, t),
       t.isEmpty ? Future.value(<String>[]) : _ownChats(session, authUserId, t),
       t.isEmpty ? Future.value(<String>[]) : _definitions(session, t),
-      meaning == null ? Future.value((digested: <String>[], knowledge: <String>[])) : _byMeaning(session, meaning),
+      meaning == null ? Future.value(_Found.empty) : _byMeaning(session, meaning),
     ]);
-    final words = results[0] as ({List<String> digested, List<String> knowledge});
-    final near = results[3] as ({List<String> digested, List<String> knowledge});
+    final words = results[0] as _Found;
+    final near = results[3] as _Found;
     List<String> merge(List<String> a, List<String> b, int n) => {...a, ...b}.take(n).toList();
     return RecallContext(
       digested: merge(near.digested, words.digested, 2),
       knowledge: merge(near.knowledge, words.knowledge, 4),
       pastChats: results[1] as List<String>,
       definitions: results[2] as List<String>,
+      groundingIds: {...near.ids, ...words.ids}.toList(),
     );
   }
 
   /// The shared memories nearest in meaning to [meaning] (cosine distance), if close enough.
-  static Future<({List<String> digested, List<String> knowledge})> _byMeaning(Session session, Vector meaning) async {
+  static Future<_Found> _byMeaning(Session session, Vector meaning) async {
     const maxDistance = 0.55; // cosine similarity >= 0.45
     final rows = await session.db.unsafeQuery(
-      'SELECT "id" FROM "memory_block" WHERE "embedding" IS NOT NULL AND "source" = ANY(@sources::text[]) '
-      'AND ("embedding" <=> @q::vector) < @max ORDER BY "embedding" <=> @q::vector LIMIT 6',
+      'SELECT "id", ("embedding" <=> @q::vector) FROM "memory_block" WHERE "embedding" IS NOT NULL AND "source" = ANY(@sources::text[]) '
+      'AND ("embedding" <=> @q::vector) < @max ORDER BY "embedding" <=> @q::vector LIMIT 12',
       parameters: QueryParameters.named({'q': '[${meaning.toList().join(',')}]', 'sources': _sharedSources, 'max': maxDistance}),
     );
-    if (rows.isEmpty) return (digested: <String>[], knowledge: <String>[]);
-    final order = [for (final r in rows) r[0] as int];
-    final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(order.toSet()));
-    blocks.sort((a, b) => order.indexOf(a.id!).compareTo(order.indexOf(b.id!)));
-    final digested = <String>[], knowledge = <String>[];
-    for (final b in blocks) {
+    if (rows.isEmpty) return _Found.empty;
+    final distance = {for (final r in rows) r[0] as int: (r[1] as num).toDouble()};
+    final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(distance.keys.toSet()));
+    // Bias 2: closeness in meaning, weighted by how much WYRD trusts where each memory came from
+    final trust = await TrustService.scores(session, TrustService.source,
+        blocks.map((b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource)).whereType<String>());
+    double weight(MemoryBlock b) =>
+        (1 - distance[b.id]!) * (0.5 + (trust[TrustService.sourceKey(url: b.url, feedSource: b.feedSource)] ?? 0.5));
+    blocks.sort((a, b) => weight(b).compareTo(weight(a)));
+    final digested = <String>[], knowledge = <String>[], ids = <int>[];
+    for (final b in blocks.take(6)) {
+      ids.add(b.id!);
       if (b.source == 'self' && b.question != null && b.answer != null) {
         digested.add(_clip('Q: ${b.question} A: ${b.answer}'));
       } else if (b.source == 'synthesis' && b.insight != null) {
@@ -98,14 +119,15 @@ class MemoryRecallService {
         knowledge.add(_clip(b.extract != null ? '${b.title}: ${b.extract}' : b.title!));
       }
     }
-    return (digested: digested, knowledge: knowledge);
+    return _Found(digested, knowledge, ids);
   }
 
   /// Ranks shared memory by topic overlap (Jaccard, like Node), newest first on ties.
-  static Future<({List<String> digested, List<String> knowledge})> _sharedMemory(Session session, List<String> t) async {
+  static Future<_Found> _sharedMemory(Session session, List<String> t) async {
     final rows = await session.db.unsafeQuery(
       '''
       SELECT "source", "title", "extract", "question", "answer", "answeredTopic", "insight", "topics"::text,
+             "id", "url", "feedSource",
              (SELECT count(*) FROM json_array_elements_text("topics") x WHERE x = ANY(@t::text[])) AS overlap,
              json_array_length("topics") AS n
       FROM "memory_block"
@@ -116,18 +138,24 @@ class MemoryRecallService {
       parameters: QueryParameters.named({'t': t, 'sources': _sharedSources}),
     );
 
+    // columns: 0 source .. 7 topics, 8 id, 9 url, 10 feedSource, 11 overlap, 12 n
+    final trust = await TrustService.scores(session, TrustService.source,
+        rows.map((r) => TrustService.sourceKey(url: r[9] as String?, feedSource: r[10] as String?)).whereType<String>());
     final scored = <({String source, double score, List<dynamic> r})>[];
     for (final r in rows) {
-      final overlap = (r[8] as int).toDouble();
-      final union = t.length + (r[9] as int) - overlap;
+      final overlap = (r[11] as int).toDouble();
+      final union = t.length + (r[12] as int) - overlap;
       var score = union > 0 ? overlap / union : 0.0;
       if (r[0] == 'self' && t.contains(r[5])) score += 0.5; // answered exactly this topic
+      // Bias 2: weighted by how much WYRD trusts where it came from
+      score *= 0.5 + (trust[TrustService.sourceKey(url: r[9] as String?, feedSource: r[10] as String?)] ?? 0.5);
       scored.add((source: r[0] as String, score: score, r: r));
     }
     scored.sort((a, b) => b.score.compareTo(a.score));
 
     final digested = <String>[];
     final knowledge = <String>[];
+    final ids = <int>[];
     final seen = <String>{};
     for (final s in scored) {
       final r = s.r;
@@ -135,7 +163,10 @@ class MemoryRecallService {
       if (s.source == 'self') {
         if (digested.length >= 2 || r[3] == null || r[4] == null) continue;
         line = _clip('Q: ${r[3]} A: ${r[4]}');
-        if (seen.add(line)) digested.add(line);
+        if (seen.add(line)) {
+          digested.add(line);
+          ids.add(r[8] as int);
+        }
         continue;
       }
       if (knowledge.length >= 3) continue;
@@ -144,9 +175,12 @@ class MemoryRecallService {
       } else if (r[1] != null) {
         line = _clip(r[2] != null ? '${r[1]}: ${r[2]}' : r[1] as String);
       }
-      if (line != null && seen.add(line)) knowledge.add(line);
+      if (line != null && seen.add(line)) {
+        knowledge.add(line);
+        ids.add(r[8] as int);
+      }
     }
-    return (digested: digested, knowledge: knowledge);
+    return _Found(digested, knowledge, ids);
   }
 
   /// This person's own earlier turns that share the message's topics.

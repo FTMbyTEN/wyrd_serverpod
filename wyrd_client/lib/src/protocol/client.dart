@@ -55,6 +55,7 @@ import 'package:wyrd_client/src/protocol/mind/self_config_change.dart'
 import 'package:wyrd_client/src/protocol/mind/sighting.dart' as _ijttkw09;
 import 'package:wyrd_client/src/protocol/mind/system_status.dart' as _i97zx8uk;
 import 'package:wyrd_client/src/protocol/mind/topic_info.dart' as _il2rvv3i;
+import 'package:wyrd_client/src/protocol/mind/trust_report.dart' as _iv8ct9z9;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'protocol.dart' as _il2as5qe;
@@ -576,6 +577,14 @@ class EndpointFeed extends _isc.EndpointRef {
       caller.callServerEndpoint<_iikqy3kr.FilterReport>(
         'feed',
         'getFilterReport',
+        {},
+      );
+
+  /// Bias 2: the sources and topics WYRD has learned to trust, and to doubt.
+  _ida.Future<_iv8ct9z9.TrustReport> getTrust() =>
+      caller.callServerEndpoint<_iv8ct9z9.TrustReport>(
+        'feed',
+        'getTrust',
         {},
       );
 }

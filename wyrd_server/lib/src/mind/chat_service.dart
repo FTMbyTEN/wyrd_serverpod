@@ -197,6 +197,7 @@ class ChatService {
         botText: reply,
         timestamp: DateTime.now().toUtc(),
         learnedAnswerId: usedLearned?.id ?? learnedNow,
+        groundingIds: recall.groundingIds.isEmpty ? null : recall.groundingIds,
       ),
     );
 

@@ -1,6 +1,9 @@
 import '../generated/protocol.dart';
 import 'chat_service.dart';
 import 'learned_answer_service.dart';
+import 'memory_recall_service.dart';
+import 'topic_service.dart';
+import 'trust_service.dart';
 import 'rate_limiter.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -47,6 +50,25 @@ class ChatEndpoint extends Endpoint {
     final turn = await ConversationTurn.db.findById(session, turnId);
     if (turn == null || turn.authUserId != authUserId) throw Exception('no such reply');
     await LearnedAnswerService.rate(session, turn, rating);
+    await _trustFromRating(session, turn, rating - (turn.rating ?? 0));
     await ConversationTurn.db.updateRow(session, turn.copyWith(rating: rating == 0 ? null : rating), columns: (t) => [t.rating]);
+  }
+
+  /// Bias 2: a rating is evidence about where the reply's knowledge came from and what was asked.
+  /// [delta] is the change (a changed mind only counts the difference).
+  static Future<void> _trustFromRating(Session session, ConversationTurn turn, int delta) async {
+    if (delta == 0) return;
+    final ids = turn.groundingIds ?? const [];
+    if (ids.isNotEmpty) {
+      final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(ids.toSet()));
+      final sources = blocks.map((b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource)).whereType<String>().toSet();
+      for (final s in sources) {
+        await TrustService.record(session, TrustService.source, s, delta.toDouble());
+      }
+    }
+    final topics = MemoryRecallService.contentTopics(TopicService.extractTopics(turn.userText)).where(TopicService.isIdea).toSet();
+    for (final t in topics.take(6)) {
+      await TrustService.record(session, TrustService.topic, t, delta * 0.5);
+    }
   }
 }

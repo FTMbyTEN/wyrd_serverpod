@@ -1,0 +1,10 @@
+# What WYRD has learned to trust and to doubt, for the FEED tab.
+class: TrustReport
+
+fields:
+  trustedSources: List<TrustScore>
+  doubtedSources: List<TrustScore>
+  trustedTopics: List<TrustScore>
+  doubtedTopics: List<TrustScore>
+  tracked: int
+  evidence: double

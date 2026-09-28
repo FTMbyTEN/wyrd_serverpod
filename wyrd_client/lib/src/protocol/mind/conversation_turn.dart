@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/protocol.dart' as _i2pladzn;
 
 abstract class ConversationTurn
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
@@ -22,6 +23,7 @@ abstract class ConversationTurn
     required this.timestamp,
     this.learnedAnswerId,
     this.rating,
+    this.groundingIds,
   });
 
   factory ConversationTurn({
@@ -32,6 +34,7 @@ abstract class ConversationTurn
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    List<int>? groundingIds,
   }) = _ConversationTurnImpl;
 
   factory ConversationTurn.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -47,6 +50,11 @@ abstract class ConversationTurn
       ),
       learnedAnswerId: jsonSerialization['learnedAnswerId'] as int?,
       rating: jsonSerialization['rating'] as int?,
+      groundingIds: jsonSerialization['groundingIds'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<int>>(
+              jsonSerialization['groundingIds'],
+            ),
     );
   }
 
@@ -67,6 +75,8 @@ abstract class ConversationTurn
 
   int? rating;
 
+  List<int>? groundingIds;
+
   /// Returns a shallow copy of this [ConversationTurn]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -78,6 +88,7 @@ abstract class ConversationTurn
     DateTime? timestamp,
     int? learnedAnswerId,
     int? rating,
+    List<int>? groundingIds,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,6 +101,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
 
@@ -104,6 +116,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
 
@@ -124,6 +137,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    List<int>? groundingIds,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -132,6 +146,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          timestamp: timestamp,
          learnedAnswerId: learnedAnswerId,
          rating: rating,
+         groundingIds: groundingIds,
        );
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -146,6 +161,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     DateTime? timestamp,
     Object? learnedAnswerId = _Undefined,
     Object? rating = _Undefined,
+    Object? groundingIds = _Undefined,
   }) {
     return ConversationTurn(
       id: id is int? ? id : this.id,
@@ -157,6 +173,9 @@ class _ConversationTurnImpl extends ConversationTurn {
           ? learnedAnswerId
           : this.learnedAnswerId,
       rating: rating is int? ? rating : this.rating,
+      groundingIds: groundingIds is List<int>?
+          ? groundingIds
+          : this.groundingIds?.map((e0) => e0).toList(),
     );
   }
 }

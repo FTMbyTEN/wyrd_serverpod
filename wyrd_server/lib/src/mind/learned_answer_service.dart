@@ -3,6 +3,7 @@ import 'dart:math';
 import '../generated/protocol.dart';
 import 'memory_recall_service.dart';
 import 'topic_service.dart';
+import 'trust_service.dart';
 import 'wordnet_service.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -217,6 +218,11 @@ class LearnedAnswerService {
     final a = await LearnedAnswer.db.findById(session, id);
     if (a == null) return;
     final corrected = _correction.hasMatch(text);
+    if (corrected) {
+      for (final t in a.topics.take(6)) {
+        await TrustService.record(session, TrustService.topic, t, -0.5); // Bias 2
+      }
+    }
     final score = corrected ? a.score - _penaltyCorrection : a.score + _rewardCarryOn;
     await LearnedAnswer.db.updateRow(
       session,

@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'topic_service.dart';
+import 'trust_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// What the filter decided about one incoming item.
@@ -117,8 +118,19 @@ class IngestFilter {
       await _count(session, duplicate: true);
       return IngestVerdict(keep: false, duplicate: true, score: 0, reasons: ['already in memory'], category: category);
     }
-    final q = quality(title, extract, topics);
+    final q0 = quality(title, extract, topics);
+    // Bias 2: a site that has earned trust lifts a borderline item, a doubted one sinks it
+    final site = TrustService.sourceKey(url: url, feedSource: source);
+    final trust = await TrustService.scoreFor(session, TrustService.source, site);
+    // a site that is mostly junk (trust under 0.3) has earned real skepticism, not a nudge
+    final doubted = trust < 0.3;
+    final adjusted = (q0.score + (trust - 0.5) * 0.4 - (doubted ? 0.3 : 0)).clamp(0.0, 1.0).toDouble();
+    final q = (score: adjusted, reasons: [...q0.reasons, if (trust < 0.4) 'from a source WYRD has learned to doubt']);
     final keep = q.score >= _keepAt;
+    if (site != null) {
+      // clean items build a site's trust slowly; kept-out ones cost it more
+      await TrustService.record(session, TrustService.source, site, keep ? 0.2 * q0.score : -0.5);
+    }
     if (keep) {
       await _count(session, kept: true, category: category);
     } else {

@@ -63,6 +63,7 @@ import 'package:wyrd_server/src/generated/mind/self_config_change.dart'
 import 'package:wyrd_server/src/generated/mind/sighting.dart' as _ixz0p0ha;
 import 'package:wyrd_server/src/generated/mind/system_status.dart' as _it4ouq1a;
 import 'package:wyrd_server/src/generated/mind/topic_info.dart' as _iwnzpkr1;
+import 'package:wyrd_server/src/generated/mind/trust_report.dart' as _ikr0zl9n;
 import 'package:wyrd_server/src/generated/mind/user_profile.dart' as _ifiznghf;
 import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
 import 'package:wyrd_server/src/generated/protocol.dart';
@@ -1515,6 +1516,36 @@ class _FeedEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_imy4srv1.FilterReport>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ikr0zl9n.TrustReport> getTrust(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'feed',
+            method: 'getTrust',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'feed',
+          methodName: 'getTrust',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ikr0zl9n.TrustReport>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

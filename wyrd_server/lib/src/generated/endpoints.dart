@@ -832,6 +832,17 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['feed'] as _in0i7e4k.FeedEndpoint)
                   .getFilterReport(session),
         ),
+        'getTrust': _is.MethodConnector(
+          name: 'getTrust',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['feed'] as _in0i7e4k.FeedEndpoint).getTrust(
+                session,
+              ),
+        ),
       },
     );
     connectors['gateShape'] = _is.EndpointConnector(

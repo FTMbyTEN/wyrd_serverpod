@@ -81,6 +81,8 @@ import 'mind/sighting.dart' as _isgvgh6k;
 import 'mind/synapse.dart' as _i0pqq4fp;
 import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
+import 'mind/trust_report.dart' as _iud9b8mc;
+import 'mind/trust_score.dart' as _i79dz7me;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/word_sense.dart' as _itj7bvl5;
@@ -131,6 +133,8 @@ export 'mind/sighting.dart';
 export 'mind/synapse.dart';
 export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
+export 'mind/trust_report.dart';
+export 'mind/trust_score.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 export 'mind/word_sense.dart';
@@ -192,6 +196,12 @@ class Protocol extends _is.DatabaseSerializationManager {
           columnType: _isp.ColumnType.bigint,
           isNullable: true,
           dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'groundingIds',
+          columnType: _isp.ColumnType.json,
+          isNullable: true,
+          dartType: 'List<int>?',
         ),
       ],
       foreignKeys: [],
@@ -1688,6 +1698,78 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'trust_score',
+      dartName: 'TrustScore',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'key',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'good',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'bad',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'score',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'trust_score_kind_key_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'kind',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'key',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'user_profile',
       dartName: 'UserProfile',
       schema: 'public',
@@ -2019,6 +2101,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i8qpvcdz.TopicInfo) {
       return _i8qpvcdz.TopicInfo.fromJson(data) as T;
     }
+    if (t == _iud9b8mc.TrustReport) {
+      return _iud9b8mc.TrustReport.fromJson(data) as T;
+    }
+    if (t == _i79dz7me.TrustScore) {
+      return _i79dz7me.TrustScore.fromJson(data) as T;
+    }
     if (t == _i8ng53gk.UserFact) {
       return _i8ng53gk.UserFact.fromJson(data) as T;
     }
@@ -2187,6 +2275,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i8qpvcdz.TopicInfo?>()) {
       return (data != null ? _i8qpvcdz.TopicInfo.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_iud9b8mc.TrustReport?>()) {
+      return (data != null ? _iud9b8mc.TrustReport.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i79dz7me.TrustScore?>()) {
+      return (data != null ? _i79dz7me.TrustScore.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_i8ng53gk.UserFact?>()) {
       return (data != null ? _i8ng53gk.UserFact.fromJson(data) : null) as T;
     }
@@ -2229,11 +2323,17 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
-    }
     if (t == List<int>) {
       return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
+    if (t == _is.getType<List<int>?>()) {
+      return (data != null
+              ? (data as List).map((e) => deserialize<int>(e)).toList()
+              : null)
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == Map<String, int>) {
       return (data as Map).map(
@@ -2253,12 +2353,6 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
-    if (t == _is.getType<List<int>?>()) {
-      return (data != null
-              ? (data as List).map((e) => deserialize<int>(e)).toList()
-              : null)
-          as T;
-    }
     if (t == _is.getType<List<String>?>()) {
       return (data != null
               ? (data as List).map((e) => deserialize<String>(e)).toList()
@@ -2274,6 +2368,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_ifocq1fp.SelfConfigChange>) {
       return (data as List)
               .map((e) => deserialize<_ifocq1fp.SelfConfigChange>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i79dz7me.TrustScore>) {
+      return (data as List)
+              .map((e) => deserialize<_i79dz7me.TrustScore>(e))
               .toList()
           as T;
     }
@@ -2415,6 +2515,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i0pqq4fp.Synapse => 'Synapse',
       _iw7p4jzd.SystemStatus => 'SystemStatus',
       _i8qpvcdz.TopicInfo => 'TopicInfo',
+      _iud9b8mc.TrustReport => 'TrustReport',
+      _i79dz7me.TrustScore => 'TrustScore',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _itj7bvl5.WordSense => 'WordSense',
@@ -2525,6 +2627,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'SystemStatus';
       case _i8qpvcdz.TopicInfo():
         return 'TopicInfo';
+      case _iud9b8mc.TrustReport():
+        return 'TrustReport';
+      case _i79dz7me.TrustScore():
+        return 'TrustScore';
       case _i8ng53gk.UserFact():
         return 'UserFact';
       case _irc0lure.UserProfile():
@@ -2697,6 +2803,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'TopicInfo') {
       return deserialize<_i8qpvcdz.TopicInfo>(data['data']);
     }
+    if (dataClassName == 'TrustReport') {
+      return deserialize<_iud9b8mc.TrustReport>(data['data']);
+    }
+    if (dataClassName == 'TrustScore') {
+      return deserialize<_i79dz7me.TrustScore>(data['data']);
+    }
     if (dataClassName == 'UserFact') {
       return deserialize<_i8ng53gk.UserFact>(data['data']);
     }
@@ -2792,6 +2904,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _isgvgh6k.Sighting.t;
       case _i0pqq4fp.Synapse:
         return _i0pqq4fp.Synapse.t;
+      case _i79dz7me.TrustScore:
+        return _i79dz7me.TrustScore.t;
       case _irc0lure.UserProfile:
         return _irc0lure.UserProfile.t;
       case _itj7bvl5.WordSense:

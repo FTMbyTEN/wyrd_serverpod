@@ -1,0 +1,17 @@
+# Bias 2: evidence WYRD has gathered about one source (website or feed) or topic, and the trust
+# it adds up to -- (good + 1) / (good + bad + 2). See TrustService.
+class: TrustScore
+table: trust_score
+
+fields:
+  kind: String
+  key: String
+  good: double
+  bad: double
+  score: double
+  updatedAt: DateTime
+
+indexes:
+  trust_score_kind_key_idx:
+    fields: kind, key
+    unique: true

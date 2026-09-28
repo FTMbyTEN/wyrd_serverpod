@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _is;
+import 'package:wyrd_server/src/generated/protocol.dart' as _i9sln91s;
 
 abstract class ConversationTurn
     implements _is.TableRow<int?>, _is.ProtocolSerialization {
@@ -22,6 +23,7 @@ abstract class ConversationTurn
     required this.timestamp,
     this.learnedAnswerId,
     this.rating,
+    this.groundingIds,
   });
 
   factory ConversationTurn({
@@ -32,6 +34,7 @@ abstract class ConversationTurn
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    List<int>? groundingIds,
   }) = _ConversationTurnImpl;
 
   factory ConversationTurn.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -47,6 +50,11 @@ abstract class ConversationTurn
       ),
       learnedAnswerId: jsonSerialization['learnedAnswerId'] as int?,
       rating: jsonSerialization['rating'] as int?,
+      groundingIds: jsonSerialization['groundingIds'] == null
+          ? null
+          : _i9sln91s.Protocol().deserialize<List<int>>(
+              jsonSerialization['groundingIds'],
+            ),
     );
   }
 
@@ -69,6 +77,8 @@ abstract class ConversationTurn
 
   int? rating;
 
+  List<int>? groundingIds;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -83,6 +93,7 @@ abstract class ConversationTurn
     DateTime? timestamp,
     int? learnedAnswerId,
     int? rating,
+    List<int>? groundingIds,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -95,6 +106,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
 
@@ -109,6 +121,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
 
@@ -151,6 +164,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    List<int>? groundingIds,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -159,6 +173,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          timestamp: timestamp,
          learnedAnswerId: learnedAnswerId,
          rating: rating,
+         groundingIds: groundingIds,
        );
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -173,6 +188,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     DateTime? timestamp,
     Object? learnedAnswerId = _Undefined,
     Object? rating = _Undefined,
+    Object? groundingIds = _Undefined,
   }) {
     return ConversationTurn(
       id: id is int? ? id : this.id,
@@ -184,6 +200,9 @@ class _ConversationTurnImpl extends ConversationTurn {
           ? learnedAnswerId
           : this.learnedAnswerId,
       rating: rating is int? ? rating : this.rating,
+      groundingIds: groundingIds is List<int>?
+          ? groundingIds
+          : this.groundingIds?.map((e0) => e0).toList(),
     );
   }
 }
@@ -224,6 +243,12 @@ class ConversationTurnUpdateTable
     table.rating,
     value,
   );
+
+  _is.ColumnValue<List<int>, List<int>> groundingIds(List<int>? value) =>
+      _is.ColumnValue(
+        table.groundingIds,
+        value,
+      );
 }
 
 class ConversationTurnTable extends _is.Table<int?> {
@@ -254,6 +279,10 @@ class ConversationTurnTable extends _is.Table<int?> {
       'rating',
       this,
     );
+    groundingIds = _is.ColumnSerializable<List<int>>(
+      'groundingIds',
+      this,
+    );
   }
 
   late final ConversationTurnUpdateTable updateTable;
@@ -270,6 +299,8 @@ class ConversationTurnTable extends _is.Table<int?> {
 
   late final _is.ColumnInt rating;
 
+  late final _is.ColumnSerializable<List<int>> groundingIds;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -279,6 +310,7 @@ class ConversationTurnTable extends _is.Table<int?> {
     timestamp,
     learnedAnswerId,
     rating,
+    groundingIds,
   ];
 }
 
