@@ -202,6 +202,7 @@ class ChatToolService {
     required String userText,
     required int maxTokens,
     bool droneOperator = false,
+    List<String>? readUrls, // filled with the pages and books read while answering
   }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
@@ -317,7 +318,8 @@ class ChatToolService {
                   });
                 } else {
                   final slice = await PageReaderService.read(input['url'] as String? ?? '', offset: (input['offset'] as num?)?.toInt() ?? 0);
-                  toolResults.add({'type': 'tool_result', 'tool_use_id': toolUseId, 'content': _sliceText(slice)});
+                  readUrls?.add(slice.url);
+                    toolResults.add({'type': 'tool_result', 'tool_use_id': toolUseId, 'content': _sliceText(slice)});
                 }
                 continue;
               }
@@ -340,6 +342,7 @@ class ChatToolService {
                 if (webSession == null) {
                   if (name == 'web_open') {
                     final slice = await PageReaderService.read(input['url'] as String? ?? '');
+                    readUrls?.add(slice.url);
                     toolResults.add({'type': 'tool_result', 'tool_use_id': toolUseId, 'content': _sliceText(slice)});
                   } else {
                     toolResults.add({
@@ -354,6 +357,7 @@ class ChatToolService {
                 final WebSnapshot snap;
                 if (name == 'web_open') {
                   snap = await WebBrowseService.open(browser, input['url'] as String? ?? '');
+                  readUrls?.add(snap.url);
                 } else if (name == 'web_type') {
                   snap = await WebBrowseService.type(browser, input['field_hint'] as String? ?? '', input['text'] as String? ?? '');
                 } else {

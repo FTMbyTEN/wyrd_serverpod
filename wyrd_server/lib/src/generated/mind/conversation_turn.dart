@@ -23,6 +23,7 @@ abstract class ConversationTurn
     required this.timestamp,
     this.learnedAnswerId,
     this.rating,
+    this.judgement,
     this.groundingIds,
   });
 
@@ -34,6 +35,7 @@ abstract class ConversationTurn
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    String? judgement,
     List<int>? groundingIds,
   }) = _ConversationTurnImpl;
 
@@ -50,6 +52,7 @@ abstract class ConversationTurn
       ),
       learnedAnswerId: jsonSerialization['learnedAnswerId'] as int?,
       rating: jsonSerialization['rating'] as int?,
+      judgement: jsonSerialization['judgement'] as String?,
       groundingIds: jsonSerialization['groundingIds'] == null
           ? null
           : _i9sln91s.Protocol().deserialize<List<int>>(
@@ -77,6 +80,8 @@ abstract class ConversationTurn
 
   int? rating;
 
+  String? judgement;
+
   List<int>? groundingIds;
 
   @override
@@ -93,6 +98,7 @@ abstract class ConversationTurn
     DateTime? timestamp,
     int? learnedAnswerId,
     int? rating,
+    String? judgement,
     List<int>? groundingIds,
   });
   @override
@@ -106,6 +112,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
@@ -121,6 +128,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
@@ -164,6 +172,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    String? judgement,
     List<int>? groundingIds,
   }) : super._(
          id: id,
@@ -173,6 +182,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          timestamp: timestamp,
          learnedAnswerId: learnedAnswerId,
          rating: rating,
+         judgement: judgement,
          groundingIds: groundingIds,
        );
 
@@ -188,6 +198,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     DateTime? timestamp,
     Object? learnedAnswerId = _Undefined,
     Object? rating = _Undefined,
+    Object? judgement = _Undefined,
     Object? groundingIds = _Undefined,
   }) {
     return ConversationTurn(
@@ -200,6 +211,7 @@ class _ConversationTurnImpl extends ConversationTurn {
           ? learnedAnswerId
           : this.learnedAnswerId,
       rating: rating is int? ? rating : this.rating,
+      judgement: judgement is String? ? judgement : this.judgement,
       groundingIds: groundingIds is List<int>?
           ? groundingIds
           : this.groundingIds?.map((e0) => e0).toList(),
@@ -244,6 +256,11 @@ class ConversationTurnUpdateTable
     value,
   );
 
+  _is.ColumnValue<String, String> judgement(String? value) => _is.ColumnValue(
+    table.judgement,
+    value,
+  );
+
   _is.ColumnValue<List<int>, List<int>> groundingIds(List<int>? value) =>
       _is.ColumnValue(
         table.groundingIds,
@@ -279,6 +296,10 @@ class ConversationTurnTable extends _is.Table<int?> {
       'rating',
       this,
     );
+    judgement = _is.ColumnString(
+      'judgement',
+      this,
+    );
     groundingIds = _is.ColumnSerializable<List<int>>(
       'groundingIds',
       this,
@@ -299,6 +320,8 @@ class ConversationTurnTable extends _is.Table<int?> {
 
   late final _is.ColumnInt rating;
 
+  late final _is.ColumnString judgement;
+
   late final _is.ColumnSerializable<List<int>> groundingIds;
 
   @override
@@ -310,6 +333,7 @@ class ConversationTurnTable extends _is.Table<int?> {
     timestamp,
     learnedAnswerId,
     rating,
+    judgement,
     groundingIds,
   ];
 }

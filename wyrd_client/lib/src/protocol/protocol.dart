@@ -59,6 +59,7 @@ import 'mind/filter_report.dart' as _idq6t4e8;
 import 'mind/gate_shape.dart' as _i00qabwy;
 import 'mind/growth_snapshot.dart' as _iyj2s79k;
 import 'mind/ingest_day.dart' as _i6r7yxin;
+import 'mind/judgement_report.dart' as _i2btkl9t;
 import 'mind/learned_answer.dart' as _iexdo29m;
 import 'mind/learning_stats.dart' as _icoxjjkt;
 import 'mind/lexicon_entry.dart' as _i37ps124;
@@ -111,6 +112,7 @@ export 'mind/filter_report.dart';
 export 'mind/gate_shape.dart';
 export 'mind/growth_snapshot.dart';
 export 'mind/ingest_day.dart';
+export 'mind/judgement_report.dart';
 export 'mind/learned_answer.dart';
 export 'mind/learning_stats.dart';
 export 'mind/lexicon_entry.dart';
@@ -252,6 +254,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i6r7yxin.IngestDay) {
       return _i6r7yxin.IngestDay.fromJson(data) as T;
+    }
+    if (t == _i2btkl9t.JudgementReport) {
+      return _i2btkl9t.JudgementReport.fromJson(data) as T;
     }
     if (t == _iexdo29m.LearnedAnswer) {
       return _iexdo29m.LearnedAnswer.fromJson(data) as T;
@@ -418,6 +423,10 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_i6r7yxin.IngestDay?>()) {
       return (data != null ? _i6r7yxin.IngestDay.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i2btkl9t.JudgementReport?>()) {
+      return (data != null ? _i2btkl9t.JudgementReport.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_iexdo29m.LearnedAnswer?>()) {
       return (data != null ? _iexdo29m.LearnedAnswer.fromJson(data) : null)
@@ -702,6 +711,7 @@ class Protocol extends _isc.SerializationManager {
       _i00qabwy.GateShape => 'GateShape',
       _iyj2s79k.GrowthSnapshot => 'GrowthSnapshot',
       _i6r7yxin.IngestDay => 'IngestDay',
+      _i2btkl9t.JudgementReport => 'JudgementReport',
       _iexdo29m.LearnedAnswer => 'LearnedAnswer',
       _icoxjjkt.LearningStats => 'LearningStats',
       _i37ps124.LexiconEntry => 'LexiconEntry',
@@ -795,6 +805,8 @@ class Protocol extends _isc.SerializationManager {
         return 'GrowthSnapshot';
       case _i6r7yxin.IngestDay():
         return 'IngestDay';
+      case _i2btkl9t.JudgementReport():
+        return 'JudgementReport';
       case _iexdo29m.LearnedAnswer():
         return 'LearnedAnswer';
       case _icoxjjkt.LearningStats():
@@ -947,6 +959,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'IngestDay') {
       return deserialize<_i6r7yxin.IngestDay>(data['data']);
+    }
+    if (dataClassName == 'JudgementReport') {
+      return deserialize<_i2btkl9t.JudgementReport>(data['data']);
     }
     if (dataClassName == 'LearnedAnswer') {
       return deserialize<_iexdo29m.LearnedAnswer>(data['data']);

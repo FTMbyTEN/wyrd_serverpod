@@ -43,6 +43,7 @@ feed:
   - trigger:
   - getFilterReport:
   - getTrust:
+  - getJudgementReport:
 gateShape:
   - next:
 growth:

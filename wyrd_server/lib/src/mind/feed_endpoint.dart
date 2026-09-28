@@ -25,4 +25,31 @@ class FeedEndpoint extends Endpoint {
 
   /// Bias 2: the sources and topics WYRD has learned to trust, and to doubt.
   Future<TrustReport> getTrust(Session session) => TrustService.report(session);
+
+  /// Filter + judgement: how many replies the gate checked this week, and what it did (counts
+  /// only -- no conversation text leaves).
+  Future<JudgementReport> getJudgementReport(Session session) async {
+    final since = DateTime.now().toUtc().subtract(const Duration(days: 7));
+    final totals = await session.db.unsafeQuery(
+      'SELECT count(*), count(*) FILTER (WHERE "judgement" = \'pass\'), '
+      'count(*) FILTER (WHERE "judgement" LIKE \'softened%\'), count(*) FILTER (WHERE "judgement" LIKE \'corrected%\'), '
+      'count(*) FILTER (WHERE "judgement" LIKE \'blocked%\') FROM "conversation_turn" WHERE "judgement" IS NOT NULL AND "timestamp" >= @since',
+      parameters: QueryParameters.named({'since': since}),
+    );
+    final flagged = await session.db.unsafeQuery(
+      'SELECT "judgement" FROM "conversation_turn" WHERE "judgement" IS NOT NULL AND "judgement" <> \'pass\' AND "timestamp" >= @since LIMIT 2000',
+      parameters: QueryParameters.named({'since': since}),
+    );
+    final reasons = <String, int>{};
+    for (final r in flagged) {
+      final s = r[0] as String;
+      final i = s.indexOf(': ');
+      if (i < 0) continue;
+      for (final why in s.substring(i + 2).split('; ')) {
+        reasons[why] = (reasons[why] ?? 0) + 1;
+      }
+    }
+    final t = totals.first;
+    return JudgementReport(checked: t[0] as int, passed: t[1] as int, softened: t[2] as int, corrected: t[3] as int, blocked: t[4] as int, reasons: reasons);
+  }
 }

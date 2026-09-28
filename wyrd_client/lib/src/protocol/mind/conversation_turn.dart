@@ -23,6 +23,7 @@ abstract class ConversationTurn
     required this.timestamp,
     this.learnedAnswerId,
     this.rating,
+    this.judgement,
     this.groundingIds,
   });
 
@@ -34,6 +35,7 @@ abstract class ConversationTurn
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    String? judgement,
     List<int>? groundingIds,
   }) = _ConversationTurnImpl;
 
@@ -50,6 +52,7 @@ abstract class ConversationTurn
       ),
       learnedAnswerId: jsonSerialization['learnedAnswerId'] as int?,
       rating: jsonSerialization['rating'] as int?,
+      judgement: jsonSerialization['judgement'] as String?,
       groundingIds: jsonSerialization['groundingIds'] == null
           ? null
           : _i2pladzn.Protocol().deserialize<List<int>>(
@@ -75,6 +78,8 @@ abstract class ConversationTurn
 
   int? rating;
 
+  String? judgement;
+
   List<int>? groundingIds;
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -88,6 +93,7 @@ abstract class ConversationTurn
     DateTime? timestamp,
     int? learnedAnswerId,
     int? rating,
+    String? judgement,
     List<int>? groundingIds,
   });
   @override
@@ -101,6 +107,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
@@ -116,6 +123,7 @@ abstract class ConversationTurn
       'timestamp': timestamp.toJson(),
       if (learnedAnswerId != null) 'learnedAnswerId': learnedAnswerId,
       if (rating != null) 'rating': rating,
+      if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
     };
   }
@@ -137,6 +145,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     required DateTime timestamp,
     int? learnedAnswerId,
     int? rating,
+    String? judgement,
     List<int>? groundingIds,
   }) : super._(
          id: id,
@@ -146,6 +155,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          timestamp: timestamp,
          learnedAnswerId: learnedAnswerId,
          rating: rating,
+         judgement: judgement,
          groundingIds: groundingIds,
        );
 
@@ -161,6 +171,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     DateTime? timestamp,
     Object? learnedAnswerId = _Undefined,
     Object? rating = _Undefined,
+    Object? judgement = _Undefined,
     Object? groundingIds = _Undefined,
   }) {
     return ConversationTurn(
@@ -173,6 +184,7 @@ class _ConversationTurnImpl extends ConversationTurn {
           ? learnedAnswerId
           : this.learnedAnswerId,
       rating: rating is int? ? rating : this.rating,
+      judgement: judgement is String? ? judgement : this.judgement,
       groundingIds: groundingIds is List<int>?
           ? groundingIds
           : this.groundingIds?.map((e0) => e0).toList(),

@@ -27,7 +27,7 @@ class ChatEndpoint extends Endpoint {
     }
 
     final result = await ChatService.processMessage(session, authUserId, text);
-    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id);
+    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement);
   }
 
   Future<List<ConversationTurn>> getHistory(Session session, {int? limit}) async {

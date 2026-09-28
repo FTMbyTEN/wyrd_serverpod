@@ -4,4 +4,5 @@ fields:
   mind: Mind
   action: ChatAction?
   fromMemory: bool? # answered from a learned answer, without calling the AI
-  turnId: int? # so the app can rate this exact reply
+  turnId: int?
+  judgement: String? # softened / corrected / blocked, when the gate changed the reply # so the app can rate this exact reply

@@ -47,6 +47,8 @@ import 'package:wyrd_server/src/generated/mind/filter_report.dart' as _imy4srv1;
 import 'package:wyrd_server/src/generated/mind/gate_shape.dart' as _ikrbpnh7;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
+import 'package:wyrd_server/src/generated/mind/judgement_report.dart'
+    as _ihaovagc;
 import 'package:wyrd_server/src/generated/mind/learning_stats.dart'
     as _i0lsrakn;
 import 'package:wyrd_server/src/generated/mind/lexicon_entry.dart' as _iltis5l5;
@@ -1546,6 +1548,36 @@ class _FeedEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_ikr0zl9n.TrustReport>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ihaovagc.JudgementReport> getJudgementReport(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'feed',
+            method: 'getJudgementReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'feed',
+          methodName: 'getJudgementReport',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ihaovagc.JudgementReport>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

@@ -1,0 +1,10 @@
+# What the reply gate did over the last week, for the FEED tab (counts only, no conversation text).
+class: JudgementReport
+
+fields:
+  checked: int
+  passed: int
+  softened: int
+  corrected: int
+  blocked: int
+  reasons: Map<String, int>

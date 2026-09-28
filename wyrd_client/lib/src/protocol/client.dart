@@ -42,6 +42,8 @@ import 'package:wyrd_client/src/protocol/mind/filter_report.dart' as _iikqy3kr;
 import 'package:wyrd_client/src/protocol/mind/gate_shape.dart' as _id49marq;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
+import 'package:wyrd_client/src/protocol/mind/judgement_report.dart'
+    as _iirmh60o;
 import 'package:wyrd_client/src/protocol/mind/learning_stats.dart' as _i41i9jez;
 import 'package:wyrd_client/src/protocol/mind/lexicon_entry.dart' as _izjkulc1;
 import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
@@ -585,6 +587,15 @@ class EndpointFeed extends _isc.EndpointRef {
       caller.callServerEndpoint<_iv8ct9z9.TrustReport>(
         'feed',
         'getTrust',
+        {},
+      );
+
+  /// Filter + judgement: how many replies the gate checked this week, and what it did (counts
+  /// only -- no conversation text leaves).
+  _ida.Future<_iirmh60o.JudgementReport> getJudgementReport() =>
+      caller.callServerEndpoint<_iirmh60o.JudgementReport>(
+        'feed',
+        'getJudgementReport',
         {},
       );
 }

@@ -5,6 +5,8 @@ import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
 import 'embedding_service.dart';
 import 'learned_answer_service.dart';
+import 'trust_service.dart';
+import 'judgement_service.dart';
 import 'memory_recall_service.dart';
 import 'photo_service.dart';
 import '../drone/drone_service.dart';
@@ -44,7 +46,7 @@ class ChatService {
   }
 
   static Future<
-    ({String reply, ConversationTurn turn, Mind mind, ChatAction? action, bool fromMemory})
+    ({String reply, ConversationTurn turn, Mind mind, ChatAction? action, bool fromMemory, String? judgement})
   >
   processMessage(
     Session session,
@@ -162,6 +164,7 @@ class ChatService {
         '(1-4 sentences) unless the question calls for more.\n\n'
         '$contextLines';
 
+    final readUrls = <String>[];
     final toolReply = learned != null
         ? null // answered from what WYRD already learned: no AI call
         : codeReply ??
@@ -173,6 +176,7 @@ class ChatService {
               userText: text,
               maxTokens: 220,
               droneOperator: droneOperator,
+              readUrls: readUrls,
             );
     final action = toolReply?.action;
 
@@ -181,11 +185,29 @@ class ChatService {
         ? await LearnedAnswerService.recall(session, authUserId, text, topics, aiAvailable: false, meaning: meaning)
         : null;
     final usedLearned = learned ?? fallback;
-    final reply = usedLearned?.answer ?? toolReply?.text ?? _followUpFromTopics(topics);
 
-    // A fresh AI answer to a general question is kept, so next time WYRD knows it.
+    // Filter + judgement: a fresh AI reply is checked before it goes out (learned answers have
+    // already earned their standing; code has its own rules).
+    Judgement? judgement;
+    if (toolReply != null && codeReply == null) {
+      judgement = JudgementService.judge(
+        reply: toolReply.text,
+        question: text,
+        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}')].join(' '),
+        readWeb: readUrls.isNotEmpty,
+        action: action?.type,
+        askerEmail: profile.email,
+        groundingTrust: await _groundingTrust(session, recall.groundingIds),
+        factual: LearnedAnswerService.isLearnable(text, topics),
+      );
+      if (!judgement.passed) session.log('[judgement] ${judgement.summary}');
+    }
+    final reply = usedLearned?.answer ?? judgement?.text ?? toolReply?.text ?? _followUpFromTopics(topics);
+
+    // A fresh AI answer to a general question is kept, so next time WYRD knows it -- but only one
+    // the gate passed: unverified or corrected answers are never learned.
     int? learnedNow;
-    if (toolReply != null && codeReply == null && action == null) {
+    if (toolReply != null && codeReply == null && action == null && (judgement?.passed ?? true)) {
       learnedNow = await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
     }
 
@@ -198,6 +220,7 @@ class ChatService {
         timestamp: DateTime.now().toUtc(),
         learnedAnswerId: usedLearned?.id ?? learnedNow,
         groundingIds: recall.groundingIds.isEmpty ? null : recall.groundingIds,
+        judgement: judgement?.summary,
       ),
     );
 
@@ -223,6 +246,16 @@ class ChatService {
       scoreGap: uniqueTopics.toDouble(),
     );
 
-    return (reply: reply, turn: turn, mind: updatedMind, action: action, fromMemory: usedLearned != null);
+    return (reply: reply, turn: turn, mind: updatedMind, action: action, fromMemory: usedLearned != null, judgement: judgement != null && !judgement.passed ? judgement.verdict : null);
+  }
+
+  /// Average trust (Bias 2) of the sources behind the recalled memories, or null when none.
+  static Future<double?> _groundingTrust(Session session, List<int> ids) async {
+    if (ids.isEmpty) return null;
+    final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(ids.toSet()));
+    final keys = blocks.map((b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource)).whereType<String>().toList();
+    if (keys.isEmpty) return null;
+    final trust = await TrustService.scores(session, TrustService.source, keys);
+    return keys.map((k) => trust[k] ?? 0.5).reduce((a, b) => a + b) / keys.length;
   }
 }

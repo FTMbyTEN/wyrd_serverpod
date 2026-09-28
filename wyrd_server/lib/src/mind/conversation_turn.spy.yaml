@@ -11,6 +11,7 @@ fields:
   timestamp: DateTime
   learnedAnswerId: int? # set when WYRD answered from a learned answer, for feedback
   rating: int? # the person's thumbs: 1 up, -1 down (training signal; see ChatEndpoint.rate)
+  judgement: String? # the reply gate's verdict: pass, or softened/corrected/blocked with why (JudgementService)
   groundingIds: List<int>? # the shared memories that grounded this reply, so a rating reaches their sources (Bias 2)
 
 indexes:

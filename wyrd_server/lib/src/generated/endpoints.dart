@@ -843,6 +843,16 @@ class Endpoints extends _is.EndpointDispatch {
                 session,
               ),
         ),
+        'getJudgementReport': _is.MethodConnector(
+          name: 'getJudgementReport',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['feed'] as _in0i7e4k.FeedEndpoint)
+                  .getJudgementReport(session),
+        ),
       },
     );
     connectors['gateShape'] = _is.EndpointConnector(
