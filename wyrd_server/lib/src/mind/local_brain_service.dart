@@ -2,12 +2,12 @@ import 'dart:math';
 
 import '../generated/protocol.dart';
 import 'library_knowledge.dart';
+import 'library_search.dart';
 import 'library_service.dart';
 import 'memory_recall_service.dart';
 import 'page_reader_service.dart';
 import 'thread_service.dart';
 import 'wordnet_service.dart';
-import 'works_service.dart';
 import 'world_countries_data.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -59,6 +59,10 @@ class LocalBrainService {
   );
   static final _summary = RegExp(r"\b(summari[sz]e|sum (?:it|this|that) up|summary|tl;?dr|main (?:idea|point)s?|what (?:happened|happens)|gist)\b", caseSensitive: false);
   static final _whoWhat = RegExp(r"""^\s*(?:who|what)(?:'s| is| are| was| were| does)\s+["']?(.+?)["']?(?:\s+mean)?\s*[?.!]*\s*$""", caseSensitive: false);
+  static final _inLanguage = RegExp(
+    r"^\s*(?:please |can you |could you )?(?:find|read|open|get|fetch)(?: me)?\s+(.+\s+(?:in|en)\s+[A-Za-zÀ-ÿ]+)\s*[.!?]*\s*$",
+    caseSensitive: false,
+  );
   static final _readUrl = RegExp(r"\b(?:read|open|summari[sz]e)\b.*?(https?://\S+)", caseSensitive: false);
   static final _define = RegExp(
     r"""^\s*(?:what does|what's the meaning of|what is the meaning of|what's the definition of|what is the definition of|define|meaning of|definition of|what is an?|what's an?|what are|what is|what's)\s+["']?([a-z][a-z' -]{1,40}?)["']?(?:\s+mean)?\s*[?.!]*\s*$""",
@@ -95,6 +99,11 @@ class LocalBrainService {
     if (url != null) return _read(session, authUserId, url.replaceAll(RegExp(r'[).,!?]+$'), ''));
     final book = _book.firstMatch(t) ?? _readBy.firstMatch(t);
     if (book != null) return _findBook(session, authUserId, book.group(1)!, book.group(2));
+    // "find Les Misérables in French": that language's Wikisource
+    final inLang = _inLanguage.firstMatch(t);
+    if (inLang != null && LibrarySearch.splitLanguage(inLang.group(1)!).$2 != null) {
+      return _findBook(session, authUserId, inLang.group(1)!, null);
+    }
     final topic = _topicBook.firstMatch(t);
     if (topic != null && _words(topic.group(1) ?? topic.group(2)!).isNotEmpty) return _findBook(session, authUserId, (topic.group(1) ?? topic.group(2))!, null, topic: true);
     if (_library.hasMatch(t)) return _libraryList(session, authUserId);
@@ -242,65 +251,30 @@ class LocalBrainService {
 
   static ChatAction _openBook(ReadingItem item) => ChatAction(type: 'open_book', readingItemId: item.id);
 
-  static final _scripts = <(RegExp, String)>[
-    (RegExp(r'[؀-ۿ]'), 'ar'), (RegExp(r'[ऀ-ॿ]'), 'hi'), (RegExp(r'[ঀ-৿]'), 'bn'),
-    (RegExp(r'[一-鿿]'), 'zh'), (RegExp(r'[Ѐ-ӿ]'), 'ru'),
-  ];
+  static Set<String> _words(String s) => LibrarySearch.words(s);
 
-  static Set<String> _words(String s) => RegExp(r'[a-z0-9]{3,}').allMatches(s.toLowerCase()).map((m) => m.group(0)!)
-      .where((w) => !const {'the', 'and', 'book', 'books', 'textbook', 'textbooks', 'free', 'good', 'about', 'for'}.contains(w))
-      .toSet();
-
-  /// Finds [title] (or a book on [title] when [topic]) across the Academy's libraries: an
-  /// OpenStax textbook whose title matches, Wikisource for texts in other scripts, then Project
-  /// Gutenberg, then English Wikisource. Opens it where they left off, adds it to My Library,
-  /// shows the first passage, and asks the app to open it in the Academy.
+  /// Finds [title] (or a book on [title] when [topic]) across all the Academy's libraries (see
+  /// LibrarySearch: OpenStax textbooks, Wikisource in the reader's language, Gutenberg), opens it
+  /// where they left off, adds it to My Library, shows the passage, and asks the app to open it
+  /// in the Academy. "… in French" searches that language's Wikisource.
   static Future<LocalAnswer> _findBook(Session session, UuidValue me, String title, String? author, {bool topic = false}) async {
     final q = title.trim().replaceAll(RegExp(r'^the\s+', caseSensitive: false), '');
-    final words = _words(q);
     (String, String, String?)? pick; // source, id, author
     String? label;
+    final List<WorkHit> hits;
     try {
-      // 1. an open textbook
-      if (words.isNotEmpty && author == null) {
-        final books = await WorksService.textbooks();
-        final match = books.where((b) => (b.language ?? 'en') == 'en' && words.every(_words(b.title).contains)).toList()
-          ..sort((a, b) => a.title.length.compareTo(b.title.length));
-        if (match.isNotEmpty) {
-          pick = ('openstax', match.first.id, 'OpenStax');
-          label = '"${match.first.title}", a free OpenStax textbook';
-        }
-      }
-      // 2. a text in another script: that language's Wikisource
-      if (pick == null) {
-        final lang = _scripts.where((x) => x.$1.hasMatch(q)).map((x) => x.$2).firstOrNull;
-        if (lang != null) {
-          final hits = await WorksService.searchWikisource(lang, q);
-          if (hits.isNotEmpty) {
-            pick = ('wikisource', hits.first.id, null);
-            label = '"${hits.first.title}" from the Wikisource archive';
-          }
-        }
-      }
-      // 3. a public-domain book
-      if (pick == null) {
-        final hits = (await PageReaderService.findBooks([q, ?author].join(' '))).where((h) => h.textUrl != null).toList();
-        if (hits.isNotEmpty) {
-          final by = hits.first.authors.isEmpty ? null : hits.first.authors.join(', ');
-          pick = ('gutenberg', hits.first.textUrl!, by);
-          label = '"${hits.first.title}"${by == null ? '' : ' by $by'}';
-        }
-      }
-      // 4. English Wikisource
-      if (pick == null && !topic) {
-        final hits = await WorksService.searchWikisource('en', q);
-        if (hits.isNotEmpty) {
-          pick = ('wikisource', hits.first.id, null);
-          label = '"${hits.first.title}" from the Wikisource archive';
-        }
-      }
+      hits = await LibrarySearch.all(q, author: author, topic: topic, limit: 1);
     } catch (e) {
       return LocalAnswer("I couldn't search the libraries just now (${_why(e)}).", kind: 'reading');
+    }
+    if (hits.isNotEmpty) {
+      final h = hits.first;
+      pick = (h.source, h.id, h.source == 'openstax' ? 'OpenStax' : h.author);
+      label = switch (h.source) {
+        'openstax' => '"${h.title}", a free OpenStax textbook',
+        'wikisource' => '"${h.title}" from the Wikisource archive',
+        _ => '"${h.title}"${h.author == null ? '' : ' by ${h.author}'}',
+      };
     }
     if (pick == null) {
       return LocalAnswer(
