@@ -67,6 +67,7 @@ import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/llm_usage_day.dart' as _i1bjxjal;
+import 'mind/llm_usage_user.dart' as _ij2us809;
 import 'mind/maintenance_run.dart' as _inurj49q;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
@@ -121,6 +122,7 @@ export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
 export 'mind/llm_usage_day.dart';
+export 'mind/llm_usage_user.dart';
 export 'mind/maintenance_run.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
@@ -280,6 +282,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i1bjxjal.LlmUsageDay) {
       return _i1bjxjal.LlmUsageDay.fromJson(data) as T;
+    }
+    if (t == _ij2us809.LlmUsageUser) {
+      return _ij2us809.LlmUsageUser.fromJson(data) as T;
     }
     if (t == _inurj49q.MaintenanceRun) {
       return _inurj49q.MaintenanceRun.fromJson(data) as T;
@@ -457,6 +462,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i1bjxjal.LlmUsageDay?>()) {
       return (data != null ? _i1bjxjal.LlmUsageDay.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ij2us809.LlmUsageUser?>()) {
+      return (data != null ? _ij2us809.LlmUsageUser.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_inurj49q.MaintenanceRun?>()) {
       return (data != null ? _inurj49q.MaintenanceRun.fromJson(data) : null)
           as T;
@@ -529,6 +537,48 @@ class Protocol extends _isc.SerializationManager {
       return (data as List)
               .map((e) => deserialize<_i8fl0sel.ConversationTurn>(e))
               .toList()
+          as T;
+    }
+    if (t == List<_isgvgh6k.Sighting>) {
+      return (data as List)
+              .map((e) => deserialize<_isgvgh6k.Sighting>(e))
+              .toList()
+          as T;
+    }
+    if (t == _isc.getType<List<_isgvgh6k.Sighting>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_isgvgh6k.Sighting>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_iexdo29m.LearnedAnswer>) {
+      return (data as List)
+              .map((e) => deserialize<_iexdo29m.LearnedAnswer>(e))
+              .toList()
+          as T;
+    }
+    if (t == _isc.getType<List<_iexdo29m.LearnedAnswer>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_iexdo29m.LearnedAnswer>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_if349ohh.MemoryBlock>) {
+      return (data as List)
+              .map((e) => deserialize<_if349ohh.MemoryBlock>(e))
+              .toList()
+          as T;
+    }
+    if (t == _isc.getType<List<_if349ohh.MemoryBlock>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_if349ohh.MemoryBlock>(e))
+                    .toList()
+              : null)
           as T;
     }
     if (t == List<String>) {
@@ -727,6 +777,7 @@ class Protocol extends _isc.SerializationManager {
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _i1bjxjal.LlmUsageDay => 'LlmUsageDay',
+      _ij2us809.LlmUsageUser => 'LlmUsageUser',
       _inurj49q.MaintenanceRun => 'MaintenanceRun',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
@@ -830,6 +881,8 @@ class Protocol extends _isc.SerializationManager {
         return 'LexiconWordSummary';
       case _i1bjxjal.LlmUsageDay():
         return 'LlmUsageDay';
+      case _ij2us809.LlmUsageUser():
+        return 'LlmUsageUser';
       case _inurj49q.MaintenanceRun():
         return 'MaintenanceRun';
       case _if349ohh.MemoryBlock():
@@ -994,6 +1047,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'LlmUsageDay') {
       return deserialize<_i1bjxjal.LlmUsageDay>(data['data']);
+    }
+    if (dataClassName == 'LlmUsageUser') {
+      return deserialize<_ij2us809.LlmUsageUser>(data['data']);
     }
     if (dataClassName == 'MaintenanceRun') {
       return deserialize<_inurj49q.MaintenanceRun>(data['data']);

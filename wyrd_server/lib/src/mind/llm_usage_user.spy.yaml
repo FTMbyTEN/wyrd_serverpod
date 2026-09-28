@@ -1,0 +1,14 @@
+# One person's estimated AI spend on one day, so no single account can use up the shared daily
+# cap (see LlmBudget: each person gets an allowance; the drone operator -- the owner -- doesn't).
+class: LlmUsageUser
+table: llm_usage_user
+
+fields:
+  day: String
+  authUserId: UuidValue
+  costMicroUsd: int
+
+indexes:
+  llm_usage_user_day_idx:
+    fields: day, authUserId
+    unique: true

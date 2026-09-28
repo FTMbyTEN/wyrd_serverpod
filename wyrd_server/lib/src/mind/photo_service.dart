@@ -83,6 +83,7 @@ class PhotoService {
       MemoryBlock(
         timestamp: DateTime.now().toUtc(),
         source: 'photo',
+        ownerId: authUserId,
         userText: displayCaption,
         botText: reply,
         topics: topics,

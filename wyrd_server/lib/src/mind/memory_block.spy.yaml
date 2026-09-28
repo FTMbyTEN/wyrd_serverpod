@@ -30,8 +30,13 @@ fields:
   category: String?
   # meaning fingerprint (Voyage voyage-3.5-lite, 512 dims) for search by meaning; see EmbeddingService
   embedding: Vector(512)?, scope=serverOnly
+  # the person a chat or photo memory came from (null for everything WYRD read or thought), so
+  # their memories can be exported and deleted with the rest of their data
+  ownerId: UuidValue?
 
 indexes:
+  memory_block_owner_idx:
+    fields: ownerId
   memory_block_embedding_idx:
     fields: embedding
     type: hnsw

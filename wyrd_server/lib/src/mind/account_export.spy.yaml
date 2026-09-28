@@ -6,3 +6,7 @@ fields:
   firstSeen: DateTime
   lastSeen: DateTime
   conversation: List<ConversationTurn>
+  sightings: List<Sighting>?
+  learnedAnswers: List<LearnedAnswer>?
+  memories: List<MemoryBlock>?
+  thread: ChatThread?

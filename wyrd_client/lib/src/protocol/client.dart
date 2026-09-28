@@ -401,7 +401,8 @@ class EndpointGreeting extends _isc.EndpointRef {
 /// with Serverpod's built-in email auth, credential deletion isn't something this project's
 /// own endpoints can safely do (that lives inside serverpod_auth_idp_server, with no public
 /// self-service delete-account method exposed), so [deleteMyData] wipes everything this app
-/// owns about the person (profile facts, visit history, conversation history) but leaves
+/// owns about the person (profile, conversations, photos, memories and answers learned from them,
+/// the conversation thread) but leaves
 /// their login credential intact -- a real, documented gap versus Node's full account wipe.
 /// {@category Endpoint}
 class EndpointAccount extends _isc.EndpointRef {

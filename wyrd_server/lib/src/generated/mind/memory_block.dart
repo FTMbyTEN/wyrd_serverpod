@@ -39,6 +39,7 @@ abstract class MemoryBlock
     this.quality,
     this.category,
     this.embedding,
+    this.ownerId,
   });
 
   factory MemoryBlock({
@@ -65,6 +66,7 @@ abstract class MemoryBlock
     double? quality,
     String? category,
     _is.Vector? embedding,
+    _is.UuidValue? ownerId,
   }) = _MemoryBlockImpl;
 
   factory MemoryBlock.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -106,6 +108,9 @@ abstract class MemoryBlock
       embedding: jsonSerialization['embedding'] == null
           ? null
           : _is.VectorJsonExtension.fromJson(jsonSerialization['embedding']),
+      ownerId: jsonSerialization['ownerId'] == null
+          ? null
+          : _is.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
     );
   }
 
@@ -160,6 +165,8 @@ abstract class MemoryBlock
 
   _is.Vector? embedding;
 
+  _is.UuidValue? ownerId;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -190,6 +197,7 @@ abstract class MemoryBlock
     double? quality,
     String? category,
     _is.Vector? embedding,
+    _is.UuidValue? ownerId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -218,6 +226,7 @@ abstract class MemoryBlock
       if (quality != null) 'quality': quality,
       if (category != null) 'category': category,
       if (embedding != null) 'embedding': embedding?.toJson(),
+      if (ownerId != null) 'ownerId': ownerId?.toJson(),
     };
   }
 
@@ -247,6 +256,7 @@ abstract class MemoryBlock
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
       if (quality != null) 'quality': quality,
       if (category != null) 'category': category,
+      if (ownerId != null) 'ownerId': ownerId?.toJson(),
     };
   }
 
@@ -305,6 +315,7 @@ class _MemoryBlockImpl extends MemoryBlock {
     double? quality,
     String? category,
     _is.Vector? embedding,
+    _is.UuidValue? ownerId,
   }) : super._(
          id: id,
          legacyId: legacyId,
@@ -329,6 +340,7 @@ class _MemoryBlockImpl extends MemoryBlock {
          quality: quality,
          category: category,
          embedding: embedding,
+         ownerId: ownerId,
        );
 
   /// Returns a shallow copy of this [MemoryBlock]
@@ -359,6 +371,7 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? quality = _Undefined,
     Object? category = _Undefined,
     Object? embedding = _Undefined,
+    Object? ownerId = _Undefined,
   }) {
     return MemoryBlock(
       id: id is int? ? id : this.id,
@@ -394,6 +407,7 @@ class _MemoryBlockImpl extends MemoryBlock {
       quality: quality is double? ? quality : this.quality,
       category: category is String? ? category : this.category,
       embedding: embedding is _is.Vector? ? embedding : this.embedding?.clone(),
+      ownerId: ownerId is _is.UuidValue? ? ownerId : this.ownerId,
     );
   }
 }
@@ -519,6 +533,12 @@ class MemoryBlockUpdateTable extends _is.UpdateTable<MemoryBlockTable> {
         table.embedding,
         value,
       );
+
+  _is.ColumnValue<_is.UuidValue, _is.UuidValue> ownerId(_is.UuidValue? value) =>
+      _is.ColumnValue(
+        table.ownerId,
+        value,
+      );
 }
 
 class MemoryBlockTable extends _is.Table<int?> {
@@ -613,6 +633,10 @@ class MemoryBlockTable extends _is.Table<int?> {
       this,
       dimension: 512,
     );
+    ownerId = _is.ColumnUuid(
+      'ownerId',
+      this,
+    );
   }
 
   late final MemoryBlockUpdateTable updateTable;
@@ -661,6 +685,8 @@ class MemoryBlockTable extends _is.Table<int?> {
 
   late final _is.ColumnVector embedding;
 
+  late final _is.ColumnUuid ownerId;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -686,6 +712,7 @@ class MemoryBlockTable extends _is.Table<int?> {
     quality,
     category,
     embedding,
+    ownerId,
   ];
 }
 

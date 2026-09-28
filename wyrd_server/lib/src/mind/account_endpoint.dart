@@ -9,7 +9,8 @@ import 'package:serverpod/serverpod.dart';
 /// with Serverpod's built-in email auth, credential deletion isn't something this project's
 /// own endpoints can safely do (that lives inside serverpod_auth_idp_server, with no public
 /// self-service delete-account method exposed), so [deleteMyData] wipes everything this app
-/// owns about the person (profile facts, visit history, conversation history) but leaves
+/// owns about the person (profile, conversations, photos, memories and answers learned from them,
+/// the conversation thread) but leaves
 /// their login credential intact -- a real, documented gap versus Node's full account wipe.
 class AccountEndpoint extends Endpoint {
   @override
@@ -28,6 +29,11 @@ class AccountEndpoint extends Endpoint {
       orderBy: (t) => t.id.asc(),
     );
 
+    final sightings = await Sighting.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
+    final learned = await LearnedAnswer.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
+    final memories = await MemoryBlock.db.find(session, where: (t) => t.ownerId.equals(authUserId), orderBy: (t) => t.id);
+    final thread = await ChatThread.db.findFirstRow(session, where: (t) => t.authUserId.equals(authUserId));
+
     return AccountExport(
       email: email?.email,
       facts: profile.facts,
@@ -35,6 +41,10 @@ class AccountEndpoint extends Endpoint {
       firstSeen: profile.firstSeen,
       lastSeen: profile.lastSeen,
       conversation: conversation,
+      sightings: sightings,
+      learnedAnswers: learned,
+      memories: memories,
+      thread: thread,
     );
   }
 
@@ -44,12 +54,13 @@ class AccountEndpoint extends Endpoint {
     final profile = await UserFactService.loadOrCreateProfile(session, authUserId);
     await UserProfile.db.deleteRow(session, profile);
 
-    final turns = await ConversationTurn.db.find(
-      session,
-      where: (t) => t.authUserId.equals(authUserId),
-    );
-    for (final turn in turns) {
-      await ConversationTurn.db.deleteRow(session, turn);
-    }
+    // everything that came from them: chats, photos, what WYRD learned or remembered from those,
+    // and where their conversation had got to. (Their thumbs' past effect on shared scores is
+    // aggregate and anonymous, so it stays.)
+    await ConversationTurn.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await Sighting.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await LearnedAnswer.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await MemoryBlock.db.deleteWhere(session, where: (t) => t.ownerId.equals(authUserId));
+    await ChatThread.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
   }
 }

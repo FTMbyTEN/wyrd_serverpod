@@ -1,3 +1,4 @@
+import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/mind/llm_budget.dart';
 
@@ -70,6 +71,20 @@ void main() {
       final status = await endpoints.status.getStatus(sessionBuilder);
       expect(status.llmSpentTodayUsd, closeTo(0.002, 1e-9));
       expect(status.llmDailyCapUsd, LlmBudget.dailyCapUsd(session));
+    });
+
+    test('one signed-in person stops at their allowance while others can still use the cap', () async {
+      Session as(String id) => sessionBuilder
+          .copyWith(authentication: AuthenticationOverride.authenticationInfo(id, {}))
+          .build();
+      final heavy = as('44444444-4444-4444-8444-444444444444');
+      final other = as('55555555-5555-4555-8555-555555555555');
+      final allowance = LlmBudget.userDailyCapUsd(heavy);
+      expect(await LlmBudget.allow(heavy, background: false), isTrue);
+      await LlmBudget.record(heavy, {'input_tokens': 0, 'output_tokens': (allowance * 1.1 / 5 * 1000000).ceil()});
+      expect(await LlmBudget.spentTodayByUsd(heavy, UuidValue.fromString('44444444-4444-4444-8444-444444444444')), greaterThan(allowance));
+      expect(await LlmBudget.allow(heavy, background: false), isFalse);
+      expect(await LlmBudget.allow(other, background: false), isTrue);
     });
   });
 }

@@ -12,7 +12,11 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/protocol.dart' as _i2pladzn;
+import '../mind/chat_thread.dart' as _i0zx8u49;
 import '../mind/conversation_turn.dart' as _igyss20b;
+import '../mind/learned_answer.dart' as _ilehim93;
+import '../mind/memory_block.dart' as _i0t6eg5q;
+import '../mind/sighting.dart' as _i3snlpz5;
 import '../mind/user_fact.dart' as _il0k3um2;
 
 abstract class AccountExport
@@ -24,6 +28,10 @@ abstract class AccountExport
     required this.firstSeen,
     required this.lastSeen,
     required this.conversation,
+    this.sightings,
+    this.learnedAnswers,
+    this.memories,
+    this.thread,
   });
 
   factory AccountExport({
@@ -33,6 +41,10 @@ abstract class AccountExport
     required DateTime firstSeen,
     required DateTime lastSeen,
     required List<_igyss20b.ConversationTurn> conversation,
+    List<_i3snlpz5.Sighting>? sightings,
+    List<_ilehim93.LearnedAnswer>? learnedAnswers,
+    List<_i0t6eg5q.MemoryBlock>? memories,
+    _i0zx8u49.ChatThread? thread,
   }) = _AccountExportImpl;
 
   factory AccountExport.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -52,6 +64,26 @@ abstract class AccountExport
           .deserialize<List<_igyss20b.ConversationTurn>>(
             jsonSerialization['conversation'],
           ),
+      sightings: jsonSerialization['sightings'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<_i3snlpz5.Sighting>>(
+              jsonSerialization['sightings'],
+            ),
+      learnedAnswers: jsonSerialization['learnedAnswers'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<_ilehim93.LearnedAnswer>>(
+              jsonSerialization['learnedAnswers'],
+            ),
+      memories: jsonSerialization['memories'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<_i0t6eg5q.MemoryBlock>>(
+              jsonSerialization['memories'],
+            ),
+      thread: jsonSerialization['thread'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<_i0zx8u49.ChatThread>(
+              jsonSerialization['thread'],
+            ),
     );
   }
 
@@ -67,6 +99,14 @@ abstract class AccountExport
 
   List<_igyss20b.ConversationTurn> conversation;
 
+  List<_i3snlpz5.Sighting>? sightings;
+
+  List<_ilehim93.LearnedAnswer>? learnedAnswers;
+
+  List<_i0t6eg5q.MemoryBlock>? memories;
+
+  _i0zx8u49.ChatThread? thread;
+
   /// Returns a shallow copy of this [AccountExport]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -77,6 +117,10 @@ abstract class AccountExport
     DateTime? firstSeen,
     DateTime? lastSeen,
     List<_igyss20b.ConversationTurn>? conversation,
+    List<_i3snlpz5.Sighting>? sightings,
+    List<_ilehim93.LearnedAnswer>? learnedAnswers,
+    List<_i0t6eg5q.MemoryBlock>? memories,
+    _i0zx8u49.ChatThread? thread,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -88,6 +132,15 @@ abstract class AccountExport
       'firstSeen': firstSeen.toJson(),
       'lastSeen': lastSeen.toJson(),
       'conversation': conversation.toJson(valueToJson: (v) => v.toJson()),
+      if (sightings != null)
+        'sightings': sightings?.toJson(valueToJson: (v) => v.toJson()),
+      if (learnedAnswers != null)
+        'learnedAnswers': learnedAnswers?.toJson(
+          valueToJson: (v) => v.toJson(),
+        ),
+      if (memories != null)
+        'memories': memories?.toJson(valueToJson: (v) => v.toJson()),
+      if (thread != null) 'thread': thread?.toJson(),
     };
   }
 
@@ -103,6 +156,17 @@ abstract class AccountExport
       'conversation': conversation.toJson(
         valueToJson: (v) => v.toJsonForProtocol(),
       ),
+      if (sightings != null)
+        'sightings': sightings?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
+      if (learnedAnswers != null)
+        'learnedAnswers': learnedAnswers?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
+      if (memories != null)
+        'memories': memories?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+      if (thread != null) 'thread': thread?.toJsonForProtocol(),
     };
   }
 
@@ -122,6 +186,10 @@ class _AccountExportImpl extends AccountExport {
     required DateTime firstSeen,
     required DateTime lastSeen,
     required List<_igyss20b.ConversationTurn> conversation,
+    List<_i3snlpz5.Sighting>? sightings,
+    List<_ilehim93.LearnedAnswer>? learnedAnswers,
+    List<_i0t6eg5q.MemoryBlock>? memories,
+    _i0zx8u49.ChatThread? thread,
   }) : super._(
          email: email,
          facts: facts,
@@ -129,6 +197,10 @@ class _AccountExportImpl extends AccountExport {
          firstSeen: firstSeen,
          lastSeen: lastSeen,
          conversation: conversation,
+         sightings: sightings,
+         learnedAnswers: learnedAnswers,
+         memories: memories,
+         thread: thread,
        );
 
   /// Returns a shallow copy of this [AccountExport]
@@ -142,6 +214,10 @@ class _AccountExportImpl extends AccountExport {
     DateTime? firstSeen,
     DateTime? lastSeen,
     List<_igyss20b.ConversationTurn>? conversation,
+    Object? sightings = _Undefined,
+    Object? learnedAnswers = _Undefined,
+    Object? memories = _Undefined,
+    Object? thread = _Undefined,
   }) {
     return AccountExport(
       email: email is String? ? email : this.email,
@@ -151,6 +227,18 @@ class _AccountExportImpl extends AccountExport {
       lastSeen: lastSeen ?? this.lastSeen,
       conversation:
           conversation ?? this.conversation.map((e0) => e0.copyWith()).toList(),
+      sightings: sightings is List<_i3snlpz5.Sighting>?
+          ? sightings
+          : this.sightings?.map((e0) => e0.copyWith()).toList(),
+      learnedAnswers: learnedAnswers is List<_ilehim93.LearnedAnswer>?
+          ? learnedAnswers
+          : this.learnedAnswers?.map((e0) => e0.copyWith()).toList(),
+      memories: memories is List<_i0t6eg5q.MemoryBlock>?
+          ? memories
+          : this.memories?.map((e0) => e0.copyWith()).toList(),
+      thread: thread is _i0zx8u49.ChatThread?
+          ? thread
+          : this.thread?.copyWith(),
     );
   }
 }

@@ -256,6 +256,7 @@ class ChatService {
       MemoryBlock(
         timestamp: DateTime.now().toUtc(),
         source: 'chat',
+        ownerId: authUserId,
         userText: text,
         botText: reply,
         topics: topics,

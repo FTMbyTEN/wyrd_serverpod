@@ -70,6 +70,7 @@ import 'mind/lexicon_entry.dart' as _i37ps124;
 import 'mind/lexicon_stats.dart' as _ic2pi8fi;
 import 'mind/lexicon_word_summary.dart' as _i7zu42sq;
 import 'mind/llm_usage_day.dart' as _i1bjxjal;
+import 'mind/llm_usage_user.dart' as _ij2us809;
 import 'mind/maintenance_run.dart' as _inurj49q;
 import 'mind/memory_block.dart' as _if349ohh;
 import 'mind/mind.dart' as _iqhk00ra;
@@ -124,6 +125,7 @@ export 'mind/lexicon_entry.dart';
 export 'mind/lexicon_stats.dart';
 export 'mind/lexicon_word_summary.dart';
 export 'mind/llm_usage_day.dart';
+export 'mind/llm_usage_user.dart';
 export 'mind/maintenance_run.dart';
 export 'mind/memory_block.dart';
 export 'mind/mind.dart';
@@ -1113,6 +1115,60 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'llm_usage_user',
+      dartName: 'LlmUsageUser',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'day',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'costMicroUsd',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'llm_usage_user_day_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'day',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'maintenance_run',
       dartName: 'MaintenanceRun',
       schema: 'public',
@@ -1308,9 +1364,28 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'Vector(512)?',
           vectorDimension: 512,
         ),
+        _isp.ColumnDefinition(
+          name: 'ownerId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
       ],
       foreignKeys: [],
       indexes: [
+        _isp.IndexDefinition(
+          indexName: 'memory_block_owner_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'ownerId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
         _isp.IndexDefinition(
           indexName: 'memory_block_embedding_idx',
           tableSpace: null,
@@ -2146,6 +2221,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i1bjxjal.LlmUsageDay) {
       return _i1bjxjal.LlmUsageDay.fromJson(data) as T;
     }
+    if (t == _ij2us809.LlmUsageUser) {
+      return _ij2us809.LlmUsageUser.fromJson(data) as T;
+    }
     if (t == _inurj49q.MaintenanceRun) {
       return _inurj49q.MaintenanceRun.fromJson(data) as T;
     }
@@ -2322,6 +2400,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i1bjxjal.LlmUsageDay?>()) {
       return (data != null ? _i1bjxjal.LlmUsageDay.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_ij2us809.LlmUsageUser?>()) {
+      return (data != null ? _ij2us809.LlmUsageUser.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_inurj49q.MaintenanceRun?>()) {
       return (data != null ? _inurj49q.MaintenanceRun.fromJson(data) : null)
           as T;
@@ -2394,6 +2475,48 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data as List)
               .map((e) => deserialize<_i8fl0sel.ConversationTurn>(e))
               .toList()
+          as T;
+    }
+    if (t == List<_isgvgh6k.Sighting>) {
+      return (data as List)
+              .map((e) => deserialize<_isgvgh6k.Sighting>(e))
+              .toList()
+          as T;
+    }
+    if (t == _is.getType<List<_isgvgh6k.Sighting>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_isgvgh6k.Sighting>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_iexdo29m.LearnedAnswer>) {
+      return (data as List)
+              .map((e) => deserialize<_iexdo29m.LearnedAnswer>(e))
+              .toList()
+          as T;
+    }
+    if (t == _is.getType<List<_iexdo29m.LearnedAnswer>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_iexdo29m.LearnedAnswer>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_if349ohh.MemoryBlock>) {
+      return (data as List)
+              .map((e) => deserialize<_if349ohh.MemoryBlock>(e))
+              .toList()
+          as T;
+    }
+    if (t == _is.getType<List<_if349ohh.MemoryBlock>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_if349ohh.MemoryBlock>(e))
+                    .toList()
+              : null)
           as T;
     }
     if (t == List<String>) {
@@ -2595,6 +2718,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ic2pi8fi.LexiconStats => 'LexiconStats',
       _i7zu42sq.LexiconWordSummary => 'LexiconWordSummary',
       _i1bjxjal.LlmUsageDay => 'LlmUsageDay',
+      _ij2us809.LlmUsageUser => 'LlmUsageUser',
       _inurj49q.MaintenanceRun => 'MaintenanceRun',
       _if349ohh.MemoryBlock => 'MemoryBlock',
       _iqhk00ra.Mind => 'Mind',
@@ -2698,6 +2822,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'LexiconWordSummary';
       case _i1bjxjal.LlmUsageDay():
         return 'LlmUsageDay';
+      case _ij2us809.LlmUsageUser():
+        return 'LlmUsageUser';
       case _inurj49q.MaintenanceRun():
         return 'MaintenanceRun';
       case _if349ohh.MemoryBlock():
@@ -2867,6 +2993,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'LlmUsageDay') {
       return deserialize<_i1bjxjal.LlmUsageDay>(data['data']);
     }
+    if (dataClassName == 'LlmUsageUser') {
+      return deserialize<_ij2us809.LlmUsageUser>(data['data']);
+    }
     if (dataClassName == 'MaintenanceRun') {
       return deserialize<_inurj49q.MaintenanceRun>(data['data']);
     }
@@ -2991,6 +3120,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i37ps124.LexiconEntry.t;
       case _i1bjxjal.LlmUsageDay:
         return _i1bjxjal.LlmUsageDay.t;
+      case _ij2us809.LlmUsageUser:
+        return _ij2us809.LlmUsageUser.t;
       case _inurj49q.MaintenanceRun:
         return _inurj49q.MaintenanceRun.t;
       case _if349ohh.MemoryBlock:

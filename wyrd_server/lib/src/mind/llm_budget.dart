@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../drone/drone_service.dart';
 import '../generated/protocol.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -18,6 +19,35 @@ class LlmBudget {
   /// $3/month ≈ $0.10/day; leave a little headroom for estimate error.
   static const _defaultDailyUsd = 0.09;
   static const _backgroundShare = 0.5;
+
+  /// Each signed-in person's share of the day, so one account can't spend everyone's cap.
+  /// Override with the `llmUserDailyUsd` password. The drone operator (the owner) has no
+  /// allowance of their own, only the whole cap.
+  static const _defaultUserDailyUsd = 0.03;
+
+  static double userDailyCapUsd(Session session) =>
+      double.tryParse(session.passwords['llmUserDailyUsd'] ?? '') ?? _defaultUserDailyUsd;
+
+  static UuidValue? _person(Session session) {
+    final id = session.authenticated?.userIdentifier;
+    return id == null ? null : UuidValue.fromString(id);
+  }
+
+  static Future<double> spentTodayByUsd(Session session, UuidValue authUserId) async {
+    final row = await LlmUsageUser.db.findFirstRow(
+      session,
+      where: (t) => t.day.equals(_today()) & t.authUserId.equals(authUserId),
+    );
+    return (row?.costMicroUsd ?? 0) / 1000000;
+  }
+
+  /// True when the person making this request has used their allowance for today.
+  static Future<bool> personOverAllowance(Session session, {double estimateUsd = 0}) async {
+    final person = _person(session);
+    if (person == null || await DroneService.isOperator(session, person)) return false;
+    final spent = await spentTodayByUsd(session, person);
+    return spent + estimateUsd > userDailyCapUsd(session);
+  }
 
   // List prices per million tokens (input, output). Unknown models are priced like the most
   // expensive listed one, so an estimate never undercounts.
@@ -68,6 +98,10 @@ class LlmBudget {
     final now = DateTime.now().toUtc();
     final dayFraction = min(1.0, (now.hour + now.minute / 60 + 1) / 24);
     final cap = dailyCapUsd(session) * (background ? _backgroundShare * dayFraction : 1);
+    if (!background && await personOverAllowance(session, estimateUsd: estimateUsd)) {
+      session.log('[llm-budget] interactive call skipped: this person has used their daily allowance', level: LogLevel.info);
+      return false;
+    }
     final spent = await spentTodayUsd(session);
     if (spent + estimateUsd <= cap) return true;
     session.log(
@@ -98,5 +132,13 @@ class LlmBudget {
       '"calls" = "llm_usage_day"."calls" + 1',
       parameters: QueryParameters.named({'day': _today(), 'micro': micro}),
     );
+    final person = _person(session);
+    if (person != null) {
+      await session.db.unsafeExecute(
+        'INSERT INTO "llm_usage_user" ("day", "authUserId", "costMicroUsd") VALUES (@day, @user::uuid, @micro) '
+        'ON CONFLICT ("day", "authUserId") DO UPDATE SET "costMicroUsd" = "llm_usage_user"."costMicroUsd" + @micro',
+        parameters: QueryParameters.named({'day': _today(), 'user': person.uuid, 'micro': micro}),
+      );
+    }
   }
 }

@@ -38,6 +38,7 @@ abstract class MemoryBlock
     this.sourceTopics,
     this.quality,
     this.category,
+    this.ownerId,
   });
 
   factory MemoryBlock({
@@ -63,6 +64,7 @@ abstract class MemoryBlock
     List<String>? sourceTopics,
     double? quality,
     String? category,
+    _isc.UuidValue? ownerId,
   }) = _MemoryBlockImpl;
 
   factory MemoryBlock.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -101,6 +103,9 @@ abstract class MemoryBlock
             ),
       quality: (jsonSerialization['quality'] as num?)?.toDouble(),
       category: jsonSerialization['category'] as String?,
+      ownerId: jsonSerialization['ownerId'] == null
+          ? null
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
     );
   }
 
@@ -151,6 +156,8 @@ abstract class MemoryBlock
 
   String? category;
 
+  _isc.UuidValue? ownerId;
+
   /// Returns a shallow copy of this [MemoryBlock]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -177,6 +184,7 @@ abstract class MemoryBlock
     List<String>? sourceTopics,
     double? quality,
     String? category,
+    _isc.UuidValue? ownerId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -204,6 +212,7 @@ abstract class MemoryBlock
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
       if (quality != null) 'quality': quality,
       if (category != null) 'category': category,
+      if (ownerId != null) 'ownerId': ownerId?.toJson(),
     };
   }
 
@@ -233,6 +242,7 @@ abstract class MemoryBlock
       if (sourceTopics != null) 'sourceTopics': sourceTopics?.toJson(),
       if (quality != null) 'quality': quality,
       if (category != null) 'category': category,
+      if (ownerId != null) 'ownerId': ownerId?.toJson(),
     };
   }
 
@@ -268,6 +278,7 @@ class _MemoryBlockImpl extends MemoryBlock {
     List<String>? sourceTopics,
     double? quality,
     String? category,
+    _isc.UuidValue? ownerId,
   }) : super._(
          id: id,
          legacyId: legacyId,
@@ -291,6 +302,7 @@ class _MemoryBlockImpl extends MemoryBlock {
          sourceTopics: sourceTopics,
          quality: quality,
          category: category,
+         ownerId: ownerId,
        );
 
   /// Returns a shallow copy of this [MemoryBlock]
@@ -320,6 +332,7 @@ class _MemoryBlockImpl extends MemoryBlock {
     Object? sourceTopics = _Undefined,
     Object? quality = _Undefined,
     Object? category = _Undefined,
+    Object? ownerId = _Undefined,
   }) {
     return MemoryBlock(
       id: id is int? ? id : this.id,
@@ -354,6 +367,7 @@ class _MemoryBlockImpl extends MemoryBlock {
           : this.sourceTopics?.map((e0) => e0).toList(),
       quality: quality is double? ? quality : this.quality,
       category: category is String? ? category : this.category,
+      ownerId: ownerId is _isc.UuidValue? ? ownerId : this.ownerId,
     );
   }
 }
