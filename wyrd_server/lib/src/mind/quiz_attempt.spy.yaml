@@ -1,0 +1,16 @@
+# One finished Quiz me round: the score, and the words missed (asked again next time).
+class: QuizAttempt
+table: quiz_attempt
+
+fields:
+  authUserId: UuidValue
+  readingItemId: int?
+  title: String
+  correct: int
+  total: int
+  missed: List<String>
+  at: DateTime
+
+indexes:
+  quiz_attempt_user_idx:
+    fields: authUserId, at

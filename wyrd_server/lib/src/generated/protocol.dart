@@ -31,6 +31,7 @@ import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
 import 'package:wyrd_server/src/generated/mind/growth_snapshot.dart'
     as _iaqmuv2j;
 import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
+import 'package:wyrd_server/src/generated/mind/quiz_question.dart' as _isgj4atv;
 import 'package:wyrd_server/src/generated/mind/reading_item.dart' as _ijabq8az;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
     as _ix0xy1y5;
@@ -81,6 +82,9 @@ import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/quarantined_item.dart' as _i80jr0fe;
+import 'mind/quiz_attempt.dart' as _i7m5h6h0;
+import 'mind/quiz_question.dart' as _ijwrfvys;
+import 'mind/quiz_stats.dart' as _iubv8onj;
 import 'mind/rating_vote.dart' as _i50atwt4;
 import 'mind/reading_item.dart' as _igsakn5u;
 import 'mind/reading_slice.dart' as _i8yd85bs;
@@ -141,6 +145,9 @@ export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
 export 'mind/quarantined_item.dart';
+export 'mind/quiz_attempt.dart';
+export 'mind/quiz_question.dart';
+export 'mind/quiz_stats.dart';
 export 'mind/rating_vote.dart';
 export 'mind/reading_item.dart';
 export 'mind/reading_slice.dart';
@@ -1640,6 +1647,84 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'quiz_attempt',
+      dartName: 'QuizAttempt',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'readingItemId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'correct',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'total',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'missed',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<String>',
+        ),
+        _isp.ColumnDefinition(
+          name: 'at',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'quiz_attempt_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'at',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'rating_vote',
       dartName: 'RatingVote',
       schema: 'public',
@@ -2475,6 +2560,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i80jr0fe.QuarantinedItem) {
       return _i80jr0fe.QuarantinedItem.fromJson(data) as T;
     }
+    if (t == _i7m5h6h0.QuizAttempt) {
+      return _i7m5h6h0.QuizAttempt.fromJson(data) as T;
+    }
+    if (t == _ijwrfvys.QuizQuestion) {
+      return _ijwrfvys.QuizQuestion.fromJson(data) as T;
+    }
+    if (t == _iubv8onj.QuizStats) {
+      return _iubv8onj.QuizStats.fromJson(data) as T;
+    }
     if (t == _i50atwt4.RatingVote) {
       return _i50atwt4.RatingVote.fromJson(data) as T;
     }
@@ -2671,6 +2765,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i80jr0fe.QuarantinedItem?>()) {
       return (data != null ? _i80jr0fe.QuarantinedItem.fromJson(data) : null)
           as T;
+    }
+    if (t == _is.getType<_i7m5h6h0.QuizAttempt?>()) {
+      return (data != null ? _i7m5h6h0.QuizAttempt.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ijwrfvys.QuizQuestion?>()) {
+      return (data != null ? _ijwrfvys.QuizQuestion.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_iubv8onj.QuizStats?>()) {
+      return (data != null ? _iubv8onj.QuizStats.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_i50atwt4.RatingVote?>()) {
       return (data != null ? _i50atwt4.RatingVote.fromJson(data) : null) as T;
@@ -2922,6 +3025,15 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_isgj4atv.QuizQuestion>) {
+      return (data as List)
+              .map((e) => deserialize<_isgj4atv.QuizQuestion>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_ikde1sdn.WorkPartInfo>) {
       return (data as List)
               .map((e) => deserialize<_ikde1sdn.WorkPartInfo>(e))
@@ -2933,9 +3045,6 @@ class Protocol extends _is.DatabaseSerializationManager {
               .map((e) => deserialize<_ixzzqok1.WorkHit>(e))
               .toList()
           as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == List<_i5d4cblk.MemoryBlock>) {
       return (data as List)
@@ -3023,6 +3132,9 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ix6ukv82.MindTopic => 'MindTopic',
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
+      _i7m5h6h0.QuizAttempt => 'QuizAttempt',
+      _ijwrfvys.QuizQuestion => 'QuizQuestion',
+      _iubv8onj.QuizStats => 'QuizStats',
       _i50atwt4.RatingVote => 'RatingVote',
       _igsakn5u.ReadingItem => 'ReadingItem',
       _i8yd85bs.ReadingSlice => 'ReadingSlice',
@@ -3139,6 +3251,12 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'NeuralNetwork';
       case _i80jr0fe.QuarantinedItem():
         return 'QuarantinedItem';
+      case _i7m5h6h0.QuizAttempt():
+        return 'QuizAttempt';
+      case _ijwrfvys.QuizQuestion():
+        return 'QuizQuestion';
+      case _iubv8onj.QuizStats():
+        return 'QuizStats';
       case _i50atwt4.RatingVote():
         return 'RatingVote';
       case _igsakn5u.ReadingItem():
@@ -3327,6 +3445,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'QuarantinedItem') {
       return deserialize<_i80jr0fe.QuarantinedItem>(data['data']);
     }
+    if (dataClassName == 'QuizAttempt') {
+      return deserialize<_i7m5h6h0.QuizAttempt>(data['data']);
+    }
+    if (dataClassName == 'QuizQuestion') {
+      return deserialize<_ijwrfvys.QuizQuestion>(data['data']);
+    }
+    if (dataClassName == 'QuizStats') {
+      return deserialize<_iubv8onj.QuizStats>(data['data']);
+    }
     if (dataClassName == 'RatingVote') {
       return deserialize<_i50atwt4.RatingVote>(data['data']);
     }
@@ -3460,6 +3587,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ix6ukv82.MindTopic.t;
       case _i80jr0fe.QuarantinedItem:
         return _i80jr0fe.QuarantinedItem.t;
+      case _i7m5h6h0.QuizAttempt:
+        return _i7m5h6h0.QuizAttempt.t;
       case _i50atwt4.RatingVote:
         return _i50atwt4.RatingVote.t;
       case _igsakn5u.ReadingItem:

@@ -59,6 +59,9 @@ library:
   - list:
   - readOn:
   - current:
+  - quiz:
+  - quizDone:
+  - quizStats:
   - contents:
   - openBook:
   - openWork:

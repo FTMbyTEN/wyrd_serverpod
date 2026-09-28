@@ -1,0 +1,12 @@
+# One question of a Quiz me round, made from the passage just read (see QuizService).
+class: QuizQuestion
+fields:
+  # 'cloze' (fill in the blank) or 'truefalse'
+  kind: String
+  prompt: String
+  options: List<String>
+  answer: int
+  # the sentence from the passage it came from
+  explanation: String
+  # the word being tested (remembered when missed)
+  keyword: String

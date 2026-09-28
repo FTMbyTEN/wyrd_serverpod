@@ -1051,6 +1051,78 @@ class Endpoints extends _is.EndpointDispatch {
                     params['id'],
                   ),
         ),
+        'quiz': _is.MethodConnector(
+          name: 'quiz',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'passage': _is.ParameterDescription(
+              name: 'passage',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).quiz(
+                    session,
+                    params['id'],
+                    params['passage'],
+                  ),
+        ),
+        'quizDone': _is.MethodConnector(
+          name: 'quizDone',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'correct': _is.ParameterDescription(
+              name: 'correct',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'total': _is.ParameterDescription(
+              name: 'total',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'missed': _is.ParameterDescription(
+              name: 'missed',
+              type: _is.getType<List<String>>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['library'] as _ifaqo2up.LibraryEndpoint).quizDone(
+                    session,
+                    params['id'],
+                    params['correct'],
+                    params['total'],
+                    params['missed'],
+                  ),
+        ),
+        'quizStats': _is.MethodConnector(
+          name: 'quizStats',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['library'] as _ifaqo2up.LibraryEndpoint)
+                  .quizStats(session),
+        ),
         'contents': _is.MethodConnector(
           name: 'contents',
           params: {

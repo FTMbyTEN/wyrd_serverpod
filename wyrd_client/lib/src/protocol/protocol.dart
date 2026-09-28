@@ -29,6 +29,7 @@ import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/growth_snapshot.dart'
     as _ikfbn3bp;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
+import 'package:wyrd_client/src/protocol/mind/quiz_question.dart' as _i0wujsep;
 import 'package:wyrd_client/src/protocol/mind/reading_item.dart' as _iqdaexua;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
 import 'package:wyrd_client/src/protocol/mind/sighting.dart' as _ijttkw09;
@@ -77,6 +78,9 @@ import 'mind/mind.dart' as _iqhk00ra;
 import 'mind/mind_topic.dart' as _ix6ukv82;
 import 'mind/neural_network.dart' as _ievgcfdd;
 import 'mind/quarantined_item.dart' as _i80jr0fe;
+import 'mind/quiz_attempt.dart' as _i7m5h6h0;
+import 'mind/quiz_question.dart' as _ijwrfvys;
+import 'mind/quiz_stats.dart' as _iubv8onj;
 import 'mind/rating_vote.dart' as _i50atwt4;
 import 'mind/reading_item.dart' as _igsakn5u;
 import 'mind/reading_slice.dart' as _i8yd85bs;
@@ -137,6 +141,9 @@ export 'mind/mind.dart';
 export 'mind/mind_topic.dart';
 export 'mind/neural_network.dart';
 export 'mind/quarantined_item.dart';
+export 'mind/quiz_attempt.dart';
+export 'mind/quiz_question.dart';
+export 'mind/quiz_stats.dart';
 export 'mind/rating_vote.dart';
 export 'mind/reading_item.dart';
 export 'mind/reading_slice.dart';
@@ -316,6 +323,15 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i80jr0fe.QuarantinedItem) {
       return _i80jr0fe.QuarantinedItem.fromJson(data) as T;
+    }
+    if (t == _i7m5h6h0.QuizAttempt) {
+      return _i7m5h6h0.QuizAttempt.fromJson(data) as T;
+    }
+    if (t == _ijwrfvys.QuizQuestion) {
+      return _ijwrfvys.QuizQuestion.fromJson(data) as T;
+    }
+    if (t == _iubv8onj.QuizStats) {
+      return _iubv8onj.QuizStats.fromJson(data) as T;
     }
     if (t == _i50atwt4.RatingVote) {
       return _i50atwt4.RatingVote.fromJson(data) as T;
@@ -513,6 +529,15 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i80jr0fe.QuarantinedItem?>()) {
       return (data != null ? _i80jr0fe.QuarantinedItem.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i7m5h6h0.QuizAttempt?>()) {
+      return (data != null ? _i7m5h6h0.QuizAttempt.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ijwrfvys.QuizQuestion?>()) {
+      return (data != null ? _ijwrfvys.QuizQuestion.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iubv8onj.QuizStats?>()) {
+      return (data != null ? _iubv8onj.QuizStats.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i50atwt4.RatingVote?>()) {
       return (data != null ? _i50atwt4.RatingVote.fromJson(data) : null) as T;
@@ -764,6 +789,15 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i0wujsep.QuizQuestion>) {
+      return (data as List)
+              .map((e) => deserialize<_i0wujsep.QuizQuestion>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_iepby0e1.WorkPartInfo>) {
       return (data as List)
               .map((e) => deserialize<_iepby0e1.WorkPartInfo>(e))
@@ -775,9 +809,6 @@ class Protocol extends _isc.SerializationManager {
               .map((e) => deserialize<_iv7njdft.WorkHit>(e))
               .toList()
           as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == List<_ij6z6xwm.MemoryBlock>) {
       return (data as List)
@@ -862,6 +893,9 @@ class Protocol extends _isc.SerializationManager {
       _ix6ukv82.MindTopic => 'MindTopic',
       _ievgcfdd.NeuralNetwork => 'NeuralNetwork',
       _i80jr0fe.QuarantinedItem => 'QuarantinedItem',
+      _i7m5h6h0.QuizAttempt => 'QuizAttempt',
+      _ijwrfvys.QuizQuestion => 'QuizQuestion',
+      _iubv8onj.QuizStats => 'QuizStats',
       _i50atwt4.RatingVote => 'RatingVote',
       _igsakn5u.ReadingItem => 'ReadingItem',
       _i8yd85bs.ReadingSlice => 'ReadingSlice',
@@ -978,6 +1012,12 @@ class Protocol extends _isc.SerializationManager {
         return 'NeuralNetwork';
       case _i80jr0fe.QuarantinedItem():
         return 'QuarantinedItem';
+      case _i7m5h6h0.QuizAttempt():
+        return 'QuizAttempt';
+      case _ijwrfvys.QuizQuestion():
+        return 'QuizQuestion';
+      case _iubv8onj.QuizStats():
+        return 'QuizStats';
       case _i50atwt4.RatingVote():
         return 'RatingVote';
       case _igsakn5u.ReadingItem():
@@ -1161,6 +1201,15 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'QuarantinedItem') {
       return deserialize<_i80jr0fe.QuarantinedItem>(data['data']);
+    }
+    if (dataClassName == 'QuizAttempt') {
+      return deserialize<_i7m5h6h0.QuizAttempt>(data['data']);
+    }
+    if (dataClassName == 'QuizQuestion') {
+      return deserialize<_ijwrfvys.QuizQuestion>(data['data']);
+    }
+    if (dataClassName == 'QuizStats') {
+      return deserialize<_iubv8onj.QuizStats>(data['data']);
     }
     if (dataClassName == 'RatingVote') {
       return deserialize<_i50atwt4.RatingVote>(data['data']);

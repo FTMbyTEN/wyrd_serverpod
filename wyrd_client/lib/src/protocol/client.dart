@@ -50,6 +50,8 @@ import 'package:wyrd_client/src/protocol/mind/lexicon_stats.dart' as _i85rewab;
 import 'package:wyrd_client/src/protocol/mind/memory_block.dart' as _ij6z6xwm;
 import 'package:wyrd_client/src/protocol/mind/mind.dart' as _i45d730y;
 import 'package:wyrd_client/src/protocol/mind/neural_network.dart' as _idlunu5o;
+import 'package:wyrd_client/src/protocol/mind/quiz_question.dart' as _i0wujsep;
+import 'package:wyrd_client/src/protocol/mind/quiz_stats.dart' as _iopav0ef;
 import 'package:wyrd_client/src/protocol/mind/reading_item.dart' as _iqdaexua;
 import 'package:wyrd_client/src/protocol/mind/reading_slice.dart' as _ihcpac93;
 import 'package:wyrd_client/src/protocol/mind/reasoning_note.dart' as _ii1bv1u2;
@@ -737,6 +739,44 @@ class EndpointLibrary extends _isc.EndpointRef {
         'library',
         'current',
         {'id': id},
+      );
+
+  /// Quiz me: questions from [passage] (the part of item [id] just read). Words missed in
+  /// recent rounds on this item come back first. No AI.
+  _ida.Future<List<_i0wujsep.QuizQuestion>> quiz(
+    int id,
+    String passage,
+  ) => caller.callServerEndpoint<List<_i0wujsep.QuizQuestion>>(
+    'library',
+    'quiz',
+    {
+      'id': id,
+      'passage': passage,
+    },
+  );
+
+  /// Records a finished round, so missed words are asked again and progress adds up.
+  _ida.Future<_iopav0ef.QuizStats> quizDone(
+    int id,
+    int correct,
+    int total,
+    List<String> missed,
+  ) => caller.callServerEndpoint<_iopav0ef.QuizStats>(
+    'library',
+    'quizDone',
+    {
+      'id': id,
+      'correct': correct,
+      'total': total,
+      'missed': missed,
+    },
+  );
+
+  _ida.Future<_iopav0ef.QuizStats> quizStats() =>
+      caller.callServerEndpoint<_iopav0ef.QuizStats>(
+        'library',
+        'quizStats',
+        {},
       );
 
   /// A work's table of contents (sections of a textbook, chapters on Wikisource).

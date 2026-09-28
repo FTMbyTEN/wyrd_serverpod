@@ -69,7 +69,8 @@ class LibraryKnowledge {
   /// Plain-text sentences of [text].
   static List<String> sentences(String text) => text
       .replaceAll(RegExp(r'\s+'), ' ')
-      .split(RegExp(r'(?<=[.!?。！？])\s+'))
+      // after . ! ? (and a closing quote or bracket), but not after "Mr." / "Mrs." / "Dr." / "St."
+      .split(RegExp(r'(?<![A-Z][a-z]\.)(?<![A-Z][a-z][a-z]\.)(?<!\b[A-Z]\.)(?<=[.!?。！？]["”’)\]]?)\s+'))
       .map((s) => s.trim())
       .where((s) => s.length > 20)
       .toList();

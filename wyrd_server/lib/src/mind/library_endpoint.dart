@@ -1,6 +1,7 @@
 import '../generated/protocol.dart';
 import 'library_service.dart';
 import 'page_reader_service.dart';
+import 'quiz_service.dart';
 import 'rate_limiter.dart';
 import 'works_service.dart';
 import 'package:serverpod/serverpod.dart';
@@ -51,6 +52,37 @@ class LibraryEndpoint extends Endpoint {
     final r = await LibraryService.current(session, me, item);
     return ReadingSlice(item: item, text: r?.$2.text ?? '', offset: r?.$2.offset ?? 0, finished: LibraryService.finished(item));
   }
+
+  /// Quiz me: questions from [passage] (the part of item [id] just read). Words missed in
+  /// recent rounds on this item come back first. No AI.
+  Future<List<QuizQuestion>> quiz(Session session, int id, String passage) async {
+    _pace(session, 'quiz');
+    final me = _me(session);
+    final item = await ReadingItem.db.findById(session, id);
+    if (item == null || item.authUserId != me) throw Exception('not in your library');
+    final text = passage.length > 12000 ? passage.substring(0, 12000) : passage;
+    return QuizService.make(session, text, missed: await QuizService.missed(session, me, id));
+  }
+
+  /// Records a finished round, so missed words are asked again and progress adds up.
+  Future<QuizStats> quizDone(Session session, int id, int correct, int total, List<String> missed) async {
+    final me = _me(session);
+    final item = await ReadingItem.db.findById(session, id);
+    if (item == null || item.authUserId != me) throw Exception('not in your library');
+    if (total < 1 || total > 20 || correct < 0 || correct > total) throw Exception('that score does not add up');
+    await QuizAttempt.db.insertRow(session, QuizAttempt(
+      authUserId: me,
+      readingItemId: id,
+      title: item.title,
+      correct: correct,
+      total: total,
+      missed: missed.take(20).map((m) => m.length > 60 ? m.substring(0, 60) : m).toList(),
+      at: DateTime.now().toUtc(),
+    ));
+    return QuizService.stats(session, me);
+  }
+
+  Future<QuizStats> quizStats(Session session) => QuizService.stats(session, _me(session));
 
   /// A work's table of contents (sections of a textbook, chapters on Wikisource).
   Future<List<WorkPartInfo>> contents(Session session, int id) async {

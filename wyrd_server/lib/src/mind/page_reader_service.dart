@@ -73,7 +73,7 @@ class PageReaderService {
       final raw = utf8.decode(bytes, allowMalformed: true);
       final isHtml = type.contains('html') || RegExp(r'<html|<body|<p[\s>]', caseSensitive: false).hasMatch(raw.substring(0, raw.length.clamp(0, 2000)));
       final title = isHtml ? _title(raw) : _gutenbergTitle(raw) ?? uri.pathSegments.lastOrNull ?? uri.host;
-      final text = _gutenbergBody(isHtml ? htmlToText(raw) : raw.replaceAll('\r\n', '\n'));
+      final text = _gutenbergBody(isHtml ? htmlToText(raw) : reflow(raw.replaceAll('\r\n', '\n')));
 
       return sliceText(url: uri.toString(), title: title, text: text, offset: offset);
     } finally {
@@ -144,23 +144,62 @@ class PageReaderService {
     return text.substring(start.end, end != null && end.start > start.end ? end.start : text.length).trim();
   }
 
-  /// Readable text from HTML: scripts, styles and navigation dropped, blocks become lines.
+  /// Readable text from HTML: scripts, styles and navigation dropped; blocks become paragraphs
+  /// (separated by a blank line), headings become "## " lines, and italics stay as _underscores_.
   static String htmlToText(String html) {
     var s = html
         .replaceAll(RegExp(r'<head[\s>][\s\S]*?</head>', caseSensitive: false), ' ') // title is read separately
         .replaceAll(RegExp(r'<(script|style|noscript|svg|nav|header|footer|form)[\s\S]*?</\1>', caseSensitive: false), ' ')
-        .replaceAll(RegExp(r'(?=<(p|div|h[1-6]|li|tr|blockquote|section|article)[\s>])', caseSensitive: false), '\n')
         .replaceAll(RegExp(r'<!--[\s\S]*?-->'), ' ')
-        .replaceAll(RegExp(r'<(br|/p|/div|/h[1-6]|/li|/tr|/blockquote)[^>]*>', caseSensitive: false), '\n')
+        .replaceAllMapped(
+          RegExp(r'<h[1-6][^>]*>([\s\S]*?)</h[1-6]>', caseSensitive: false),
+          (m) => '\n\n## ${m.group(1)!.replaceAll(RegExp(r'<[^>]+>'), ' ').replaceAll('\n', ' ')}\n\n',
+        )
+        .replaceAll(RegExp(r'<(i|em|cite)(\s[^>]*)?>', caseSensitive: false), '_')
+        .replaceAll(RegExp(r'</(i|em|cite)>', caseSensitive: false), '_')
+        .replaceAll(RegExp(r'<li(\s[^>]*)?>', caseSensitive: false), '\n\n• ')
+        .replaceAll(RegExp(r'<br[^>]*>', caseSensitive: false), '\n')
+        .replaceAll(
+          RegExp(r'</?(p|div|tr|blockquote|section|article|figure|figcaption|table|ul|ol|dl|dt|dd|caption|pre)(\s[^>]*)?>', caseSensitive: false),
+          '\n\n',
+        )
         .replaceAll(RegExp(r'<[^>]+>'), ' ');
     s = _entities(s);
+    // tidy each paragraph: no stray spaces, no empty lines inside
+    s = s
+        .split(RegExp(r'\n[ \t ]*\n'))
+        .map((p) => p.split('\n').map((l) => l.replaceAll(RegExp(r'[ \t ]+'), ' ').trim()).where((l) => l.isNotEmpty).join('\n'))
+        .where((p) => p.isNotEmpty && p != '•' && p != '##')
+        .join('\n\n');
     return s
-        .split('\n')
-        .map((l) => l.replaceAll(RegExp(r'[ \t ]+'), ' ').trim())
-        .where((l) => l.isNotEmpty)
-        .join('\n')
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n');
+        // "word ," left where inline tags were
+        .replaceAllMapped(RegExp(r' +([,.;:!?)\]])'), (m) => m.group(1)!)
+        .replaceAllMapped(RegExp(r'([(\[]) +'), (m) => m.group(1)!)
+        .replaceAllMapped(RegExp(r'_ +([^_\n]+?) +_'), (m) => '_${m.group(1)}_')
+        // "Figure" / "1.21" / caption, split across blocks: one line
+        .replaceAllMapped(
+          RegExp(r'\b(Figure|Table|Example|Equation|Checkpoint)\s*\n+\s*(\d+(?:\.\d+)*)\s*\n+'),
+          (m) => '${m.group(1)} ${m.group(2)} — ',
+        )
+        // "## 1.3" then "Accuracy…": one heading
+        .replaceAllMapped(RegExp(r'^## (\d+(?:\.\d+)*)\s*\n+(?:## )?(.+)$', multiLine: true), (m) => '## ${m.group(1)} ${m.group(2)}')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
   }
+
+  /// Plain text re-flowed for reading: paragraphs hard-wrapped at ~70 characters (as Project
+  /// Gutenberg files are) are joined into single lines; short-line text (poetry, verse, lists)
+  /// keeps its line breaks. Each break becomes one space, so offsets stay put.
+  static String reflow(String text) => text.splitMapJoin(
+        RegExp(r'\n[ \t]*\n+'),
+        onNonMatch: (para) {
+          final lines = para.split('\n');
+          if (lines.length < 2) return para;
+          // hard-wrapped prose: every line but the last runs close to the wrap width
+          final wrapped = lines.sublist(0, lines.length - 1).every((l) => l.trim().length >= 45);
+          return wrapped ? lines.join(' ') : para;
+        },
+      );
 
   static String entities(String s) => _entities(s);
 

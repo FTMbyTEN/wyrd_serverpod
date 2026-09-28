@@ -185,7 +185,7 @@ class LocalBrainService {
     await LibraryService.record(session, me, shown);
     final pct = full.total == 0 ? 100 : (((shown.nextOffset ?? full.total) / full.total) * 100).round();
     final tail = shown.nextOffset == null ? "\n\n(That's the end.)" : '\n\n— $pct% through. Say "continue" for more.';
-    return LocalAnswer('$intro\n\n$body$tail', read: shown, kind: 'reading');
+    return LocalAnswer('$intro\n\n${_forChat(body)}$tail', read: shown, kind: 'reading');
   }
 
   static Future<LocalAnswer> _continueReading(Session session, UuidValue me, ChatThread? thread, String? what) async {
@@ -219,7 +219,7 @@ class LocalBrainService {
         final pct = (LibraryService.progress(updated) * 100).round();
         final where = LibraryService.inParts(updated) && updated.partTitle != null ? ' — ${updated.partTitle}' : '';
         final tail = LibraryService.finished(updated) ? "\n\n(That's the end.)" : '\n\n— $pct% through. Say "continue" for more.';
-        return LocalAnswer('Picking up "$title"$where:\n\n${slice.text}$tail', read: slice, item: updated, action: _openBook(updated), kind: 'reading');
+        return LocalAnswer('Picking up "$title"$where:\n\n${_forChat(slice.text)}$tail', read: slice, item: updated, action: _openBook(updated), kind: 'reading');
       } catch (e) {
         return LocalAnswer("I couldn't reach \"$title\" just now (${_why(e)}). Try again in a moment?", kind: 'reading');
       }
@@ -323,7 +323,7 @@ class LocalBrainService {
       final tail = LibraryService.finished(item)
           ? "\n\n(That's the end.)"
           : '\n\n— $pct% through. Say "continue" for more, or ask me anything about it.';
-      return LocalAnswer('$intro\n\n${slice.text}$tail', read: slice, item: item, action: _openBook(item), kind: 'reading');
+      return LocalAnswer('$intro\n\n${_forChat(slice.text)}$tail', read: slice, item: item, action: _openBook(item), kind: 'reading');
     } catch (e) {
       return LocalAnswer("I found ${label ?? 'it'} but couldn't open it just now (${_why(e)}).", kind: 'reading');
     }
@@ -371,6 +371,11 @@ class LocalBrainService {
     final lines = items.map((i) => '"${i.title}" (${(LibraryService.progress(i) * 100).round()}%)').join(', ');
     return LocalAnswer('You\'re reading: $lines. Say "continue" to pick up the latest, or "continue <title>".', kind: 'library');
   }
+
+  /// A passage as plain chat text: no heading marks or italic underscores.
+  static String _forChat(String s) => s
+      .replaceAll(RegExp(r'^## ', multiLine: true), '')
+      .replaceAllMapped(RegExp(r'_([^_\n]+)_'), (m) => m.group(1)!);
 
   static String _why(Object e) => e.toString().replaceFirst('Exception: ', '');
 

@@ -57,6 +57,8 @@ import 'package:wyrd_server/src/generated/mind/memory_block.dart' as _i5d4cblk;
 import 'package:wyrd_server/src/generated/mind/mind.dart' as _i8dcpm7v;
 import 'package:wyrd_server/src/generated/mind/neural_network.dart'
     as _ib9uyyq2;
+import 'package:wyrd_server/src/generated/mind/quiz_question.dart' as _isgj4atv;
+import 'package:wyrd_server/src/generated/mind/quiz_stats.dart' as _ihz6m1dk;
 import 'package:wyrd_server/src/generated/mind/reading_item.dart' as _ijabq8az;
 import 'package:wyrd_server/src/generated/mind/reading_slice.dart' as _i2ggrthp;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
@@ -1972,6 +1974,110 @@ class _LibraryEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_i2ggrthp.ReadingSlice>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_isgj4atv.QuizQuestion>> quiz(
+    _ist.TestSessionBuilder sessionBuilder,
+    int id,
+    String passage,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'library',
+            method: 'quiz',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'library',
+          methodName: 'quiz',
+          parameters: _ist.testObjectToJson({
+            'id': id,
+            'passage': passage,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_isgj4atv.QuizQuestion>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ihz6m1dk.QuizStats> quizDone(
+    _ist.TestSessionBuilder sessionBuilder,
+    int id,
+    int correct,
+    int total,
+    List<String> missed,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'library',
+            method: 'quizDone',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'library',
+          methodName: 'quizDone',
+          parameters: _ist.testObjectToJson({
+            'id': id,
+            'correct': correct,
+            'total': total,
+            'missed': missed,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ihz6m1dk.QuizStats>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ihz6m1dk.QuizStats> quizStats(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'library',
+            method: 'quizStats',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'library',
+          methodName: 'quizStats',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ihz6m1dk.QuizStats>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

@@ -1,0 +1,6 @@
+# How someone is doing on Quiz me.
+class: QuizStats
+fields:
+  rounds: int
+  correct: int
+  total: int
