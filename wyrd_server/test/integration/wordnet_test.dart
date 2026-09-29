@@ -87,11 +87,14 @@ void main() {
       final bank = await WordNetService.define(session, 'bank', context: ['river', 'water', 'fishing']);
       expect(bank!.definition.toLowerCase(), contains('slop'));
       // and WYRD's concept filter sees the real nouns, names, and what isn't a concept
+      for (final t in ['Shares of Nvidia rose, and analysts expect Nvidia to keep growing.', 'She wrote that it was comming back, longer than before.']) {
+        await MemoryBlock.db.insertRow(session, MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'net', extract: t, topics: const []));
+      }
       await ConceptFilter.load(session);
       for (final w in ['language', 'coral', 'temperature', 'motel', 'nvidia', 'chat', 'fragment', 'treaty', 'software', 'reef']) {
         expect(ConceptFilter.isConcept(w), isTrue, reason: w);
       }
-      for (final w in ['feared', 'toward', 'behaviorally', 'seemed', 'weird', 'funny', 'found']) {
+      for (final w in ['feared', 'toward', 'behaviorally', 'seemed', 'weird', 'funny', 'found', 'comming', 'wrote', 'longer']) {
         expect(ConceptFilter.isConcept(w), isFalse, reason: w);
       }
     }, timeout: const Timeout(Duration(minutes: 5)));

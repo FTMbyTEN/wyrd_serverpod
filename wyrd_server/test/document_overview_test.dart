@@ -46,7 +46,6 @@ What did it teach you? That gentleness can be a habit rather than a nature. I st
 void main() {
   test('a report: its kind, sections, figures and gist', () {
     final o = DocumentService.overview(_doc('water-report-2025.pdf', 'pdf', _report));
-    print('$o\n\n==========\n');
     expect(o, contains('a report'));
     expect(o, contains('Sections: Annual Water Report 2025 · Quality · Costs · Outlook'));
     expect(o, contains('Key figures'));
@@ -54,7 +53,6 @@ void main() {
 
   test('a personal account told as answers: its people, the questions, and how it runs', () {
     final o = DocumentService.overview(_doc('story-answers.md', 'text', _account));
-    print('$o\n\n==========\n');
     expect(o, contains('personal account'));
     expect(o, contains('Daniel'));
     expect(o, contains('questions like'));

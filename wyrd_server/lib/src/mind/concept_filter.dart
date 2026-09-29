@@ -11,6 +11,8 @@ class ConceptFilter {
   static Set<String>? _nouns;
   static Set<String>? _known;
   static DateTime? _loadedAt;
+  static Set<String>? _names;
+  static DateTime? _namesAt;
 
   static const _filler = {
     'show', 'shows', 'showed', 'update', 'updated', 'updates', 'weird', 'ending', 'early', 'late', 'best',
@@ -32,6 +34,7 @@ class ConceptFilter {
   };
 
   static Future<void> _load(Session session) async {
+    await _loadNames(session);
     if (_nouns != null && _loadedAt != null && DateTime.now().difference(_loadedAt!) < const Duration(hours: 12)) return;
     // how much each part of speech is actually used (WordNet's corpus tag counts) and how many
     // senses it has: a word is a noun here only when "noun" is its main use -- "language" is,
@@ -58,6 +61,44 @@ class ConceptFilter {
     _nouns = nouns;
     _known = known;
     _loadedAt = DateTime.now();
+  }
+
+  /// Words written the way names are, in running text: capitalised in mid-sentence ("shares of
+  /// Nvidia rose", "talks in Rafah") far more often than not. Sentence starts prove nothing, and
+  /// neither do title-case headlines, where every word is capitalised. Returns lowercase names.
+  static Set<String> learnNames(Iterable<String> texts) {
+    final upper = RegExp(r'^\p{Lu}', unicode: true);
+    final cap = <String, int>{};
+    final low = <String, int>{};
+    for (final text in texts) {
+      final words = text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      if (words.length < 3) continue;
+      if (words.where(upper.hasMatch).length / words.length > 0.5) continue; // a title-case headline
+      for (var i = 1; i < words.length; i++) {
+        if (RegExp(r'[.!?:;"“”]$').hasMatch(words[i - 1])) continue; // starts a sentence or a quote
+        final w = words[i].replaceAll(RegExp(r'^[^\p{L}]+|[^\p{L}]+$', unicode: true), '').replaceAll(RegExp(r"['’]s$"), '');
+        if (w.length < 3 || !RegExp(r'^\p{L}+$', unicode: true).hasMatch(w)) continue;
+        final l = w.toLowerCase();
+        if (upper.hasMatch(w)) {
+          cap[l] = (cap[l] ?? 0) + 1;
+        } else {
+          low[l] = (low[l] ?? 0) + 1;
+        }
+      }
+    }
+    return {for (final e in cap.entries) if (e.value >= 2 && e.value >= 3 * (low[e.key] ?? 0)) e.key};
+  }
+
+  static Future<void> _loadNames(Session session) async {
+    if (_names != null && _namesAt != null && DateTime.now().difference(_namesAt!) < const Duration(hours: 1)) return;
+    final rows = await session.db.unsafeQuery(
+      'SELECT "title", "extract" FROM "memory_block" '
+      'WHERE "source" IN (\'net\', \'feed\', \'ingest\', \'curriculum\', \'library\') ORDER BY "id" DESC LIMIT 4000',
+    );
+    _names = learnNames([
+      for (final r in rows) ...[if (r[0] != null) r[0] as String, if (r[1] != null) r[1] as String],
+    ]);
+    _namesAt = DateTime.now();
   }
 
   static String _singular(String w) {
@@ -91,8 +132,10 @@ class ConceptFilter {
     // an inflected verb or adverb whose base word the dictionary knows ("feared", "rising",
     // "quickly") is not a name, even though the dictionary doesn't list that form
     if (inflectedKnown(w, known)) return false;
-    // not in the dictionary at all: a name (company, place, technology), if it looks like a word
-    return !known.contains(w) && !known.contains(s) && w.length >= 5 && RegExp(r'^[a-z][a-z-]*$').hasMatch(w);
+    // not in the dictionary at all: a name (company, place, technology) -- but only if it is
+    // written like one where WYRD read it. Typos ("comming"), irregular verbs ("wrote") and
+    // comparatives ("longer") are never capitalised in mid-sentence, so they don't pass.
+    return !known.contains(w) && !known.contains(s) && (_names?.contains(w) ?? false);
   }
 
   /// The concepts among [words], in order.
