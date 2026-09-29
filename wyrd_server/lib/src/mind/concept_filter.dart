@@ -51,6 +51,20 @@ class ConceptFilter {
     return w;
   }
 
+  static bool inflectedKnown(String w, Set<String> known) {
+    for (final suffix in const ['ing', 'ed', 'ly']) {
+      if (!w.endsWith(suffix) || w.length < suffix.length + 3) continue;
+      final stem = w.substring(0, w.length - suffix.length);
+      final candidates = {
+        stem, '${stem}e', // feared -> fear, rising -> rise
+        if (stem.length > 2 && stem[stem.length - 1] == stem[stem.length - 2]) stem.substring(0, stem.length - 1), // stopped -> stop
+        if (stem.endsWith('i')) '${stem.substring(0, stem.length - 1)}y', // carried -> carry, happily -> happy
+      };
+      if (candidates.any(known.contains)) return true;
+    }
+    return false;
+  }
+
   /// True when [w] can be the subject of a thought. Needs [load] first (see [concepts]).
   static bool isConcept(String w) {
     if (!TopicService.isIdea(w) || w.length < 4 || _filler.contains(w) || RegExp(r'\d').hasMatch(w)) return false;
@@ -58,6 +72,9 @@ class ConceptFilter {
     if (nouns == null || known == null || known.isEmpty) return true; // no dictionary (yet): don't block thinking
     final s = _singular(w);
     if (nouns.contains(w) || nouns.contains(s)) return true;
+    // an inflected verb or adverb whose base word the dictionary knows ("feared", "rising",
+    // "quickly") is not a name, even though the dictionary doesn't list that form
+    if (inflectedKnown(w, known)) return false;
     // not in the dictionary at all: a name (company, place, technology), if it looks like a word
     return !known.contains(w) && !known.contains(s) && w.length >= 5 && RegExp(r'^[a-z][a-z-]*$').hasMatch(w);
   }
