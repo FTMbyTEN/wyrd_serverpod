@@ -33,16 +33,28 @@ class ConceptFilter {
 
   static Future<void> _load(Session session) async {
     if (_nouns != null && _loadedAt != null && DateTime.now().difference(_loadedAt!) < const Duration(hours: 12)) return;
+    // how much each part of speech is actually used (WordNet's corpus tag counts) and how many
+    // senses it has: a word is a noun here only when "noun" is its main use -- "language" is,
+    // "funny" (rarely "a joke") and "found" (rarely "board and lodging") are not
     final rows = await session.db.unsafeQuery(
-      'SELECT "lemma", bool_or("pos" = \'noun\') FROM "word_sense" WHERE "lemma" NOT LIKE \'%\\_%\' GROUP BY "lemma"',
+      'SELECT "lemma", "pos", sum("tagCount")::int, count(*)::int FROM "word_sense" '
+      'WHERE "lemma" NOT LIKE \'%\\_%\' GROUP BY "lemma", "pos"',
     );
-    final nouns = <String>{};
-    final known = <String>{};
+    final use = <String, Map<String, (num, int)>>{};
     for (final r in rows) {
-      final lemma = r[0] as String;
-      known.add(lemma);
-      if (r[1] == true) nouns.add(lemma);
+      (use[r[0] as String] ??= {})[r[1] as String] = ((r[2] as num?) ?? 0, r[3] as int);
     }
+    final nouns = <String>{};
+    for (final MapEntry(key: lemma, value: byPos) in use.entries) {
+      final noun = byPos['noun'];
+      if (noun == null) continue;
+      final others = byPos.entries.where((e) => e.key != 'noun').map((e) => e.value);
+      // usage counts are small and sparse, so senses count too: noun must be its main use by both
+      double weight((num, int) u) => u.$1 * 2.0 + u.$2;
+      final mainUse = others.every((o) => weight(noun) >= weight(o));
+      if (mainUse) nouns.add(lemma);
+    }
+    final known = use.keys.toSet();
     _nouns = nouns;
     _known = known;
     _loadedAt = DateTime.now();

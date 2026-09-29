@@ -88,10 +88,10 @@ void main() {
       expect(bank!.definition.toLowerCase(), contains('slop'));
       // and WYRD's concept filter sees the real nouns, names, and what isn't a concept
       await ConceptFilter.load(session);
-      for (final w in ['language', 'coral', 'temperature', 'motel', 'nvidia']) {
+      for (final w in ['language', 'coral', 'temperature', 'motel', 'nvidia', 'chat', 'fragment', 'treaty', 'software', 'reef']) {
         expect(ConceptFilter.isConcept(w), isTrue, reason: w);
       }
-      for (final w in ['feared', 'toward', 'behaviorally', 'seemed', 'weird']) {
+      for (final w in ['feared', 'toward', 'behaviorally', 'seemed', 'weird', 'funny', 'found']) {
         expect(ConceptFilter.isConcept(w), isFalse, reason: w);
       }
     }, timeout: const Timeout(Duration(minutes: 5)));
