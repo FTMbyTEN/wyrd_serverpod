@@ -34,7 +34,7 @@ class ConceptFilter {
   static Future<void> _load(Session session) async {
     if (_nouns != null && _loadedAt != null && DateTime.now().difference(_loadedAt!) < const Duration(hours: 12)) return;
     final rows = await session.db.unsafeQuery(
-      'SELECT "lemma", bool_or("pos" = \'n\') FROM "word_sense" WHERE "lemma" NOT LIKE \'%\\_%\' GROUP BY "lemma"',
+      'SELECT "lemma", bool_or("pos" = \'noun\') FROM "word_sense" WHERE "lemma" NOT LIKE \'%\\_%\' GROUP BY "lemma"',
     );
     final nouns = <String>{};
     final known = <String>{};

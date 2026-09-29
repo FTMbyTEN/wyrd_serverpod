@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
+import 'package:wyrd_server/src/mind/concept_filter.dart';
 import 'package:wyrd_server/src/mind/lexicon_service.dart';
 import 'package:wyrd_server/src/mind/wordnet_service.dart';
 
@@ -85,6 +86,14 @@ void main() {
       expect(p!.definition, contains('computer'));
       final bank = await WordNetService.define(session, 'bank', context: ['river', 'water', 'fishing']);
       expect(bank!.definition.toLowerCase(), contains('slop'));
+      // and WYRD's concept filter sees the real nouns, names, and what isn't a concept
+      await ConceptFilter.load(session);
+      for (final w in ['language', 'coral', 'temperature', 'motel', 'nvidia']) {
+        expect(ConceptFilter.isConcept(w), isTrue, reason: w);
+      }
+      for (final w in ['feared', 'toward', 'behaviorally', 'seemed', 'weird']) {
+        expect(ConceptFilter.isConcept(w), isFalse, reason: w);
+      }
     }, timeout: const Timeout(Duration(minutes: 5)));
   });
 }
