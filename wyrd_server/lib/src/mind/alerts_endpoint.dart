@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../generated/protocol.dart';
 import 'mind_service.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/alerts from server.js. Not a stored feature -- a synthesis of events already
@@ -10,7 +11,10 @@ class AlertsEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
-  Future<List<AlertNote>> getAlerts(Session session) async {
+  Future<List<AlertNote>> getAlerts(Session session) =>
+      PublicCache.get('alerts', const Duration(seconds: 30), () => _getAlerts(session));
+
+  Future<List<AlertNote>> _getAlerts(Session session) async {
     final now = DateTime.now().toUtc();
     final notes = <({DateTime ts, AlertNote note})>[];
     void add(DateTime ts, String tag, String body) => notes.add((

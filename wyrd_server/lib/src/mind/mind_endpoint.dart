@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'mind_service.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Real GET /mind, backed by the persisted singleton row (see [MindService]) instead of the
@@ -9,6 +10,6 @@ class MindEndpoint extends Endpoint {
   bool get requireLogin => false;
 
   Future<Mind> getMind(Session session) async {
-    return await MindService.load(session);
+    return PublicCache.get('mind', const Duration(seconds: 3), () => MindService.load(session));
   }
 }

@@ -2,6 +2,7 @@ import '../generated/protocol.dart';
 import 'lexicon_service.dart';
 import 'wordnet_service.dart';
 import 'rate_limiter.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's /api/lexicon/stats, /api/lexicon/word/:word and /api/lexicon/trigger.
@@ -27,7 +28,10 @@ class LexiconEndpoint extends Endpoint {
 
   /// Two counts and the five newest understood words -- not the whole lexicon, which grows
   /// every 30s and was being loaded in full on every poll.
-  Future<LexiconStats> getStats(Session session) async {
+  Future<LexiconStats> getStats(Session session) =>
+      PublicCache.get('lexicon-stats', const Duration(seconds: 20), () => _getStats(session));
+
+  Future<LexiconStats> _getStats(Session session) async {
     final learned = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
     final attempted = await LexiconEntry.db.count(session);
     final newest = await LexiconEntry.db.find(

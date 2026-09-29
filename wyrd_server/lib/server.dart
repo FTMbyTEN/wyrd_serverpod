@@ -8,6 +8,7 @@ import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 import 'src/cache_busting.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
+import 'src/web/routes/fast_asset_route.dart';
 import 'src/mind/tick_schedule.dart';
 import 'src/mind/wordnet_service.dart';
 
@@ -56,10 +57,16 @@ void run(List<String> args) async {
   // Checks if the flutter web app has been built and serves it if it has.
   final appDir = Directory(Uri(path: 'web/app').toFilePath());
   if (appDir.existsSync()) {
-    // Serve the flutter web app under /.
+    // The graphics engine, compressed and cached (see CompressedAssetRoute).
+    final wasm = File(Uri(path: 'web/app/canvaskit.wasm').toFilePath());
+    if (wasm.existsSync()) {
+      pod.webServer.addRoute(CompressedAssetRoute(wasm, mimeType: const MimeType('application', 'wasm')), '/canvaskit.wasm');
+    }
+    // Serve the web app under /: hashed bundles cached for a year, index.html always fresh.
     pod.webServer.addRoute(
       FlutterRoute(
         appDir,
+        cacheControlFactory: appCacheControl,
         // If building the Flutter app with WASM, set the below parameter to
         // true and add the --wasm flag to the flutter build command.
         enableWasmHeaders: false,
