@@ -43,6 +43,7 @@ import 'drone/drone_state.dart' as _it73791y;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
+import 'mind/belief.dart' as _ijbewlez;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/chat_thread.dart' as _ildoeobn;
@@ -108,6 +109,7 @@ export 'drone/drone_state.dart';
 export 'greetings/greeting.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
+export 'mind/belief.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
 export 'mind/chat_thread.dart';
@@ -220,6 +222,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _itui3kw8.AlertNote) {
       return _itui3kw8.AlertNote.fromJson(data) as T;
+    }
+    if (t == _ijbewlez.Belief) {
+      return _ijbewlez.Belief.fromJson(data) as T;
     }
     if (t == _iagdrx9v.ChatAction) {
       return _iagdrx9v.ChatAction.fromJson(data) as T;
@@ -417,6 +422,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_itui3kw8.AlertNote?>()) {
       return (data != null ? _itui3kw8.AlertNote.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ijbewlez.Belief?>()) {
+      return (data != null ? _ijbewlez.Belief.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iagdrx9v.ChatAction?>()) {
       return (data != null ? _iagdrx9v.ChatAction.fromJson(data) : null) as T;
@@ -695,6 +703,9 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
@@ -715,9 +726,6 @@ class Protocol extends _isc.SerializationManager {
               .map((e) => deserialize<_iafou6mz.ConceptEdge>(e))
               .toList()
           as T;
-    }
-    if (t == List<int>) {
-      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
     }
     if (t == _isc.getType<List<int>?>()) {
       return (data != null
@@ -895,6 +903,7 @@ class Protocol extends _isc.SerializationManager {
       _izw8z7ou.Greeting => 'Greeting',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
+      _ijbewlez.Belief => 'Belief',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
       _ildoeobn.ChatThread => 'ChatThread',
@@ -980,6 +989,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AccountExport';
       case _itui3kw8.AlertNote():
         return 'AlertNote';
+      case _ijbewlez.Belief():
+        return 'Belief';
       case _iagdrx9v.ChatAction():
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
@@ -1137,6 +1148,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AlertNote') {
       return deserialize<_itui3kw8.AlertNote>(data['data']);
+    }
+    if (dataClassName == 'Belief') {
+      return deserialize<_ijbewlez.Belief>(data['data']);
     }
     if (dataClassName == 'ChatAction') {
       return deserialize<_iagdrx9v.ChatAction>(data['data']);

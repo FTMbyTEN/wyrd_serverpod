@@ -1,3 +1,4 @@
+import 'thinking_service.dart';
 import 'dart:math';
 
 import '../generated/protocol.dart';
@@ -47,6 +48,9 @@ class SelfQuestionService {
   /// Returns true if a question was actually asked (false if there wasn't enough memory, or
   /// nothing left to explore).
   static Future<bool> tick(Session session) async {
+    // WYRD's own thinking (beliefs from evidence) comes first; the old question templates only
+    // run while it has nothing to think about yet
+    if (session.serverpod.runMode != 'test' && await ThinkingService.think(session)) return true;
     final pool = await MemoryBlock.db.find(
       session,
       // never people's chats or photos: what comes out of here is public

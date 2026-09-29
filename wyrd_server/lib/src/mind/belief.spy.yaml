@@ -1,0 +1,33 @@
+# Something WYRD has come to think, from evidence in what it has read (its tested memory): a
+# claim about how two concepts relate, how sure it is, and why. Beliefs are formed, re-tested
+# as new evidence arrives, strengthened, doubted or dropped -- the recycle loop of its own
+# thinking. See ThinkingService.
+class: Belief
+table: belief
+
+fields:
+  a: String
+  b: String
+  claim: String
+  # the memories it rests on (shared knowledge only)
+  evidenceIds: List<int>
+  # distinct sources that agree, and passages that point the other way
+  sources: int
+  against: int
+  confidence: double
+  # 'hypothesis' (one source), 'held' (independent sources agree), 'doubted' (contradicted or
+  # only from sources it distrusts), 'dream' (a long-distance guess from a dream, to be tested)
+  status: String
+  # 'reason' or 'dream'
+  origin: String
+  tests: int
+  createdAt: DateTime
+  updatedAt: DateTime
+  testedAt: DateTime
+
+indexes:
+  belief_pair_idx:
+    fields: a, b
+    unique: true
+  belief_tested_idx:
+    fields: testedAt

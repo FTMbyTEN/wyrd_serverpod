@@ -147,6 +147,8 @@ class MindService {
     double? scoreGap,
     bool recentErrors = false,
     bool private = false,
+    // a goal WYRD set itself (an open question it wants answered); kept until it sets another
+    String? goal,
   }) async {
     final mind = await load(session);
 
@@ -183,9 +185,13 @@ class MindService {
 
     final mood = pickMood(curiosity: curiosity, confidence: confidence, recentErrors: eventType == 'error');
 
+    // its goal is the question it set itself, not a template picked at random each event; a
+    // template only stands in until its own thinking has produced one
     final rand = Random();
-    final goalFn = _goalTemplates[rand.nextInt(_goalTemplates.length)];
-    final activeGoal = goalFn(focusTopic ?? 'the unknown');
+    final activeGoal = goal ??
+        (mind.activeGoal != null && mind.activeGoal!.startsWith('find out')
+            ? mind.activeGoal
+            : _goalTemplates[rand.nextInt(_goalTemplates.length)](focusTopic ?? 'the unknown'));
 
     await _recordTopics(session, newSeenTopics, newResolvedTopics);
 

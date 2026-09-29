@@ -1,3 +1,4 @@
+import 'concept_filter.dart';
 import 'dart:convert';
 import 'dart:math';
 
@@ -34,12 +35,14 @@ class ReasoningService {
 
   /// Returns true if a firing happened (false if there's nothing to reason about yet).
   static Future<bool> tick(Session session) async {
+    await ConceptFilter.load(session); // only concepts, not headline filler, get wired together
     await _learnFromNewMemories(session);
     await _decayIfDue(session);
     return _fire(session);
   }
 
-  static List<String> _ideas(MemoryBlock b) => b.topics.where(TopicService.isIdea).take(_topicsPerBlock).toList();
+  static List<String> _ideas(MemoryBlock b) =>
+      b.topics.where((w) => TopicService.isIdea(w) && ConceptFilter.isConcept(w)).take(_topicsPerBlock).toList();
 
   static (String, String) _pair(String x, String y) => x.compareTo(y) < 0 ? (x, y) : (y, x);
 

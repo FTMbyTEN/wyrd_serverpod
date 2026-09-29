@@ -47,6 +47,7 @@ import 'drone/drone_state.dart' as _it73791y;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
+import 'mind/belief.dart' as _ijbewlez;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/chat_thread.dart' as _ildoeobn;
@@ -112,6 +113,7 @@ export 'drone/drone_state.dart';
 export 'greetings/greeting.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
+export 'mind/belief.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
 export 'mind/chat_thread.dart';
@@ -180,6 +182,133 @@ class Protocol extends _is.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._().._registerHostProtocols();
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
+    _isp.TableDefinition(
+      name: 'belief',
+      dartName: 'Belief',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'a',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'b',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'claim',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'evidenceIds',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<int>',
+        ),
+        _isp.ColumnDefinition(
+          name: 'sources',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'against',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'confidence',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'origin',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'tests',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'testedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'belief_pair_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'a',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'b',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'belief_tested_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'testedAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     _isp.TableDefinition(
       name: 'chat_thread',
       dartName: 'ChatThread',
@@ -2559,6 +2688,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _itui3kw8.AlertNote) {
       return _itui3kw8.AlertNote.fromJson(data) as T;
     }
+    if (t == _ijbewlez.Belief) {
+      return _ijbewlez.Belief.fromJson(data) as T;
+    }
     if (t == _iagdrx9v.ChatAction) {
       return _iagdrx9v.ChatAction.fromJson(data) as T;
     }
@@ -2755,6 +2887,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_itui3kw8.AlertNote?>()) {
       return (data != null ? _itui3kw8.AlertNote.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ijbewlez.Belief?>()) {
+      return (data != null ? _ijbewlez.Belief.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_iagdrx9v.ChatAction?>()) {
       return (data != null ? _iagdrx9v.ChatAction.fromJson(data) : null) as T;
@@ -3033,6 +3168,9 @@ class Protocol extends _is.DatabaseSerializationManager {
               : null)
           as T;
     }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
@@ -3053,9 +3191,6 @@ class Protocol extends _is.DatabaseSerializationManager {
               .map((e) => deserialize<_iafou6mz.ConceptEdge>(e))
               .toList()
           as T;
-    }
-    if (t == List<int>) {
-      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
     }
     if (t == _is.getType<List<int>?>()) {
       return (data != null
@@ -3236,6 +3371,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _izw8z7ou.Greeting => 'Greeting',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
+      _ijbewlez.Belief => 'Belief',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
       _ildoeobn.ChatThread => 'ChatThread',
@@ -3321,6 +3457,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'AccountExport';
       case _itui3kw8.AlertNote():
         return 'AlertNote';
+      case _ijbewlez.Belief():
+        return 'Belief';
       case _iagdrx9v.ChatAction():
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
@@ -3482,6 +3620,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'AlertNote') {
       return deserialize<_itui3kw8.AlertNote>(data['data']);
+    }
+    if (dataClassName == 'Belief') {
+      return deserialize<_ijbewlez.Belief>(data['data']);
     }
     if (dataClassName == 'ChatAction') {
       return deserialize<_iagdrx9v.ChatAction>(data['data']);
@@ -3705,6 +3846,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _idcsjt5k.DroneMission.t;
       case _it73791y.DroneState:
         return _it73791y.DroneState.t;
+      case _ijbewlez.Belief:
+        return _ijbewlez.Belief.t;
       case _ildoeobn.ChatThread:
         return _ildoeobn.ChatThread.t;
       case _i8fl0sel.ConversationTurn:
