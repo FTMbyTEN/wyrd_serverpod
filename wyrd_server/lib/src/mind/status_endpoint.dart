@@ -2,6 +2,7 @@ import '../generated/protocol.dart';
 import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'tick_schedule.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports server.js's /api/turbo, /api/llm/status and /api/datasets/status as one status call.
@@ -11,7 +12,10 @@ class StatusEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
-  Future<SystemStatus> getStatus(Session session) async {
+  Future<SystemStatus> getStatus(Session session) =>
+      PublicCache.get(session, 'status.getStatus', const Duration(seconds: 15), () => _getStatus(session));
+
+  Future<SystemStatus> _getStatus(Session session) async {
     final llmActive = LlmService.isConfigured(session);
     return SystemStatus(
       turboActive: false,

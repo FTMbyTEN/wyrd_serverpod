@@ -20,7 +20,7 @@ void main() {
         final session = sessionBuilder.build();
         await MemoryBlock.db.insertRow(
           session,
-          MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'chat', userText: 'tell me about entropy', topics: ['entropy']),
+          MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'net', title: 'Heat death', topics: ['entropy']), // public memories only: chats never feed self-questions
         );
         await MemoryBlock.db.insertRow(
           session,

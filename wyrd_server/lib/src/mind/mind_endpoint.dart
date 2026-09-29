@@ -10,6 +10,6 @@ class MindEndpoint extends Endpoint {
   bool get requireLogin => false;
 
   Future<Mind> getMind(Session session) async {
-    return PublicCache.get('mind', const Duration(seconds: 3), () => MindService.load(session));
+    return PublicCache.get(session, 'mind', const Duration(seconds: 3), () => MindService.load(session));
   }
 }

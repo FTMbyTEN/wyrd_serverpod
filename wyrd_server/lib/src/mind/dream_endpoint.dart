@@ -1,5 +1,6 @@
 import '../generated/protocol.dart';
 import 'dream_service.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Dreams: read them, see what they were made of, or (rate-limited) ask for one. Public, like Node.
@@ -9,7 +10,10 @@ class DreamEndpoint extends Endpoint {
 
   static const _maxEntries = 100;
 
-  Future<List<DreamEntry>> getEntries(Session session, {int? limit}) async {
+  Future<List<DreamEntry>> getEntries(Session session, {int? limit}) =>
+      PublicCache.get(session, 'dream.getEntries:$limit', const Duration(seconds: 60), () => _getEntries(session, limit: limit));
+
+  Future<List<DreamEntry>> _getEntries(Session session, {int? limit}) async {
     final take = (limit ?? 20).clamp(1, _maxEntries);
     final entries = await DreamEntry.db.find(
       session,
@@ -20,6 +24,7 @@ class DreamEndpoint extends Endpoint {
   }
 
   Future<DreamEntry?> trigger(Session session) async {
+    PublicCache.clear();
     // public trigger: at most one dream per DreamService.minGap, so it can't spend the AI budget on demand
     return await DreamService.generateDream(session, respectGap: true);
   }

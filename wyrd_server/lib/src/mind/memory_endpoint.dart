@@ -1,6 +1,7 @@
 import '../generated/protocol.dart';
 import 'embedding_service.dart';
 import 'topic_service.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/memory and /api/concepts from server.js. Public/unauthenticated, matching Node.
@@ -38,7 +39,10 @@ class MemoryEndpoint extends Endpoint {
   /// co-occur. Computed in Postgres: doing it in Dart meant loading 5000 full blocks and counting
   /// every topic pair in each, which blocked the server's single isolate for ~30s -- stalling
   /// every other request while it ran. Cached briefly since the graph changes slowly.
-  Future<ConceptGraph> getConcepts(Session session) async {
+  Future<ConceptGraph> getConcepts(Session session) =>
+      PublicCache.get(session, 'memory.getConcepts', const Duration(seconds: 60), () => _getConcepts(session));
+
+  Future<ConceptGraph> _getConcepts(Session session) async {
     final cached = _conceptsCache;
     if (cached != null && DateTime.now().difference(cached.at) < _conceptsTtl) {
       return cached.graph;
@@ -89,7 +93,10 @@ class MemoryEndpoint extends Endpoint {
   }
 
   /// Everything the CONCEPT_MAP shows for one concept, in plain terms (see ConceptDetail).
-  Future<ConceptDetail> getConceptDetail(Session session, String topic) async {
+  Future<ConceptDetail> getConceptDetail(Session session, String topic) =>
+      PublicCache.get(session, 'memory.getConceptDetail:$topic', const Duration(seconds: 60), () => _getConceptDetail(session, topic));
+
+  Future<ConceptDetail> _getConceptDetail(Session session, String topic) async {
     final t = topic.trim().toLowerCase();
     final params = {'t': t, 'sources': _sharedSources, 'maxBlocks': _maxBlocks};
     const recent =

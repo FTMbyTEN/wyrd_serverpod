@@ -12,7 +12,7 @@ class AlertsEndpoint extends Endpoint {
   bool get requireLogin => false;
 
   Future<List<AlertNote>> getAlerts(Session session) =>
-      PublicCache.get('alerts', const Duration(seconds: 30), () => _getAlerts(session));
+      PublicCache.get(session, 'alerts', const Duration(seconds: 30), () => _getAlerts(session));
 
   Future<List<AlertNote>> _getAlerts(Session session) async {
     final now = DateTime.now().toUtc();
@@ -22,10 +22,14 @@ class AlertsEndpoint extends Endpoint {
       note: AlertNote(tag: tag, ago: _ago(now, ts), body: body),
     ));
 
-    final diary = await DiaryEntry.db.findFirstRow(
-      session,
-      orderBy: (t) => t.id.desc(),
-    );
+    // the four sources are independent: ask for them all at once, not one round trip after another
+    final diaryF = DiaryEntry.db.findFirstRow(session, orderBy: (t) => t.id.desc());
+    final dreamF = DreamEntry.db.findFirstRow(session, orderBy: (t) => t.id.desc());
+    final copF = CopLogEntry.db.find(session, orderBy: (t) => t.id.desc(), limit: 5);
+    final mindF = MindService.load(session);
+    await Future.wait<Object?>([diaryF, dreamF, copF, mindF]);
+
+    final diary = await diaryF;
     if (diary != null) {
       add(
         diary.timestamp,
@@ -34,10 +38,7 @@ class AlertsEndpoint extends Endpoint {
       );
     }
 
-    final dream = await DreamEntry.db.findFirstRow(
-      session,
-      orderBy: (t) => t.id.desc(),
-    );
+    final dream = await dreamF;
     if (dream != null) {
       final excerpt = dream.content.length > 80
           ? '${dream.content.substring(0, 80)}…'
@@ -49,11 +50,7 @@ class AlertsEndpoint extends Endpoint {
       );
     }
 
-    final cop = await CopLogEntry.db.find(
-      session,
-      orderBy: (t) => t.id.desc(),
-      limit: 5,
-    );
+    final cop = await copF;
     for (final e in cop) {
       add(
         e.timestamp,
@@ -62,7 +59,7 @@ class AlertsEndpoint extends Endpoint {
       );
     }
 
-    final digest = (await MindService.load(session)).digest;
+    final digest = (await mindF).digest;
     if (digest.percent >= 90) {
       final eta = digest.etaMinutes != null
           ? ' ETA ${digest.etaMinutes!.round()}m to full.'

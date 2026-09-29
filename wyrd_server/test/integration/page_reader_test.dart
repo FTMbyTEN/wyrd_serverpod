@@ -9,7 +9,7 @@ void main() {
     expect(text, contains('Moby Dick'));
     expect(text, contains('Call me Ishmael & more…'));
     expect(text, isNot(anyOf(contains('alert'), contains('menu'), contains('p{}'))));
-    expect(text.split('\n'), containsAllInOrder(['Moby Dick', 'Call me Ishmael & more…', 'Second']));
+    expect(text.split('\n'), containsAllInOrder(['## Moby Dick', 'Call me Ishmael & more…', 'Second']));
   });
 
   test("Gutenberg's catalogue feed yields books, not its author/subject group links", () {

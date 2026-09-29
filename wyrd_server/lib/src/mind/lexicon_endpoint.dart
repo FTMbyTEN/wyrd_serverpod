@@ -15,6 +15,7 @@ class LexiconEndpoint extends Endpoint {
   /// Runs one learning tick now instead of waiting for the timer. False if there was nothing new
   /// to learn (or the wordlist isn't loaded yet).
   Future<bool> trigger(Session session) async {
+    PublicCache.clear();
     // public: a few per 10 minutes, so nobody can hammer it (the scheduler runs it anyway)
     if (RateLimiter.isLimited('trigger:lexicon', 6, const Duration(minutes: 10))) {
       throw Exception('slow down — try again in a few minutes');
@@ -29,7 +30,7 @@ class LexiconEndpoint extends Endpoint {
   /// Two counts and the five newest understood words -- not the whole lexicon, which grows
   /// every 30s and was being loaded in full on every poll.
   Future<LexiconStats> getStats(Session session) =>
-      PublicCache.get('lexicon-stats', const Duration(seconds: 20), () => _getStats(session));
+      PublicCache.get(session, 'lexicon-stats', const Duration(seconds: 20), () => _getStats(session));
 
   Future<LexiconStats> _getStats(Session session) async {
     final learned = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));

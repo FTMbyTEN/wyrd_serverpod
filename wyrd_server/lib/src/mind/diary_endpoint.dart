@@ -1,6 +1,7 @@
 import '../generated/protocol.dart';
 import 'diary_service.dart';
 import 'rate_limiter.dart';
+import 'public_cache.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/diary and /api/diary/trigger from server.js. Public/unauthenticated, matching
@@ -11,7 +12,10 @@ class DiaryEndpoint extends Endpoint {
 
   static const _maxEntries = 100;
 
-  Future<List<DiaryEntry>> getEntries(Session session, {int? limit}) async {
+  Future<List<DiaryEntry>> getEntries(Session session, {int? limit}) =>
+      PublicCache.get(session, 'diary.getEntries:$limit', const Duration(seconds: 60), () => _getEntries(session, limit: limit));
+
+  Future<List<DiaryEntry>> _getEntries(Session session, {int? limit}) async {
     final take = (limit ?? 20).clamp(1, _maxEntries);
     final entries = await DiaryEntry.db.find(
       session,
@@ -22,6 +26,7 @@ class DiaryEndpoint extends Endpoint {
   }
 
   Future<DiaryEntry> trigger(Session session) async {
+    PublicCache.clear();
     // public and AI-backed: a few per 10 minutes, so nobody can spend WYRD's budget on demand
     if (RateLimiter.isLimited('trigger:diary', 3, const Duration(minutes: 10))) {
       throw Exception('slow down — try again in a few minutes');
