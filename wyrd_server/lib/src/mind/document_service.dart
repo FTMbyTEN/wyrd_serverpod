@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../generated/protocol.dart';
 import 'library_knowledge.dart';
 import 'topic_service.dart';
@@ -111,24 +113,151 @@ class DocumentService {
 
   /// WYRD's first look at a shared file, without an AI: how long it is, what it's about, and the
   /// sentences that carry it.
+  // everyday words that say nothing about what a text is about
+  static final _common = RegExp(
+    r"^(about|above|after|again|against|all|almost|also|always|among|and|another|any|anything|are|around|back|because|been|before|being|below|between|both|but|came|can|cannot|come|could|did|does|doing|done|down|during|each|even|ever|every|everything|felt|few|find|first|for|found|from|further|gave|get|gets|getting|give|going|gone|good|got|great|had|has|have|having|her|here|hers|herself|him|himself|his|how|however|into|its|itself|just|keep|kind|knew|know|last|later|least|less|let|like|little|long|look|made|make|making|many|may|maybe|might|more|most|much|must|myself|never|new|next|nothing|now|off|often|once|one|only|other|others|our|ours|out|over|own|part|people|perhaps|place|put|quite|rather|really|right|said|same|saw|say|says|see|seemed|seen|several|shall|she|should|show|since|some|something|sometimes|still|such|take|than|that|the|their|them|themselves|then|there|these|they|thing|things|think|this|those|though|thought|three|through|time|times|told|too|took|toward|two|under|until|upon|used|very|want|wanted|was|way|ways|well|went|were|what|whatever|when|where|whether|which|while|who|whom|whose|why|will|with|within|without|would|year|years|yet|you|your|yours|yourself|asked|answer|answers|question|questions|going|thing|words|yes|okay|million|billion|thousand|hundred|percent)$",
+  );
+
+  /// A first look at a shared file, worked out from the text alone: what kind of document it is,
+  /// its sections, who and what it keeps coming back to, what it says from beginning to end, and
+  /// (for reports) its key figures.
   static String overview(UserDocument doc) {
-    final sample = doc.text.length > 60000 ? doc.text.substring(0, 60000) : doc.text;
-    final topics = TopicService.extractTopics(sample).where(TopicService.isIdea).toList();
-    final freq = <String, int>{};
-    for (final t in topics) {
-      freq[t] = (freq[t] ?? 0) + 1;
-    }
-    final top = (freq.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).take(6).map((e) => e.key).toList();
-    final gist = LibraryKnowledge.summary(sample.replaceAll(RegExp(r'^## ', multiLine: true), ''), max: 3);
+    final sample = doc.text.length > 150000 ? doc.text.substring(0, 150000) : doc.text;
     final size = [
       '${doc.words.toLocaleString()} words',
       if (doc.pages != null) '${doc.pages} page${doc.pages == 1 ? '' : 's'}',
     ].join(', ');
+    final head = 'I\'ve read "${doc.name}" ($size).';
+    const close = 'Ask me anything about it — to explain a part, summarise a section, pull out figures, or check something.';
+
+    if (doc.kind == 'code') {
+      final defs = RegExp(r'^\s*(?:export\s+)?(?:async\s+)?(?:class|def|function|fun|func|fn|interface|struct|enum|type)\s+([A-Za-z_]\w*)', multiLine: true)
+          .allMatches(sample).map((m) => m.group(1)!).toSet().take(10).toList();
+      final lines = '\n'.allMatches(sample).length + 1;
+      return [
+        '$head It\'s source code, $lines lines long.',
+        if (defs.isNotEmpty) 'It defines: ${defs.join(', ')}.',
+        'Ask me to walk through it, explain a part, or look for a bug.',
+      ].join('\n\n');
+    }
+    if (doc.kind == 'csv') {
+      final rows = sample.split('\n').where((l) => l.trim().isNotEmpty).toList();
+      final sep = rows.isNotEmpty && rows.first.contains('\t') ? '\t' : ',';
+      final cols = rows.isEmpty ? <String>[] : rows.first.split(sep).map((c) => c.trim().replaceAll('"', '')).where((c) => c.isNotEmpty).toList();
+      return [
+        '$head It\'s a table of ${rows.length > 1 ? (rows.length - 1).toLocaleString() : 'no'} rows${cols.isNotEmpty ? ' with ${cols.length} columns: ${cols.take(12).join(', ')}' : ''}.',
+        'Ask me to pull out figures, compare rows, or find something in it.',
+      ].join('\n\n');
+    }
+
+    // sections: markdown headings, or short title-like lines standing on their own
+    final sections = <String>[];
+    final body = <String>[]; // everything but the headings, so a heading never runs into a sentence
+    for (final raw in sample.split('\n')) {
+      final line = raw.trim();
+      final h = RegExp(r'^#{1,4}\s+(.+)$').firstMatch(line);
+      final title = h?.group(1) ??
+          (line.length >= 3 && line.length <= 60 && !RegExp(r'[.,;:!?"”]$').hasMatch(line) && RegExp(r'^[A-Z0-9]').hasMatch(line) &&
+                  line.split(' ').length <= 7 && RegExp(r'[A-Za-z]').hasMatch(line)
+              ? line
+              : null);
+      if (title == null) {
+        body.add(raw);
+      } else if (!sections.contains(title)) {
+        sections.add(title);
+      }
+    }
+    final prose = body.join('\n');
+    final all = LibraryKnowledge.sentences(prose);
+    if (all.isEmpty) return '$head\n\n$close';
+
+    // what kind of text it is
+    final lower = ' ${prose.toLowerCase()} ';
+    int count(String re) => RegExp(re).allMatches(lower).length;
+    final wordCount = max(1, words(prose));
+    final firstPerson = count(r"\b(i|me|my|i'm|i've|i'd|myself)\b") / wordCount;
+    final thirdPerson = count(r'\b(he|she|him|her|his|they)\b') / wordCount;
+    final figures = RegExp(r'\d[\d,.]*\s*(%|percent|million|billion|km|kg|mg|m\b|l\b|litres|liters|years?|usd|\$|€|£|naira)', caseSensitive: false);
+    final numeric = all.where(figures.hasMatch).length / all.length;
+    // questions, short ones too ("Do you regret it?")
+    final questions = RegExp(r'(?:^|(?<=[.!?]\s))[^.!?\n]{8,200}\?', multiLine: true)
+        .allMatches(prose).map((m) => m.group(0)!.trim()).where((q) => words(q) >= 3).toList();
+    final isQa = questions.length >= 3 && questions.length / all.length > 0.06;
+    final dialogue = count('["“”]') / all.length;
+    final kindOf = numeric > 0.18 || (sections.length >= 3 && firstPerson < 0.01)
+        ? 'a report'
+        : firstPerson > 0.025
+            ? (isQa ? 'a personal account, told in the first person as answers to questions' : 'a personal account, told in the first person')
+            : thirdPerson > 0.03 && dialogue > 0.3
+                ? 'a story, with dialogue'
+                : thirdPerson > 0.03
+                    ? 'a piece of narrative writing'
+                    : isQa
+                        ? 'a set of questions and answers'
+                        : 'an essay or article';
+
+    // names: capitalised words that aren't just starting a sentence, seen more than once
+    final nameFreq = <String, int>{};
+    for (final s in all) {
+      final ws = s.split(RegExp(r'\s+'));
+      for (var i = 1; i < ws.length; i++) {
+        final w = ws[i].replaceAll(RegExp(r"^[^\p{L}]+|[^\p{L}'’]+$", unicode: true), '').replaceAll(RegExp(r"['’]s$"), '');
+        if (w.length < 3 || !RegExp(r'^\p{Lu}\p{Ll}+$', unicode: true).hasMatch(w)) continue;
+        if (_common.hasMatch(w.toLowerCase()) || RegExp(r'[.!?:]$').hasMatch(ws[i - 1])) continue;
+        nameFreq[w] = (nameFreq[w] ?? 0) + 1;
+      }
+    }
+    const months = {'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'};
+    final names = (nameFreq.entries.where((e) => e.value >= 2 && !months.contains(e.key)).toList()..sort((a, b) => b.value.compareTo(a.value)))
+        .take(5).map((e) => e.key).toList();
+
+    // themes: the content words it keeps coming back to (not names, not everyday words)
+    final freq = <String, int>{};
+    for (final m in RegExp(r"\p{L}[\p{L}'’-]{3,}", unicode: true).allMatches(prose)) {
+      final w = m.group(0)!.toLowerCase().replaceAll(RegExp(r"['’]s$"), '');
+      if (w.length < 5 || _common.hasMatch(w) || !TopicService.isIdea(w)) continue;
+      freq[w] = (freq[w] ?? 0) + 1;
+    }
+    final nameSet = names.map((n) => n.toLowerCase()).toSet();
+    final themes = (freq.entries.where((e) => e.value >= 3 && !nameSet.contains(e.key)).toList()..sort((a, b) => b.value.compareTo(a.value)))
+        .take(6).map((e) => e.key).toList();
+
+    // the gist: the most central sentence from the beginning, the middle, and the end
+    double central(String s) {
+      final ws = RegExp(r"\p{L}{4,}", unicode: true).allMatches(s.toLowerCase()).map((m) => m.group(0)!).where((w) => !_common.hasMatch(w)).toSet();
+      if (ws.isEmpty) return 0;
+      final n = words(s);
+      final fit = n < 8 || n > 45 ? 0.3 : 1.0; // fragments and run-ons read badly on their own
+      final quoted = RegExp(r'^["“‘]').hasMatch(s) ? 0.5 : 1.0;
+      return ws.fold<double>(0, (t, w) => t + log(1 + (freq[w] ?? 0))) / sqrt(ws.length + 4) * fit * quoted;
+    }
+
+    final gist = <String>[];
+    final parts = all.length < 6 ? 1 : 3;
+    for (var p = 0; p < parts; p++) {
+      final slice = all.sublist(all.length * p ~/ parts, all.length * (p + 1) ~/ parts).where((s) => !s.endsWith('?')).toList();
+      if (slice.isEmpty) continue;
+      slice.sort((a, b) => central(b).compareTo(central(a)));
+      gist.add(slice.first);
+    }
+    final keyFigures = kindOf == 'a report'
+        ? (all.where((s) => figures.hasMatch(s) && !gist.contains(s)).toList()..sort((a, b) => central(b).compareTo(central(a)))).take(3).toList()
+        : const <String>[];
+
+    String trim(String s) => s.length > 260 ? '${s.substring(0, 257).trimRight()}…' : s;
+    String list(List<String> xs) => xs.length <= 1 ? xs.join() : '${xs.sublist(0, xs.length - 1).join(', ')} and ${xs.last}';
     return [
-      'I\'ve read "${doc.name}" ($size).',
-      if (top.isNotEmpty) 'It\'s mostly about ${top.join(', ')}.',
-      if (gist.isNotEmpty) 'The gist:\n${gist.map((s) => '• $s').join('\n')}',
-      'Ask me anything about it — to explain a part, summarise a section, pull out figures, or check something.',
+      '$head It reads as $kindOf${sections.length >= 2 ? ', in ${sections.length} sections' : ''}.',
+      if (sections.length >= 2) 'Sections: ${sections.take(8).join(' · ')}${sections.length > 8 ? ' · …' : ''}',
+      if (isQa) 'It takes up questions like ${questions.take(3).map((q) => '“${trim(q)}”').join(', ')}.',
+      if (names.isNotEmpty || themes.isNotEmpty)
+        [
+          if (names.isNotEmpty) 'It keeps coming back to **${list(names)}**',
+          if (themes.isNotEmpty) '${names.isEmpty ? 'Its recurring themes are' : ', and to'} ${list(themes)}',
+        ].join() + '.',
+      if (gist.isNotEmpty) '**${gist.length == 3 ? 'How it runs, beginning to end' : 'The gist'}:**\n${gist.map((s) => '- ${trim(s)}').join('\n')}',
+      if (keyFigures.isNotEmpty) '**Key figures:**\n${keyFigures.map((s) => '- ${trim(s)}').join('\n')}',
+      close,
     ].join('\n\n');
   }
 
