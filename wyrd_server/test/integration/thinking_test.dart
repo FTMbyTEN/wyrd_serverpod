@@ -52,6 +52,11 @@ void main() {
       expect(jsonDecode(note!.content)['op'], 'question');
       final mind = await Mind.db.findById(session, 1);
       expect(mind!.activeGoal, 'find out how "lagos" relates to "volcano"');
+
+      // asked once, not every tick
+      await ThinkingService.think(session);
+      final asked = await ReasoningNote.db.count(session, where: (t) => t.kind.equals('thought') & t.content.like('%"op":"question"%'));
+      expect(asked, 1);
     });
 
     test('a dream wanders its own synapses somewhere far and leaves a guess to test; the diary tells its day', () async {

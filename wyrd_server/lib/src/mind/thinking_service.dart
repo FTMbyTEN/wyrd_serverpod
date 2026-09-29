@@ -99,6 +99,7 @@ class ThinkingService {
     if (avgTrust < 0.35) return 'doubted';
     if (sources >= 2 && confidence >= 0.38) return 'held'; // two independent sources of at least neutral trust
     if (current == 'dream' && sources == 0) return 'dream';
+    if (current == 'open' && sources == 0) return 'open';
     return 'hypothesis';
   }
 
@@ -138,7 +139,8 @@ class ThinkingService {
     if (pairs.isEmpty) return false;
 
     final known = <String>{};
-    final existing = await Belief.db.find(session, where: (t) => t.a.inSet(pairs.map((p) => p.$1).toSet()));
+    final words = {for (final p in pairs) ...[p.$1, p.$2]};
+    final existing = await Belief.db.find(session, where: (t) => t.a.inSet(words) | t.b.inSet(words));
     for (final e in existing) {
       known.add(_pairKey(e.a, e.b));
     }
@@ -189,6 +191,15 @@ class ThinkingService {
 
     // they keep appearing together but nothing says how: an open question, and its goal
     final (a, b, _) = candidates.first;
+    // written down, so it is asked once and then looked into again later rather than every tick
+    final now = DateTime.now().toUtc();
+    await Belief.db.insertRow(
+      session,
+      Belief(
+        a: a.compareTo(b) < 0 ? a : b, b: a.compareTo(b) < 0 ? b : a, claim: '', evidenceIds: [], sources: 0, against: 0,
+        confidence: 0, status: 'open', origin: 'reason', tests: 0, createdAt: now, updatedAt: now, testedAt: now,
+      ),
+    );
     final summary = 'I keep seeing "$a" beside "$b", but nothing I\'ve read says how they connect. '
         'That\'s a real gap in what I know — I\'ll look for it.';
     await _log(session, op: 'question', a: a, b: b, claim: null, before: null, after: null, st: 'open', sources: 0, against: 0, ev: const [], summary: summary);
@@ -220,6 +231,13 @@ class ThinkingService {
       ),
     );
     final change = conf - before;
+    if (belief.status == 'open' && ev.isEmpty) {
+      final summary = dropped
+          ? 'I never found how "${belief.a}" and "${belief.b}" connect. Maybe they don\'t — I\'m letting the question go.'
+          : 'I looked again for how "${belief.a}" and "${belief.b}" connect. Still nothing — the question stays open.';
+      await _log(session, op: 'question', a: belief.a, b: belief.b, claim: null, before: null, after: null, st: dropped ? 'dropped' : 'open', sources: 0, against: 0, ev: const [], summary: summary);
+      return true;
+    }
     final verdict = dropped
         ? 'Nothing more has come up to support it, so I\'m letting it go.'
         : st == 'doubted'

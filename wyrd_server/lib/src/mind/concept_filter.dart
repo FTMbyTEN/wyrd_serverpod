@@ -24,6 +24,10 @@ class ConceptFilter {
     'right', 'left', 'hard', 'easy', 'able', 'sure', 'hand', 'home', 'work', 'job', 'life', 'world', 'group',
     'area', 'place', 'level', 'line', 'term', 'result', 'results', 'issue', 'issues', 'problem', 'problems',
     'question', 'questions', 'idea', 'ideas', 'story', 'stories', 'reason', 'example', 'system', 'systems',
+    'toward', 'towards', 'among', 'amongst', 'within', 'without', 'upon', 'onto', 'across', 'whether', 'though',
+    'although', 'since', 'until', 'unless', 'perhaps', 'maybe', 'about', 'above', 'below', 'behind', 'beyond',
+    'despite', 'during', 'except', 'inside', 'outside', 'through', 'throughout', 'around', 'against', 'along',
+    'seem', 'seems', 'seemed', 'become', 'becomes', 'became', 'rather', 'quite', 'really', 'still', 'even',
     'company', 'companies', 'data', 'information', 'version', 'feature', 'features', 'tool', 'tools',
   };
 
