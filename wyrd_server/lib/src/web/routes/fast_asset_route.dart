@@ -30,7 +30,10 @@ class CompressedAssetRoute extends Route {
   @override
   FutureOr<Result> handleCall(Session session, Request request) {
     _load();
-    final acceptsGzip = (request.headers['accept-encoding'] ?? const <String>[]).any((v) => v.contains('gzip'));
+    // The edge proxy doesn't pass the browser's Accept-Encoding on, and every browser that can run
+    // WebAssembly accepts gzip -- so send gzip unless a client explicitly asks for identity only.
+    final accept = (request.headers['accept-encoding'] ?? const <String>[]).join(',');
+    final acceptsGzip = accept.isEmpty || accept.contains('gzip') || accept.contains('*');
     final ifNoneMatch = (request.headers['if-none-match'] ?? const <String>[]).join(',');
     final headers = <String, Iterable<String>>{
       'cache-control': ['public, max-age=${maxAge.inSeconds}'],
