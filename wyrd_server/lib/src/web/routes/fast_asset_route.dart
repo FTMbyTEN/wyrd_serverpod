@@ -20,6 +20,9 @@ class CompressedAssetRoute extends Route {
   Uint8List? _gzip;
   String? _etag;
 
+  /// Compresses the file now (at server start) so the first visitor doesn't wait for it.
+  void warm() => _load();
+
   void _load() {
     if (_raw != null) return;
     _raw = file.readAsBytesSync();

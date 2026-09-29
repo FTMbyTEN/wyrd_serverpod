@@ -60,7 +60,8 @@ void run(List<String> args) async {
     // The graphics engine, compressed and cached (see CompressedAssetRoute).
     final wasm = File(Uri(path: 'web/app/canvaskit.wasm').toFilePath());
     if (wasm.existsSync()) {
-      pod.webServer.addRoute(CompressedAssetRoute(wasm, mimeType: const MimeType('application', 'wasm')), '/canvaskit.wasm');
+      final wasmRoute = CompressedAssetRoute(wasm, mimeType: const MimeType('application', 'wasm'))..warm();
+      pod.webServer.addRoute(wasmRoute, '/canvaskit.wasm');
     }
     // Serve the web app under /: hashed bundles cached for a year, index.html always fresh.
     pod.webServer.addRoute(
