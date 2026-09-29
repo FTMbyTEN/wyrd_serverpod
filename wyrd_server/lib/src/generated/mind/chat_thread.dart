@@ -23,6 +23,9 @@ abstract class ChatThread
     this.lastReadTitle,
     this.lastReadItemId,
     this.lastPassage,
+    this.lastDocumentId,
+    this.lastDocumentName,
+    this.documentAt,
     this.nextOffset,
     required this.updatedAt,
   });
@@ -35,6 +38,9 @@ abstract class ChatThread
     String? lastReadTitle,
     int? lastReadItemId,
     String? lastPassage,
+    int? lastDocumentId,
+    String? lastDocumentName,
+    DateTime? documentAt,
     int? nextOffset,
     required DateTime updatedAt,
   }) = _ChatThreadImpl;
@@ -52,6 +58,11 @@ abstract class ChatThread
       lastReadTitle: jsonSerialization['lastReadTitle'] as String?,
       lastReadItemId: jsonSerialization['lastReadItemId'] as int?,
       lastPassage: jsonSerialization['lastPassage'] as String?,
+      lastDocumentId: jsonSerialization['lastDocumentId'] as int?,
+      lastDocumentName: jsonSerialization['lastDocumentName'] as String?,
+      documentAt: jsonSerialization['documentAt'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(jsonSerialization['documentAt']),
       nextOffset: jsonSerialization['nextOffset'] as int?,
       updatedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
@@ -78,6 +89,12 @@ abstract class ChatThread
 
   String? lastPassage;
 
+  int? lastDocumentId;
+
+  String? lastDocumentName;
+
+  DateTime? documentAt;
+
   int? nextOffset;
 
   DateTime updatedAt;
@@ -96,6 +113,9 @@ abstract class ChatThread
     String? lastReadTitle,
     int? lastReadItemId,
     String? lastPassage,
+    int? lastDocumentId,
+    String? lastDocumentName,
+    DateTime? documentAt,
     int? nextOffset,
     DateTime? updatedAt,
   });
@@ -110,6 +130,9 @@ abstract class ChatThread
       if (lastReadTitle != null) 'lastReadTitle': lastReadTitle,
       if (lastReadItemId != null) 'lastReadItemId': lastReadItemId,
       if (lastPassage != null) 'lastPassage': lastPassage,
+      if (lastDocumentId != null) 'lastDocumentId': lastDocumentId,
+      if (lastDocumentName != null) 'lastDocumentName': lastDocumentName,
+      if (documentAt != null) 'documentAt': documentAt?.toJson(),
       if (nextOffset != null) 'nextOffset': nextOffset,
       'updatedAt': updatedAt.toJson(),
     };
@@ -126,6 +149,9 @@ abstract class ChatThread
       if (lastReadTitle != null) 'lastReadTitle': lastReadTitle,
       if (lastReadItemId != null) 'lastReadItemId': lastReadItemId,
       if (lastPassage != null) 'lastPassage': lastPassage,
+      if (lastDocumentId != null) 'lastDocumentId': lastDocumentId,
+      if (lastDocumentName != null) 'lastDocumentName': lastDocumentName,
+      if (documentAt != null) 'documentAt': documentAt?.toJson(),
       if (nextOffset != null) 'nextOffset': nextOffset,
       'updatedAt': updatedAt.toJson(),
     };
@@ -170,6 +196,9 @@ class _ChatThreadImpl extends ChatThread {
     String? lastReadTitle,
     int? lastReadItemId,
     String? lastPassage,
+    int? lastDocumentId,
+    String? lastDocumentName,
+    DateTime? documentAt,
     int? nextOffset,
     required DateTime updatedAt,
   }) : super._(
@@ -180,6 +209,9 @@ class _ChatThreadImpl extends ChatThread {
          lastReadTitle: lastReadTitle,
          lastReadItemId: lastReadItemId,
          lastPassage: lastPassage,
+         lastDocumentId: lastDocumentId,
+         lastDocumentName: lastDocumentName,
+         documentAt: documentAt,
          nextOffset: nextOffset,
          updatedAt: updatedAt,
        );
@@ -196,6 +228,9 @@ class _ChatThreadImpl extends ChatThread {
     Object? lastReadTitle = _Undefined,
     Object? lastReadItemId = _Undefined,
     Object? lastPassage = _Undefined,
+    Object? lastDocumentId = _Undefined,
+    Object? lastDocumentName = _Undefined,
+    Object? documentAt = _Undefined,
     Object? nextOffset = _Undefined,
     DateTime? updatedAt,
   }) {
@@ -211,6 +246,13 @@ class _ChatThreadImpl extends ChatThread {
           ? lastReadItemId
           : this.lastReadItemId,
       lastPassage: lastPassage is String? ? lastPassage : this.lastPassage,
+      lastDocumentId: lastDocumentId is int?
+          ? lastDocumentId
+          : this.lastDocumentId,
+      lastDocumentName: lastDocumentName is String?
+          ? lastDocumentName
+          : this.lastDocumentName,
+      documentAt: documentAt is DateTime? ? documentAt : this.documentAt,
       nextOffset: nextOffset is int? ? nextOffset : this.nextOffset,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -254,6 +296,23 @@ class ChatThreadUpdateTable extends _is.UpdateTable<ChatThreadTable> {
     value,
   );
 
+  _is.ColumnValue<int, int> lastDocumentId(int? value) => _is.ColumnValue(
+    table.lastDocumentId,
+    value,
+  );
+
+  _is.ColumnValue<String, String> lastDocumentName(String? value) =>
+      _is.ColumnValue(
+        table.lastDocumentName,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> documentAt(DateTime? value) =>
+      _is.ColumnValue(
+        table.documentAt,
+        value,
+      );
+
   _is.ColumnValue<int, int> nextOffset(int? value) => _is.ColumnValue(
     table.nextOffset,
     value,
@@ -293,6 +352,18 @@ class ChatThreadTable extends _is.Table<int?> {
       'lastPassage',
       this,
     );
+    lastDocumentId = _is.ColumnInt(
+      'lastDocumentId',
+      this,
+    );
+    lastDocumentName = _is.ColumnString(
+      'lastDocumentName',
+      this,
+    );
+    documentAt = _is.ColumnDateTime(
+      'documentAt',
+      this,
+    );
     nextOffset = _is.ColumnInt(
       'nextOffset',
       this,
@@ -317,6 +388,12 @@ class ChatThreadTable extends _is.Table<int?> {
 
   late final _is.ColumnString lastPassage;
 
+  late final _is.ColumnInt lastDocumentId;
+
+  late final _is.ColumnString lastDocumentName;
+
+  late final _is.ColumnDateTime documentAt;
+
   late final _is.ColumnInt nextOffset;
 
   late final _is.ColumnDateTime updatedAt;
@@ -330,6 +407,9 @@ class ChatThreadTable extends _is.Table<int?> {
     lastReadTitle,
     lastReadItemId,
     lastPassage,
+    lastDocumentId,
+    lastDocumentName,
+    documentAt,
     nextOffset,
     updatedAt,
   ];

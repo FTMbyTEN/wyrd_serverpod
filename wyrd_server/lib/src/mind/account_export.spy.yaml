@@ -11,3 +11,4 @@ fields:
   memories: List<MemoryBlock>?
   thread: ChatThread?
   readingList: List<ReadingItem>?
+  documents: List<UserDocument>?

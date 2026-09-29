@@ -36,6 +36,7 @@ import 'package:wyrd_server/src/generated/mind/reading_item.dart' as _ijabq8az;
 import 'package:wyrd_server/src/generated/mind/reasoning_note.dart'
     as _ix0xy1y5;
 import 'package:wyrd_server/src/generated/mind/sighting.dart' as _ixz0p0ha;
+import 'package:wyrd_server/src/generated/mind/user_document.dart' as _ixkemspx;
 import 'package:wyrd_server/src/generated/mind/work_hit.dart' as _ixzzqok1;
 import 'package:wyrd_server/src/generated/mind/work_part_info.dart'
     as _ikde1sdn;
@@ -62,6 +63,7 @@ import 'mind/curriculum_progress.dart' as _ipo2nutw;
 import 'mind/curriculum_status.dart' as _iiwgxlwr;
 import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
+import 'mind/document_upload.dart' as _il5hhvzk;
 import 'mind/dream_entry.dart' as _izf9406n;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
 import 'mind/filter_report.dart' as _idq6t4e8;
@@ -97,6 +99,7 @@ import 'mind/system_status.dart' as _iw7p4jzd;
 import 'mind/topic_info.dart' as _i8qpvcdz;
 import 'mind/trust_report.dart' as _iud9b8mc;
 import 'mind/trust_score.dart' as _i79dz7me;
+import 'mind/user_document.dart' as _i0a2qxp3;
 import 'mind/user_fact.dart' as _i8ng53gk;
 import 'mind/user_profile.dart' as _irc0lure;
 import 'mind/word_sense.dart' as _itj7bvl5;
@@ -125,6 +128,7 @@ export 'mind/curriculum_progress.dart';
 export 'mind/curriculum_status.dart';
 export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
+export 'mind/document_upload.dart';
 export 'mind/dream_entry.dart';
 export 'mind/feed_ingest.dart';
 export 'mind/filter_report.dart';
@@ -160,6 +164,7 @@ export 'mind/system_status.dart';
 export 'mind/topic_info.dart';
 export 'mind/trust_report.dart';
 export 'mind/trust_score.dart';
+export 'mind/user_document.dart';
 export 'mind/user_fact.dart';
 export 'mind/user_profile.dart';
 export 'mind/word_sense.dart';
@@ -223,6 +228,24 @@ class Protocol extends _is.DatabaseSerializationManager {
           columnType: _isp.ColumnType.text,
           isNullable: true,
           dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastDocumentId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastDocumentName',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'documentAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
         ),
         _isp.ColumnDefinition(
           name: 'nextOffset',
@@ -2241,6 +2264,90 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'user_document',
+      dartName: 'UserDocument',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'text',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'chars',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'words',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'pages',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'user_document_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'user_profile',
       dartName: 'UserProfile',
       schema: 'public',
@@ -2500,6 +2607,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i9vbq77t.DigestInfo) {
       return _i9vbq77t.DigestInfo.fromJson(data) as T;
     }
+    if (t == _il5hhvzk.DocumentUpload) {
+      return _il5hhvzk.DocumentUpload.fromJson(data) as T;
+    }
     if (t == _izf9406n.DreamEntry) {
       return _izf9406n.DreamEntry.fromJson(data) as T;
     }
@@ -2605,6 +2715,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i79dz7me.TrustScore) {
       return _i79dz7me.TrustScore.fromJson(data) as T;
     }
+    if (t == _i0a2qxp3.UserDocument) {
+      return _i0a2qxp3.UserDocument.fromJson(data) as T;
+    }
     if (t == _i8ng53gk.UserFact) {
       return _i8ng53gk.UserFact.fromJson(data) as T;
     }
@@ -2697,6 +2810,10 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_i9vbq77t.DigestInfo?>()) {
       return (data != null ? _i9vbq77t.DigestInfo.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_il5hhvzk.DocumentUpload?>()) {
+      return (data != null ? _il5hhvzk.DocumentUpload.fromJson(data) : null)
+          as T;
     }
     if (t == _is.getType<_izf9406n.DreamEntry?>()) {
       return (data != null ? _izf9406n.DreamEntry.fromJson(data) : null) as T;
@@ -2813,6 +2930,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i79dz7me.TrustScore?>()) {
       return (data != null ? _i79dz7me.TrustScore.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_i0a2qxp3.UserDocument?>()) {
+      return (data != null ? _i0a2qxp3.UserDocument.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_i8ng53gk.UserFact?>()) {
       return (data != null ? _i8ng53gk.UserFact.fromJson(data) : null) as T;
     }
@@ -2895,6 +3015,20 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null
               ? (data as List)
                     .map((e) => deserialize<_igsakn5u.ReadingItem>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_i0a2qxp3.UserDocument>) {
+      return (data as List)
+              .map((e) => deserialize<_i0a2qxp3.UserDocument>(e))
+              .toList()
+          as T;
+    }
+    if (t == _is.getType<List<_i0a2qxp3.UserDocument>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_i0a2qxp3.UserDocument>(e))
                     .toList()
               : null)
           as T;
@@ -2992,6 +3126,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_idet4410.DiaryEntry>) {
       return (data as List)
               .map((e) => deserialize<_idet4410.DiaryEntry>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ixkemspx.UserDocument>) {
+      return (data as List)
+              .map((e) => deserialize<_ixkemspx.UserDocument>(e))
               .toList()
           as T;
     }
@@ -3112,6 +3252,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iiwgxlwr.CurriculumStatus => 'CurriculumStatus',
       _i0u3uu6s.DiaryEntry => 'DiaryEntry',
       _i9vbq77t.DigestInfo => 'DigestInfo',
+      _il5hhvzk.DocumentUpload => 'DocumentUpload',
       _izf9406n.DreamEntry => 'DreamEntry',
       _ig20dqq5.FeedIngest => 'FeedIngest',
       _idq6t4e8.FilterReport => 'FilterReport',
@@ -3147,6 +3288,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i8qpvcdz.TopicInfo => 'TopicInfo',
       _iud9b8mc.TrustReport => 'TrustReport',
       _i79dz7me.TrustScore => 'TrustScore',
+      _i0a2qxp3.UserDocument => 'UserDocument',
       _i8ng53gk.UserFact => 'UserFact',
       _irc0lure.UserProfile => 'UserProfile',
       _itj7bvl5.WordSense => 'WordSense',
@@ -3211,6 +3353,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'DiaryEntry';
       case _i9vbq77t.DigestInfo():
         return 'DigestInfo';
+      case _il5hhvzk.DocumentUpload():
+        return 'DocumentUpload';
       case _izf9406n.DreamEntry():
         return 'DreamEntry';
       case _ig20dqq5.FeedIngest():
@@ -3281,6 +3425,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'TrustReport';
       case _i79dz7me.TrustScore():
         return 'TrustScore';
+      case _i0a2qxp3.UserDocument():
+        return 'UserDocument';
       case _i8ng53gk.UserFact():
         return 'UserFact';
       case _irc0lure.UserProfile():
@@ -3384,6 +3530,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'DigestInfo') {
       return deserialize<_i9vbq77t.DigestInfo>(data['data']);
+    }
+    if (dataClassName == 'DocumentUpload') {
+      return deserialize<_il5hhvzk.DocumentUpload>(data['data']);
     }
     if (dataClassName == 'DreamEntry') {
       return deserialize<_izf9406n.DreamEntry>(data['data']);
@@ -3489,6 +3638,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'TrustScore') {
       return deserialize<_i79dz7me.TrustScore>(data['data']);
+    }
+    if (dataClassName == 'UserDocument') {
+      return deserialize<_i0a2qxp3.UserDocument>(data['data']);
     }
     if (dataClassName == 'UserFact') {
       return deserialize<_i8ng53gk.UserFact>(data['data']);
@@ -3603,6 +3755,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i0pqq4fp.Synapse.t;
       case _i79dz7me.TrustScore:
         return _i79dz7me.TrustScore.t;
+      case _i0a2qxp3.UserDocument:
+        return _i0a2qxp3.UserDocument.t;
       case _irc0lure.UserProfile:
         return _irc0lure.UserProfile.t;
       case _itj7bvl5.WordSense:

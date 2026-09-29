@@ -27,6 +27,7 @@ import '../mind/alerts_endpoint.dart' as _impqu952;
 import '../mind/chat_endpoint.dart' as _i2b8uve4;
 import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
+import '../mind/document_endpoint.dart' as _i7txdnsa;
 import '../mind/dream_endpoint.dart' as _inxbi04j;
 import '../mind/feed_endpoint.dart' as _in0i7e4k;
 import '../mind/gate_shape_endpoint.dart' as _ix7nnscc;
@@ -108,6 +109,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'diary',
+          null,
+        ),
+      'document': _i7txdnsa.DocumentEndpoint()
+        ..initialize(
+          server,
+          'document',
           null,
         ),
       'dream': _inxbi04j.DreamEndpoint()
@@ -747,6 +754,78 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['diary'] as _i71dg2tj.DiaryEndpoint)
                   .trigger(session),
+        ),
+      },
+    );
+    connectors['document'] = _is.EndpointConnector(
+      name: 'document',
+      endpoint: endpoints['document']!,
+      methodConnectors: {
+        'upload': _is.MethodConnector(
+          name: 'upload',
+          params: {
+            'name': _is.ParameterDescription(
+              name: 'name',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'kind': _is.ParameterDescription(
+              name: 'kind',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'pages': _is.ParameterDescription(
+              name: 'pages',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['document'] as _i7txdnsa.DocumentEndpoint).upload(
+                    session,
+                    params['name'],
+                    params['kind'],
+                    params['text'],
+                    pages: params['pages'],
+                  ),
+        ),
+        'list': _is.MethodConnector(
+          name: 'list',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['document'] as _i7txdnsa.DocumentEndpoint)
+                  .list(session),
+        ),
+        'remove': _is.MethodConnector(
+          name: 'remove',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['document'] as _i7txdnsa.DocumentEndpoint).remove(
+                    session,
+                    params['id'],
+                  ),
         ),
       },
     );

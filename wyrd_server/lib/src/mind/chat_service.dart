@@ -4,6 +4,7 @@ import '../generated/protocol.dart';
 import 'chat_tool_service.dart';
 import 'code_agent_service.dart';
 import 'embedding_service.dart';
+import 'document_service.dart';
 import 'learned_answer_service.dart';
 import 'library_service.dart';
 import 'local_brain_service.dart';
@@ -131,13 +132,16 @@ class ChatService {
     await LearnedAnswerService.feedback(session, recentTurns.firstOrNull, text);
     final isCode = CodeAgentService.isCodeRequest(text) || CodeAgentService.isLikelyFollowUp(authUserId, text);
     // a follow-up depends on the conversation, so it's never answered from a learned answer
-    final learned = isCode || followUp ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
+    // a file they shared, if the message is about it (it wins over the book they're reading when named)
+    final aboutReading = ThreadService.aboutReading(thread, text, followUp: followUp);
+    final activeDoc = await DocumentService.active(session, authUserId, thread);
+    final aboutDoc = activeDoc != null && DocumentService.isAbout(activeDoc, text, followUp: followUp, aboutReading: aboutReading);
+    final learned = isCode || followUp || aboutDoc ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
 
     // No API first: WYRD's own brain handles what it can (reading, meanings, places, what it
     // knows about you) before any AI is called.
-    final aboutReading = ThreadService.aboutReading(thread, text, followUp: followUp);
     final local = learned == null && !isCode
-        ? await LocalBrainService.answer(session, authUserId: authUserId, text: text, thread: thread, facts: facts.map((f) => f.text).toList(), followUp: followUp)
+        ? await LocalBrainService.answer(session, authUserId: authUserId, text: text, thread: aboutDoc ? thread?.copyWith(lastPassage: null) : thread, facts: facts.map((f) => f.text).toList(), followUp: followUp)
         : null;
     if (local != null) session.log('[local-brain] answered without an API (${local.kind})');
 
@@ -157,7 +161,8 @@ class ChatService {
       'Your current mood: ${mind.mood}.${mind.focusTopic != null ? ' You\'ve been mulling over "${mind.focusTopic}" in the background.' : ''}',
       ...ThreadService.promptLines(thread, followUp: followUp, threadTopics: threadTopics),
       // Academy: when they ask about the book they are reading, the passage is in front of WYRD
-      if (aboutReading) ...ThreadService.readingLines(thread!),
+      if (aboutReading && !aboutDoc) ...ThreadService.readingLines(thread!),
+      if (aboutDoc) ...DocumentService.promptLines(activeDoc, text),
       ...recall.toPromptLines(),
       if (!recall.isEmpty)
         'Use what you already know where it genuinely fits, in your own words -- never invent a memory '
@@ -231,7 +236,7 @@ class ChatService {
       judgement = JudgementService.judge(
         reply: toolReply.text,
         question: text,
-        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}'), if (aboutReading) thread!.lastPassage!].join(' '),
+        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}'), if (aboutReading) thread!.lastPassage!, if (aboutDoc) DocumentService.relevant(activeDoc, text)].join(' '),
         readWeb: readUrls.isNotEmpty,
         action: action?.type,
         askerEmail: profile.email,
@@ -244,6 +249,7 @@ class ChatService {
         local?.text ??
         judgement?.text ??
         toolReply?.text ??
+        (aboutDoc ? DocumentService.answerLocally(activeDoc, text) : null) ?? // no AI: what the file says
         (aboutReading ? LocalBrainService.fromPassage(thread, text) : null) ?? // no AI: what the book says
         LocalBrainService.fromMemory(recall) ?? // no AI available: say what it knows
         _followUpFromTopics(topics);
@@ -252,7 +258,7 @@ class ChatService {
     // the gate passed: unverified or corrected answers are never learned.
     int? learnedNow;
     // answers about the passage someone is reading depend on that passage, so they are not learned
-    if (toolReply != null && codeReply == null && action == null && !aboutReading && (judgement?.passed ?? true)) {
+    if (toolReply != null && codeReply == null && action == null && !aboutReading && !aboutDoc && (judgement?.passed ?? true)) {
       learnedNow = await LearnedAnswerService.learn(session, authUserId, text, topics, toolReply.text, userFacts: facts.map((f) => f.text).toList(), meaning: meaning);
     }
 

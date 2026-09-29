@@ -1,0 +1,11 @@
+# What uploading a document gives back: the stored document (without its text) and WYRD's
+# first look at it, already added to the conversation.
+class: DocumentUpload
+fields:
+  id: int
+  name: String
+  kind: String
+  words: int
+  pages: int?
+  reply: String
+  turnId: int?

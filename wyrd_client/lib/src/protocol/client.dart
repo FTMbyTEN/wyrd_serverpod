@@ -36,6 +36,8 @@ import 'package:wyrd_client/src/protocol/mind/country_detail.dart' as _i3byid52;
 import 'package:wyrd_client/src/protocol/mind/curriculum_status.dart'
     as _i8wsch3q;
 import 'package:wyrd_client/src/protocol/mind/diary_entry.dart' as _iz65e3oe;
+import 'package:wyrd_client/src/protocol/mind/document_upload.dart'
+    as _ineqvy2e;
 import 'package:wyrd_client/src/protocol/mind/dream_entry.dart' as _igmpa92d;
 import 'package:wyrd_client/src/protocol/mind/feed_ingest.dart' as _ipp6qnor;
 import 'package:wyrd_client/src/protocol/mind/filter_report.dart' as _iikqy3kr;
@@ -62,6 +64,7 @@ import 'package:wyrd_client/src/protocol/mind/sighting.dart' as _ijttkw09;
 import 'package:wyrd_client/src/protocol/mind/system_status.dart' as _i97zx8uk;
 import 'package:wyrd_client/src/protocol/mind/topic_info.dart' as _il2rvv3i;
 import 'package:wyrd_client/src/protocol/mind/trust_report.dart' as _iv8ct9z9;
+import 'package:wyrd_client/src/protocol/mind/user_document.dart' as _imstbkek;
 import 'package:wyrd_client/src/protocol/mind/user_profile.dart' as _ig38dtlp;
 import 'package:wyrd_client/src/protocol/mind/work_hit.dart' as _iv7njdft;
 import 'package:wyrd_client/src/protocol/mind/work_part_info.dart' as _iepby0e1;
@@ -524,6 +527,47 @@ class EndpointDiary extends _isc.EndpointRef {
         'trigger',
         {},
       );
+}
+
+/// Files shared in Dialogue Link: stored privately for the person who shared them.
+/// {@category Endpoint}
+class EndpointDocument extends _isc.EndpointRef {
+  EndpointDocument(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'document';
+
+  /// Shares a file's text (extracted in the browser) with WYRD. It becomes the file the
+  /// conversation is about, and WYRD's first look at it is added to the conversation.
+  _ida.Future<_ineqvy2e.DocumentUpload> upload(
+    String name,
+    String kind,
+    String text, {
+    int? pages,
+  }) => caller.callServerEndpoint<_ineqvy2e.DocumentUpload>(
+    'document',
+    'upload',
+    {
+      'name': name,
+      'kind': kind,
+      'text': text,
+      'pages': pages,
+    },
+  );
+
+  /// Your shared files, newest first (without their text).
+  _ida.Future<List<_imstbkek.UserDocument>> list() =>
+      caller.callServerEndpoint<List<_imstbkek.UserDocument>>(
+        'document',
+        'list',
+        {},
+      );
+
+  _ida.Future<void> remove(int id) => caller.callServerEndpoint<void>(
+    'document',
+    'remove',
+    {'id': id},
+  );
 }
 
 /// Dreams: read them, see what they were made of, or (rate-limited) ask for one. Public, like Node.
@@ -1187,6 +1231,7 @@ class Client extends _isc.ServerpodClientShared {
     chat = EndpointChat(this);
     curriculum = EndpointCurriculum(this);
     diary = EndpointDiary(this);
+    document = EndpointDocument(this);
     dream = EndpointDream(this);
     feed = EndpointFeed(this);
     gateShape = EndpointGateShape(this);
@@ -1226,6 +1271,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointCurriculum curriculum;
 
   late final EndpointDiary diary;
+
+  late final EndpointDocument document;
 
   late final EndpointDream dream;
 
@@ -1275,6 +1322,7 @@ class Client extends _isc.ServerpodClientShared {
     'chat': chat,
     'curriculum': curriculum,
     'diary': diary,
+    'document': document,
     'dream': dream,
     'feed': feed,
     'gateShape': gateShape,

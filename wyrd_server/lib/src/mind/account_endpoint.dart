@@ -33,6 +33,7 @@ class AccountEndpoint extends Endpoint {
     final learned = await LearnedAnswer.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
     final memories = await MemoryBlock.db.find(session, where: (t) => t.ownerId.equals(authUserId), orderBy: (t) => t.id);
     final thread = await ChatThread.db.findFirstRow(session, where: (t) => t.authUserId.equals(authUserId));
+    final documents = await UserDocument.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
     final reading = await ReadingItem.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
 
     return AccountExport(
@@ -47,6 +48,7 @@ class AccountEndpoint extends Endpoint {
       memories: memories,
       thread: thread,
       readingList: reading,
+      documents: documents,
     );
   }
 
@@ -65,6 +67,7 @@ class AccountEndpoint extends Endpoint {
     await MemoryBlock.db.deleteWhere(session, where: (t) => t.ownerId.equals(authUserId));
     await ChatThread.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await ReadingItem.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await UserDocument.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await QuizAttempt.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
   }
 }

@@ -1,0 +1,19 @@
+# A file someone shared in Dialogue Link (its text, extracted in their browser), kept private to
+# them so WYRD can explain it and answer questions about it. See DocumentService.
+class: UserDocument
+table: user_document
+
+fields:
+  authUserId: UuidValue
+  name: String
+  # 'pdf', 'docx', 'text', 'html', 'csv', 'json', 'code'
+  kind: String
+  text: String
+  chars: int
+  words: int
+  pages: int?
+  createdAt: DateTime
+
+indexes:
+  user_document_user_idx:
+    fields: authUserId, createdAt

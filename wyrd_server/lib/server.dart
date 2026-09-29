@@ -63,6 +63,14 @@ void run(List<String> args) async {
       final wasmRoute = CompressedAssetRoute(wasm, mimeType: const MimeType('application', 'wasm'))..warm();
       pod.webServer.addRoute(wasmRoute, '/canvaskit.wasm');
     }
+    // pdf.js, for reading PDFs people attach in Dialogue Link: served as JavaScript modules
+    // (browsers refuse module scripts with any other type), compressed and cached
+    for (final name in ['pdf.min.mjs', 'pdf.worker.min.mjs']) {
+      final f = File(Uri(path: 'web/app/pdfjs/$name').toFilePath());
+      if (f.existsSync()) {
+        pod.webServer.addRoute(CompressedAssetRoute(f, mimeType: const MimeType('text', 'javascript'))..warm(), '/pdfjs/$name');
+      }
+    }
     // Serve the web app under /: hashed bundles cached for a year, index.html always fresh.
     pod.webServer.addRoute(
       FlutterRoute(

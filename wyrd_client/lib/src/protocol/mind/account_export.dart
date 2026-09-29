@@ -18,6 +18,7 @@ import '../mind/learned_answer.dart' as _ilehim93;
 import '../mind/memory_block.dart' as _i0t6eg5q;
 import '../mind/reading_item.dart' as _iq1pc8u4;
 import '../mind/sighting.dart' as _i3snlpz5;
+import '../mind/user_document.dart' as _irdux050;
 import '../mind/user_fact.dart' as _il0k3um2;
 
 abstract class AccountExport
@@ -34,6 +35,7 @@ abstract class AccountExport
     this.memories,
     this.thread,
     this.readingList,
+    this.documents,
   });
 
   factory AccountExport({
@@ -48,6 +50,7 @@ abstract class AccountExport
     List<_i0t6eg5q.MemoryBlock>? memories,
     _i0zx8u49.ChatThread? thread,
     List<_iq1pc8u4.ReadingItem>? readingList,
+    List<_irdux050.UserDocument>? documents,
   }) = _AccountExportImpl;
 
   factory AccountExport.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -92,6 +95,11 @@ abstract class AccountExport
           : _i2pladzn.Protocol().deserialize<List<_iq1pc8u4.ReadingItem>>(
               jsonSerialization['readingList'],
             ),
+      documents: jsonSerialization['documents'] == null
+          ? null
+          : _i2pladzn.Protocol().deserialize<List<_irdux050.UserDocument>>(
+              jsonSerialization['documents'],
+            ),
     );
   }
 
@@ -117,6 +125,8 @@ abstract class AccountExport
 
   List<_iq1pc8u4.ReadingItem>? readingList;
 
+  List<_irdux050.UserDocument>? documents;
+
   /// Returns a shallow copy of this [AccountExport]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -132,6 +142,7 @@ abstract class AccountExport
     List<_i0t6eg5q.MemoryBlock>? memories,
     _i0zx8u49.ChatThread? thread,
     List<_iq1pc8u4.ReadingItem>? readingList,
+    List<_irdux050.UserDocument>? documents,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -154,6 +165,8 @@ abstract class AccountExport
       if (thread != null) 'thread': thread?.toJson(),
       if (readingList != null)
         'readingList': readingList?.toJson(valueToJson: (v) => v.toJson()),
+      if (documents != null)
+        'documents': documents?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -184,6 +197,10 @@ abstract class AccountExport
         'readingList': readingList?.toJson(
           valueToJson: (v) => v.toJsonForProtocol(),
         ),
+      if (documents != null)
+        'documents': documents?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
     };
   }
 
@@ -208,6 +225,7 @@ class _AccountExportImpl extends AccountExport {
     List<_i0t6eg5q.MemoryBlock>? memories,
     _i0zx8u49.ChatThread? thread,
     List<_iq1pc8u4.ReadingItem>? readingList,
+    List<_irdux050.UserDocument>? documents,
   }) : super._(
          email: email,
          facts: facts,
@@ -220,6 +238,7 @@ class _AccountExportImpl extends AccountExport {
          memories: memories,
          thread: thread,
          readingList: readingList,
+         documents: documents,
        );
 
   /// Returns a shallow copy of this [AccountExport]
@@ -238,6 +257,7 @@ class _AccountExportImpl extends AccountExport {
     Object? memories = _Undefined,
     Object? thread = _Undefined,
     Object? readingList = _Undefined,
+    Object? documents = _Undefined,
   }) {
     return AccountExport(
       email: email is String? ? email : this.email,
@@ -262,6 +282,9 @@ class _AccountExportImpl extends AccountExport {
       readingList: readingList is List<_iq1pc8u4.ReadingItem>?
           ? readingList
           : this.readingList?.map((e0) => e0.copyWith()).toList(),
+      documents: documents is List<_irdux050.UserDocument>?
+          ? documents
+          : this.documents?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

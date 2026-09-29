@@ -41,6 +41,8 @@ import 'package:wyrd_server/src/generated/mind/country_detail.dart'
 import 'package:wyrd_server/src/generated/mind/curriculum_status.dart'
     as _ib9ako77;
 import 'package:wyrd_server/src/generated/mind/diary_entry.dart' as _idet4410;
+import 'package:wyrd_server/src/generated/mind/document_upload.dart'
+    as _im13g434;
 import 'package:wyrd_server/src/generated/mind/dream_entry.dart' as _ijdvl27e;
 import 'package:wyrd_server/src/generated/mind/feed_ingest.dart' as _icnxukj3;
 import 'package:wyrd_server/src/generated/mind/filter_report.dart' as _imy4srv1;
@@ -70,6 +72,7 @@ import 'package:wyrd_server/src/generated/mind/sighting.dart' as _ixz0p0ha;
 import 'package:wyrd_server/src/generated/mind/system_status.dart' as _it4ouq1a;
 import 'package:wyrd_server/src/generated/mind/topic_info.dart' as _iwnzpkr1;
 import 'package:wyrd_server/src/generated/mind/trust_report.dart' as _ikr0zl9n;
+import 'package:wyrd_server/src/generated/mind/user_document.dart' as _ixkemspx;
 import 'package:wyrd_server/src/generated/mind/user_profile.dart' as _ifiznghf;
 import 'package:wyrd_server/src/generated/mind/work_hit.dart' as _ixzzqok1;
 import 'package:wyrd_server/src/generated/mind/work_part_info.dart'
@@ -225,6 +228,8 @@ class TestEndpoints {
 
   late final _DiaryEndpoint diary;
 
+  late final _DocumentEndpoint document;
+
   late final _DreamEndpoint dream;
 
   late final _FeedEndpoint feed;
@@ -304,6 +309,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     diary = _DiaryEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    document = _DocumentEndpoint(
       endpoints,
       serializationManager,
     );
@@ -1329,6 +1338,117 @@ class _DiaryEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_idet4410.DiaryEntry>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _DocumentEndpoint {
+  _DocumentEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_im13g434.DocumentUpload> upload(
+    _ist.TestSessionBuilder sessionBuilder,
+    String name,
+    String kind,
+    String text, {
+    int? pages,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'document',
+            method: 'upload',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'document',
+          methodName: 'upload',
+          parameters: _ist.testObjectToJson({
+            'name': name,
+            'kind': kind,
+            'text': text,
+            'pages': pages,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_im13g434.DocumentUpload>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_ixkemspx.UserDocument>> list(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'document',
+            method: 'list',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'document',
+          methodName: 'list',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ixkemspx.UserDocument>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<void> remove(
+    _ist.TestSessionBuilder sessionBuilder,
+    int id,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'document',
+            method: 'remove',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'document',
+          methodName: 'remove',
+          parameters: _ist.testObjectToJson({'id': id}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<void>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

@@ -12,6 +12,10 @@ fields:
   # the My Library item being read, and the passage last shown, so WYRD can talk about it
   lastReadItemId: int?
   lastPassage: String?
+  # the file they shared most recently in Dialogue Link, and when
+  lastDocumentId: int?
+  lastDocumentName: String?
+  documentAt: DateTime?
   nextOffset: int?
   updatedAt: DateTime
 
