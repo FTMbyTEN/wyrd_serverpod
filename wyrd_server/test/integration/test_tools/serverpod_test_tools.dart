@@ -1362,6 +1362,7 @@ class _DocumentEndpoint {
     String kind,
     String text, {
     int? pages,
+    required bool staged,
   }) async {
     return _ist.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1379,6 +1380,7 @@ class _DocumentEndpoint {
             'kind': kind,
             'text': text,
             'pages': pages,
+            'staged': staged,
           }),
           serializationManager: _serializationManager,
         );

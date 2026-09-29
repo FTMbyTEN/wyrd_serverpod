@@ -15,7 +15,9 @@ class DocumentEndpoint extends Endpoint {
 
   /// Shares a file's text (extracted in the browser) with WYRD. It becomes the file the
   /// conversation is about, and WYRD's first look at it is added to the conversation.
-  Future<DocumentUpload> upload(Session session, String name, String kind, String text, {int? pages}) async {
+  /// With [staged], the file is only made the subject of the conversation: the message sent with
+  /// it asks the question, so no first-look turn is added.
+  Future<DocumentUpload> upload(Session session, String name, String kind, String text, {int? pages, bool staged = false}) async {
     final me = _me(session);
     if (RateLimiter.isLimited('doc:${me.uuid}', 12, const Duration(minutes: 10))) {
       throw Exception('slow down — try again in a few minutes');
@@ -35,6 +37,9 @@ class DocumentEndpoint extends Endpoint {
     }
 
     final reply = DocumentService.overview(doc);
+    if (staged) {
+      return DocumentUpload(id: doc.id!, name: doc.name, kind: doc.kind, words: doc.words, pages: doc.pages, reply: reply, turnId: null);
+    }
     final turn = await ConversationTurn.db.insertRow(
       session,
       ConversationTurn(authUserId: me, userText: '📎 ${doc.name}', botText: reply, timestamp: now),

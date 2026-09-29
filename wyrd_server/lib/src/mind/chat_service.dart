@@ -59,8 +59,11 @@ class ChatService {
   processMessage(
     Session session,
     UuidValue authUserId,
-    String text,
-  ) async {
+    String text, {
+    // how the message shows in the conversation, when that differs from what is answered (a
+    // file sent along with the question)
+    String? shownAs,
+  }) async {
     final topics = TopicService.extractTopics(text);
 
     final newFacts = UserFactService.extractFacts(text);
@@ -278,7 +281,7 @@ class ChatService {
       session,
       ConversationTurn(
         authUserId: authUserId,
-        userText: text,
+        userText: shownAs ?? text,
         botText: reply,
         timestamp: DateTime.now().toUtc(),
         learnedAnswerId: usedLearned?.id ?? learnedNow,

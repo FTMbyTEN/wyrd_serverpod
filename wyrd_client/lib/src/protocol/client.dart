@@ -539,11 +539,14 @@ class EndpointDocument extends _isc.EndpointRef {
 
   /// Shares a file's text (extracted in the browser) with WYRD. It becomes the file the
   /// conversation is about, and WYRD's first look at it is added to the conversation.
+  /// With [staged], the file is only made the subject of the conversation: the message sent with
+  /// it asks the question, so no first-look turn is added.
   _ida.Future<_ineqvy2e.DocumentUpload> upload(
     String name,
     String kind,
     String text, {
     int? pages,
+    required bool staged,
   }) => caller.callServerEndpoint<_ineqvy2e.DocumentUpload>(
     'document',
     'upload',
@@ -552,6 +555,7 @@ class EndpointDocument extends _isc.EndpointRef {
       'kind': kind,
       'text': text,
       'pages': pages,
+      'staged': staged,
     },
   );
 

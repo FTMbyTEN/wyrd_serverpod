@@ -784,6 +784,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<int?>(),
               nullable: true,
             ),
+            'staged': _is.ParameterDescription(
+              name: 'staged',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -796,6 +801,7 @@ class Endpoints extends _is.EndpointDispatch {
                     params['kind'],
                     params['text'],
                     pages: params['pages'],
+                    staged: params['staged'],
                   ),
         ),
         'list': _is.MethodConnector(

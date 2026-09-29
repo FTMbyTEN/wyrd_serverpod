@@ -27,7 +27,12 @@ class ChatEndpoint extends Endpoint {
       throw Exception('empty message');
     }
 
-    final result = await ChatService.processMessage(session, authUserId, text);
+    // a file sent with the message arrives as a first line "📎 name" (the file itself was just
+    // staged with document.upload): shown in the conversation, but only the question is answered
+    final attached = RegExp(r'^📎 [^\n]+\n+').firstMatch(text);
+    final question = attached == null ? text : text.substring(attached.end);
+    if (question.trim().isEmpty) throw Exception('empty message');
+    final result = await ChatService.processMessage(session, authUserId, question, shownAs: attached == null ? null : text);
     return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement);
   }
 

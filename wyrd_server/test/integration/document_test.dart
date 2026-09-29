@@ -29,14 +29,14 @@ void main() {
     final me = sessionBuilder.copyWith(authentication: AuthenticationOverride.authenticationInfo(meId, {}));
 
     test('uploading keeps it privately, gives a first look, and makes it the subject', () async {
-      final up = await endpoints.document.upload(me, 'water-report-2025.pdf', 'pdf', _report, pages: 2);
+      final up = await endpoints.document.upload(me, 'water-report-2025.pdf', 'pdf', _report, pages: 2, staged: false);
       expect(up.words, greaterThan(50));
       expect(up.reply, contains('water-report-2025.pdf'));
       final s = sessionBuilder.build();
       final thread = await ChatThread.db.findFirstRow(s, where: (t) => t.authUserId.equals(UuidValue.fromString(meId)));
       expect(thread!.lastDocumentId, up.id);
       expect((await endpoints.document.list(me)).single.text, isEmpty); // listing never sends the text
-      expect(() => endpoints.document.upload(me, 'x.pdf', 'pdf', '   '), throwsA(anything));
+      expect(() => endpoints.document.upload(me, 'x.pdf', 'pdf', '   ', staged: false), throwsA(anything));
     });
 
     test('questions find the right part of the file, and it answers without an AI', () async {
@@ -50,9 +50,20 @@ void main() {
     });
 
     test('chat answers about the file from the file when no AI is configured', () async {
-      await endpoints.document.upload(me, 'water.txt', 'text', _report);
+      await endpoints.document.upload(me, 'water.txt', 'text', _report, staged: false);
       final reply = await endpoints.chat.sendMessage(me, 'What does the file say about chlorine levels?');
       expect(reply.reply, contains('0.6 mg/L'));
+    });
+
+    test('a file sent with a question waits for it: one turn, showing the file, answering the question', () async {
+      final up = await endpoints.document.upload(me, 'report.txt', 'text', _report, staged: true);
+      expect(up.turnId, isNull);
+      const message = '📎 report.txt\nWhat does it say about chlorine levels?';
+      final reply = await endpoints.chat.sendMessage(me, message);
+      expect(reply.reply, contains('0.6 mg/L'));
+      final history = await endpoints.chat.getHistory(me, limit: 5);
+      expect(history.last.userText, message);
+      expect(history.where((t) => t.userText == '📎 report.txt'), isEmpty);
     });
   });
 }
