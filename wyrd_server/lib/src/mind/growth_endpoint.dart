@@ -10,13 +10,13 @@ class GrowthEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
-  static const _maxSnapshots = 2000;
+  static const _maxSnapshots = 500;
 
   Future<List<GrowthSnapshot>> getSnapshots(Session session, {int? limit}) =>
       PublicCache.get(session, 'growth.getSnapshots:$limit', const Duration(seconds: 60), () => _getSnapshots(session, limit: limit));
 
   Future<List<GrowthSnapshot>> _getSnapshots(Session session, {int? limit}) async {
-    final take = (limit ?? 500).clamp(1, _maxSnapshots);
+    final take = (limit ?? 120).clamp(1, _maxSnapshots);
     final snapshots = await GrowthSnapshot.db.find(
       session,
       orderBy: (t) => t.id.desc(),
