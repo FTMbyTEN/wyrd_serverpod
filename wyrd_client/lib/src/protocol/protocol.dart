@@ -787,6 +787,15 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == _isc.getType<List<String>?>()) {
+      return (data != null
+              ? (data as List).map((e) => deserialize<String>(e)).toList()
+              : null)
+          as T;
+    }
     if (t == List<_ie2belbc.ConversationTurn>) {
       return (data as List)
               .map((e) => deserialize<_ie2belbc.ConversationTurn>(e))
@@ -840,9 +849,6 @@ class Protocol extends _isc.SerializationManager {
               .map((e) => deserialize<_i0wujsep.QuizQuestion>(e))
               .toList()
           as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == List<_iepby0e1.WorkPartInfo>) {
       return (data as List)

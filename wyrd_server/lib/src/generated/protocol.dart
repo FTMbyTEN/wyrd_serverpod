@@ -2430,6 +2430,12 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'String',
         ),
         _isp.ColumnDefinition(
+          name: 'summary',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
           name: 'chars',
           columnType: _isp.ColumnType.bigint,
           isNullable: false,
@@ -3252,6 +3258,15 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == _is.getType<List<String>?>()) {
+      return (data != null
+              ? (data as List).map((e) => deserialize<String>(e)).toList()
+              : null)
+          as T;
+    }
     if (t == List<_i619x11i.ConversationTurn>) {
       return (data as List)
               .map((e) => deserialize<_i619x11i.ConversationTurn>(e))
@@ -3305,9 +3320,6 @@ class Protocol extends _is.DatabaseSerializationManager {
               .map((e) => deserialize<_isgj4atv.QuizQuestion>(e))
               .toList()
           as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == List<_ikde1sdn.WorkPartInfo>) {
       return (data as List)

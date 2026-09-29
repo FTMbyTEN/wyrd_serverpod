@@ -1,5 +1,8 @@
-# A file someone shared in Dialogue Link (its text, extracted in their browser), kept private to
-# them so WYRD can explain it and answer questions about it. See DocumentService.
+# A file someone shared in Dialogue Link, remembered privately for them. The file itself is never
+# stored: it stays in their browser, which sends the passages relevant to each question. What is
+# kept is what WYRD took from it -- its first look (summary) and a digest of the details (kind,
+# sections, people, themes, key sentences and figures) -- so WYRD can recall it later. See
+# DocumentService.
 class: UserDocument
 table: user_document
 
@@ -8,7 +11,10 @@ fields:
   name: String
   # 'pdf', 'docx', 'text', 'html', 'csv', 'json', 'code'
   kind: String
+  # the digest of the details WYRD remembers (not the file)
   text: String
+  # WYRD's first look at it, as shown when it was shared
+  summary: String?
   chars: int
   words: int
   pages: int?

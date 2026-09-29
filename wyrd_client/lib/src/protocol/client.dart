@@ -460,12 +460,19 @@ class EndpointChat extends _isc.EndpointRef {
   @override
   String get name => 'chat';
 
-  _ida.Future<_is592ckh.ChatReply> sendMessage(String text) =>
-      caller.callServerEndpoint<_is592ckh.ChatReply>(
-        'chat',
-        'sendMessage',
-        {'text': text},
-      );
+  /// [passages]: while a file shared in this conversation is open in their browser, the parts of
+  /// it relevant to this message (the file itself is never sent whole or stored).
+  _ida.Future<_is592ckh.ChatReply> sendMessage(
+    String text, {
+    List<String>? passages,
+  }) => caller.callServerEndpoint<_is592ckh.ChatReply>(
+    'chat',
+    'sendMessage',
+    {
+      'text': text,
+      'passages': passages,
+    },
+  );
 
   _ida.Future<List<_ie2belbc.ConversationTurn>> getHistory({int? limit}) =>
       caller.callServerEndpoint<List<_ie2belbc.ConversationTurn>>(
@@ -541,12 +548,15 @@ class EndpointDocument extends _isc.EndpointRef {
   /// conversation is about, and WYRD's first look at it is added to the conversation.
   /// With [staged], the file is only made the subject of the conversation: the message sent with
   /// it asks the question, so no first-look turn is added.
+  /// [text] is a sample of the file (its beginning and pieces from throughout) and [words] its
+  /// full length: the file itself stays in their browser and is never stored.
   _ida.Future<_ineqvy2e.DocumentUpload> upload(
     String name,
     String kind,
     String text, {
     int? pages,
     required bool staged,
+    int? words,
   }) => caller.callServerEndpoint<_ineqvy2e.DocumentUpload>(
     'document',
     'upload',
@@ -556,6 +566,7 @@ class EndpointDocument extends _isc.EndpointRef {
       'text': text,
       'pages': pages,
       'staged': staged,
+      'words': words,
     },
   );
 

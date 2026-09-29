@@ -63,6 +63,11 @@ class ChatService {
     // how the message shows in the conversation, when that differs from what is answered (a
     // file sent along with the question)
     String? shownAs,
+    // the message was sent with a file: it is about that file, whatever its wording
+    bool withFile = false,
+    // passages of the shared file relevant to this message, picked in their browser (which keeps
+    // the file; the server never stores it)
+    List<String>? passages,
   }) async {
     final topics = TopicService.extractTopics(text);
 
@@ -137,14 +142,21 @@ class ChatService {
     // a follow-up depends on the conversation, so it's never answered from a learned answer
     // a file they shared, if the message is about it (it wins over the book they're reading when named)
     final aboutReading = ThreadService.aboutReading(thread, text, followUp: followUp);
-    final activeDoc = await DocumentService.active(session, authUserId, thread);
-    final aboutDoc = activeDoc != null && DocumentService.isAbout(activeDoc, text, followUp: followUp, aboutReading: aboutReading);
+    // the file shared in this conversation, or an earlier one this message names, from memory
+    final shared = await DocumentService.active(session, authUserId, thread);
+    final named = shared == null && !withFile ? await DocumentService.remembered(session, authUserId, text) : null;
+    final remembered = shared ?? named;
+    final live = shared != null && passages != null && passages.isNotEmpty;
+    final aboutDoc = remembered != null &&
+        (withFile || named != null || DocumentService.isAbout(remembered, text, followUp: followUp, aboutReading: aboutReading));
+    // what it answers from: the file's own passages when their browser sent them, else its digest
+    final activeDoc = remembered == null ? null : live ? remembered.copyWith(text: passages.join('\n\n')) : remembered;
     final learned = isCode || followUp || aboutDoc ? null : await LearnedAnswerService.recall(session, authUserId, text, topics, meaning: meaning);
 
     // No API first: WYRD's own brain handles what it can (reading, meanings, places, what it
-    // knows about you) before any AI is called.
-    final local = learned == null && !isCode
-        ? await LocalBrainService.answer(session, authUserId: authUserId, text: text, thread: aboutDoc ? thread?.copyWith(lastPassage: null) : thread, facts: facts.map((f) => f.text).toList(), followUp: followUp)
+    // knows about you) before any AI is called -- except questions about a file, which the file answers.
+    final local = learned == null && !isCode && !aboutDoc
+        ? await LocalBrainService.answer(session, authUserId: authUserId, text: text, thread: thread, facts: facts.map((f) => f.text).toList(), followUp: followUp)
         : null;
     if (local != null) session.log('[local-brain] answered without an API (${local.kind})');
 
@@ -165,7 +177,7 @@ class ChatService {
       ...ThreadService.promptLines(thread, followUp: followUp, threadTopics: threadTopics),
       // Academy: when they ask about the book they are reading, the passage is in front of WYRD
       if (aboutReading && !aboutDoc) ...ThreadService.readingLines(thread!),
-      if (aboutDoc) ...DocumentService.promptLines(activeDoc, text),
+      if (aboutDoc) ...DocumentService.promptLines(activeDoc!, text, live: live, justAttached: withFile),
       ...recall.toPromptLines(),
       if (!recall.isEmpty)
         'Use what you already know where it genuinely fits, in your own words -- never invent a memory '
@@ -210,7 +222,7 @@ class ChatService {
               systemPrompt: systemPrompt,
               history: history,
               userText: text,
-              maxTokens: 220,
+              maxTokens: aboutDoc ? 900 : 220, // explaining a file takes room
               droneOperator: droneOperator,
               readUrls: readUrls,
               reads: reads,
@@ -239,7 +251,7 @@ class ChatService {
       judgement = JudgementService.judge(
         reply: toolReply.text,
         question: text,
-        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}'), if (aboutReading) thread!.lastPassage!, if (aboutDoc) DocumentService.relevant(activeDoc, text)].join(' '),
+        context: [...recall.toPromptLines(), ...history.map((h) => '${h.userText} ${h.botText}'), if (aboutReading) thread!.lastPassage!, if (aboutDoc) DocumentService.relevant(activeDoc!, text)].join(' '),
         readWeb: readUrls.isNotEmpty,
         action: action?.type,
         askerEmail: profile.email,
@@ -252,7 +264,7 @@ class ChatService {
         local?.text ??
         judgement?.text ??
         toolReply?.text ??
-        (aboutDoc ? DocumentService.answerLocally(activeDoc, text) : null) ?? // no AI: what the file says
+        (aboutDoc ? DocumentService.answerLocally(activeDoc!, text) : null) ?? // no AI: what the file says
         (aboutReading ? LocalBrainService.fromPassage(thread, text) : null) ?? // no AI: what the book says
         LocalBrainService.fromMemory(recall) ?? // no AI available: say what it knows
         _followUpFromTopics(topics);

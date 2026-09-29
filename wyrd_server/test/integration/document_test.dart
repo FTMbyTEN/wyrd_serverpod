@@ -65,5 +65,33 @@ void main() {
       expect(history.last.userText, message);
       expect(history.where((t) => t.userText == '📎 report.txt'), isEmpty);
     });
+
+    test('the file is not kept, only what WYRD took from it; a new file wins over an earlier one', () async {
+      final s = sessionBuilder.build();
+      final longStory = List.filled(40, 'The ferryman crossed the grey river each morning, counting the gulls. ').join();
+      await endpoints.document.upload(me, 'story.txt', 'text', longStory, staged: false, words: 20000);
+      final up = await endpoints.document.upload(me, 'water-report.txt', 'text', _report, staged: true, words: 5000);
+      final kept = await UserDocument.db.findById(s, up.id);
+      expect(kept!.summary, contains('water-report.txt'));
+      expect(kept.words, 5000); // the whole file's length, from their browser
+      expect(kept.text, isNot(_report.trim())); // a digest, not the file
+      expect((await UserDocument.db.find(s, where: (t) => t.name.equals('story.txt'))).single.text, isNot(longStory.trim()));
+
+      // vague, and the conversation was about the story: the attached file still wins, answered
+      // from the passages their browser sent
+      final reply = await endpoints.chat.sendMessage(me, '📎 water-report.txt\nTell me more about the costs',
+          passages: ['Treatment cost rose to 0.82 naira per litre because of higher electricity prices at the Iju pumping station.']);
+      expect(reply.reply, contains('0.82 naira'));
+      expect(reply.reply, isNot(contains('ferryman')));
+    });
+
+    test('an earlier file is recalled by name from what WYRD remembers of it', () async {
+      final s = sessionBuilder.build();
+      final me2 = UuidValue.fromString(meId);
+      await DocumentService.store(s, me2, name: 'annual-water-report.pdf', kind: 'pdf', text: _report);
+      final doc = await DocumentService.remembered(s, me2, 'what did the water report say about the reservoir?');
+      expect(doc?.name, 'annual-water-report.pdf');
+      expect(DocumentService.answerLocally(doc!, 'the reservoir capacity'), contains('Adiyan'));
+    });
   });
 }

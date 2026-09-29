@@ -1137,8 +1137,9 @@ class _ChatEndpoint {
 
   _ida.Future<_i6oasa27.ChatReply> sendMessage(
     _ist.TestSessionBuilder sessionBuilder,
-    String text,
-  ) async {
+    String text, {
+    List<String>? passages,
+  }) async {
     return _ist.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
           (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
@@ -1150,7 +1151,10 @@ class _ChatEndpoint {
           createSessionCallback: (_) => _localUniqueSession,
           endpointPath: 'chat',
           methodName: 'sendMessage',
-          parameters: _ist.testObjectToJson({'text': text}),
+          parameters: _ist.testObjectToJson({
+            'text': text,
+            'passages': passages,
+          }),
           serializationManager: _serializationManager,
         );
         var _localReturnValue =
@@ -1363,6 +1367,7 @@ class _DocumentEndpoint {
     String text, {
     int? pages,
     required bool staged,
+    int? words,
   }) async {
     return _ist.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1381,6 +1386,7 @@ class _DocumentEndpoint {
             'text': text,
             'pages': pages,
             'staged': staged,
+            'words': words,
           }),
           serializationManager: _serializationManager,
         );

@@ -10,6 +10,7 @@ import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/fast_asset_route.dart';
 import 'src/mind/tick_schedule.dart';
+import 'src/mind/document_service.dart';
 import 'src/mind/wordnet_service.dart';
 
 /// The starting point of the Serverpod server.
@@ -135,6 +136,13 @@ void run(List<String> args) async {
       await WordNetService.ensureImported(session);
     } catch (e) {
       session.log('[wordnet] import failed: $e', level: LogLevel.warning);
+    }
+    try {
+      // files shared before WYRD stopped keeping them: reduce each to what it remembers of it
+      final n = await DocumentService.compactStored(session);
+      if (n > 0) session.log('[documents] reduced $n stored files to their digests');
+    } catch (e) {
+      session.log('[documents] compaction failed: $e', level: LogLevel.warning);
     } finally {
       await session.close();
     }

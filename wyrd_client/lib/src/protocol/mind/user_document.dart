@@ -20,6 +20,7 @@ abstract class UserDocument
     required this.name,
     required this.kind,
     required this.text,
+    this.summary,
     required this.chars,
     required this.words,
     this.pages,
@@ -32,6 +33,7 @@ abstract class UserDocument
     required String name,
     required String kind,
     required String text,
+    String? summary,
     required int chars,
     required int words,
     int? pages,
@@ -47,6 +49,7 @@ abstract class UserDocument
       name: jsonSerialization['name'] as String,
       kind: jsonSerialization['kind'] as String,
       text: jsonSerialization['text'] as String,
+      summary: jsonSerialization['summary'] as String?,
       chars: jsonSerialization['chars'] as int,
       words: jsonSerialization['words'] as int,
       pages: jsonSerialization['pages'] as int?,
@@ -69,6 +72,8 @@ abstract class UserDocument
 
   String text;
 
+  String? summary;
+
   int chars;
 
   int words;
@@ -86,6 +91,7 @@ abstract class UserDocument
     String? name,
     String? kind,
     String? text,
+    String? summary,
     int? chars,
     int? words,
     int? pages,
@@ -100,6 +106,7 @@ abstract class UserDocument
       'name': name,
       'kind': kind,
       'text': text,
+      if (summary != null) 'summary': summary,
       'chars': chars,
       'words': words,
       if (pages != null) 'pages': pages,
@@ -116,6 +123,7 @@ abstract class UserDocument
       'name': name,
       'kind': kind,
       'text': text,
+      if (summary != null) 'summary': summary,
       'chars': chars,
       'words': words,
       if (pages != null) 'pages': pages,
@@ -138,6 +146,7 @@ class _UserDocumentImpl extends UserDocument {
     required String name,
     required String kind,
     required String text,
+    String? summary,
     required int chars,
     required int words,
     int? pages,
@@ -148,6 +157,7 @@ class _UserDocumentImpl extends UserDocument {
          name: name,
          kind: kind,
          text: text,
+         summary: summary,
          chars: chars,
          words: words,
          pages: pages,
@@ -164,6 +174,7 @@ class _UserDocumentImpl extends UserDocument {
     String? name,
     String? kind,
     String? text,
+    Object? summary = _Undefined,
     int? chars,
     int? words,
     Object? pages = _Undefined,
@@ -175,6 +186,7 @@ class _UserDocumentImpl extends UserDocument {
       name: name ?? this.name,
       kind: kind ?? this.kind,
       text: text ?? this.text,
+      summary: summary is String? ? summary : this.summary,
       chars: chars ?? this.chars,
       words: words ?? this.words,
       pages: pages is int? ? pages : this.pages,

@@ -649,6 +649,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'passages': _is.ParameterDescription(
+              name: 'passages',
+              type: _is.getType<List<String>?>(),
+              nullable: true,
+            ),
           },
           call:
               (
@@ -658,6 +663,7 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['chat'] as _i2b8uve4.ChatEndpoint).sendMessage(
                     session,
                     params['text'],
+                    passages: params['passages'],
                   ),
         ),
         'getHistory': _is.MethodConnector(
@@ -789,6 +795,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<bool>(),
               nullable: false,
             ),
+            'words': _is.ParameterDescription(
+              name: 'words',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
           },
           call:
               (
@@ -802,6 +813,7 @@ class Endpoints extends _is.EndpointDispatch {
                     params['text'],
                     pages: params['pages'],
                     staged: params['staged'],
+                    words: params['words'],
                   ),
         ),
         'list': _is.MethodConnector(

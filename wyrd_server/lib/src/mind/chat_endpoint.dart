@@ -17,7 +17,9 @@ class ChatEndpoint extends Endpoint {
   static const _rateLimit = 30;
   static const _rateWindow = Duration(minutes: 1);
 
-  Future<ChatReply> sendMessage(Session session, String text) async {
+  /// [passages]: while a file shared in this conversation is open in their browser, the parts of
+  /// it relevant to this message (the file itself is never sent whole or stored).
+  Future<ChatReply> sendMessage(Session session, String text, {List<String>? passages}) async {
     final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
 
     if (RateLimiter.isLimited('chat:$authUserId', _rateLimit, _rateWindow)) {
@@ -32,7 +34,14 @@ class ChatEndpoint extends Endpoint {
     final attached = RegExp(r'^📎 [^\n]+\n+').firstMatch(text);
     final question = attached == null ? text : text.substring(attached.end);
     if (question.trim().isEmpty) throw Exception('empty message');
-    final result = await ChatService.processMessage(session, authUserId, question, shownAs: attached == null ? null : text);
+    // at most ~12k characters of passages, whatever the client sends
+    var budget = 12000;
+    final parts = <String>[
+      for (final p in passages ?? const <String>[])
+        if (p.trim().isNotEmpty && (budget -= p.length) >= 0) p,
+    ];
+    final result = await ChatService.processMessage(session, authUserId, question,
+        shownAs: attached == null ? null : text, withFile: attached != null, passages: parts.isEmpty ? null : parts);
     return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement);
   }
 

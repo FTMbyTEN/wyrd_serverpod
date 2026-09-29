@@ -17,14 +17,16 @@ class DocumentEndpoint extends Endpoint {
   /// conversation is about, and WYRD's first look at it is added to the conversation.
   /// With [staged], the file is only made the subject of the conversation: the message sent with
   /// it asks the question, so no first-look turn is added.
-  Future<DocumentUpload> upload(Session session, String name, String kind, String text, {int? pages, bool staged = false}) async {
+  /// [text] is a sample of the file (its beginning and pieces from throughout) and [words] its
+  /// full length: the file itself stays in their browser and is never stored.
+  Future<DocumentUpload> upload(Session session, String name, String kind, String text, {int? pages, bool staged = false, int? words}) async {
     final me = _me(session);
     if (RateLimiter.isLimited('doc:${me.uuid}', 12, const Duration(minutes: 10))) {
       throw Exception('slow down — try again in a few minutes');
     }
     if (!_kinds.contains(kind)) throw Exception('that kind of file is not supported yet');
     if (text.trim().length < 20) throw Exception('I couldn\'t find readable text in that file (a scanned PDF is an image, not text).');
-    final doc = await DocumentService.store(session, me, name: name.trim().isEmpty ? 'file' : name.trim(), kind: kind, text: text, pages: pages);
+    final doc = await DocumentService.store(session, me, name: name.trim().isEmpty ? 'file' : name.trim(), kind: kind, text: text, pages: pages, totalWords: words);
 
     final thread = await ThreadService.load(session, me);
     final now = DateTime.now().toUtc();
@@ -36,7 +38,7 @@ class DocumentEndpoint extends Endpoint {
       await ChatThread.db.updateRow(session, next);
     }
 
-    final reply = DocumentService.overview(doc);
+    final reply = doc.summary ?? DocumentService.overview(doc);
     if (staged) {
       return DocumentUpload(id: doc.id!, name: doc.name, kind: doc.kind, words: doc.words, pages: doc.pages, reply: reply, turnId: null);
     }
