@@ -96,7 +96,7 @@ class ChatService {
     final meaning = meaningText.trim().length >= 8 && EmbeddingService.enabled(session)
         ? await EmbeddingService.embedQuery(session, meaningText)
         : null;
-    final recall = await MemoryRecallService.recall(session, authUserId, recallTopics, meaning: meaning);
+    final recall = await MemoryRecallService.recall(session, authUserId, recallTopics, meaning: meaning, query: meaningText);
 
     final vocabCount = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
     final blockCount = await MemoryBlock.db.count(session);

@@ -11,6 +11,7 @@ import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/fast_asset_route.dart';
 import 'src/mind/tick_schedule.dart';
 import 'src/mind/document_service.dart';
+import 'src/mind/memory_recall_service.dart';
 import 'src/mind/wordnet_service.dart';
 
 /// The starting point of the Serverpod server.
@@ -136,6 +137,12 @@ void run(List<String> args) async {
       await WordNetService.ensureImported(session);
     } catch (e) {
       session.log('[wordnet] import failed: $e', level: LogLevel.warning);
+    }
+    try {
+      // full-text search over everything WYRD has read (RAG); built once, a no-op after that
+      await MemoryRecallService.ensureIndex(session);
+    } catch (e) {
+      session.log('[recall] full-text index failed: $e', level: LogLevel.warning);
     }
     try {
       // files shared before WYRD stopped keeping them: reduce each to what it remembers of it
