@@ -14,6 +14,7 @@ import 'trust_service.dart';
 import 'judgement_service.dart';
 import 'memory_recall_service.dart';
 import 'photo_service.dart';
+import 'prompt_planner.dart';
 import '../drone/drone_service.dart';
 import 'mind_service.dart';
 import 'topic_service.dart';
@@ -187,6 +188,9 @@ class ChatService {
       curiosityHint,
     ].join('\n');
 
+    // advanced prompting: how to answer this kind of message, and whether the draft is checked
+    final plan = PromptPlanner.plan(text, hasPassages: recall.passages.isNotEmpty, aboutDoc: aboutDoc);
+
     final droneOperator = await DroneService.isOperator(session, authUserId);
     final sight = await PhotoService.sightAwareness(session, authUserId);
     final systemPrompt =
@@ -209,11 +213,12 @@ class ChatService {
         'Talk like a person, not a customer-support assistant: direct, warm, occasionally '
         'informal, no bullet points. Answer the actual question first. Keep replies short '
         '(1-4 sentences) unless the question calls for more.\n\n'
+        '${plan.lines.join('\n')}\n\n'
         '$contextLines';
 
     final readUrls = <String>[];
     final reads = <PageSlice>[];
-    final toolReply = learned != null || local != null
+    final drafted = learned != null || local != null
         ? null // answered from what WYRD already learned, or by its own brain: no AI call
         : codeReply ??
             await ChatToolService.reply(
@@ -222,11 +227,20 @@ class ChatService {
               systemPrompt: systemPrompt,
               history: history,
               userText: text,
-              maxTokens: aboutDoc ? 900 : 220, // explaining a file takes room
+              maxTokens: aboutDoc ? 900 : plan.maxTokens, // explaining a file takes room
               droneOperator: droneOperator,
               readUrls: readUrls,
               reads: reads,
             );
+    var toolReply = drafted;
+    // checked: a factual draft drawn from recalled passages is read back against them before it goes out
+    if (plan.verify && drafted != null && codeReply == null && drafted.action == null && readUrls.isEmpty) {
+      final checked = await PromptPlanner.verify(session, question: text, draft: drafted.text, evidence: recall.toPromptLines().first);
+      if (checked.revised) {
+        session.log('[planner] ${plan.ask.name}: draft corrected against its passages');
+        toolReply = (text: checked.text, action: drafted.action);
+      }
+    }
     final action = local?.action ?? toolReply?.action;
     // everything read goes into the person's library; the local brain has already recorded its own
     ReadingItem? readItem;
