@@ -19,6 +19,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
 import 'package:wyrd_server/src/generated/drone/drone_mission.dart'
     as _iu8lemuv;
+import 'package:wyrd_server/src/generated/games/game_match.dart' as _iocic9iq;
 import 'package:wyrd_server/src/generated/games/player_rating.dart'
     as _ii8ozmxa;
 import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
@@ -1015,6 +1016,44 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'String?',
         ),
         _isp.ColumnDefinition(
+          name: 'mode',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'wyrd\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'opponentId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'playerName',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'opponentName',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'result',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'version',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
           name: 'createdAt',
           columnType: _isp.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
@@ -1036,6 +1075,44 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'game_match_open_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'game',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'mode',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'game_match_opponent_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'opponentId',
             ),
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
@@ -3538,6 +3615,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_ii8ozmxa.PlayerRating>) {
       return (data as List)
               .map((e) => deserialize<_ii8ozmxa.PlayerRating>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iocic9iq.GameMatch>) {
+      return (data as List)
+              .map((e) => deserialize<_iocic9iq.GameMatch>(e))
               .toList()
           as T;
     }

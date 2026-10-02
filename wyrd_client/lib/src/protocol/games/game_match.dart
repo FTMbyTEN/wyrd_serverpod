@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/protocol.dart' as _i2pladzn;
 
-/// A game against WYRD (or, later, another player). The server holds the position and checks every move.
+/// A game: against WYRD, or (mode pvp) against another player. The server holds the position and
+/// checks every move, so a result can be trusted and a rating means something.
 abstract class GameMatch
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   GameMatch._({
@@ -28,9 +29,17 @@ abstract class GameMatch
     required this.ratingBefore,
     this.ratingAfter,
     this.remark,
+    String? mode,
+    this.opponentId,
+    this.playerName,
+    this.opponentName,
+    this.result,
+    int? version,
+    this.viewerSide,
     required this.createdAt,
     required this.updatedAt,
-  });
+  }) : mode = mode ?? 'wyrd',
+       version = version ?? 0;
 
   factory GameMatch({
     int? id,
@@ -44,6 +53,13 @@ abstract class GameMatch
     required double ratingBefore,
     double? ratingAfter,
     String? remark,
+    String? mode,
+    _isc.UuidValue? opponentId,
+    String? playerName,
+    String? opponentName,
+    String? result,
+    int? version,
+    String? viewerSide,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _GameMatchImpl;
@@ -65,6 +81,17 @@ abstract class GameMatch
       ratingBefore: (jsonSerialization['ratingBefore'] as num).toDouble(),
       ratingAfter: (jsonSerialization['ratingAfter'] as num?)?.toDouble(),
       remark: jsonSerialization['remark'] as String?,
+      mode: jsonSerialization['mode'] as String?,
+      opponentId: jsonSerialization['opponentId'] == null
+          ? null
+          : _isc.UuidValueJsonExtension.fromJson(
+              jsonSerialization['opponentId'],
+            ),
+      playerName: jsonSerialization['playerName'] as String?,
+      opponentName: jsonSerialization['opponentName'] as String?,
+      result: jsonSerialization['result'] as String?,
+      version: jsonSerialization['version'] as int?,
+      viewerSide: jsonSerialization['viewerSide'] as String?,
       createdAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -99,6 +126,20 @@ abstract class GameMatch
 
   String? remark;
 
+  String mode;
+
+  _isc.UuidValue? opponentId;
+
+  String? playerName;
+
+  String? opponentName;
+
+  String? result;
+
+  int version;
+
+  String? viewerSide;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -118,6 +159,13 @@ abstract class GameMatch
     double? ratingBefore,
     double? ratingAfter,
     String? remark,
+    String? mode,
+    _isc.UuidValue? opponentId,
+    String? playerName,
+    String? opponentName,
+    String? result,
+    int? version,
+    String? viewerSide,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -136,6 +184,13 @@ abstract class GameMatch
       'ratingBefore': ratingBefore,
       if (ratingAfter != null) 'ratingAfter': ratingAfter,
       if (remark != null) 'remark': remark,
+      'mode': mode,
+      if (opponentId != null) 'opponentId': opponentId?.toJson(),
+      if (playerName != null) 'playerName': playerName,
+      if (opponentName != null) 'opponentName': opponentName,
+      if (result != null) 'result': result,
+      'version': version,
+      if (viewerSide != null) 'viewerSide': viewerSide,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -156,6 +211,13 @@ abstract class GameMatch
       'ratingBefore': ratingBefore,
       if (ratingAfter != null) 'ratingAfter': ratingAfter,
       if (remark != null) 'remark': remark,
+      'mode': mode,
+      if (opponentId != null) 'opponentId': opponentId?.toJson(),
+      if (playerName != null) 'playerName': playerName,
+      if (opponentName != null) 'opponentName': opponentName,
+      if (result != null) 'result': result,
+      'version': version,
+      if (viewerSide != null) 'viewerSide': viewerSide,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -182,6 +244,13 @@ class _GameMatchImpl extends GameMatch {
     required double ratingBefore,
     double? ratingAfter,
     String? remark,
+    String? mode,
+    _isc.UuidValue? opponentId,
+    String? playerName,
+    String? opponentName,
+    String? result,
+    int? version,
+    String? viewerSide,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -196,6 +265,13 @@ class _GameMatchImpl extends GameMatch {
          ratingBefore: ratingBefore,
          ratingAfter: ratingAfter,
          remark: remark,
+         mode: mode,
+         opponentId: opponentId,
+         playerName: playerName,
+         opponentName: opponentName,
+         result: result,
+         version: version,
+         viewerSide: viewerSide,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -216,6 +292,13 @@ class _GameMatchImpl extends GameMatch {
     double? ratingBefore,
     Object? ratingAfter = _Undefined,
     Object? remark = _Undefined,
+    String? mode,
+    Object? opponentId = _Undefined,
+    Object? playerName = _Undefined,
+    Object? opponentName = _Undefined,
+    Object? result = _Undefined,
+    int? version,
+    Object? viewerSide = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -231,6 +314,13 @@ class _GameMatchImpl extends GameMatch {
       ratingBefore: ratingBefore ?? this.ratingBefore,
       ratingAfter: ratingAfter is double? ? ratingAfter : this.ratingAfter,
       remark: remark is String? ? remark : this.remark,
+      mode: mode ?? this.mode,
+      opponentId: opponentId is _isc.UuidValue? ? opponentId : this.opponentId,
+      playerName: playerName is String? ? playerName : this.playerName,
+      opponentName: opponentName is String? ? opponentName : this.opponentName,
+      result: result is String? ? result : this.result,
+      version: version ?? this.version,
+      viewerSide: viewerSide is String? ? viewerSide : this.viewerSide,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

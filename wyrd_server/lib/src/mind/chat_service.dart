@@ -15,6 +15,7 @@ import 'judgement_service.dart';
 import 'memory_recall_service.dart';
 import 'photo_service.dart';
 import 'prompt_planner.dart';
+import 'arsenal.dart';
 import '../drone/drone_service.dart';
 import 'mind_service.dart';
 import 'topic_service.dart';
@@ -210,9 +211,12 @@ class ChatService {
         '${droneOperator ? 'This person is your drone operator: plan_drone_flight plans and queues a real '
             'flight from their words (a planner and safety checks decide whether it flies -- relay '
             'refusals honestly), and abort_drone_flight brings the drone home immediately.\n\n' : ''}'
+        '${Arsenal.prompt(droneOperator: droneOperator)}\n\n'
         'Talk like a person, not a customer-support assistant: direct, warm, occasionally '
-        'informal, no bullet points. Answer the actual question first. Keep replies short '
-        '(1-4 sentences) unless the question calls for more.\n\n'
+        'informal. Answer the actual question first. '
+        '${aboutDoc || plan.ask == Ask.explain || plan.ask == Ask.compare || plan.ask == Ask.advice
+            ? 'This one needs explaining: take the room it needs, in clear steps -- being brief is not the goal here, being understood is.'
+            : 'Keep replies short (1-4 sentences) unless the question calls for more.'}\n\n'
         '${plan.lines.join('\n')}\n\n'
         '$contextLines';
 
@@ -227,7 +231,8 @@ class ChatService {
               systemPrompt: systemPrompt,
               history: history,
               userText: text,
-              maxTokens: aboutDoc ? 900 : plan.maxTokens, // explaining a file takes room
+              // teaching a file takes room; a summary of one needs less
+              maxTokens: aboutDoc ? (DocumentService.wantsSummary(text) ? 700 : 1400) : plan.maxTokens,
               droneOperator: droneOperator,
               readUrls: readUrls,
               reads: reads,

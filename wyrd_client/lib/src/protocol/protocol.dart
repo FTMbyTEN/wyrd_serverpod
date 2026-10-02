@@ -17,6 +17,7 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
+import 'package:wyrd_client/src/protocol/games/game_match.dart' as _io9n6mg3;
 import 'package:wyrd_client/src/protocol/games/player_rating.dart' as _ibpm8r25;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
 import 'package:wyrd_client/src/protocol/mind/concept_example.dart'
@@ -851,6 +852,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<_ibpm8r25.PlayerRating>) {
       return (data as List)
               .map((e) => deserialize<_ibpm8r25.PlayerRating>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_io9n6mg3.GameMatch>) {
+      return (data as List)
+              .map((e) => deserialize<_io9n6mg3.GameMatch>(e))
               .toList()
           as T;
     }

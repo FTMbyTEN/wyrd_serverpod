@@ -22,9 +22,17 @@ games:
   - myRatings:
   - leaderboard:
   - active:
+  - start:
+  - move:
+  - resign:
   - startChess:
   - moveChess:
-  - resign:
+  - challenge:
+  - openChallenges:
+  - accept:
+  - cancel:
+  - myPvp:
+  - poll:
 greeting:
   - hello:
 account:
@@ -90,6 +98,8 @@ memory:
   - embeddingStatus:
 mind:
   - getMind:
+owner:
+  - userStats:
 photo:
   - describe:
   - getSightings:

@@ -38,6 +38,7 @@ import '../mind/lexicon_endpoint.dart' as _i3c3oo5r;
 import '../mind/library_endpoint.dart' as _ifaqo2up;
 import '../mind/memory_endpoint.dart' as _ibdzbeap;
 import '../mind/mind_endpoint.dart' as _i2dwy8oi;
+import '../mind/owner_endpoint.dart' as _i5tlqn06;
 import '../mind/photo_endpoint.dart' as _ij44nk8s;
 import '../mind/profile_endpoint.dart' as _in0jvng1;
 import '../mind/reasoning_endpoint.dart' as _iovbjp1a;
@@ -178,6 +179,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'mind',
+          null,
+        ),
+      'owner': _i5tlqn06.OwnerEndpoint()
+        ..initialize(
+          server,
+          'owner',
           null,
         ),
       'photo': _ij44nk8s.PhotoEndpoint()
@@ -642,6 +649,72 @@ class Endpoints extends _is.EndpointDispatch {
                 params['game'],
               ),
         ),
+        'start': _is.MethodConnector(
+          name: 'start',
+          params: {
+            'game': _is.ParameterDescription(
+              name: 'game',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'side': _is.ParameterDescription(
+              name: 'side',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).start(
+                session,
+                params['game'],
+                params['side'],
+              ),
+        ),
+        'move': _is.MethodConnector(
+          name: 'move',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'move': _is.ParameterDescription(
+              name: 'move',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).move(
+                session,
+                params['matchId'],
+                params['move'],
+              ),
+        ),
+        'resign': _is.MethodConnector(
+          name: 'resign',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).resign(
+                session,
+                params['matchId'],
+              ),
+        ),
         'startChess': _is.MethodConnector(
           name: 'startChess',
           params: {
@@ -698,8 +771,46 @@ class Endpoints extends _is.EndpointDispatch {
                     params['promotion'],
                   ),
         ),
-        'resign': _is.MethodConnector(
-          name: 'resign',
+        'challenge': _is.MethodConnector(
+          name: 'challenge',
+          params: {
+            'game': _is.ParameterDescription(
+              name: 'game',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).challenge(
+                    session,
+                    params['game'],
+                  ),
+        ),
+        'openChallenges': _is.MethodConnector(
+          name: 'openChallenges',
+          params: {
+            'game': _is.ParameterDescription(
+              name: 'game',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint)
+                  .openChallenges(
+                    session,
+                    params['game'],
+                  ),
+        ),
+        'accept': _is.MethodConnector(
+          name: 'accept',
           params: {
             'matchId': _is.ParameterDescription(
               name: 'matchId',
@@ -711,9 +822,62 @@ class Endpoints extends _is.EndpointDispatch {
               (
                 _is.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).resign(
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).accept(
                 session,
                 params['matchId'],
+              ),
+        ),
+        'cancel': _is.MethodConnector(
+          name: 'cancel',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).cancel(
+                session,
+                params['matchId'],
+              ),
+        ),
+        'myPvp': _is.MethodConnector(
+          name: 'myPvp',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).myPvp(
+                session,
+              ),
+        ),
+        'poll': _is.MethodConnector(
+          name: 'poll',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'version': _is.ParameterDescription(
+              name: 'version',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).poll(
+                session,
+                params['matchId'],
+                params['version'],
               ),
         ),
       },
@@ -1602,6 +1766,22 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['mind'] as _i2dwy8oi.MindEndpoint).getMind(
                 session,
               ),
+        ),
+      },
+    );
+    connectors['owner'] = _is.EndpointConnector(
+      name: 'owner',
+      endpoint: endpoints['owner']!,
+      methodConnectors: {
+        'userStats': _is.MethodConnector(
+          name: 'userStats',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['owner'] as _i5tlqn06.OwnerEndpoint)
+                  .userStats(session),
         ),
       },
     );

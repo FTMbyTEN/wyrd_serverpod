@@ -391,7 +391,9 @@ class EndpointDrone extends _isc.EndpointRef {
       );
 }
 
-/// Games against WYRD: ratings, the leaderboard, and chess.
+/// Games: against WYRD (chess, Connect Four, Reversi, Tic-tac-toe) and between players, with
+/// ratings and a leaderboard per game. Every game sent back carries viewerSide: the side of the
+/// person asking, so the app knows which way round to draw the board.
 /// {@category Endpoint}
 class EndpointGames extends _isc.EndpointRef {
   EndpointGames(_isc.EndpointCaller caller) : super(caller);
@@ -413,11 +415,46 @@ class EndpointGames extends _isc.EndpointRef {
         {'game': game},
       );
 
+  /// The game against WYRD in progress for [game], if any.
   _ida.Future<_io9n6mg3.GameMatch?> active(String game) =>
       caller.callServerEndpoint<_io9n6mg3.GameMatch?>(
         'games',
         'active',
         {'game': game},
+      );
+
+  /// A new game against WYRD. [side]: 'w', 'b' or 'random'.
+  _ida.Future<_io9n6mg3.GameMatch> start(
+    String game,
+    String side,
+  ) => caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+    'games',
+    'start',
+    {
+      'game': game,
+      'side': side,
+    },
+  );
+
+  /// A move in any game: chess "e2e4" (or "e7e8q"), Connect Four a column "0".."6", Tic-tac-toe a
+  /// square "0".."8", Reversi a square "0".."63".
+  _ida.Future<_io9n6mg3.GameMatch> move(
+    int matchId,
+    String move,
+  ) => caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+    'games',
+    'move',
+    {
+      'matchId': matchId,
+      'move': move,
+    },
+  );
+
+  _ida.Future<_io9n6mg3.GameMatch> resign(int matchId) =>
+      caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+        'games',
+        'resign',
+        {'matchId': matchId},
       );
 
   _ida.Future<_io9n6mg3.GameMatch> startChess(String side) =>
@@ -443,12 +480,52 @@ class EndpointGames extends _isc.EndpointRef {
     },
   );
 
-  _ida.Future<_io9n6mg3.GameMatch> resign(int matchId) =>
+  _ida.Future<_io9n6mg3.GameMatch> challenge(String game) =>
       caller.callServerEndpoint<_io9n6mg3.GameMatch>(
         'games',
-        'resign',
+        'challenge',
+        {'game': game},
+      );
+
+  _ida.Future<List<_io9n6mg3.GameMatch>> openChallenges(String game) =>
+      caller.callServerEndpoint<List<_io9n6mg3.GameMatch>>(
+        'games',
+        'openChallenges',
+        {'game': game},
+      );
+
+  _ida.Future<_io9n6mg3.GameMatch> accept(int matchId) =>
+      caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+        'games',
+        'accept',
         {'matchId': matchId},
       );
+
+  _ida.Future<void> cancel(int matchId) => caller.callServerEndpoint<void>(
+    'games',
+    'cancel',
+    {'matchId': matchId},
+  );
+
+  _ida.Future<List<_io9n6mg3.GameMatch>> myPvp() =>
+      caller.callServerEndpoint<List<_io9n6mg3.GameMatch>>(
+        'games',
+        'myPvp',
+        {},
+      );
+
+  /// The game if it changed since [version], else null -- answered from memory almost always.
+  _ida.Future<_io9n6mg3.GameMatch?> poll(
+    int matchId,
+    int version,
+  ) => caller.callServerEndpoint<_io9n6mg3.GameMatch?>(
+    'games',
+    'poll',
+    {
+      'matchId': matchId,
+      'version': version,
+    },
+  );
 }
 
 /// This is an example endpoint that returns a greeting message through
@@ -1058,6 +1135,25 @@ class EndpointMind extends _isc.EndpointRef {
       );
 }
 
+/// For WYRD's owner (the operator accounts) only: where its people actually are. Accounts made
+/// through sign-up live in Serverpod's auth tables (serverpod_auth_core_user and
+/// serverpod_auth_idp_email_account, auth module v4) -- not in the older serverpod_user_info table
+/// some tools still show -- and WYRD's own profile row (user_profile) is made on first sign-in.
+/// {@category Endpoint}
+class EndpointOwner extends _isc.EndpointRef {
+  EndpointOwner(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'owner';
+
+  /// Rows per table (null where a table doesn't exist), plus the newest sign-ups, as JSON.
+  _ida.Future<String> userStats() => caller.callServerEndpoint<String>(
+    'owner',
+    'userStats',
+    {},
+  );
+}
+
 /// Ports /api/chat/photo from server.js. Requires login, matching Node's requireAuth.
 /// {@category Endpoint}
 class EndpointPhoto extends _isc.EndpointRef {
@@ -1362,6 +1458,7 @@ class Client extends _isc.ServerpodClientShared {
     library = EndpointLibrary(this);
     memory = EndpointMemory(this);
     mind = EndpointMind(this);
+    owner = EndpointOwner(this);
     photo = EndpointPhoto(this);
     profile = EndpointProfile(this);
     reasoning = EndpointReasoning(this);
@@ -1417,6 +1514,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointMind mind;
 
+  late final EndpointOwner owner;
+
   late final EndpointPhoto photo;
 
   late final EndpointProfile profile;
@@ -1462,6 +1561,7 @@ class Client extends _isc.ServerpodClientShared {
     'library': library,
     'memory': memory,
     'mind': mind,
+    'owner': owner,
     'photo': photo,
     'profile': profile,
     'reasoning': reasoning,
