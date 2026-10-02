@@ -4,6 +4,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/drone/drone_config.dart';
 import 'package:wyrd_server/src/drone/drone_safety.dart';
+import 'package:wyrd_server/src/drone/drone_service.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
@@ -125,6 +126,7 @@ void main() {
     setUp(() async {
       DroneConfig.bridgeTokenForTesting = token;
       DroneConfig.operatorEmailForTesting = 'Pilot@Example.com';
+      DroneService.forgetAccess();
       final session = sessionBuilder.build();
       for (final (id, email) in [
         (operatorId, 'pilot@example.com'),
@@ -164,7 +166,7 @@ void main() {
     });
 
     test(
-      'reports upsert one state row per drone, visible to any signed-in user',
+      'reports upsert one state row per drone, visible to operators only',
       () async {
         await endpoints.droneBridge.report(sessionBuilder, token, stateAt());
         await endpoints.droneBridge.report(
@@ -173,8 +175,10 @@ void main() {
           stateAt(battery: 77),
         );
         expect(await DroneState.db.count(sessionBuilder.build()), 1);
-        final seen = await endpoints.drone.getState(viewer);
+        final seen = await endpoints.drone.getState(operator);
         expect(seen!.batteryPct, 77);
+        expect(() => endpoints.drone.getState(viewer), throwsException);
+        expect(() => endpoints.drone.getMissions(viewer, limit: 5), throwsException);
       },
     );
 

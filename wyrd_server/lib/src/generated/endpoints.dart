@@ -21,9 +21,11 @@ import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../drone/drone_bridge_endpoint.dart' as _igomlm42;
 import '../drone/drone_endpoint.dart' as _iec5mi4p;
+import '../games/games_endpoint.dart' as _ittu6d2n;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 import '../mind/account_endpoint.dart' as _i45717np;
 import '../mind/alerts_endpoint.dart' as _impqu952;
+import '../mind/brain_endpoint.dart' as _iskgx6uk;
 import '../mind/chat_endpoint.dart' as _i2b8uve4;
 import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
@@ -44,6 +46,7 @@ import '../mind/self_question_endpoint.dart' as _i4qouglj;
 import '../mind/status_endpoint.dart' as _ik9coqrp;
 import '../mind/synthesis_endpoint.dart' as _i6ave7v9;
 import '../mind/topic_endpoint.dart' as _i2t0sh8b;
+import '../mind/training_endpoint.dart' as _igyenhzn;
 import '../mind/world_endpoint.dart' as _iaj95ngr;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
@@ -75,6 +78,12 @@ class Endpoints extends _is.EndpointDispatch {
           'drone',
           null,
         ),
+      'games': _ittu6d2n.GamesEndpoint()
+        ..initialize(
+          server,
+          'games',
+          null,
+        ),
       'greeting': _il624ik7.GreetingEndpoint()
         ..initialize(
           server,
@@ -91,6 +100,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'alerts',
+          null,
+        ),
+      'brain': _iskgx6uk.BrainEndpoint()
+        ..initialize(
+          server,
+          'brain',
           null,
         ),
       'chat': _i2b8uve4.ChatEndpoint()
@@ -211,6 +226,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'topic',
+          null,
+        ),
+      'training': _igyenhzn.TrainingEndpoint()
+        ..initialize(
+          server,
+          'training',
           null,
         ),
       'world': _iaj95ngr.WorldEndpoint()
@@ -570,6 +591,133 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['games'] = _is.EndpointConnector(
+      name: 'games',
+      endpoint: endpoints['games']!,
+      methodConnectors: {
+        'myRatings': _is.MethodConnector(
+          name: 'myRatings',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint)
+                  .myRatings(session),
+        ),
+        'leaderboard': _is.MethodConnector(
+          name: 'leaderboard',
+          params: {
+            'game': _is.ParameterDescription(
+              name: 'game',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).leaderboard(
+                    session,
+                    params['game'],
+                  ),
+        ),
+        'active': _is.MethodConnector(
+          name: 'active',
+          params: {
+            'game': _is.ParameterDescription(
+              name: 'game',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).active(
+                session,
+                params['game'],
+              ),
+        ),
+        'startChess': _is.MethodConnector(
+          name: 'startChess',
+          params: {
+            'side': _is.ParameterDescription(
+              name: 'side',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).startChess(
+                    session,
+                    params['side'],
+                  ),
+        ),
+        'moveChess': _is.MethodConnector(
+          name: 'moveChess',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'from': _is.ParameterDescription(
+              name: 'from',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'to': _is.ParameterDescription(
+              name: 'to',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'promotion': _is.ParameterDescription(
+              name: 'promotion',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).moveChess(
+                    session,
+                    params['matchId'],
+                    params['from'],
+                    params['to'],
+                    params['promotion'],
+                  ),
+        ),
+        'resign': _is.MethodConnector(
+          name: 'resign',
+          params: {
+            'matchId': _is.ParameterDescription(
+              name: 'matchId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint).resign(
+                session,
+                params['matchId'],
+              ),
+        ),
+      },
+    );
     connectors['greeting'] = _is.EndpointConnector(
       name: 'greeting',
       endpoint: endpoints['greeting']!,
@@ -634,6 +782,23 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['alerts'] as _impqu952.AlertsEndpoint)
                   .getAlerts(session),
+        ),
+      },
+    );
+    connectors['brain'] = _is.EndpointConnector(
+      name: 'brain',
+      endpoint: endpoints['brain']!,
+      methodConnectors: {
+        'getMap': _is.MethodConnector(
+          name: 'getMap',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['brain'] as _iskgx6uk.BrainEndpoint).getMap(
+                session,
+              ),
         ),
       },
     );
@@ -1713,6 +1878,41 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['topic'] as _i2t0sh8b.TopicEndpoint).getTopic(
                     session,
                     params['topic'],
+                  ),
+        ),
+      },
+    );
+    connectors['training'] = _is.EndpointConnector(
+      name: 'training',
+      endpoint: endpoints['training']!,
+      methodConnectors: {
+        'stats': _is.MethodConnector(
+          name: 'stats',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['training'] as _igyenhzn.TrainingEndpoint)
+                  .stats(session),
+        ),
+        'export': _is.MethodConnector(
+          name: 'export',
+          params: {
+            'part': _is.ParameterDescription(
+              name: 'part',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['training'] as _igyenhzn.TrainingEndpoint).export(
+                    session,
+                    params['part'],
                   ),
         ),
       },

@@ -19,6 +19,8 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
 import 'package:wyrd_server/src/generated/drone/drone_mission.dart'
     as _iu8lemuv;
+import 'package:wyrd_server/src/generated/games/player_rating.dart'
+    as _ii8ozmxa;
 import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
 import 'package:wyrd_server/src/generated/mind/concept_example.dart'
     as _izhnae4e;
@@ -44,10 +46,16 @@ import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
 import 'drone/drone_state.dart' as _it73791y;
+import 'games/game_match.dart' as _iucyrm0h;
+import 'games/player_rating.dart' as _ihg2pt9t;
 import 'greetings/greeting.dart' as _izw8z7ou;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/belief.dart' as _ijbewlez;
+import 'mind/brain_firing.dart' as _i8r73c9y;
+import 'mind/brain_map.dart' as _ipeloevp;
+import 'mind/brain_neuron.dart' as _i8yuvbha;
+import 'mind/brain_synapse.dart' as _iqzn8nb5;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/chat_thread.dart' as _ildoeobn;
@@ -110,10 +118,16 @@ import 'mind/world_country.dart' as _iu995zpj;
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
 export 'drone/drone_state.dart';
+export 'games/game_match.dart';
+export 'games/player_rating.dart';
 export 'greetings/greeting.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/belief.dart';
+export 'mind/brain_firing.dart';
+export 'mind/brain_map.dart';
+export 'mind/brain_neuron.dart';
+export 'mind/brain_synapse.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
 export 'mind/chat_thread.dart';
@@ -928,6 +942,114 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'game_match',
+      dartName: 'GameMatch',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'game',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'state',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'moves',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<String>',
+        ),
+        _isp.ColumnDefinition(
+          name: 'playerSide',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'wyrdLevel',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ratingBefore',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ratingAfter',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'remark',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'game_match_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'growth_snapshot',
       dartName: 'GrowthSnapshot',
       schema: 'public',
@@ -1719,6 +1841,113 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'player_rating',
+      dartName: 'PlayerRating',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'game',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'rating',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'played',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'wins',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'losses',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'draws',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'player_rating_user_game_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'game',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'player_rating_board_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'game',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'rating',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -2685,6 +2914,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _it73791y.DroneState) {
       return _it73791y.DroneState.fromJson(data) as T;
     }
+    if (t == _iucyrm0h.GameMatch) {
+      return _iucyrm0h.GameMatch.fromJson(data) as T;
+    }
+    if (t == _ihg2pt9t.PlayerRating) {
+      return _ihg2pt9t.PlayerRating.fromJson(data) as T;
+    }
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
@@ -2696,6 +2931,18 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _ijbewlez.Belief) {
       return _ijbewlez.Belief.fromJson(data) as T;
+    }
+    if (t == _i8r73c9y.BrainFiring) {
+      return _i8r73c9y.BrainFiring.fromJson(data) as T;
+    }
+    if (t == _ipeloevp.BrainMap) {
+      return _ipeloevp.BrainMap.fromJson(data) as T;
+    }
+    if (t == _i8yuvbha.BrainNeuron) {
+      return _i8yuvbha.BrainNeuron.fromJson(data) as T;
+    }
+    if (t == _iqzn8nb5.BrainSynapse) {
+      return _iqzn8nb5.BrainSynapse.fromJson(data) as T;
     }
     if (t == _iagdrx9v.ChatAction) {
       return _iagdrx9v.ChatAction.fromJson(data) as T;
@@ -2884,6 +3131,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_it73791y.DroneState?>()) {
       return (data != null ? _it73791y.DroneState.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_iucyrm0h.GameMatch?>()) {
+      return (data != null ? _iucyrm0h.GameMatch.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ihg2pt9t.PlayerRating?>()) {
+      return (data != null ? _ihg2pt9t.PlayerRating.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
     }
@@ -2896,6 +3149,18 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_ijbewlez.Belief?>()) {
       return (data != null ? _ijbewlez.Belief.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i8r73c9y.BrainFiring?>()) {
+      return (data != null ? _i8r73c9y.BrainFiring.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ipeloevp.BrainMap?>()) {
+      return (data != null ? _ipeloevp.BrainMap.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i8yuvbha.BrainNeuron?>()) {
+      return (data != null ? _i8yuvbha.BrainNeuron.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_iqzn8nb5.BrainSynapse?>()) {
+      return (data != null ? _iqzn8nb5.BrainSynapse.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_iagdrx9v.ChatAction?>()) {
       return (data != null ? _iagdrx9v.ChatAction.fromJson(data) : null) as T;
@@ -3092,6 +3357,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_i8ng53gk.UserFact>) {
       return (data as List)
               .map((e) => deserialize<_i8ng53gk.UserFact>(e))
@@ -3177,8 +3445,23 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<int>) {
       return (data as List).map((e) => deserialize<int>(e)).toList() as T;
     }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    if (t == List<_i8yuvbha.BrainNeuron>) {
+      return (data as List)
+              .map((e) => deserialize<_i8yuvbha.BrainNeuron>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iqzn8nb5.BrainSynapse>) {
+      return (data as List)
+              .map((e) => deserialize<_iqzn8nb5.BrainSynapse>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i8r73c9y.BrainFiring>) {
+      return (data as List)
+              .map((e) => deserialize<_i8r73c9y.BrainFiring>(e))
+              .toList()
+          as T;
     }
     if (t == List<_iapme6ge.ConceptNode>) {
       return (data as List)
@@ -3249,6 +3532,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<_iu8lemuv.DroneMission>) {
       return (data as List)
               .map((e) => deserialize<_iu8lemuv.DroneMission>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ii8ozmxa.PlayerRating>) {
+      return (data as List)
+              .map((e) => deserialize<_ii8ozmxa.PlayerRating>(e))
               .toList()
           as T;
     }
@@ -3380,10 +3669,16 @@ class Protocol extends _is.DatabaseSerializationManager {
       _idcsjt5k.DroneMission => 'DroneMission',
       _i1bw7vkv.DronePlanResult => 'DronePlanResult',
       _it73791y.DroneState => 'DroneState',
+      _iucyrm0h.GameMatch => 'GameMatch',
+      _ihg2pt9t.PlayerRating => 'PlayerRating',
       _izw8z7ou.Greeting => 'Greeting',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
       _ijbewlez.Belief => 'Belief',
+      _i8r73c9y.BrainFiring => 'BrainFiring',
+      _ipeloevp.BrainMap => 'BrainMap',
+      _i8yuvbha.BrainNeuron => 'BrainNeuron',
+      _iqzn8nb5.BrainSynapse => 'BrainSynapse',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
       _ildoeobn.ChatThread => 'ChatThread',
@@ -3463,6 +3758,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'DronePlanResult';
       case _it73791y.DroneState():
         return 'DroneState';
+      case _iucyrm0h.GameMatch():
+        return 'GameMatch';
+      case _ihg2pt9t.PlayerRating():
+        return 'PlayerRating';
       case _izw8z7ou.Greeting():
         return 'Greeting';
       case _ij1ha6k5.AccountExport():
@@ -3471,6 +3770,14 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'AlertNote';
       case _ijbewlez.Belief():
         return 'Belief';
+      case _i8r73c9y.BrainFiring():
+        return 'BrainFiring';
+      case _ipeloevp.BrainMap():
+        return 'BrainMap';
+      case _i8yuvbha.BrainNeuron():
+        return 'BrainNeuron';
+      case _iqzn8nb5.BrainSynapse():
+        return 'BrainSynapse';
       case _iagdrx9v.ChatAction():
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
@@ -3624,6 +3931,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'DroneState') {
       return deserialize<_it73791y.DroneState>(data['data']);
     }
+    if (dataClassName == 'GameMatch') {
+      return deserialize<_iucyrm0h.GameMatch>(data['data']);
+    }
+    if (dataClassName == 'PlayerRating') {
+      return deserialize<_ihg2pt9t.PlayerRating>(data['data']);
+    }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
     }
@@ -3635,6 +3948,18 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'Belief') {
       return deserialize<_ijbewlez.Belief>(data['data']);
+    }
+    if (dataClassName == 'BrainFiring') {
+      return deserialize<_i8r73c9y.BrainFiring>(data['data']);
+    }
+    if (dataClassName == 'BrainMap') {
+      return deserialize<_ipeloevp.BrainMap>(data['data']);
+    }
+    if (dataClassName == 'BrainNeuron') {
+      return deserialize<_i8yuvbha.BrainNeuron>(data['data']);
+    }
+    if (dataClassName == 'BrainSynapse') {
+      return deserialize<_iqzn8nb5.BrainSynapse>(data['data']);
     }
     if (dataClassName == 'ChatAction') {
       return deserialize<_iagdrx9v.ChatAction>(data['data']);
@@ -3858,6 +4183,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _idcsjt5k.DroneMission.t;
       case _it73791y.DroneState:
         return _it73791y.DroneState.t;
+      case _iucyrm0h.GameMatch:
+        return _iucyrm0h.GameMatch.t;
+      case _ihg2pt9t.PlayerRating:
+        return _ihg2pt9t.PlayerRating.t;
       case _ijbewlez.Belief:
         return _ijbewlez.Belief.t;
       case _ildoeobn.ChatThread:

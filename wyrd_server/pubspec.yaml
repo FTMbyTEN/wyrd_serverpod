@@ -14,6 +14,7 @@ dependencies:
   serverpod_cloud_storage: 4.0.0
   http: ^1.2.0
   puppeteer: ^3.26.0
+  chess: ^0.8.1
 
 dev_dependencies:
   lints: '>=3.0.0 <7.0.0'

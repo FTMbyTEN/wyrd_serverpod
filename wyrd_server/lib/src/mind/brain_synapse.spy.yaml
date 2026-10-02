@@ -1,0 +1,6 @@
+class: BrainSynapse
+fields:
+  a: String
+  b: String
+  weight: double
+  fires: int

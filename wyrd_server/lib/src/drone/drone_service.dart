@@ -16,15 +16,28 @@ class DroneService {
       DroneState.db.findFirstRow(session, where: (t) => t.droneId.equals(droneId));
 
   /// True if [userId] signs in with the droneOperatorEmail account.
+  // who has drone access, remembered for a few minutes: the app asks often (the tab, every poll),
+  // and one cached answer per person keeps that from ever touching the database
+  static final _access = <String, ({bool ok, DateTime at})>{};
+  static const _accessFor = Duration(minutes: 5);
+
   static Future<bool> isOperator(Session session, UuidValue userId) async {
-    final operator = DroneConfig.operatorEmail(session);
-    if (operator.isEmpty) return false;
+    final operators = DroneConfig.operatorEmails(session);
+    if (operators.isEmpty) return false;
+    final hit = _access[userId.uuid];
+    if (hit != null && DateTime.now().difference(hit.at) < _accessFor) return hit.ok;
     final rows = await session.db.unsafeQuery(
       'SELECT lower("email") FROM "serverpod_auth_idp_email_account" WHERE "authUserId" = @id',
       parameters: QueryParameters.named({'id': userId.uuid}),
     );
-    return rows.any((r) => r[0] == operator);
+    final ok = rows.any((r) => operators.contains(r[0]));
+    if (_access.length > 5000) _access.clear();
+    _access[userId.uuid] = (ok: ok, at: DateTime.now());
+    return ok;
   }
+
+  /// For tests: forget remembered access.
+  static void forgetAccess() => _access.clear();
 
   /// WYRD plans a flight from [instruction]. The plan is stored (and flown) only if it passes
   /// DroneSafety; otherwise the reason comes back and nothing happens. Callers check that

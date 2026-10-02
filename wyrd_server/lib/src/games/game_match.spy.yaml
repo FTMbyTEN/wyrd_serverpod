@@ -1,0 +1,21 @@
+### A game against WYRD (or, later, another player). The server holds the position and checks every move.
+class: GameMatch
+table: game_match
+
+fields:
+  authUserId: UuidValue
+  game: String # chess (later: connect4, tictactoe, reversi, words, liarsdice)
+  state: String # the position (chess: FEN)
+  moves: List<String> # the moves so far (chess: SAN)
+  playerSide: String # chess: w or b
+  status: String # active, won, lost, draw, resigned
+  wyrdLevel: int # 1 (gentle) to 6 (full strength), chosen from the player's rating
+  ratingBefore: double
+  ratingAfter: double?
+  remark: String? # WYRD's last line to the player
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  game_match_user_idx:
+    fields: authUserId, status

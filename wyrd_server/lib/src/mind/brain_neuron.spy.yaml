@@ -1,0 +1,5 @@
+class: BrainNeuron
+fields:
+  id: String # the concept
+  weight: double # total strength of its synapses: how central it is
+  degree: int # how many of the drawn synapses touch it

@@ -2,21 +2,28 @@ import '../generated/protocol.dart';
 import 'drone_service.dart';
 import 'package:serverpod/serverpod.dart';
 
-/// The app's side of the drone. Any signed-in user can watch it; only the operator -- the
-/// account whose email is set with `scloud password set droneOperatorEmail you@example.com` --
-/// can plan flights or abort. The logic lives in DroneService, shared with WYRD's chat tool.
+/// The app's side of the drone, for operators only -- the accounts whose emails are set with
+/// `scloud password set droneOperatorEmail a@example.com,b@example.com`. Nobody else can watch, plan
+/// or abort, and the app doesn't show them the drone at all. The logic lives in DroneService, shared
+/// with WYRD's chat tool.
 class DroneEndpoint extends Endpoint {
   @override
   bool get requireLogin => true;
 
-  Future<DroneState?> getState(Session session) => DroneService.getState(session);
+  Future<DroneState?> getState(Session session) async {
+    await _requireOperator(session);
+    return DroneService.getState(session);
+  }
 
-  Future<List<DroneMission>> getMissions(Session session, {int limit = 20}) => DroneMission.db.find(
+  Future<List<DroneMission>> getMissions(Session session, {int limit = 20}) async {
+    await _requireOperator(session);
+    return DroneMission.db.find(
         session,
         where: (t) => t.droneId.equals(DroneService.droneId),
         orderBy: (t) => t.id.desc(),
         limit: limit.clamp(1, 100),
       );
+  }
 
   Future<bool> isOperator(Session session) => DroneService.isOperator(session, _userId(session));
 

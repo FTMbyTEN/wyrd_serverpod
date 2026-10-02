@@ -1,0 +1,4 @@
+class: BrainFiring
+fields:
+  path: List<String> # the concepts the signal crossed, in order
+  at: DateTime

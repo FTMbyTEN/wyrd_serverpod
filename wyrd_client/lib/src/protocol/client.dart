@@ -21,9 +21,12 @@ import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
 import 'package:wyrd_client/src/protocol/drone/drone_plan_result.dart'
     as _ibjo0dmj;
 import 'package:wyrd_client/src/protocol/drone/drone_state.dart' as _i9y70wfa;
+import 'package:wyrd_client/src/protocol/games/game_match.dart' as _io9n6mg3;
+import 'package:wyrd_client/src/protocol/games/player_rating.dart' as _ibpm8r25;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
 import 'package:wyrd_client/src/protocol/mind/account_export.dart' as _izg4k2n4;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
+import 'package:wyrd_client/src/protocol/mind/brain_map.dart' as _isea6qhw;
 import 'package:wyrd_client/src/protocol/mind/chat_reply.dart' as _is592ckh;
 import 'package:wyrd_client/src/protocol/mind/concept_detail.dart' as _iea588cs;
 import 'package:wyrd_client/src/protocol/mind/concept_example.dart'
@@ -340,9 +343,10 @@ class EndpointDroneBridge extends _isc.EndpointRef {
   );
 }
 
-/// The app's side of the drone. Any signed-in user can watch it; only the operator -- the
-/// account whose email is set with `scloud password set droneOperatorEmail you@example.com` --
-/// can plan flights or abort. The logic lives in DroneService, shared with WYRD's chat tool.
+/// The app's side of the drone, for operators only -- the accounts whose emails are set with
+/// `scloud password set droneOperatorEmail a@example.com,b@example.com`. Nobody else can watch, plan
+/// or abort, and the app doesn't show them the drone at all. The logic lives in DroneService, shared
+/// with WYRD's chat tool.
 /// {@category Endpoint}
 class EndpointDrone extends _isc.EndpointRef {
   EndpointDrone(_isc.EndpointCaller caller) : super(caller);
@@ -384,6 +388,66 @@ class EndpointDrone extends _isc.EndpointRef {
         'drone',
         'abort',
         {},
+      );
+}
+
+/// Games against WYRD: ratings, the leaderboard, and chess.
+/// {@category Endpoint}
+class EndpointGames extends _isc.EndpointRef {
+  EndpointGames(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'games';
+
+  _ida.Future<List<_ibpm8r25.PlayerRating>> myRatings() =>
+      caller.callServerEndpoint<List<_ibpm8r25.PlayerRating>>(
+        'games',
+        'myRatings',
+        {},
+      );
+
+  _ida.Future<List<_ibpm8r25.PlayerRating>> leaderboard(String game) =>
+      caller.callServerEndpoint<List<_ibpm8r25.PlayerRating>>(
+        'games',
+        'leaderboard',
+        {'game': game},
+      );
+
+  _ida.Future<_io9n6mg3.GameMatch?> active(String game) =>
+      caller.callServerEndpoint<_io9n6mg3.GameMatch?>(
+        'games',
+        'active',
+        {'game': game},
+      );
+
+  _ida.Future<_io9n6mg3.GameMatch> startChess(String side) =>
+      caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+        'games',
+        'startChess',
+        {'side': side},
+      );
+
+  _ida.Future<_io9n6mg3.GameMatch> moveChess(
+    int matchId,
+    String from,
+    String to,
+    String? promotion,
+  ) => caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+    'games',
+    'moveChess',
+    {
+      'matchId': matchId,
+      'from': from,
+      'to': to,
+      'promotion': promotion,
+    },
+  );
+
+  _ida.Future<_io9n6mg3.GameMatch> resign(int matchId) =>
+      caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+        'games',
+        'resign',
+        {'matchId': matchId},
       );
 }
 
@@ -447,6 +511,23 @@ class EndpointAlerts extends _isc.EndpointRef {
       caller.callServerEndpoint<List<_i4c7ehki.AlertNote>>(
         'alerts',
         'getAlerts',
+        {},
+      );
+}
+
+/// WYRD's real brain for the app to draw: its neurons, synapses and latest thoughts. Public like
+/// the diary -- it is WYRD's mind, not anyone's data -- and shared from a 20-second cache.
+/// {@category Endpoint}
+class EndpointBrain extends _isc.EndpointRef {
+  EndpointBrain(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'brain';
+
+  _ida.Future<_isea6qhw.BrainMap> getMap() =>
+      caller.callServerEndpoint<_isea6qhw.BrainMap>(
+        'brain',
+        'getMap',
         {},
       );
 }
@@ -1173,6 +1254,30 @@ class EndpointTopic extends _isc.EndpointRef {
       );
 }
 
+/// The fine-tuning dataset, for WYRD's owner only (the operator account): what would be trained on,
+/// and the files themselves, ready to upload to a fine-tuning platform.
+/// {@category Endpoint}
+class EndpointTraining extends _isc.EndpointRef {
+  EndpointTraining(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'training';
+
+  /// How many examples there are per source, and how many were dropped for each reason, as JSON.
+  _ida.Future<String> stats() => caller.callServerEndpoint<String>(
+    'training',
+    'stats',
+    {},
+  );
+
+  /// One split as JSON Lines: [part] is 'train' or 'validation'.
+  _ida.Future<String> export(String part) => caller.callServerEndpoint<String>(
+    'training',
+    'export',
+    {'part': part},
+  );
+}
+
 /// Ports /api/world/countries and /api/world/country/:code from server.js -- the data behind
 /// the globe WYRD opens via the open_world_map tool. Public, like Node.
 /// {@category Endpoint}
@@ -1240,9 +1345,11 @@ class Client extends _isc.ServerpodClientShared {
     jwtRefresh = EndpointJwtRefresh(this);
     droneBridge = EndpointDroneBridge(this);
     drone = EndpointDrone(this);
+    games = EndpointGames(this);
     greeting = EndpointGreeting(this);
     account = EndpointAccount(this);
     alerts = EndpointAlerts(this);
+    brain = EndpointBrain(this);
     chat = EndpointChat(this);
     curriculum = EndpointCurriculum(this);
     diary = EndpointDiary(this);
@@ -1263,6 +1370,7 @@ class Client extends _isc.ServerpodClientShared {
     status = EndpointStatus(this);
     synthesis = EndpointSynthesis(this);
     topic = EndpointTopic(this);
+    training = EndpointTraining(this);
     world = EndpointWorld(this);
     modules = Modules(this);
   }
@@ -1275,11 +1383,15 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointDrone drone;
 
+  late final EndpointGames games;
+
   late final EndpointGreeting greeting;
 
   late final EndpointAccount account;
 
   late final EndpointAlerts alerts;
+
+  late final EndpointBrain brain;
 
   late final EndpointChat chat;
 
@@ -1321,6 +1433,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointTopic topic;
 
+  late final EndpointTraining training;
+
   late final EndpointWorld world;
 
   late final Modules modules;
@@ -1331,9 +1445,11 @@ class Client extends _isc.ServerpodClientShared {
     'jwtRefresh': jwtRefresh,
     'droneBridge': droneBridge,
     'drone': drone,
+    'games': games,
     'greeting': greeting,
     'account': account,
     'alerts': alerts,
+    'brain': brain,
     'chat': chat,
     'curriculum': curriculum,
     'diary': diary,
@@ -1354,6 +1470,7 @@ class Client extends _isc.ServerpodClientShared {
     'status': status,
     'synthesis': synthesis,
     'topic': topic,
+    'training': training,
     'world': world,
   };
 

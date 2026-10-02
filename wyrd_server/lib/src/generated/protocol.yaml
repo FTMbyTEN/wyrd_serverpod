@@ -18,6 +18,13 @@ drone:
   - isOperator:
   - plan:
   - abort:
+games:
+  - myRatings:
+  - leaderboard:
+  - active:
+  - startChess:
+  - moveChess:
+  - resign:
 greeting:
   - hello:
 account:
@@ -25,6 +32,8 @@ account:
   - deleteMyData:
 alerts:
   - getAlerts:
+brain:
+  - getMap:
 chat:
   - sendMessage:
   - getHistory:
@@ -104,6 +113,9 @@ synthesis:
   - trigger:
 topic:
   - getTopic:
+training:
+  - stats:
+  - export:
 world:
   - getCountries:
   - getCountry:

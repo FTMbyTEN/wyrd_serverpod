@@ -23,10 +23,14 @@ import 'package:wyrd_server/src/generated/drone/drone_plan_result.dart'
     as _i7r2m91f;
 import 'package:wyrd_server/src/generated/drone/drone_state.dart' as _ivnf8vdp;
 import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
+import 'package:wyrd_server/src/generated/games/game_match.dart' as _iocic9iq;
+import 'package:wyrd_server/src/generated/games/player_rating.dart'
+    as _ii8ozmxa;
 import 'package:wyrd_server/src/generated/greetings/greeting.dart' as _i6wty2t7;
 import 'package:wyrd_server/src/generated/mind/account_export.dart'
     as _it0zlzes;
 import 'package:wyrd_server/src/generated/mind/alert_note.dart' as _ipgej4na;
+import 'package:wyrd_server/src/generated/mind/brain_map.dart' as _iuuts54n;
 import 'package:wyrd_server/src/generated/mind/chat_reply.dart' as _i6oasa27;
 import 'package:wyrd_server/src/generated/mind/concept_detail.dart'
     as _i5v8vu24;
@@ -216,11 +220,15 @@ class TestEndpoints {
 
   late final _DroneEndpoint drone;
 
+  late final _GamesEndpoint games;
+
   late final _GreetingEndpoint greeting;
 
   late final _AccountEndpoint account;
 
   late final _AlertsEndpoint alerts;
+
+  late final _BrainEndpoint brain;
 
   late final _ChatEndpoint chat;
 
@@ -262,6 +270,8 @@ class TestEndpoints {
 
   late final _TopicEndpoint topic;
 
+  late final _TrainingEndpoint training;
+
   late final _WorldEndpoint world;
 }
 
@@ -288,6 +298,10 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    games = _GamesEndpoint(
+      endpoints,
+      serializationManager,
+    );
     greeting = _GreetingEndpoint(
       endpoints,
       serializationManager,
@@ -297,6 +311,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     alerts = _AlertsEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    brain = _BrainEndpoint(
       endpoints,
       serializationManager,
     );
@@ -377,6 +395,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     topic = _TopicEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    training = _TrainingEndpoint(
       endpoints,
       serializationManager,
     );
@@ -973,6 +995,210 @@ class _DroneEndpoint {
   }
 }
 
+class _GamesEndpoint {
+  _GamesEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_ii8ozmxa.PlayerRating>> myRatings(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'myRatings',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'myRatings',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ii8ozmxa.PlayerRating>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_ii8ozmxa.PlayerRating>> leaderboard(
+    _ist.TestSessionBuilder sessionBuilder,
+    String game,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'leaderboard',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'leaderboard',
+          parameters: _ist.testObjectToJson({'game': game}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ii8ozmxa.PlayerRating>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iocic9iq.GameMatch?> active(
+    _ist.TestSessionBuilder sessionBuilder,
+    String game,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'active',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'active',
+          parameters: _ist.testObjectToJson({'game': game}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iocic9iq.GameMatch?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iocic9iq.GameMatch> startChess(
+    _ist.TestSessionBuilder sessionBuilder,
+    String side,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'startChess',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'startChess',
+          parameters: _ist.testObjectToJson({'side': side}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iocic9iq.GameMatch>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iocic9iq.GameMatch> moveChess(
+    _ist.TestSessionBuilder sessionBuilder,
+    int matchId,
+    String from,
+    String to,
+    String? promotion,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'moveChess',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'moveChess',
+          parameters: _ist.testObjectToJson({
+            'matchId': matchId,
+            'from': from,
+            'to': to,
+            'promotion': promotion,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iocic9iq.GameMatch>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iocic9iq.GameMatch> resign(
+    _ist.TestSessionBuilder sessionBuilder,
+    int matchId,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'resign',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'resign',
+          parameters: _ist.testObjectToJson({'matchId': matchId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iocic9iq.GameMatch>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _GreetingEndpoint {
   _GreetingEndpoint(
     this._endpointDispatch,
@@ -1117,6 +1343,47 @@ class _AlertsEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<List<_ipgej4na.AlertNote>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _BrainEndpoint {
+  _BrainEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_iuuts54n.BrainMap> getMap(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'brain',
+            method: 'getMap',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'brain',
+          methodName: 'getMap',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_iuuts54n.BrainMap>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -3178,6 +3445,76 @@ class _TopicEndpoint {
                   _localCallContext.arguments,
                 )
                 as _ida.Future<_iwnzpkr1.TopicInfo>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _TrainingEndpoint {
+  _TrainingEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<String> stats(_ist.TestSessionBuilder sessionBuilder) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'training',
+            method: 'stats',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'training',
+          methodName: 'stats',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<String>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<String> export(
+    _ist.TestSessionBuilder sessionBuilder,
+    String part,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'training',
+            method: 'export',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'training',
+          methodName: 'export',
+          parameters: _ist.testObjectToJson({'part': part}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<String>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

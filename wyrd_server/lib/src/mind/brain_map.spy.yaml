@@ -1,0 +1,7 @@
+### WYRD's real brain, for drawing: its strongest concepts (neurons), the synapses between them,
+### and the paths its last few thoughts took.
+class: BrainMap
+fields:
+  neurons: List<BrainNeuron>
+  synapses: List<BrainSynapse>
+  firings: List<BrainFiring>

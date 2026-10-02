@@ -1,0 +1,21 @@
+### A player's rating in one game (Elo, starting at 1000), and their record against WYRD.
+class: PlayerRating
+table: player_rating
+
+fields:
+  authUserId: UuidValue
+  game: String
+  name: String # how they appear on the leaderboard
+  rating: double
+  played: int
+  wins: int
+  losses: int
+  draws: int
+  updatedAt: DateTime
+
+indexes:
+  player_rating_user_game_idx:
+    fields: authUserId, game
+    unique: true
+  player_rating_board_idx:
+    fields: game, rating
