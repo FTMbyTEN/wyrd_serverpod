@@ -10,6 +10,7 @@ import 'city_design_service.dart';
 import 'world_authority.dart';
 import 'world_stats.dart';
 import 'wallet_service.dart';
+import 'place_service.dart';
 
 /// The open world's line to WYRD, its Authority.
 class CityEndpoint extends Endpoint {
@@ -39,6 +40,13 @@ class CityEndpoint extends Endpoint {
 
   /// A street-board mission done: it pays (once a day each).
   Future<String> missionPaid(Session session, String id) => WalletService.missionPaid(session, _user(session), id);
+
+  /// What you can do at a kind of place (JSON list of activities: cost or pay, healing, standing, cooldown).
+  Future<String> placeActivities(Session session, String kind) async => PlaceService.list(kind);
+
+  /// Do something at a place. Returns the wallet plus {text, delta, heal, standing}, or {error}.
+  Future<String> visit(Session session, String kind, String activity, String place) =>
+      PlaceService.visit(session, _user(session), kind, activity, place);
 
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   Future<void> pulse(Session session) async => WorldStats.pulse(_user(session));

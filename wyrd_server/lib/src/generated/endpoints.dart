@@ -2408,6 +2408,55 @@ class Endpoints extends _is.EndpointDispatch {
                     params['id'],
                   ),
         ),
+        'placeActivities': _is.MethodConnector(
+          name: 'placeActivities',
+          params: {
+            'kind': _is.ParameterDescription(
+              name: 'kind',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).placeActivities(
+                    session,
+                    params['kind'],
+                  ),
+        ),
+        'visit': _is.MethodConnector(
+          name: 'visit',
+          params: {
+            'kind': _is.ParameterDescription(
+              name: 'kind',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'activity': _is.ParameterDescription(
+              name: 'activity',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'place': _is.ParameterDescription(
+              name: 'place',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).visit(
+                session,
+                params['kind'],
+                params['activity'],
+                params['place'],
+              ),
+        ),
         'pulse': _is.MethodConnector(
           name: 'pulse',
           params: {},

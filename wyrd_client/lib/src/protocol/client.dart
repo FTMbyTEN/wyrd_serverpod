@@ -1542,6 +1542,29 @@ class EndpointCity extends _isc.EndpointRef {
         {'id': id},
       );
 
+  /// What you can do at a kind of place (JSON list of activities: cost or pay, healing, standing, cooldown).
+  _ida.Future<String> placeActivities(String kind) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'placeActivities',
+        {'kind': kind},
+      );
+
+  /// Do something at a place. Returns the wallet plus {text, delta, heal, standing}, or {error}.
+  _ida.Future<String> visit(
+    String kind,
+    String activity,
+    String place,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'visit',
+    {
+      'kind': kind,
+      'activity': activity,
+      'place': place,
+    },
+  );
+
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   _ida.Future<void> pulse() => caller.callServerEndpoint<void>(
     'city',

@@ -145,6 +145,8 @@ city:
   - leaveHome:
   - pay:
   - missionPaid:
+  - placeActivities:
+  - visit:
   - pulse:
   - stats:
   - status:
