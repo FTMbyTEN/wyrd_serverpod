@@ -2317,6 +2317,26 @@ class Endpoints extends _is.EndpointDispatch {
                 params['situation'],
               ),
         ),
+        'pulse': _is.MethodConnector(
+          name: 'pulse',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).pulse(session),
+        ),
+        'stats': _is.MethodConnector(
+          name: 'stats',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).stats(session),
+        ),
         'status': _is.MethodConnector(
           name: 'status',
           params: {},

@@ -1493,6 +1493,20 @@ class EndpointCity extends _isc.EndpointRef {
     },
   );
 
+  /// The game's heartbeat (every 30 s while you play): counts you as online.
+  _ida.Future<void> pulse() => caller.callServerEndpoint<void>(
+    'city',
+    'pulse',
+    {},
+  );
+
+  /// Who's in the city: online now, joined, missions done, today's talk with WYRD, the leading citizens (JSON).
+  _ida.Future<String> stats() => caller.callServerEndpoint<String>(
+    'city',
+    'stats',
+    {},
+  );
+
   /// Your standing with the Authority and any mission it gave you, without asking it anything.
   _ida.Future<String> status() => caller.callServerEndpoint<String>(
     'city',

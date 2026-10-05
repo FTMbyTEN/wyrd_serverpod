@@ -139,6 +139,8 @@ world:
   - getCountry:
 city:
   - address:
+  - pulse:
+  - stats:
   - status:
   - charter:
   - design:

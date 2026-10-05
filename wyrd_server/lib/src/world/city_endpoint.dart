@@ -8,6 +8,7 @@ import 'character_service.dart';
 import 'city_charter_service.dart';
 import 'city_design_service.dart';
 import 'world_authority.dart';
+import 'world_stats.dart';
 
 /// The open world's line to WYRD, its Authority.
 class CityEndpoint extends Endpoint {
@@ -19,6 +20,12 @@ class CityEndpoint extends Endpoint {
   /// Speak to, petition, or report to the Authority. Returns the decree as JSON (see WorldAuthority.address).
   Future<String> address(Session session, String channel, String text, String situation) =>
       WorldAuthority.address(session, _user(session), channel, text, situation);
+
+  /// The game's heartbeat (every 30 s while you play): counts you as online.
+  Future<void> pulse(Session session) async => WorldStats.pulse(_user(session));
+
+  /// Who's in the city: online now, joined, missions done, today's talk with WYRD, the leading citizens (JSON).
+  Future<String> stats(Session session) => WorldStats.stats(session);
 
   /// Your standing with the Authority and any mission it gave you, without asking it anything.
   Future<String> status(Session session) => WorldAuthority.status(session, _user(session));
