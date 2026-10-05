@@ -139,6 +139,12 @@ world:
   - getCountry:
 city:
   - address:
+  - wallet:
+  - homes:
+  - takeHome:
+  - leaveHome:
+  - pay:
+  - missionPaid:
   - pulse:
   - stats:
   - status:

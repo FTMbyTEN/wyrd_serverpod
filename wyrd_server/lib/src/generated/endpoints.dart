@@ -2317,6 +2317,97 @@ class Endpoints extends _is.EndpointDispatch {
                 params['situation'],
               ),
         ),
+        'wallet': _is.MethodConnector(
+          name: 'wallet',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).wallet(session),
+        ),
+        'homes': _is.MethodConnector(
+          name: 'homes',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).homes(session),
+        ),
+        'takeHome': _is.MethodConnector(
+          name: 'takeHome',
+          params: {
+            'slug': _is.ParameterDescription(
+              name: 'slug',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'mode': _is.ParameterDescription(
+              name: 'mode',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).takeHome(
+                session,
+                params['slug'],
+                params['mode'],
+              ),
+        ),
+        'leaveHome': _is.MethodConnector(
+          name: 'leaveHome',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .leaveHome(session),
+        ),
+        'pay': _is.MethodConnector(
+          name: 'pay',
+          params: {
+            'reason': _is.ParameterDescription(
+              name: 'reason',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).pay(
+                session,
+                params['reason'],
+              ),
+        ),
+        'missionPaid': _is.MethodConnector(
+          name: 'missionPaid',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).missionPaid(
+                    session,
+                    params['id'],
+                  ),
+        ),
         'pulse': _is.MethodConnector(
           name: 'pulse',
           params: {},

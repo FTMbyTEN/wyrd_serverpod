@@ -1493,6 +1493,55 @@ class EndpointCity extends _isc.EndpointRef {
     },
   );
 
+  /// Your naira and your home (rent due is collected first), as JSON {naira, home}.
+  _ida.Future<String> wallet() => caller.callServerEndpoint<String>(
+    'city',
+    'wallet',
+    {},
+  );
+
+  /// Every home in the city, with whether it's taken and whether it's yours (JSON list).
+  _ida.Future<String> homes() => caller.callServerEndpoint<String>(
+    'city',
+    'homes',
+    {},
+  );
+
+  /// Rent ('rent') or buy ('own') a home. Returns the wallet, or {error}.
+  _ida.Future<String> takeHome(
+    String slug,
+    String mode,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'takeHome',
+    {
+      'slug': slug,
+      'mode': mode,
+    },
+  );
+
+  /// Move out of your home.
+  _ida.Future<String> leaveHome() => caller.callServerEndpoint<String>(
+    'city',
+    'leaveHome',
+    {},
+  );
+
+  /// Pay a fare ('maglev' or 'danfo'); the server sets the price.
+  _ida.Future<String> pay(String reason) => caller.callServerEndpoint<String>(
+    'city',
+    'pay',
+    {'reason': reason},
+  );
+
+  /// A street-board mission done: it pays (once a day each).
+  _ida.Future<String> missionPaid(String id) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'missionPaid',
+        {'id': id},
+      );
+
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   _ida.Future<void> pulse() => caller.callServerEndpoint<void>(
     'city',

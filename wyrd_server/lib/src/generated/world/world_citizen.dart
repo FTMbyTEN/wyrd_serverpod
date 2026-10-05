@@ -25,11 +25,17 @@ abstract class WorldCitizen
     this.mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    this.homeSlug,
+    this.homeMode,
+    this.rentPaidUntil,
+    this.paidToday,
     required this.updatedAt,
   }) : standing = standing ?? 0,
        missionsDone = missionsDone ?? 0,
        trainingOptIn = trainingOptIn ?? false,
-       trainingAsked = trainingAsked ?? false;
+       trainingAsked = trainingAsked ?? false,
+       naira = naira ?? 5000;
 
   factory WorldCitizen({
     int? id,
@@ -40,6 +46,11 @@ abstract class WorldCitizen
     String? mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    String? homeSlug,
+    String? homeMode,
+    DateTime? rentPaidUntil,
+    String? paidToday,
     required DateTime updatedAt,
   }) = _WorldCitizenImpl;
 
@@ -59,6 +70,15 @@ abstract class WorldCitizen
       trainingAsked: jsonSerialization['trainingAsked'] == null
           ? null
           : _is.BoolJsonExtension.fromJson(jsonSerialization['trainingAsked']),
+      naira: jsonSerialization['naira'] as int?,
+      homeSlug: jsonSerialization['homeSlug'] as String?,
+      homeMode: jsonSerialization['homeMode'] as String?,
+      rentPaidUntil: jsonSerialization['rentPaidUntil'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(
+              jsonSerialization['rentPaidUntil'],
+            ),
+      paidToday: jsonSerialization['paidToday'] as String?,
       updatedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
@@ -91,6 +111,19 @@ abstract class WorldCitizen
   /// whether they've been asked yet
   bool trainingAsked;
 
+  /// the player's naira (starts at 5,000); only the server changes it
+  int naira;
+
+  /// their home in the city, if any: its slug, 'rent' or 'own', and (renting) paid up to when
+  String? homeSlug;
+
+  String? homeMode;
+
+  DateTime? rentPaidUntil;
+
+  /// street-board missions already paid today, as JSON {day, ids}
+  String? paidToday;
+
   DateTime updatedAt;
 
   @override
@@ -108,6 +141,11 @@ abstract class WorldCitizen
     String? mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    String? homeSlug,
+    String? homeMode,
+    DateTime? rentPaidUntil,
+    String? paidToday,
     DateTime? updatedAt,
   });
   @override
@@ -122,6 +160,11 @@ abstract class WorldCitizen
       if (mission != null) 'mission': mission,
       'trainingOptIn': trainingOptIn,
       'trainingAsked': trainingAsked,
+      'naira': naira,
+      if (homeSlug != null) 'homeSlug': homeSlug,
+      if (homeMode != null) 'homeMode': homeMode,
+      if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
+      if (paidToday != null) 'paidToday': paidToday,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -138,6 +181,11 @@ abstract class WorldCitizen
       if (mission != null) 'mission': mission,
       'trainingOptIn': trainingOptIn,
       'trainingAsked': trainingAsked,
+      'naira': naira,
+      if (homeSlug != null) 'homeSlug': homeSlug,
+      if (homeMode != null) 'homeMode': homeMode,
+      if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
+      if (paidToday != null) 'paidToday': paidToday,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -182,6 +230,11 @@ class _WorldCitizenImpl extends WorldCitizen {
     String? mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    String? homeSlug,
+    String? homeMode,
+    DateTime? rentPaidUntil,
+    String? paidToday,
     required DateTime updatedAt,
   }) : super._(
          id: id,
@@ -192,6 +245,11 @@ class _WorldCitizenImpl extends WorldCitizen {
          mission: mission,
          trainingOptIn: trainingOptIn,
          trainingAsked: trainingAsked,
+         naira: naira,
+         homeSlug: homeSlug,
+         homeMode: homeMode,
+         rentPaidUntil: rentPaidUntil,
+         paidToday: paidToday,
          updatedAt: updatedAt,
        );
 
@@ -208,6 +266,11 @@ class _WorldCitizenImpl extends WorldCitizen {
     Object? mission = _Undefined,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    Object? homeSlug = _Undefined,
+    Object? homeMode = _Undefined,
+    Object? rentPaidUntil = _Undefined,
+    Object? paidToday = _Undefined,
     DateTime? updatedAt,
   }) {
     return WorldCitizen(
@@ -219,6 +282,13 @@ class _WorldCitizenImpl extends WorldCitizen {
       mission: mission is String? ? mission : this.mission,
       trainingOptIn: trainingOptIn ?? this.trainingOptIn,
       trainingAsked: trainingAsked ?? this.trainingAsked,
+      naira: naira ?? this.naira,
+      homeSlug: homeSlug is String? ? homeSlug : this.homeSlug,
+      homeMode: homeMode is String? ? homeMode : this.homeMode,
+      rentPaidUntil: rentPaidUntil is DateTime?
+          ? rentPaidUntil
+          : this.rentPaidUntil,
+      paidToday: paidToday is String? ? paidToday : this.paidToday,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -264,6 +334,32 @@ class WorldCitizenUpdateTable extends _is.UpdateTable<WorldCitizenTable> {
     value,
   );
 
+  _is.ColumnValue<int, int> naira(int value) => _is.ColumnValue(
+    table.naira,
+    value,
+  );
+
+  _is.ColumnValue<String, String> homeSlug(String? value) => _is.ColumnValue(
+    table.homeSlug,
+    value,
+  );
+
+  _is.ColumnValue<String, String> homeMode(String? value) => _is.ColumnValue(
+    table.homeMode,
+    value,
+  );
+
+  _is.ColumnValue<DateTime, DateTime> rentPaidUntil(DateTime? value) =>
+      _is.ColumnValue(
+        table.rentPaidUntil,
+        value,
+      );
+
+  _is.ColumnValue<String, String> paidToday(String? value) => _is.ColumnValue(
+    table.paidToday,
+    value,
+  );
+
   _is.ColumnValue<DateTime, DateTime> updatedAt(DateTime value) =>
       _is.ColumnValue(
         table.updatedAt,
@@ -306,6 +402,27 @@ class WorldCitizenTable extends _is.Table<int?> {
       this,
       hasDefault: true,
     );
+    naira = _is.ColumnInt(
+      'naira',
+      this,
+      hasDefault: true,
+    );
+    homeSlug = _is.ColumnString(
+      'homeSlug',
+      this,
+    );
+    homeMode = _is.ColumnString(
+      'homeMode',
+      this,
+    );
+    rentPaidUntil = _is.ColumnDateTime(
+      'rentPaidUntil',
+      this,
+    );
+    paidToday = _is.ColumnString(
+      'paidToday',
+      this,
+    );
     updatedAt = _is.ColumnDateTime(
       'updatedAt',
       this,
@@ -333,6 +450,19 @@ class WorldCitizenTable extends _is.Table<int?> {
   /// whether they've been asked yet
   late final _is.ColumnBool trainingAsked;
 
+  /// the player's naira (starts at 5,000); only the server changes it
+  late final _is.ColumnInt naira;
+
+  /// their home in the city, if any: its slug, 'rent' or 'own', and (renting) paid up to when
+  late final _is.ColumnString homeSlug;
+
+  late final _is.ColumnString homeMode;
+
+  late final _is.ColumnDateTime rentPaidUntil;
+
+  /// street-board missions already paid today, as JSON {day, ids}
+  late final _is.ColumnString paidToday;
+
   late final _is.ColumnDateTime updatedAt;
 
   @override
@@ -345,6 +475,11 @@ class WorldCitizenTable extends _is.Table<int?> {
     mission,
     trainingOptIn,
     trainingAsked,
+    naira,
+    homeSlug,
+    homeMode,
+    rentPaidUntil,
+    paidToday,
     updatedAt,
   ];
 }

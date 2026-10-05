@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import 'wallet_service.dart';
 import '../mind/llm_budget.dart';
 import 'city_design_service.dart';
 import 'character_service.dart';
@@ -126,7 +127,7 @@ class WorldAuthority {
         case 'complete_mission':
           if (c.mission != null && c.trainingOptIn) await GameLearning.missionDone(session, user);
           if (c.mission != null) {
-            c = c.copyWith(mission: null, missionsDone: c.missionsDone + 1);
+            c = c.copyWith(mission: null, missionsDone: c.missionsDone + 1, naira: c.naira + WalletService.boardPay);
             actions.add({'type': 'mission_done'});
           }
         default:

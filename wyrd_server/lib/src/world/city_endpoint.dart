@@ -9,6 +9,7 @@ import 'city_charter_service.dart';
 import 'city_design_service.dart';
 import 'world_authority.dart';
 import 'world_stats.dart';
+import 'wallet_service.dart';
 
 /// The open world's line to WYRD, its Authority.
 class CityEndpoint extends Endpoint {
@@ -20,6 +21,24 @@ class CityEndpoint extends Endpoint {
   /// Speak to, petition, or report to the Authority. Returns the decree as JSON (see WorldAuthority.address).
   Future<String> address(Session session, String channel, String text, String situation) =>
       WorldAuthority.address(session, _user(session), channel, text, situation);
+
+  /// Your naira and your home (rent due is collected first), as JSON {naira, home}.
+  Future<String> wallet(Session session) => WalletService.wallet(session, _user(session));
+
+  /// Every home in the city, with whether it's taken and whether it's yours (JSON list).
+  Future<String> homes(Session session) => WalletService.listHomes(session, _user(session));
+
+  /// Rent ('rent') or buy ('own') a home. Returns the wallet, or {error}.
+  Future<String> takeHome(Session session, String slug, String mode) => WalletService.takeHome(session, _user(session), slug, mode);
+
+  /// Move out of your home.
+  Future<String> leaveHome(Session session) => WalletService.leaveHome(session, _user(session));
+
+  /// Pay a fare ('maglev' or 'danfo'); the server sets the price.
+  Future<String> pay(Session session, String reason) => WalletService.pay(session, _user(session), reason);
+
+  /// A street-board mission done: it pays (once a day each).
+  Future<String> missionPaid(Session session, String id) => WalletService.missionPaid(session, _user(session), id);
 
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   Future<void> pulse(Session session) async => WorldStats.pulse(_user(session));

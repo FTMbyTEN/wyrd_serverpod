@@ -15,6 +15,14 @@ fields:
   trainingOptIn: bool, default=false
   ### whether they've been asked yet
   trainingAsked: bool, default=false
+  ### the player's naira (starts at 5,000); only the server changes it
+  naira: int, default=5000
+  ### their home in the city, if any: its slug, 'rent' or 'own', and (renting) paid up to when
+  homeSlug: String?
+  homeMode: String?
+  rentPaidUntil: DateTime?
+  ### street-board missions already paid today, as JSON {day, ids}
+  paidToday: String?
   updatedAt: DateTime
 indexes:
   world_citizen_user_idx:

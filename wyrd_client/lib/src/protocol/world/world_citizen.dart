@@ -25,11 +25,17 @@ abstract class WorldCitizen
     this.mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    this.homeSlug,
+    this.homeMode,
+    this.rentPaidUntil,
+    this.paidToday,
     required this.updatedAt,
   }) : standing = standing ?? 0,
        missionsDone = missionsDone ?? 0,
        trainingOptIn = trainingOptIn ?? false,
-       trainingAsked = trainingAsked ?? false;
+       trainingAsked = trainingAsked ?? false,
+       naira = naira ?? 5000;
 
   factory WorldCitizen({
     int? id,
@@ -40,6 +46,11 @@ abstract class WorldCitizen
     String? mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    String? homeSlug,
+    String? homeMode,
+    DateTime? rentPaidUntil,
+    String? paidToday,
     required DateTime updatedAt,
   }) = _WorldCitizenImpl;
 
@@ -59,6 +70,15 @@ abstract class WorldCitizen
       trainingAsked: jsonSerialization['trainingAsked'] == null
           ? null
           : _isc.BoolJsonExtension.fromJson(jsonSerialization['trainingAsked']),
+      naira: jsonSerialization['naira'] as int?,
+      homeSlug: jsonSerialization['homeSlug'] as String?,
+      homeMode: jsonSerialization['homeMode'] as String?,
+      rentPaidUntil: jsonSerialization['rentPaidUntil'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['rentPaidUntil'],
+            ),
+      paidToday: jsonSerialization['paidToday'] as String?,
       updatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
@@ -89,6 +109,19 @@ abstract class WorldCitizen
   /// whether they've been asked yet
   bool trainingAsked;
 
+  /// the player's naira (starts at 5,000); only the server changes it
+  int naira;
+
+  /// their home in the city, if any: its slug, 'rent' or 'own', and (renting) paid up to when
+  String? homeSlug;
+
+  String? homeMode;
+
+  DateTime? rentPaidUntil;
+
+  /// street-board missions already paid today, as JSON {day, ids}
+  String? paidToday;
+
   DateTime updatedAt;
 
   /// Returns a shallow copy of this [WorldCitizen]
@@ -103,6 +136,11 @@ abstract class WorldCitizen
     String? mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    String? homeSlug,
+    String? homeMode,
+    DateTime? rentPaidUntil,
+    String? paidToday,
     DateTime? updatedAt,
   });
   @override
@@ -117,6 +155,11 @@ abstract class WorldCitizen
       if (mission != null) 'mission': mission,
       'trainingOptIn': trainingOptIn,
       'trainingAsked': trainingAsked,
+      'naira': naira,
+      if (homeSlug != null) 'homeSlug': homeSlug,
+      if (homeMode != null) 'homeMode': homeMode,
+      if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
+      if (paidToday != null) 'paidToday': paidToday,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -133,6 +176,11 @@ abstract class WorldCitizen
       if (mission != null) 'mission': mission,
       'trainingOptIn': trainingOptIn,
       'trainingAsked': trainingAsked,
+      'naira': naira,
+      if (homeSlug != null) 'homeSlug': homeSlug,
+      if (homeMode != null) 'homeMode': homeMode,
+      if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
+      if (paidToday != null) 'paidToday': paidToday,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -155,6 +203,11 @@ class _WorldCitizenImpl extends WorldCitizen {
     String? mission,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    String? homeSlug,
+    String? homeMode,
+    DateTime? rentPaidUntil,
+    String? paidToday,
     required DateTime updatedAt,
   }) : super._(
          id: id,
@@ -165,6 +218,11 @@ class _WorldCitizenImpl extends WorldCitizen {
          mission: mission,
          trainingOptIn: trainingOptIn,
          trainingAsked: trainingAsked,
+         naira: naira,
+         homeSlug: homeSlug,
+         homeMode: homeMode,
+         rentPaidUntil: rentPaidUntil,
+         paidToday: paidToday,
          updatedAt: updatedAt,
        );
 
@@ -181,6 +239,11 @@ class _WorldCitizenImpl extends WorldCitizen {
     Object? mission = _Undefined,
     bool? trainingOptIn,
     bool? trainingAsked,
+    int? naira,
+    Object? homeSlug = _Undefined,
+    Object? homeMode = _Undefined,
+    Object? rentPaidUntil = _Undefined,
+    Object? paidToday = _Undefined,
     DateTime? updatedAt,
   }) {
     return WorldCitizen(
@@ -192,6 +255,13 @@ class _WorldCitizenImpl extends WorldCitizen {
       mission: mission is String? ? mission : this.mission,
       trainingOptIn: trainingOptIn ?? this.trainingOptIn,
       trainingAsked: trainingAsked ?? this.trainingAsked,
+      naira: naira ?? this.naira,
+      homeSlug: homeSlug is String? ? homeSlug : this.homeSlug,
+      homeMode: homeMode is String? ? homeMode : this.homeMode,
+      rentPaidUntil: rentPaidUntil is DateTime?
+          ? rentPaidUntil
+          : this.rentPaidUntil,
+      paidToday: paidToday is String? ? paidToday : this.paidToday,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
