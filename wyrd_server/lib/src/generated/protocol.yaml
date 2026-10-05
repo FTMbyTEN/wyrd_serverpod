@@ -1,3 +1,11 @@
+agent:
+  - create:
+  - mine:
+  - steps:
+  - decide:
+  - cancel:
+  - runNow:
+  - markRead:
 emailIdp:
   - login:
   - startRegistration:
@@ -129,3 +137,15 @@ training:
 world:
   - getCountries:
   - getCountry:
+city:
+  - address:
+  - status:
+  - charter:
+  - design:
+  - setTraining:
+  - myCharacter:
+  - saveCharacter:
+  - canDesign:
+  - designChat:
+  - designNotes:
+  - designDecide:

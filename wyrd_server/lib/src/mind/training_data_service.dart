@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../world/game_learning.dart';
 import 'llm_service.dart';
 
 /// One training example: a short conversation ending in WYRD's reply, in the chat format every
@@ -121,6 +122,9 @@ class TrainingDataService {
       ]));
       count('kept.diary');
     }
+
+    // 4. the open world: play from players who agreed, and the owner's design sessions (kept as they happen)
+    examples.addAll(await GameLearning.trainingExamples(session, count));
 
     // a stable split: an example lands in validation by a hash of its content, so re-exports agree
     final train = <TrainingExample>[], validation = <TrainingExample>[];

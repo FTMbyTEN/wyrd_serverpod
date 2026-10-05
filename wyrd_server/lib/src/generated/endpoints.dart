@@ -17,6 +17,7 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
 import 'package:wyrd_server/src/generated/drone/drone_state.dart' as _ivnf8vdp;
 import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
+import '../agent/agent_endpoint.dart' as _i6aufbii;
 import '../auth/email_idp_endpoint.dart' as _iuc1hd5t;
 import '../auth/jwt_refresh_endpoint.dart' as _inwq3ztq;
 import '../drone/drone_bridge_endpoint.dart' as _igomlm42;
@@ -49,12 +50,19 @@ import '../mind/synthesis_endpoint.dart' as _i6ave7v9;
 import '../mind/topic_endpoint.dart' as _i2t0sh8b;
 import '../mind/training_endpoint.dart' as _igyenhzn;
 import '../mind/world_endpoint.dart' as _iaj95ngr;
+import '../world/city_endpoint.dart' as _ifkdhb4n;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
 class Endpoints extends _is.EndpointDispatch {
   @override
   void initializeEndpoints(_is.Server server) {
     var endpoints = <String, _is.Endpoint>{
+      'agent': _i6aufbii.AgentEndpoint()
+        ..initialize(
+          server,
+          'agent',
+          null,
+        ),
       'emailIdp': _iuc1hd5t.EmailIdpEndpoint()
         ..initialize(
           server,
@@ -247,7 +255,150 @@ class Endpoints extends _is.EndpointDispatch {
           'world',
           null,
         ),
+      'city': _ifkdhb4n.CityEndpoint()
+        ..initialize(
+          server,
+          'city',
+          null,
+        ),
     };
+    connectors['agent'] = _is.EndpointConnector(
+      name: 'agent',
+      endpoint: endpoints['agent']!,
+      methodConnectors: {
+        'create': _is.MethodConnector(
+          name: 'create',
+          params: {
+            'goal': _is.ParameterDescription(
+              name: 'goal',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'everyHours': _is.ParameterDescription(
+              name: 'everyHours',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['agent'] as _i6aufbii.AgentEndpoint).create(
+                session,
+                params['goal'],
+                params['everyHours'],
+              ),
+        ),
+        'mine': _is.MethodConnector(
+          name: 'mine',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['agent'] as _i6aufbii.AgentEndpoint).mine(session),
+        ),
+        'steps': _is.MethodConnector(
+          name: 'steps',
+          params: {
+            'taskId': _is.ParameterDescription(
+              name: 'taskId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['agent'] as _i6aufbii.AgentEndpoint).steps(
+                session,
+                params['taskId'],
+              ),
+        ),
+        'decide': _is.MethodConnector(
+          name: 'decide',
+          params: {
+            'taskId': _is.ParameterDescription(
+              name: 'taskId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'approve': _is.ParameterDescription(
+              name: 'approve',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['agent'] as _i6aufbii.AgentEndpoint).decide(
+                session,
+                params['taskId'],
+                params['approve'],
+              ),
+        ),
+        'cancel': _is.MethodConnector(
+          name: 'cancel',
+          params: {
+            'taskId': _is.ParameterDescription(
+              name: 'taskId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['agent'] as _i6aufbii.AgentEndpoint).cancel(
+                session,
+                params['taskId'],
+              ),
+        ),
+        'runNow': _is.MethodConnector(
+          name: 'runNow',
+          params: {
+            'taskId': _is.ParameterDescription(
+              name: 'taskId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['agent'] as _i6aufbii.AgentEndpoint).runNow(
+                session,
+                params['taskId'],
+              ),
+        ),
+        'markRead': _is.MethodConnector(
+          name: 'markRead',
+          params: {
+            'taskId': _is.ParameterDescription(
+              name: 'taskId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['agent'] as _i6aufbii.AgentEndpoint).markRead(
+                    session,
+                    params['taskId'],
+                  ),
+        ),
+      },
+    );
     connectors['emailIdp'] = _is.EndpointConnector(
       name: 'emailIdp',
       endpoint: endpoints['emailIdp']!,
@@ -2128,6 +2279,185 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['world'] as _iaj95ngr.WorldEndpoint).getCountry(
                     session,
                     params['code'],
+                  ),
+        ),
+      },
+    );
+    connectors['city'] = _is.EndpointConnector(
+      name: 'city',
+      endpoint: endpoints['city']!,
+      methodConnectors: {
+        'address': _is.MethodConnector(
+          name: 'address',
+          params: {
+            'channel': _is.ParameterDescription(
+              name: 'channel',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'situation': _is.ParameterDescription(
+              name: 'situation',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).address(
+                session,
+                params['channel'],
+                params['text'],
+                params['situation'],
+              ),
+        ),
+        'status': _is.MethodConnector(
+          name: 'status',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).status(session),
+        ),
+        'charter': _is.MethodConnector(
+          name: 'charter',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).charter(
+                session,
+              ),
+        ),
+        'design': _is.MethodConnector(
+          name: 'design',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).design(session),
+        ),
+        'setTraining': _is.MethodConnector(
+          name: 'setTraining',
+          params: {
+            'optIn': _is.ParameterDescription(
+              name: 'optIn',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).setTraining(
+                    session,
+                    params['optIn'],
+                  ),
+        ),
+        'myCharacter': _is.MethodConnector(
+          name: 'myCharacter',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .myCharacter(session),
+        ),
+        'saveCharacter': _is.MethodConnector(
+          name: 'saveCharacter',
+          params: {
+            'character': _is.ParameterDescription(
+              name: 'character',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).saveCharacter(
+                    session,
+                    params['character'],
+                  ),
+        ),
+        'canDesign': _is.MethodConnector(
+          name: 'canDesign',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .canDesign(session),
+        ),
+        'designChat': _is.MethodConnector(
+          name: 'designChat',
+          params: {
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).designChat(
+                    session,
+                    params['text'],
+                  ),
+        ),
+        'designNotes': _is.MethodConnector(
+          name: 'designNotes',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .designNotes(session),
+        ),
+        'designDecide': _is.MethodConnector(
+          name: 'designDecide',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'approve': _is.ParameterDescription(
+              name: 'approve',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).designDecide(
+                    session,
+                    params['id'],
+                    params['approve'],
                   ),
         ),
       },

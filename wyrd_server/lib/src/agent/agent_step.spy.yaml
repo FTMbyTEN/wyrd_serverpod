@@ -1,0 +1,16 @@
+### One step of an agent task's work: what it thought, which tool it used and what came back.
+class: AgentStep
+table: agent_step
+
+fields:
+  taskId: int
+  run: int
+  at: DateTime
+  kind: String # tool, note, ask, approved, declined, result, error
+  tool: String?
+  detail: String # what it did, in a line
+  output: String? # what came back (trimmed)
+
+indexes:
+  agent_step_task_idx:
+    fields: taskId, at

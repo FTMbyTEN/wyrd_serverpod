@@ -17,6 +17,8 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/agent/agent_step.dart' as _i6j2kf10;
+import 'package:wyrd_client/src/protocol/agent/agent_task.dart' as _i2gts05o;
 import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
 import 'package:wyrd_client/src/protocol/drone/drone_plan_result.dart'
     as _ibjo0dmj;
@@ -73,6 +75,75 @@ import 'package:wyrd_client/src/protocol/mind/work_hit.dart' as _iv7njdft;
 import 'package:wyrd_client/src/protocol/mind/work_part_info.dart' as _iepby0e1;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
 import 'protocol.dart' as _il2as5qe;
+
+/// WYRD's agent tasks: give it a goal, watch it work, approve or decline what it wants to do.
+/// {@category Endpoint}
+class EndpointAgent extends _isc.EndpointRef {
+  EndpointAgent(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'agent';
+
+  /// A new task. [everyHours]: null for once, otherwise it runs again on that schedule.
+  _ida.Future<_i2gts05o.AgentTask> create(
+    String goal,
+    int? everyHours,
+  ) => caller.callServerEndpoint<_i2gts05o.AgentTask>(
+    'agent',
+    'create',
+    {
+      'goal': goal,
+      'everyHours': everyHours,
+    },
+  );
+
+  _ida.Future<List<_i2gts05o.AgentTask>> mine() =>
+      caller.callServerEndpoint<List<_i2gts05o.AgentTask>>(
+        'agent',
+        'mine',
+        {},
+      );
+
+  _ida.Future<List<_i6j2kf10.AgentStep>> steps(int taskId) =>
+      caller.callServerEndpoint<List<_i6j2kf10.AgentStep>>(
+        'agent',
+        'steps',
+        {'taskId': taskId},
+      );
+
+  _ida.Future<_i2gts05o.AgentTask> decide(
+    int taskId,
+    bool approve,
+  ) => caller.callServerEndpoint<_i2gts05o.AgentTask>(
+    'agent',
+    'decide',
+    {
+      'taskId': taskId,
+      'approve': approve,
+    },
+  );
+
+  _ida.Future<_i2gts05o.AgentTask> cancel(int taskId) =>
+      caller.callServerEndpoint<_i2gts05o.AgentTask>(
+        'agent',
+        'cancel',
+        {'taskId': taskId},
+      );
+
+  _ida.Future<_i2gts05o.AgentTask> runNow(int taskId) =>
+      caller.callServerEndpoint<_i2gts05o.AgentTask>(
+        'agent',
+        'runNow',
+        {'taskId': taskId},
+      );
+
+  _ida.Future<_i2gts05o.AgentTask> markRead(int taskId) =>
+      caller.callServerEndpoint<_i2gts05o.AgentTask>(
+        'agent',
+        'markRead',
+        {'taskId': taskId},
+      );
+}
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -1399,6 +1470,110 @@ class EndpointWorld extends _isc.EndpointRef {
       );
 }
 
+/// The open world's line to WYRD, its Authority.
+/// {@category Endpoint}
+class EndpointCity extends _isc.EndpointRef {
+  EndpointCity(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'city';
+
+  /// Speak to, petition, or report to the Authority. Returns the decree as JSON (see WorldAuthority.address).
+  _ida.Future<String> address(
+    String channel,
+    String text,
+    String situation,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'address',
+    {
+      'channel': channel,
+      'text': text,
+      'situation': situation,
+    },
+  );
+
+  /// Your standing with the Authority and any mission it gave you, without asking it anything.
+  _ida.Future<String> status() => caller.callServerEndpoint<String>(
+    'city',
+    'status',
+    {},
+  );
+
+  /// WYRD's charter for the city (how it means to deal with players, in its words) and the
+  /// missions on its board open to you, as JSON: {charter, author, writtenAt, missions}.
+  _ida.Future<String> charter() => caller.callServerEndpoint<String>(
+    'city',
+    'charter',
+    {},
+  );
+
+  /// The live design (approved tuning, NPC lines, events, missions) the game applies, as JSON.
+  _ida.Future<String> design() => caller.callServerEndpoint<String>(
+    'city',
+    'design',
+    {},
+  );
+
+  /// Help train WYRD with your play (or stop): asked once in the game, changeable any time.
+  _ida.Future<String> setTraining(bool optIn) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'setTraining',
+        {'optIn': optIn},
+      );
+
+  /// Your character (JSON), or 'null' if you haven't made one yet.
+  _ida.Future<String> myCharacter() => caller.callServerEndpoint<String>(
+    'city',
+    'myCharacter',
+    {},
+  );
+
+  /// Save your character from the creator (JSON): base, name, proportions, skin, outfit hue, neon.
+  _ida.Future<String> saveCharacter(String character) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'saveCharacter',
+        {'character': character},
+      );
+
+  /// Is this person allowed in the design studio?
+  _ida.Future<bool> canDesign() => caller.callServerEndpoint<bool>(
+    'city',
+    'canDesign',
+    {},
+  );
+
+  /// Say something to WYRD about the game; it answers as co-designer and may propose changes. JSON: {reply, proposals}.
+  _ida.Future<String> designChat(String text) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'designChat',
+        {'text': text},
+      );
+
+  /// The design log, newest first, as JSON.
+  _ida.Future<String> designNotes() => caller.callServerEndpoint<String>(
+    'city',
+    'designNotes',
+    {},
+  );
+
+  /// Approve or reject one of WYRD's proposals. Approved live kinds change the game at once.
+  _ida.Future<String> designDecide(
+    int id,
+    bool approve,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'designDecide',
+    {
+      'id': id,
+      'approve': approve,
+    },
+  );
+}
+
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _iaic.Caller(client);
@@ -1437,6 +1612,7 @@ class Client extends _isc.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
          httpClientOverride: httpClientOverride,
        ) {
+    agent = EndpointAgent(this);
     emailIdp = EndpointEmailIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     droneBridge = EndpointDroneBridge(this);
@@ -1469,8 +1645,11 @@ class Client extends _isc.ServerpodClientShared {
     topic = EndpointTopic(this);
     training = EndpointTraining(this);
     world = EndpointWorld(this);
+    city = EndpointCity(this);
     modules = Modules(this);
   }
+
+  late final EndpointAgent agent;
 
   late final EndpointEmailIdp emailIdp;
 
@@ -1536,10 +1715,13 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointWorld world;
 
+  late final EndpointCity city;
+
   late final Modules modules;
 
   @override
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
+    'agent': agent,
     'emailIdp': emailIdp,
     'jwtRefresh': jwtRefresh,
     'droneBridge': droneBridge,
@@ -1572,6 +1754,7 @@ class Client extends _isc.ServerpodClientShared {
     'topic': topic,
     'training': training,
     'world': world,
+    'city': city,
   };
 
   @override

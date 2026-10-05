@@ -1,0 +1,12 @@
+### WYRD's own charter for its open-world Lagos, written by WYRD: how it means to deal with players,
+### and the board of missions it has written for them. Rewritten about once a week.
+class: CityCharter
+table: city_charter
+fields:
+  ### how WYRD, as the Authority, wishes to interact with players (its words)
+  charter: String
+  ### the mission board, as JSON: [{id, kind, title, brief, street, reward, minStanding}]
+  missions: String
+  ### 'wyrd' when WYRD wrote it, 'seed' for the starting board
+  author: String
+  writtenAt: DateTime

@@ -1,0 +1,21 @@
+### One design proposal for the open world, from WYRD (or the owner) in the design studio. Approved
+### proposals of a live kind (mission, npc_lines, tuning, event) change the game at once; ideas and
+### rules are a backlog to build.
+class: CityDesignNote
+table: city_design_note
+fields:
+  ### 'wyrd' or 'owner'
+  author: String
+  ### idea | rule | mission | npc_lines | tuning | event
+  kind: String
+  title: String
+  body: String
+  ### for live kinds: the checked settings, as JSON
+  payload: String?
+  ### proposed | approved | rejected
+  status: String
+  createdAt: DateTime
+  decidedAt: DateTime?
+indexes:
+  city_design_note_status_idx:
+    fields: status

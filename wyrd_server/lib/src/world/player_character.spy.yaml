@@ -1,0 +1,27 @@
+### A player's own character in NAIJA 2099, made in the character creator before they first enter
+### the city: which body, its proportions, skin tone, outfit colour, neon trim and street name.
+class: PlayerCharacter
+table: player_character
+fields:
+  authUserId: UuidValue
+  ### the base body: 'ten' (a man) or 'ama' (a woman)
+  base: String
+  ### the outfit from the wardrobe (0 = the body's own)
+  outfit: int, default=0
+  ### the name the city (and WYRD) knows them by
+  name: String
+  ### proportions, each -1 .. 1 (0 = the base's own)
+  height: double
+  build: double
+  shoulders: double
+  hips: double
+  ### skin tone -1 (darker) .. 1 (lighter); outfit hue shift in degrees; neon trim colour (0xRRGGBB)
+  skin: double
+  outfitHue: double
+  neon: int
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  player_character_user_idx:
+    fields: authUserId
+    unique: true

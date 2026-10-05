@@ -16,6 +16,8 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:wyrd_client/src/protocol/agent/agent_step.dart' as _i6j2kf10;
+import 'package:wyrd_client/src/protocol/agent/agent_task.dart' as _i2gts05o;
 import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
 import 'package:wyrd_client/src/protocol/games/game_match.dart' as _io9n6mg3;
 import 'package:wyrd_client/src/protocol/games/player_rating.dart' as _ibpm8r25;
@@ -39,6 +41,8 @@ import 'package:wyrd_client/src/protocol/mind/user_document.dart' as _imstbkek;
 import 'package:wyrd_client/src/protocol/mind/work_hit.dart' as _iv7njdft;
 import 'package:wyrd_client/src/protocol/mind/work_part_info.dart' as _iepby0e1;
 import 'package:wyrd_client/src/protocol/mind/world_country.dart' as _iakrxk0g;
+import 'agent/agent_step.dart' as _iwm4wbc6;
+import 'agent/agent_task.dart' as _i8fei7z1;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
 import 'drone/drone_state.dart' as _it73791y;
@@ -111,6 +115,13 @@ import 'mind/word_sense.dart' as _itj7bvl5;
 import 'mind/work_hit.dart' as _i3gwmipu;
 import 'mind/work_part_info.dart' as _ijuqu3gj;
 import 'mind/world_country.dart' as _iu995zpj;
+import 'world/city_charter.dart' as _i1wlu2l5;
+import 'world/city_design_note.dart' as _iovwbeu0;
+import 'world/game_exchange.dart' as _i565k4ep;
+import 'world/player_character.dart' as _i14mz3cx;
+import 'world/world_citizen.dart' as _inb8mkev;
+export 'agent/agent_step.dart';
+export 'agent/agent_task.dart';
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
 export 'drone/drone_state.dart';
@@ -183,6 +194,11 @@ export 'mind/word_sense.dart';
 export 'mind/work_hit.dart';
 export 'mind/work_part_info.dart';
 export 'mind/world_country.dart';
+export 'world/city_charter.dart';
+export 'world/city_design_note.dart';
+export 'world/game_exchange.dart';
+export 'world/player_character.dart';
+export 'world/world_citizen.dart';
 export 'client.dart';
 
 class Protocol extends _isc.SerializationManager {
@@ -219,6 +235,12 @@ class Protocol extends _isc.SerializationManager {
       }
     }
 
+    if (t == _iwm4wbc6.AgentStep) {
+      return _iwm4wbc6.AgentStep.fromJson(data) as T;
+    }
+    if (t == _i8fei7z1.AgentTask) {
+      return _i8fei7z1.AgentTask.fromJson(data) as T;
+    }
     if (t == _idcsjt5k.DroneMission) {
       return _idcsjt5k.DroneMission.fromJson(data) as T;
     }
@@ -434,6 +456,27 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
+    }
+    if (t == _i1wlu2l5.CityCharter) {
+      return _i1wlu2l5.CityCharter.fromJson(data) as T;
+    }
+    if (t == _iovwbeu0.CityDesignNote) {
+      return _iovwbeu0.CityDesignNote.fromJson(data) as T;
+    }
+    if (t == _i565k4ep.GameExchange) {
+      return _i565k4ep.GameExchange.fromJson(data) as T;
+    }
+    if (t == _i14mz3cx.PlayerCharacter) {
+      return _i14mz3cx.PlayerCharacter.fromJson(data) as T;
+    }
+    if (t == _inb8mkev.WorldCitizen) {
+      return _inb8mkev.WorldCitizen.fromJson(data) as T;
+    }
+    if (t == _isc.getType<_iwm4wbc6.AgentStep?>()) {
+      return (data != null ? _iwm4wbc6.AgentStep.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i8fei7z1.AgentTask?>()) {
+      return (data != null ? _i8fei7z1.AgentTask.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_idcsjt5k.DroneMission?>()) {
       return (data != null ? _idcsjt5k.DroneMission.fromJson(data) : null) as T;
@@ -671,6 +714,23 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_i1wlu2l5.CityCharter?>()) {
+      return (data != null ? _i1wlu2l5.CityCharter.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iovwbeu0.CityDesignNote?>()) {
+      return (data != null ? _iovwbeu0.CityDesignNote.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i565k4ep.GameExchange?>()) {
+      return (data != null ? _i565k4ep.GameExchange.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i14mz3cx.PlayerCharacter?>()) {
+      return (data != null ? _i14mz3cx.PlayerCharacter.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_inb8mkev.WorldCitizen?>()) {
+      return (data != null ? _inb8mkev.WorldCitizen.fromJson(data) : null) as T;
+    }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
@@ -843,6 +903,18 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i2gts05o.AgentTask>) {
+      return (data as List)
+              .map((e) => deserialize<_i2gts05o.AgentTask>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i6j2kf10.AgentStep>) {
+      return (data as List)
+              .map((e) => deserialize<_i6j2kf10.AgentStep>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ik7hqtb1.DroneMission>) {
       return (data as List)
               .map((e) => deserialize<_ik7hqtb1.DroneMission>(e))
@@ -983,6 +1055,8 @@ class Protocol extends _isc.SerializationManager {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
+      _iwm4wbc6.AgentStep => 'AgentStep',
+      _i8fei7z1.AgentTask => 'AgentTask',
       _idcsjt5k.DroneMission => 'DroneMission',
       _i1bw7vkv.DronePlanResult => 'DronePlanResult',
       _it73791y.DroneState => 'DroneState',
@@ -1055,6 +1129,11 @@ class Protocol extends _isc.SerializationManager {
       _i3gwmipu.WorkHit => 'WorkHit',
       _ijuqu3gj.WorkPartInfo => 'WorkPartInfo',
       _iu995zpj.WorldCountry => 'WorldCountry',
+      _i1wlu2l5.CityCharter => 'CityCharter',
+      _iovwbeu0.CityDesignNote => 'CityDesignNote',
+      _i565k4ep.GameExchange => 'GameExchange',
+      _i14mz3cx.PlayerCharacter => 'PlayerCharacter',
+      _inb8mkev.WorldCitizen => 'WorldCitizen',
       _ => null,
     };
   }
@@ -1069,6 +1148,10 @@ class Protocol extends _isc.SerializationManager {
     }
 
     switch (data) {
+      case _iwm4wbc6.AgentStep():
+        return 'AgentStep';
+      case _i8fei7z1.AgentTask():
+        return 'AgentTask';
       case _idcsjt5k.DroneMission():
         return 'DroneMission';
       case _i1bw7vkv.DronePlanResult():
@@ -1213,6 +1296,16 @@ class Protocol extends _isc.SerializationManager {
         return 'WorkPartInfo';
       case _iu995zpj.WorldCountry():
         return 'WorldCountry';
+      case _i1wlu2l5.CityCharter():
+        return 'CityCharter';
+      case _iovwbeu0.CityDesignNote():
+        return 'CityDesignNote';
+      case _i565k4ep.GameExchange():
+        return 'GameExchange';
+      case _i14mz3cx.PlayerCharacter():
+        return 'PlayerCharacter';
+      case _inb8mkev.WorldCitizen():
+        return 'WorldCitizen';
     }
     className = _iaic.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -1234,6 +1327,12 @@ class Protocol extends _isc.SerializationManager {
     var dataClassName = data['className'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'AgentStep') {
+      return deserialize<_iwm4wbc6.AgentStep>(data['data']);
+    }
+    if (dataClassName == 'AgentTask') {
+      return deserialize<_i8fei7z1.AgentTask>(data['data']);
     }
     if (dataClassName == 'DroneMission') {
       return deserialize<_idcsjt5k.DroneMission>(data['data']);
@@ -1450,6 +1549,21 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'WorldCountry') {
       return deserialize<_iu995zpj.WorldCountry>(data['data']);
+    }
+    if (dataClassName == 'CityCharter') {
+      return deserialize<_i1wlu2l5.CityCharter>(data['data']);
+    }
+    if (dataClassName == 'CityDesignNote') {
+      return deserialize<_iovwbeu0.CityDesignNote>(data['data']);
+    }
+    if (dataClassName == 'GameExchange') {
+      return deserialize<_i565k4ep.GameExchange>(data['data']);
+    }
+    if (dataClassName == 'PlayerCharacter') {
+      return deserialize<_i14mz3cx.PlayerCharacter>(data['data']);
+    }
+    if (dataClassName == 'WorldCitizen') {
+      return deserialize<_inb8mkev.WorldCitizen>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);

@@ -18,6 +18,10 @@ class Arsenal {
             'Tic-tac-toe, word duels, Liar\'s Dice).',
         '- World map (3D globe), Concept map of your ideas, Growth over time, and COP: an independent overseer that '
             'reviews every change you make to yourself.',
+        '- Tasks (you as an agent): with start_task you take a goal away and work at it on your own in the background -- '
+            'searching, reading, taking notes -- and deliver the result to their Tasks panel; routines repeat on a '
+            'schedule ("every morning…") and say what changed. Anything with consequences (typing on websites'
+            '${droneOperator ? ', flying the drone' : ''}) waits for their approval first.',
         '- Code: you can write and explain code. You: their profile, what you know about them, their data (export or delete).',
         if (droneOperator) '- Drone: you can plan and fly real missions for this person (they are an operator).',
         'Never claim a feature that is not on this list.',

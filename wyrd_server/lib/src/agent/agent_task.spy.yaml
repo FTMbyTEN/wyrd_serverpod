@@ -1,0 +1,29 @@
+### A goal WYRD works at on its own: researched step by step in the background, once or on a
+### schedule, pausing for the owner's approval before anything with consequences.
+class: AgentTask
+table: agent_task
+
+fields:
+  authUserId: UuidValue
+  goal: String
+  everyHours: int? # null: once. Otherwise it runs again this many hours after each run (a watcher/routine)
+  status: String # queued, running, waiting_approval, scheduled, done, failed, cancelled
+  result: String? # the latest finished answer
+  previousResult: String? # the run before, so a recurring task can say what changed
+  notes: String? # what it has written down along the way (its working memory)
+  transcript: String? # the conversation so far, kept only while a run is paused for approval
+  pendingAction: String? # JSON: the action it wants to take, waiting for a yes or no
+  stepsUsed: int # in the current run
+  maxSteps: int
+  runs: int
+  unread: bool # a new result or a request for approval the owner hasn't opened yet
+  nextRunAt: DateTime
+  lastRunAt: DateTime?
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  agent_task_user_idx:
+    fields: authUserId, status
+  agent_task_due_idx:
+    fields: status, nextRunAt

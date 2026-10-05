@@ -157,7 +157,7 @@ void run(List<String> args) async {
 
   for (final id in const [
     'growth-snapshot', 'diary-day-check', 'reasoning-tick', 'self-question-tick', 'synthesis-tick',
-    'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check', 'sleep-check',
+    'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check', 'sleep-check', 'agent-tick',
   ]) {
     await pod.futureCalls.cancel(id);
   }
@@ -211,4 +211,10 @@ void run(List<String> args) async {
       .every(TickSchedule.dreamIdleCheck)
       .dream
       .checkIdle();
+  // agent tasks: a couple of due ones get a run each tick (AgentService)
+  await pod.futureCalls
+      .callRecurring(identifier: 'agent-tick')
+      .every(TickSchedule.agent)
+      .agent
+      .tick();
 }

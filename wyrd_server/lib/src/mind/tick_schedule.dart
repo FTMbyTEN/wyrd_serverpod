@@ -12,6 +12,7 @@ class TickSchedule {
   static const lexicon = Duration(seconds: 30);
   static const dreamIdleCheck = Duration(minutes: 15);
   static const sleepCheck = Duration(minutes: 10); // new fingerprints; nightly sleep (SleepService)
+  static const agent = Duration(seconds: 45); // a couple of due agent tasks get a run each (AgentService)
 
   static final _lastRun = <String, DateTime>{};
 

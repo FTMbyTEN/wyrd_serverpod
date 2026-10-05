@@ -1,0 +1,23 @@
+### One moment of play, kept to teach WYRD (only with the player's consent, or the owner's own design
+### sessions): what was happening, what the player said or did, what WYRD answered and did, and how it
+### turned out. Scrubbed of personal details before it's stored.
+class: GameExchange
+table: game_exchange
+fields:
+  authUserId: UuidValue
+  ### speak | petition | drone | event | design
+  channel: String
+  ### the game's situation (JSON, scrubbed)
+  situation: String
+  said: String
+  reply: String
+  ### what WYRD did (JSON list of actions)
+  actions: String
+  ### how it turned out, filled in later: e.g. "mission_done", "standing:+4"
+  outcome: String?
+  createdAt: DateTime
+indexes:
+  game_exchange_user_idx:
+    fields: authUserId
+  game_exchange_created_idx:
+    fields: createdAt

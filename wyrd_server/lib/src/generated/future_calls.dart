@@ -14,6 +14,7 @@
 import 'dart:async' as _ida;
 import 'package:clock/clock.dart' as _io0w16m8;
 import 'package:serverpod/serverpod.dart' as _is;
+import '../agent/agent_future_call.dart' as _ieeb687e;
 import '../mind/diary_future_call.dart' as _i749zoke;
 import '../mind/dream_future_call.dart' as _itvv5t5m;
 import '../mind/feed_future_call.dart' as _irvvfdmu;
@@ -67,6 +68,7 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
     String serverId,
   ) {
     var registeredFutureCalls = <String, _is.InvokableFutureCall>{
+      'AgentTickFutureCall': AgentTickFutureCall(),
       'DiaryCheckAndWriteFutureCall': DiaryCheckAndWriteFutureCall(),
       'DreamCheckIdleFutureCall': DreamCheckIdleFutureCall(),
       'FeedTickFutureCall': FeedTickFutureCall(),
@@ -197,6 +199,8 @@ class _FutureCallRef {
 
   final _InvokeFutureCall _invokeFutureCall;
 
+  late final agent = _AgentFutureCallDispatcher(_invokeFutureCall);
+
   late final diary = _DiaryFutureCallDispatcher(_invokeFutureCall);
 
   late final dream = _DreamFutureCallDispatcher(_invokeFutureCall);
@@ -218,6 +222,19 @@ class _FutureCallRef {
   late final sleep = _SleepFutureCallDispatcher(_invokeFutureCall);
 
   late final synthesis = _SynthesisFutureCallDispatcher(_invokeFutureCall);
+}
+
+class _AgentFutureCallDispatcher {
+  _AgentFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'AgentTickFutureCall',
+      null,
+    );
+  }
 }
 
 class _DiaryFutureCallDispatcher {
@@ -347,6 +364,17 @@ class _SynthesisFutureCallDispatcher {
       'SynthesisTickFutureCall',
       null,
     );
+  }
+}
+
+class AgentTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _ieeb687e.AgentFutureCall().tick(session);
   }
 }
 

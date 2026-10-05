@@ -1,0 +1,22 @@
+### What WYRD, as the Authority of the open world, knows of one player: their standing in the city,
+### the missions they've done, and its own short record of them -- kept between visits.
+class: WorldCitizen
+table: world_citizen
+fields:
+  authUserId: UuidValue
+  ### -100 .. 100: how the Authority regards them
+  standing: int, default=0
+  missionsDone: int, default=0
+  ### WYRD's own notes on this citizen (it writes these), at most ~1,200 characters
+  record: String?
+  ### the mission WYRD has given them and not yet seen done, as JSON
+  mission: String?
+  ### the player agreed to let WYRD learn from their play (asked once, changeable any time)
+  trainingOptIn: bool, default=false
+  ### whether they've been asked yet
+  trainingAsked: bool, default=false
+  updatedAt: DateTime
+indexes:
+  world_citizen_user_idx:
+    fields: authUserId
+    unique: true

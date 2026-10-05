@@ -17,6 +17,8 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _iais;
+import 'package:wyrd_server/src/generated/agent/agent_step.dart' as _i15ocs7v;
+import 'package:wyrd_server/src/generated/agent/agent_task.dart' as _iimdo2yj;
 import 'package:wyrd_server/src/generated/drone/drone_mission.dart'
     as _iu8lemuv;
 import 'package:wyrd_server/src/generated/games/game_match.dart' as _iocic9iq;
@@ -44,6 +46,8 @@ import 'package:wyrd_server/src/generated/mind/work_hit.dart' as _ixzzqok1;
 import 'package:wyrd_server/src/generated/mind/work_part_info.dart'
     as _ikde1sdn;
 import 'package:wyrd_server/src/generated/mind/world_country.dart' as _i3qe2gpp;
+import 'agent/agent_step.dart' as _iwm4wbc6;
+import 'agent/agent_task.dart' as _i8fei7z1;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
 import 'drone/drone_state.dart' as _it73791y;
@@ -116,6 +120,13 @@ import 'mind/word_sense.dart' as _itj7bvl5;
 import 'mind/work_hit.dart' as _i3gwmipu;
 import 'mind/work_part_info.dart' as _ijuqu3gj;
 import 'mind/world_country.dart' as _iu995zpj;
+import 'world/city_charter.dart' as _i1wlu2l5;
+import 'world/city_design_note.dart' as _iovwbeu0;
+import 'world/game_exchange.dart' as _i565k4ep;
+import 'world/player_character.dart' as _i14mz3cx;
+import 'world/world_citizen.dart' as _inb8mkev;
+export 'agent/agent_step.dart';
+export 'agent/agent_task.dart';
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
 export 'drone/drone_state.dart';
@@ -188,6 +199,11 @@ export 'mind/word_sense.dart';
 export 'mind/work_hit.dart';
 export 'mind/work_part_info.dart';
 export 'mind/world_country.dart';
+export 'world/city_charter.dart';
+export 'world/city_design_note.dart';
+export 'world/game_exchange.dart';
+export 'world/player_character.dart';
+export 'world/world_citizen.dart';
 
 class Protocol extends _is.DatabaseSerializationManager {
   Protocol._();
@@ -197,6 +213,239 @@ class Protocol extends _is.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._().._registerHostProtocols();
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
+    _isp.TableDefinition(
+      name: 'agent_step',
+      dartName: 'AgentStep',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'taskId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'run',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'at',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'tool',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'detail',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'output',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'agent_step_task_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'taskId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'at',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'agent_task',
+      dartName: 'AgentTask',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'goal',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'everyHours',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'result',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'previousResult',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'notes',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'transcript',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'pendingAction',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'stepsUsed',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'maxSteps',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'runs',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'unread',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nextRunAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastRunAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'agent_task_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'agent_task_due_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'nextRunAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     _isp.TableDefinition(
       name: 'belief',
       dartName: 'Belief',
@@ -417,6 +666,128 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'city_charter',
+      dartName: 'CityCharter',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'charter',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'missions',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'author',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'writtenAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'city_design_note',
+      dartName: 'CityDesignNote',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'author',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'body',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'payload',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'decidedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'city_design_note_status_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -937,6 +1308,99 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'game_exchange',
+      dartName: 'GameExchange',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'channel',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'situation',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'said',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reply',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'actions',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'outcome',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'game_exchange_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'game_exchange_created_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -1914,6 +2378,117 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'topic',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'player_character',
+      dartName: 'PlayerCharacter',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'base',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'outfit',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'height',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'build',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'shoulders',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'hips',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'skin',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'outfitHue',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'neon',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'player_character_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
             ),
           ],
           type: 'btree',
@@ -2950,6 +3525,90 @@ class Protocol extends _is.DatabaseSerializationManager {
       ],
       managed: true,
     ),
+    _isp.TableDefinition(
+      name: 'world_citizen',
+      dartName: 'WorldCitizen',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'standing',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'missionsDone',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'record',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'mission',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'trainingOptIn',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'trainingAsked',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'world_citizen_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     ..._iais.Protocol.targetTableDefinitions,
     ..._iacs.Protocol.targetTableDefinitions,
     ..._isp.Protocol.targetTableDefinitions,
@@ -2982,6 +3641,12 @@ class Protocol extends _is.DatabaseSerializationManager {
       }
     }
 
+    if (t == _iwm4wbc6.AgentStep) {
+      return _iwm4wbc6.AgentStep.fromJson(data) as T;
+    }
+    if (t == _i8fei7z1.AgentTask) {
+      return _i8fei7z1.AgentTask.fromJson(data) as T;
+    }
     if (t == _idcsjt5k.DroneMission) {
       return _idcsjt5k.DroneMission.fromJson(data) as T;
     }
@@ -3197,6 +3862,27 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
+    }
+    if (t == _i1wlu2l5.CityCharter) {
+      return _i1wlu2l5.CityCharter.fromJson(data) as T;
+    }
+    if (t == _iovwbeu0.CityDesignNote) {
+      return _iovwbeu0.CityDesignNote.fromJson(data) as T;
+    }
+    if (t == _i565k4ep.GameExchange) {
+      return _i565k4ep.GameExchange.fromJson(data) as T;
+    }
+    if (t == _i14mz3cx.PlayerCharacter) {
+      return _i14mz3cx.PlayerCharacter.fromJson(data) as T;
+    }
+    if (t == _inb8mkev.WorldCitizen) {
+      return _inb8mkev.WorldCitizen.fromJson(data) as T;
+    }
+    if (t == _is.getType<_iwm4wbc6.AgentStep?>()) {
+      return (data != null ? _iwm4wbc6.AgentStep.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i8fei7z1.AgentTask?>()) {
+      return (data != null ? _i8fei7z1.AgentTask.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_idcsjt5k.DroneMission?>()) {
       return (data != null ? _idcsjt5k.DroneMission.fromJson(data) : null) as T;
@@ -3434,6 +4120,23 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_i1wlu2l5.CityCharter?>()) {
+      return (data != null ? _i1wlu2l5.CityCharter.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_iovwbeu0.CityDesignNote?>()) {
+      return (data != null ? _iovwbeu0.CityDesignNote.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_i565k4ep.GameExchange?>()) {
+      return (data != null ? _i565k4ep.GameExchange.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i14mz3cx.PlayerCharacter?>()) {
+      return (data != null ? _i14mz3cx.PlayerCharacter.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_inb8mkev.WorldCitizen?>()) {
+      return (data != null ? _inb8mkev.WorldCitizen.fromJson(data) : null) as T;
+    }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
@@ -3606,6 +4309,18 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_iimdo2yj.AgentTask>) {
+      return (data as List)
+              .map((e) => deserialize<_iimdo2yj.AgentTask>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i15ocs7v.AgentStep>) {
+      return (data as List)
+              .map((e) => deserialize<_i15ocs7v.AgentStep>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iu8lemuv.DroneMission>) {
       return (data as List)
               .map((e) => deserialize<_iu8lemuv.DroneMission>(e))
@@ -3749,6 +4464,8 @@ class Protocol extends _is.DatabaseSerializationManager {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
+      _iwm4wbc6.AgentStep => 'AgentStep',
+      _i8fei7z1.AgentTask => 'AgentTask',
       _idcsjt5k.DroneMission => 'DroneMission',
       _i1bw7vkv.DronePlanResult => 'DronePlanResult',
       _it73791y.DroneState => 'DroneState',
@@ -3821,6 +4538,11 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i3gwmipu.WorkHit => 'WorkHit',
       _ijuqu3gj.WorkPartInfo => 'WorkPartInfo',
       _iu995zpj.WorldCountry => 'WorldCountry',
+      _i1wlu2l5.CityCharter => 'CityCharter',
+      _iovwbeu0.CityDesignNote => 'CityDesignNote',
+      _i565k4ep.GameExchange => 'GameExchange',
+      _i14mz3cx.PlayerCharacter => 'PlayerCharacter',
+      _inb8mkev.WorldCitizen => 'WorldCitizen',
       _ => null,
     };
   }
@@ -3835,6 +4557,10 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
 
     switch (data) {
+      case _iwm4wbc6.AgentStep():
+        return 'AgentStep';
+      case _i8fei7z1.AgentTask():
+        return 'AgentTask';
       case _idcsjt5k.DroneMission():
         return 'DroneMission';
       case _i1bw7vkv.DronePlanResult():
@@ -3979,6 +4705,16 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'WorkPartInfo';
       case _iu995zpj.WorldCountry():
         return 'WorldCountry';
+      case _i1wlu2l5.CityCharter():
+        return 'CityCharter';
+      case _iovwbeu0.CityDesignNote():
+        return 'CityDesignNote';
+      case _i565k4ep.GameExchange():
+        return 'GameExchange';
+      case _i14mz3cx.PlayerCharacter():
+        return 'PlayerCharacter';
+      case _inb8mkev.WorldCitizen():
+        return 'WorldCitizen';
     }
     className = _iais.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -4004,6 +4740,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     var dataClassName = data['className'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'AgentStep') {
+      return deserialize<_iwm4wbc6.AgentStep>(data['data']);
+    }
+    if (dataClassName == 'AgentTask') {
+      return deserialize<_i8fei7z1.AgentTask>(data['data']);
     }
     if (dataClassName == 'DroneMission') {
       return deserialize<_idcsjt5k.DroneMission>(data['data']);
@@ -4221,6 +4963,21 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'WorldCountry') {
       return deserialize<_iu995zpj.WorldCountry>(data['data']);
     }
+    if (dataClassName == 'CityCharter') {
+      return deserialize<_i1wlu2l5.CityCharter>(data['data']);
+    }
+    if (dataClassName == 'CityDesignNote') {
+      return deserialize<_iovwbeu0.CityDesignNote>(data['data']);
+    }
+    if (dataClassName == 'GameExchange') {
+      return deserialize<_i565k4ep.GameExchange>(data['data']);
+    }
+    if (dataClassName == 'PlayerCharacter') {
+      return deserialize<_i14mz3cx.PlayerCharacter>(data['data']);
+    }
+    if (dataClassName == 'WorldCitizen') {
+      return deserialize<_inb8mkev.WorldCitizen>(data['data']);
+    }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
       return _iais.Protocol().deserializeByClassName(data);
@@ -4262,6 +5019,10 @@ class Protocol extends _is.DatabaseSerializationManager {
       }
     }
     switch (t) {
+      case _iwm4wbc6.AgentStep:
+        return _iwm4wbc6.AgentStep.t;
+      case _i8fei7z1.AgentTask:
+        return _i8fei7z1.AgentTask.t;
       case _idcsjt5k.DroneMission:
         return _idcsjt5k.DroneMission.t;
       case _it73791y.DroneState:
@@ -4328,6 +5089,16 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _irc0lure.UserProfile.t;
       case _itj7bvl5.WordSense:
         return _itj7bvl5.WordSense.t;
+      case _i1wlu2l5.CityCharter:
+        return _i1wlu2l5.CityCharter.t;
+      case _iovwbeu0.CityDesignNote:
+        return _iovwbeu0.CityDesignNote.t;
+      case _i565k4ep.GameExchange:
+        return _i565k4ep.GameExchange.t;
+      case _i14mz3cx.PlayerCharacter:
+        return _i14mz3cx.PlayerCharacter.t;
+      case _inb8mkev.WorldCitizen:
+        return _inb8mkev.WorldCitizen.t;
     }
     return null;
   }
