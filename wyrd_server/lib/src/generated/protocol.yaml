@@ -149,6 +149,8 @@ city:
   - visit:
   - jobStart:
   - jobFinish:
+  - guideMark:
+  - guideSkip:
   - pulse:
   - stats:
   - status:

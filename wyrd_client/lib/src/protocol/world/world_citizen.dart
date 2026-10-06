@@ -30,6 +30,7 @@ abstract class WorldCitizen
     this.homeMode,
     this.rentPaidUntil,
     this.paidToday,
+    this.guideDone,
     required this.updatedAt,
   }) : standing = standing ?? 0,
        missionsDone = missionsDone ?? 0,
@@ -51,6 +52,7 @@ abstract class WorldCitizen
     String? homeMode,
     DateTime? rentPaidUntil,
     String? paidToday,
+    String? guideDone,
     required DateTime updatedAt,
   }) = _WorldCitizenImpl;
 
@@ -79,6 +81,7 @@ abstract class WorldCitizen
               jsonSerialization['rentPaidUntil'],
             ),
       paidToday: jsonSerialization['paidToday'] as String?,
+      guideDone: jsonSerialization['guideDone'] as String?,
       updatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
@@ -122,6 +125,9 @@ abstract class WorldCitizen
   /// street-board missions already paid today, as JSON {day, ids}
   String? paidToday;
 
+  /// the first-time guide steps done (and paid), as a JSON list
+  String? guideDone;
+
   DateTime updatedAt;
 
   /// Returns a shallow copy of this [WorldCitizen]
@@ -141,6 +147,7 @@ abstract class WorldCitizen
     String? homeMode,
     DateTime? rentPaidUntil,
     String? paidToday,
+    String? guideDone,
     DateTime? updatedAt,
   });
   @override
@@ -160,6 +167,7 @@ abstract class WorldCitizen
       if (homeMode != null) 'homeMode': homeMode,
       if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
       if (paidToday != null) 'paidToday': paidToday,
+      if (guideDone != null) 'guideDone': guideDone,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -181,6 +189,7 @@ abstract class WorldCitizen
       if (homeMode != null) 'homeMode': homeMode,
       if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
       if (paidToday != null) 'paidToday': paidToday,
+      if (guideDone != null) 'guideDone': guideDone,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -208,6 +217,7 @@ class _WorldCitizenImpl extends WorldCitizen {
     String? homeMode,
     DateTime? rentPaidUntil,
     String? paidToday,
+    String? guideDone,
     required DateTime updatedAt,
   }) : super._(
          id: id,
@@ -223,6 +233,7 @@ class _WorldCitizenImpl extends WorldCitizen {
          homeMode: homeMode,
          rentPaidUntil: rentPaidUntil,
          paidToday: paidToday,
+         guideDone: guideDone,
          updatedAt: updatedAt,
        );
 
@@ -244,6 +255,7 @@ class _WorldCitizenImpl extends WorldCitizen {
     Object? homeMode = _Undefined,
     Object? rentPaidUntil = _Undefined,
     Object? paidToday = _Undefined,
+    Object? guideDone = _Undefined,
     DateTime? updatedAt,
   }) {
     return WorldCitizen(
@@ -262,6 +274,7 @@ class _WorldCitizenImpl extends WorldCitizen {
           ? rentPaidUntil
           : this.rentPaidUntil,
       paidToday: paidToday is String? ? paidToday : this.paidToday,
+      guideDone: guideDone is String? ? guideDone : this.guideDone,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

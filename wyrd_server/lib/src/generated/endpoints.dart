@@ -2512,6 +2512,35 @@ class Endpoints extends _is.EndpointDispatch {
                     params['limitS'],
                   ),
         ),
+        'guideMark': _is.MethodConnector(
+          name: 'guideMark',
+          params: {
+            'step': _is.ParameterDescription(
+              name: 'step',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).guideMark(
+                    session,
+                    params['step'],
+                  ),
+        ),
+        'guideSkip': _is.MethodConnector(
+          name: 'guideSkip',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .guideSkip(session),
+        ),
         'pulse': _is.MethodConnector(
           name: 'pulse',
           params: {},

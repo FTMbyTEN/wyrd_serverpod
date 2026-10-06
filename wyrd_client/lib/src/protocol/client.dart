@@ -1590,6 +1590,21 @@ class EndpointCity extends _isc.EndpointRef {
     },
   );
 
+  /// The first-time guide: mark a step done (pays its bonus once). Returns {guide, paid, naira}, or {error}.
+  _ida.Future<String> guideMark(String step) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'guideMark',
+        {'step': step},
+      );
+
+  /// Skip the first-time guide.
+  _ida.Future<String> guideSkip() => caller.callServerEndpoint<String>(
+    'city',
+    'guideSkip',
+    {},
+  );
+
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   _ida.Future<void> pulse() => caller.callServerEndpoint<void>(
     'city',

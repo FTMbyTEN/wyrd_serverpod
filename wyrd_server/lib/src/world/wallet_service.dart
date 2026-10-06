@@ -89,6 +89,7 @@ class WalletService {
     final h = home(c.homeSlug);
     return {
       'naira': c.naira,
+      'guide': GuideService.done(c),
       'home': h == null ? null : {..._homeJson(h), 'mode': c.homeMode, 'paidUntil': c.rentPaidUntil?.toIso8601String()},
     };
   }
@@ -172,4 +173,31 @@ class WalletService {
   static const boardPay = 3000;
 
   static String _fmt(int n) => n.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},');
+}
+
+/// The first-time guide: six steps that teach the city, each paying a small bonus once.
+class GuideService {
+  static const steps = {'earn': 500, 'eat': 300, 'wyrd': 300, 'maglev': 500, 'home': 1000, 'job': 1000};
+
+  static List<String> done(WorldCitizen c) => c.guideDone == null ? <String>[] : List<String>.from(jsonDecode(c.guideDone!) as List);
+
+  /// Mark a step done: pays its bonus the first time. 'home' is checked (you must have one).
+  static Future<String> mark(Session session, UuidValue user, String step) async {
+    final bonus = steps[step];
+    if (bonus == null) return jsonEncode({'error': 'No such step.'});
+    var c = await WalletService.settle(session, user);
+    final list = done(c);
+    if (list.contains(step)) return jsonEncode({'guide': list, 'paid': 0, 'naira': c.naira});
+    if (step == 'home' && c.homeSlug == null) return jsonEncode({'error': 'You have no home yet.'});
+    list.add(step);
+    c = await WorldCitizen.db.updateRow(session, c.copyWith(naira: c.naira + bonus, guideDone: jsonEncode(list), updatedAt: DateTime.now().toUtc()));
+    return jsonEncode({'guide': list, 'paid': bonus, 'naira': c.naira});
+  }
+
+  /// Skip the guide (counts every step done, pays nothing more).
+  static Future<String> skip(Session session, UuidValue user) async {
+    var c = await WalletService.settle(session, user);
+    c = await WorldCitizen.db.updateRow(session, c.copyWith(guideDone: jsonEncode(steps.keys.toList()), updatedAt: DateTime.now().toUtc()));
+    return jsonEncode({'guide': done(c), 'paid': 0, 'naira': c.naira});
+  }
 }

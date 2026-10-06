@@ -56,6 +56,12 @@ class CityEndpoint extends Endpoint {
   Future<String> jobFinish(Session session, String id, int dist, int passengers, int limitS) =>
       JobService.finish(session, _user(session), id, dist, passengers, limitS);
 
+  /// The first-time guide: mark a step done (pays its bonus once). Returns {guide, paid, naira}, or {error}.
+  Future<String> guideMark(Session session, String step) => GuideService.mark(session, _user(session), step);
+
+  /// Skip the first-time guide.
+  Future<String> guideSkip(Session session) => GuideService.skip(session, _user(session));
+
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   Future<void> pulse(Session session) async => WorldStats.pulse(_user(session));
 
