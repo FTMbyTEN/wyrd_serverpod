@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../drone/drone_service.dart';
 
 /// Who is in NAIJA 2099: players online now (a heartbeat from the game every 30 s; online = seen in
 /// the last 90 s), how many have joined (made a character), missions done, what WYRD has been told
@@ -20,7 +21,10 @@ class WorldStats {
     return _seen.length;
   }
 
-  static Future<String> stats(Session session) async {
+  /// [user]: who's asking -- how many people have joined (and the rest of the sign-up numbers) is
+  /// for WYRD's owner only; players see who's online, missions, talk and the leaders.
+  static Future<String> stats(Session session, UuidValue user) async {
+    final owner = await DroneService.isOperator(session, user);
     final now = DateTime.now().toUtc();
     final dayAgo = now.subtract(const Duration(hours: 24));
     final joined = await PlayerCharacter.db.count(session);
@@ -38,12 +42,13 @@ class WorldStats {
     final nameOf = {for (final c in chars) c.authUserId.uuid: c.name};
     return jsonEncode({
       'online': online(),
-      'joined': joined,
-      'joinedToday': joinedToday,
-      'citizens': citizens.length,
+      if (owner) 'joined': joined,
+      if (owner) 'joinedToday': joinedToday,
+      if (owner) 'citizens': citizens.length,
       'missionsDone': missions,
       'talksToday': talksToday,
-      'bodies': {'ten': joined - ama, 'ama': ama},
+      if (owner) 'bodies': {'ten': joined - ama, 'ama': ama},
+      'owner': owner,
       'leaders': [
         for (final c in top) {'name': nameOf[c.authUserId.uuid] ?? 'A citizen', 'standing': c.standing, 'missions': c.missionsDone},
       ],

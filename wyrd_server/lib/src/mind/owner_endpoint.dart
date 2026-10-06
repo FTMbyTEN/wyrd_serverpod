@@ -18,6 +18,7 @@ class OwnerEndpoint extends Endpoint {
     'serverpod_auth_idp_email_account_request',
     'serverpod_user_info',
     'user_profile',
+    'player_character',
   ];
 
   /// Rows per table (null where a table doesn't exist), plus the newest sign-ups, as JSON.
@@ -43,7 +44,22 @@ class OwnerEndpoint extends Endpoint {
     final recent = await session.db.unsafeQuery(
       'SELECT split_part("email", \'@\', 1), "createdAt" FROM "serverpod_auth_idp_email_account" ORDER BY "createdAt" DESC LIMIT 10',
     );
+    // sign-ups per day over the last 14 days, oldest first (days with none included as 0)
+    final days = await session.db.unsafeQuery(
+      r'''SELECT to_char(date_trunc('day', "createdAt"), 'YYYY-MM-DD'), count(*) FROM "serverpod_auth_idp_email_account"
+         WHERE "createdAt" > now() - interval '14 days' GROUP BY 1''',
+    );
+    final byDay = {for (final r in days) r[0] as String: r[1] as int};
+    final today = DateTime.now().toUtc();
+    final daily = [
+      for (var i = 13; i >= 0; i--)
+        () {
+          final d = today.subtract(Duration(days: i)).toIso8601String().substring(0, 10);
+          return {'day': d, 'n': byDay[d] ?? 0};
+        }(),
+    ];
     return jsonEncode({
+      'daily': daily,
       'counts': counts,
       'recent': [for (final r in recent) {'name': r[0], 'at': (r[1] as DateTime).toIso8601String()}],
     });

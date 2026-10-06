@@ -66,7 +66,7 @@ class CityEndpoint extends Endpoint {
   Future<void> pulse(Session session) async => WorldStats.pulse(_user(session));
 
   /// Who's in the city: online now, joined, missions done, today's talk with WYRD, the leading citizens (JSON).
-  Future<String> stats(Session session) => WorldStats.stats(session);
+  Future<String> stats(Session session) => WorldStats.stats(session, _user(session));
 
   /// Your standing with the Authority and any mission it gave you, without asking it anything.
   Future<String> status(Session session) => WorldAuthority.status(session, _user(session));
