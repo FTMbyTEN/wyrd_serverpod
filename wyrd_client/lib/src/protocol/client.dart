@@ -1565,6 +1565,31 @@ class EndpointCity extends _isc.EndpointRef {
     },
   );
 
+  /// Start a job ('delivery', 'danfo' or 'chase'). Returns {id, type, limitS}.
+  _ida.Future<String> jobStart(String type) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'jobStart',
+        {'type': type},
+      );
+
+  /// Finish a job: the server checks the timing and pays. Returns the wallet plus {paid, note}, or {error}.
+  _ida.Future<String> jobFinish(
+    String id,
+    int dist,
+    int passengers,
+    int limitS,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'jobFinish',
+    {
+      'id': id,
+      'dist': dist,
+      'passengers': passengers,
+      'limitS': limitS,
+    },
+  );
+
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   _ida.Future<void> pulse() => caller.callServerEndpoint<void>(
     'city',

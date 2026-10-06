@@ -2457,6 +2457,61 @@ class Endpoints extends _is.EndpointDispatch {
                 params['place'],
               ),
         ),
+        'jobStart': _is.MethodConnector(
+          name: 'jobStart',
+          params: {
+            'type': _is.ParameterDescription(
+              name: 'type',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).jobStart(
+                session,
+                params['type'],
+              ),
+        ),
+        'jobFinish': _is.MethodConnector(
+          name: 'jobFinish',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'dist': _is.ParameterDescription(
+              name: 'dist',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'passengers': _is.ParameterDescription(
+              name: 'passengers',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'limitS': _is.ParameterDescription(
+              name: 'limitS',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).jobFinish(
+                    session,
+                    params['id'],
+                    params['dist'],
+                    params['passengers'],
+                    params['limitS'],
+                  ),
+        ),
         'pulse': _is.MethodConnector(
           name: 'pulse',
           params: {},

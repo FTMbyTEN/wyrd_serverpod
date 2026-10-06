@@ -11,6 +11,7 @@ import 'world_authority.dart';
 import 'world_stats.dart';
 import 'wallet_service.dart';
 import 'place_service.dart';
+import 'job_service.dart';
 
 /// The open world's line to WYRD, its Authority.
 class CityEndpoint extends Endpoint {
@@ -47,6 +48,13 @@ class CityEndpoint extends Endpoint {
   /// Do something at a place. Returns the wallet plus {text, delta, heal, standing}, or {error}.
   Future<String> visit(Session session, String kind, String activity, String place) =>
       PlaceService.visit(session, _user(session), kind, activity, place);
+
+  /// Start a job ('delivery', 'danfo' or 'chase'). Returns {id, type, limitS}.
+  Future<String> jobStart(Session session, String type) async => JobService.start(_user(session), type);
+
+  /// Finish a job: the server checks the timing and pays. Returns the wallet plus {paid, note}, or {error}.
+  Future<String> jobFinish(Session session, String id, int dist, int passengers, int limitS) =>
+      JobService.finish(session, _user(session), id, dist, passengers, limitS);
 
   /// The game's heartbeat (every 30 s while you play): counts you as online.
   Future<void> pulse(Session session) async => WorldStats.pulse(_user(session));

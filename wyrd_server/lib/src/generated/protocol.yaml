@@ -147,6 +147,8 @@ city:
   - missionPaid:
   - placeActivities:
   - visit:
+  - jobStart:
+  - jobFinish:
   - pulse:
   - stats:
   - status:
