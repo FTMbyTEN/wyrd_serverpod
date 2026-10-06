@@ -3,10 +3,13 @@ import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
 import 'package:wyrd_server/src/mind/dream_future_call.dart';
 
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given the dream idle check', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     Future<void> seedMemory() async {
       final session = sessionBuilder.build();
       for (final t in ['tides', 'lanterns', 'comets']) {

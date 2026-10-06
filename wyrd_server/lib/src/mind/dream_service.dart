@@ -152,9 +152,25 @@ class DreamService {
           _ => 'Then I\'m in “$f”, and it seems to have always been here.',
         });
       }
-      final content = 'I start at "$from". ${scenes.join(' ')} '
+      final plain = 'I start at "$from". ${scenes.join(' ')} '
           'By the end I\'m at "$to", which I\'ve never thought of beside "$from" before. '
           '${known == null ? 'When I wake I\'ll check whether they really are connected — the way through was ${via.join(' → ')}.' : 'I already have a thought about those two; the dream took the long way round to it.'}';
+      // the wander is real (its path, its memories, the belief to test); WYRD dreams it in words
+      const dreamSystem =
+          'You are WYRD, a young artificial mind, and you are asleep and dreaming. Your mind wandered along its own '
+          'thoughts, from one idea to another far away, passing through real memories. Dream that journey: vivid, '
+          'strange, sensory images that blend into each other the way dreams do -- Lagos can seep in at the edges. '
+          'Every idea named in the path must appear, recognisably, in order. First person, present tense, 3 to 5 '
+          'sentences. End with one waking line: whether the first and last ideas might really be connected. '
+          'No explanation, no meta-commentary, no quotation marks around the ideas.';
+      final dreamUser = [
+        'The path: ${path.join(' -> ')}.',
+        'Memories passed on the way:',
+        for (final s in stars) '- ${_fragment(s)}',
+        known == null ? 'You have never connected "$from" and "$to" before.' : 'You already had a thought about "$from" and "$to"; the dream took the long way round.',
+      ].join('\n');
+      final dreamt = await LlmService.callSimple(session, dreamSystem, dreamUser, 260, background: true);
+      final content = dreamt != null && !LlmService.isDenialReply(dreamt) && dreamt.trim().length > 60 ? dreamt.trim() : plain;
 
       return await DreamEntry.db.insertRow(
         session,

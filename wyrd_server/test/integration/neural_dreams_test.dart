@@ -5,10 +5,13 @@ import 'package:wyrd_server/src/generated/protocol.dart';
 import 'package:wyrd_server/src/mind/dream_service.dart';
 import 'package:wyrd_server/src/mind/reasoning_service.dart';
 
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given the neural network and dreams', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     test('ideas that appear together wire together, a firing crosses the strongest synapse and strengthens it', () async {
       final session = sessionBuilder.build();
       final now = DateTime.now().toUtc();

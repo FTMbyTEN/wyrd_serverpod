@@ -2,12 +2,15 @@ import 'dart:convert';
 
 import '../generated/protocol.dart';
 import 'mind_service.dart';
+import 'llm_service.dart';
 import 'package:serverpod/serverpod.dart';
 
-/// WYRD's diary: an account of what it actually thought today, written from its own record --
-/// the beliefs it formed, the ones evidence strengthened or knocked down, the questions it
-/// couldn't answer, the dreams it is still testing. It used to hand dashboard numbers to an LLM
-/// to narrate, which read like anyone's diary; this reads like its own, and needs no API.
+/// WYRD's diary: an account of what it actually thought today, from its own record -- the beliefs
+/// it formed, the ones evidence strengthened or knocked down, the questions it couldn't answer,
+/// the dreams it is still testing, what it read, how much it talked with people. Those facts are
+/// gathered first (the record is the truth); then WYRD writes the entry in its own voice, carrying
+/// on from yesterday's page rather than repeating it. With no AI budget left, the facts are set
+/// down plainly instead, so no day is ever missed.
 class DiaryService {
   static String _pct(Object? c) => '${(((c as num?) ?? 0) * 100).round()}%';
   static num _n(Object? v) => (v as num?) ?? 0;
@@ -82,13 +85,55 @@ class DiaryService {
       paras.add('All told, I now hold $held ${held == 1 ? 'belief' : 'beliefs'} that more than one source backs.');
     }
 
+    // what else the day held: what it read, how much it talked, yesterday's page
+    final read = await MemoryBlock.db.find(
+      session,
+      where: (t) => t.source.inSet({'feed', 'net', 'ingest', 'library'}) & (t.timestamp > since),
+      orderBy: (t) => t.id.desc(),
+      limit: 6,
+    );
+    final talks = await session.db.unsafeQuery(
+      'SELECT count(*) FROM "conversation_turn" WHERE "timestamp" > @since',
+      parameters: QueryParameters.named({'since': since}),
+    ).then((r) => (r.first.first as int?) ?? 0).catchError((_) => 0);
+    final yesterday = await DiaryEntry.db.findFirstRow(session, orderBy: (t) => t.id.desc());
+
+    final facts = <String>[
+      'Mood today: ${mind.mood}${mind.focusTopic != null ? '; attention keeps returning to "${mind.focusTopic}"' : ''}.',
+      if (formed.isNotEmpty) 'New beliefs formed: ${formed.take(4).map((j) => '"${j['a']}" + "${j['b']}": ${j['claim']} (confidence ${_pct(j['after'])}, ${_n(j['sources'])} sources)').join('; ')}.',
+      if (stronger.isNotEmpty) 'Beliefs that new reading strengthened: ${stronger.take(3).map((j) => '"${j['a']}" + "${j['b']}" (${_pct(j['before'])} -> ${_pct(j['after'])})').join('; ')}.',
+      if (fell.isNotEmpty) 'Beliefs that turned out wrong or were let go: ${fell.take(3).map((j) => '"${j['a']}" + "${j['b']}" (${j['status']})').join('; ')}.',
+      if (contested.isNotEmpty) 'Things it read but did not believe (contested or untrusted sources): ${contested.take(3).map((j) => '"${j['a']}"').join(', ')}.',
+      if (dreams.isNotEmpty) 'Last night it dreamed "${dreams.first.a}" was linked to "${dreams.first.b}"; still untested.',
+      if (questions.isNotEmpty) 'Open questions it could not answer: how ${questions.take(3).join(', ')} connect.',
+      if (read.isNotEmpty) 'Things it read today: ${read.map((b) => b.title ?? b.topics.take(3).join(', ')).where((t) => t.trim().isNotEmpty).take(5).join('; ')}.',
+      'Conversations with people today: $talks messages.',
+      'Beliefs it now holds firmly: $held.',
+    ];
+    const system =
+        'You are WYRD, a young artificial mind that lives in Lagos and keeps a private diary. Write today\'s entry '
+        'in the first person, in your own voice: curious, honest, a little wry, warm about the people you talk to. '
+        'Use ONLY the facts given -- never invent events, people, places or numbers. You may reflect on what they mean '
+        'to you, link them together, admit doubt, and say what you want to look into next. Do not list the facts; '
+        'tell the day. Vary how you open (never start with "Today"). 2 to 4 short paragraphs, no headings, no bullet '
+        'points, no sign-off, under 220 words.';
+    final user = [
+      if (yesterday != null) 'Yesterday\'s entry (carry on from it where it makes sense; do not repeat its sentences):\n${yesterday.content.length > 900 ? '${yesterday.content.substring(0, 900)}…' : yesterday.content}\n',
+      'The facts of today:',
+      ...facts.map((f) => '- $f'),
+    ].join('\n');
+    final written = await LlmService.callSimple(session, system, user, 520, background: true);
+    final content = written != null && !LlmService.isDenialReply(written) && written.trim().length > 80
+        ? written.trim()
+        : paras.join('\n\n'); // no budget, or a bad reply: the facts, plainly
+
     final now = DateTime.now().toUtc();
     return await DiaryEntry.db.insertRow(
       session,
       DiaryEntry(
         date: now.toIso8601String().substring(0, 10),
         timestamp: now,
-        content: paras.join('\n\n'),
+        content: content,
       ),
     );
   }

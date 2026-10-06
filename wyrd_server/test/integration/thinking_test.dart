@@ -6,10 +6,13 @@ import 'package:wyrd_server/src/mind/diary_service.dart';
 import 'package:wyrd_server/src/mind/dream_service.dart';
 import 'package:wyrd_server/src/mind/thinking_service.dart';
 
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given things WYRD has read', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     Future<void> read(String source, String url, String title, String extract, List<String> topics) async {
       await MemoryBlock.db.insertRow(
         sessionBuilder.build(),
