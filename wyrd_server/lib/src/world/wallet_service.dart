@@ -155,6 +155,8 @@ class WalletService {
     'st-itire': 1500, 'st-akerele': 2500, 'st-3mb': 4000, 'st-broad': 6000,
   };
 
+  static final _lastStreet = <String, DateTime>{};
+
   static Future<String> missionPaid(Session session, UuidValue user, String id) async {
     final pay = streetPay[id];
     if (pay == null) return jsonEncode({'error': 'Unknown mission.'});
@@ -163,6 +165,13 @@ class WalletService {
     final p = c.paidToday == null ? <String, dynamic>{} : jsonDecode(c.paidToday!) as Map<String, dynamic>;
     final ids = p['day'] == today ? List<String>.from(p['ids'] as List) : <String>[];
     if (ids.contains(id)) return jsonEncode({..._wallet(c), 'paid': 0, 'note': 'Already paid today.'});
+    // a street mission takes minutes to play: one paid every three minutes, so a script can't
+    // collect the whole board at once
+    final last = _lastStreet[user.uuid];
+    if (last != null && DateTime.now().difference(last) < const Duration(minutes: 3)) {
+      return jsonEncode({..._wallet(c), 'paid': 0, 'note': 'Take a breath -- the next job opens in a few minutes.'});
+    }
+    _lastStreet[user.uuid] = DateTime.now();
     ids.add(id);
     c = await WorldCitizen.db.updateRow(session, c.copyWith(
       naira: c.naira + pay, paidToday: jsonEncode({'day': today, 'ids': ids}), updatedAt: DateTime.now().toUtc()));

@@ -20,6 +20,19 @@ class CityEndpoint extends Endpoint {
 
   static UuidValue _user(Session session) => UuidValue.fromString(session.authenticated!.userIdentifier);
 
+  // Anything that moves someone's naira runs one at a time for that person: two requests sent
+  // together can't both read the old balance and both pay out.
+  static final _queues = <String, Future<void>>{};
+  static Future<String> _money(Session session, Future<String> Function(UuidValue user) work) {
+    final user = _user(session);
+    final before = _queues[user.uuid] ?? Future.value();
+    final run = before.catchError((_) {}).then((_) => work(user));
+    final done = run.then((_) {}, onError: (_) {});
+    _queues[user.uuid] = done;
+    done.whenComplete(() { if (identical(_queues[user.uuid], done)) _queues.remove(user.uuid); });
+    return run;
+  }
+
   /// Speak to, petition, or report to the Authority. Returns the decree as JSON (see WorldAuthority.address).
   Future<String> address(Session session, String channel, String text, String situation) =>
       WorldAuthority.address(session, _user(session), channel, text, situation);
@@ -31,30 +44,30 @@ class CityEndpoint extends Endpoint {
   Future<String> homes(Session session) => WalletService.listHomes(session, _user(session));
 
   /// Rent ('rent') or buy ('own') a home. Returns the wallet, or {error}.
-  Future<String> takeHome(Session session, String slug, String mode) => WalletService.takeHome(session, _user(session), slug, mode);
+  Future<String> takeHome(Session session, String slug, String mode) => _money(session, (u) => WalletService.takeHome(session, u, slug, mode));
 
   /// Move out of your home.
-  Future<String> leaveHome(Session session) => WalletService.leaveHome(session, _user(session));
+  Future<String> leaveHome(Session session) => _money(session, (u) => WalletService.leaveHome(session, u));
 
   /// Pay a fare ('maglev' or 'danfo'); the server sets the price.
-  Future<String> pay(Session session, String reason) => WalletService.pay(session, _user(session), reason);
+  Future<String> pay(Session session, String reason) => _money(session, (u) => WalletService.pay(session, u, reason));
 
   /// A street-board mission done: it pays (once a day each).
-  Future<String> missionPaid(Session session, String id) => WalletService.missionPaid(session, _user(session), id);
+  Future<String> missionPaid(Session session, String id) => _money(session, (u) => WalletService.missionPaid(session, u, id));
 
   /// What you can do at a kind of place (JSON list of activities: cost or pay, healing, standing, cooldown).
   Future<String> placeActivities(Session session, String kind) async => PlaceService.list(kind);
 
   /// Do something at a place. Returns the wallet plus {text, delta, heal, standing}, or {error}.
   Future<String> visit(Session session, String kind, String activity, String place) =>
-      PlaceService.visit(session, _user(session), kind, activity, place);
+      _money(session, (u) => PlaceService.visit(session, u, kind, activity, place));
 
   /// Start a job ('delivery', 'danfo' or 'chase'). Returns {id, type, limitS}.
   Future<String> jobStart(Session session, String type) async => JobService.start(_user(session), type);
 
   /// Finish a job: the server checks the timing and pays. Returns the wallet plus {paid, note}, or {error}.
   Future<String> jobFinish(Session session, String id, int dist, int passengers, int limitS) =>
-      JobService.finish(session, _user(session), id, dist, passengers, limitS);
+      _money(session, (u) => JobService.finish(session, u, id, dist, passengers, limitS));
 
   /// The first-time guide: mark a step done (pays its bonus once). Returns {guide, paid, naira}, or {error}.
   Future<String> guideMark(Session session, String step) => GuideService.mark(session, _user(session), step);

@@ -41,6 +41,21 @@ class WebBrowseService {
     final context = await browser.createIncognitoBrowserContext();
     final page = await context.newPage();
     await page.setViewport(pptr.DeviceViewport(width: 1280, height: 800));
+    // every request the page makes -- redirects, links clicked, scripts, frames, images -- is
+    // checked, not just the first URL: a public page must not be able to send this browser on to
+    // localhost, the cloud metadata address or anything else inside the network
+    await page.setRequestInterception(true);
+    page.onRequest.listen((req) async {
+      try {
+        final u = Uri.parse(req.url);
+        if (u.scheme == 'data' || u.scheme == 'blob' || u.scheme == 'about') return await req.continueRequest();
+        if (u.scheme != 'http' && u.scheme != 'https') return await req.abort();
+        await BrowserSafety.resolvePublic(u.host);
+        await req.continueRequest();
+      } catch (_) {
+        try { await req.abort(); } catch (_) {}
+      }
+    });
     return WebSession(context, page);
   }
 
