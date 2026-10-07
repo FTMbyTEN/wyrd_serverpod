@@ -11,6 +11,8 @@ fields:
   # the sign-in email, copied from the email IDP account on every sign-in so each person is
   # identifiable in WYRD's own tables (not only in the auth tables)
   email: String?
+  # their profile picture: a small square image (about 256 px) as a data URL, set by them
+  avatar: String?
   facts: List<UserFact>
   visitCount: int
   firstSeen: DateTime

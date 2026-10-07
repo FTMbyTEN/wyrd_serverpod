@@ -21,6 +21,7 @@ abstract class UserProfile
     required this.authUserId,
     this.username,
     this.email,
+    this.avatar,
     required this.facts,
     required this.visitCount,
     required this.firstSeen,
@@ -32,6 +33,7 @@ abstract class UserProfile
     required _isc.UuidValue authUserId,
     String? username,
     String? email,
+    String? avatar,
     required List<_il0k3um2.UserFact> facts,
     required int visitCount,
     required DateTime firstSeen,
@@ -46,6 +48,7 @@ abstract class UserProfile
       ),
       username: jsonSerialization['username'] as String?,
       email: jsonSerialization['email'] as String?,
+      avatar: jsonSerialization['avatar'] as String?,
       facts: _i2pladzn.Protocol().deserialize<List<_il0k3um2.UserFact>>(
         jsonSerialization['facts'],
       ),
@@ -70,6 +73,8 @@ abstract class UserProfile
 
   String? email;
 
+  String? avatar;
+
   List<_il0k3um2.UserFact> facts;
 
   int visitCount;
@@ -86,6 +91,7 @@ abstract class UserProfile
     _isc.UuidValue? authUserId,
     String? username,
     String? email,
+    String? avatar,
     List<_il0k3um2.UserFact>? facts,
     int? visitCount,
     DateTime? firstSeen,
@@ -99,6 +105,7 @@ abstract class UserProfile
       'authUserId': authUserId.toJson(),
       if (username != null) 'username': username,
       if (email != null) 'email': email,
+      if (avatar != null) 'avatar': avatar,
       'facts': facts.toJson(valueToJson: (v) => v.toJson()),
       'visitCount': visitCount,
       'firstSeen': firstSeen.toJson(),
@@ -114,6 +121,7 @@ abstract class UserProfile
       'authUserId': authUserId.toJson(),
       if (username != null) 'username': username,
       if (email != null) 'email': email,
+      if (avatar != null) 'avatar': avatar,
       'facts': facts.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       'visitCount': visitCount,
       'firstSeen': firstSeen.toJson(),
@@ -135,6 +143,7 @@ class _UserProfileImpl extends UserProfile {
     required _isc.UuidValue authUserId,
     String? username,
     String? email,
+    String? avatar,
     required List<_il0k3um2.UserFact> facts,
     required int visitCount,
     required DateTime firstSeen,
@@ -144,6 +153,7 @@ class _UserProfileImpl extends UserProfile {
          authUserId: authUserId,
          username: username,
          email: email,
+         avatar: avatar,
          facts: facts,
          visitCount: visitCount,
          firstSeen: firstSeen,
@@ -159,6 +169,7 @@ class _UserProfileImpl extends UserProfile {
     _isc.UuidValue? authUserId,
     Object? username = _Undefined,
     Object? email = _Undefined,
+    Object? avatar = _Undefined,
     List<_il0k3um2.UserFact>? facts,
     int? visitCount,
     DateTime? firstSeen,
@@ -169,6 +180,7 @@ class _UserProfileImpl extends UserProfile {
       authUserId: authUserId ?? this.authUserId,
       username: username is String? ? username : this.username,
       email: email is String? ? email : this.email,
+      avatar: avatar is String? ? avatar : this.avatar,
       facts: facts ?? this.facts.map((e0) => e0.copyWith()).toList(),
       visitCount: visitCount ?? this.visitCount,
       firstSeen: firstSeen ?? this.firstSeen,

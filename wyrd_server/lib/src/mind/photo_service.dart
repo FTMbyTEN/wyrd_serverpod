@@ -19,7 +19,10 @@ class PhotoService {
     required String imageBase64Jpeg,
     String? caption,
     String? trackingNote,
+    String? thumb,
   }) async {
+    // the preview kept in the chat: a small JPEG data URL, or nothing
+    final keep = thumb != null && thumb.length <= 80000 && RegExp(r"^data:image/jpeg;base64,[A-Za-z0-9+/=]+$").hasMatch(thumb) ? thumb : null;
     if (imageBase64Jpeg.length > _maxBase64Chars) {
       throw Exception('image too large');
     }
@@ -97,6 +100,7 @@ class PhotoService {
         userText: displayCaption,
         botText: reply,
         timestamp: DateTime.now().toUtc(),
+        image: keep,
       ),
     );
 

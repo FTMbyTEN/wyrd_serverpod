@@ -112,6 +112,9 @@ class ChatService {
       facts,
       15,
     ).map((f) => f.text).toList();
+    // the name they chose at sign-up (or on their profile) comes first: WYRD calls them by it
+    final callMe = profile.username?.trim();
+    if (callMe != null && callMe.isNotEmpty) userFacts.insert(0, 'They want to be called "$callMe".');
 
     String curiosityHint;
     if (facts.isEmpty) {

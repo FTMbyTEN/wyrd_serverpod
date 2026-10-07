@@ -156,7 +156,7 @@ class AgentService {
         final system = _system(t, operator);
         final tools = _tools(operator);
         final estimate = LlmBudget.estimateUsd(model: _model, inputChars: system.length + jsonEncode(messages).length, maxOutputTokens: _maxTokens);
-        if (!await LlmBudget.allow(session, background: true, estimateUsd: estimate)) {
+        if (!await LlmBudget.allow(session, background: false, estimateUsd: estimate)) { // a task someone asked for: their allowance, not WYRD's paced background share
           // out of today's budget: try again in an hour, nothing lost
           await AgentTask.db.updateRow(session, t.copyWith(status: 'queued', transcript: jsonEncode(messages), nextRunAt: DateTime.now().toUtc().add(const Duration(hours: 1)), updatedAt: DateTime.now().toUtc()));
           return;

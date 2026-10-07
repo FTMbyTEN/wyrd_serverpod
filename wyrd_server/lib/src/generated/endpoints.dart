@@ -1958,6 +1958,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String?>(),
               nullable: true,
             ),
+            'thumb': _is.ParameterDescription(
+              name: 'thumb',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
           },
           call:
               (
@@ -1969,6 +1974,7 @@ class Endpoints extends _is.EndpointDispatch {
                     params['imageBase64Jpeg'],
                     caption: params['caption'],
                     trackingNote: params['trackingNote'],
+                    thumb: params['thumb'],
                   ),
         ),
         'getSightings': _is.MethodConnector(
@@ -2033,6 +2039,25 @@ class Endpoints extends _is.EndpointDispatch {
                   .setUsername(
                     session,
                     params['username'],
+                  ),
+        ),
+        'setAvatar': _is.MethodConnector(
+          name: 'setAvatar',
+          params: {
+            'dataUrl': _is.ParameterDescription(
+              name: 'dataUrl',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['profile'] as _in0jvng1.ProfileEndpoint).setAvatar(
+                    session,
+                    params['dataUrl'],
                   ),
         ),
       },

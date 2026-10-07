@@ -25,6 +25,7 @@ abstract class ConversationTurn
     this.rating,
     this.judgement,
     this.groundingIds,
+    this.image,
   });
 
   factory ConversationTurn({
@@ -37,6 +38,7 @@ abstract class ConversationTurn
     int? rating,
     String? judgement,
     List<int>? groundingIds,
+    String? image,
   }) = _ConversationTurnImpl;
 
   factory ConversationTurn.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -58,6 +60,7 @@ abstract class ConversationTurn
           : _i9sln91s.Protocol().deserialize<List<int>>(
               jsonSerialization['groundingIds'],
             ),
+      image: jsonSerialization['image'] as String?,
     );
   }
 
@@ -84,6 +87,8 @@ abstract class ConversationTurn
 
   List<int>? groundingIds;
 
+  String? image;
+
   @override
   _is.Table<int?> get table => t;
 
@@ -100,6 +105,7 @@ abstract class ConversationTurn
     int? rating,
     String? judgement,
     List<int>? groundingIds,
+    String? image,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -114,6 +120,7 @@ abstract class ConversationTurn
       if (rating != null) 'rating': rating,
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
+      if (image != null) 'image': image,
     };
   }
 
@@ -130,6 +137,7 @@ abstract class ConversationTurn
       if (rating != null) 'rating': rating,
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
+      if (image != null) 'image': image,
     };
   }
 
@@ -174,6 +182,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     int? rating,
     String? judgement,
     List<int>? groundingIds,
+    String? image,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -184,6 +193,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          rating: rating,
          judgement: judgement,
          groundingIds: groundingIds,
+         image: image,
        );
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -200,6 +210,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     Object? rating = _Undefined,
     Object? judgement = _Undefined,
     Object? groundingIds = _Undefined,
+    Object? image = _Undefined,
   }) {
     return ConversationTurn(
       id: id is int? ? id : this.id,
@@ -215,6 +226,7 @@ class _ConversationTurnImpl extends ConversationTurn {
       groundingIds: groundingIds is List<int>?
           ? groundingIds
           : this.groundingIds?.map((e0) => e0).toList(),
+      image: image is String? ? image : this.image,
     );
   }
 }
@@ -266,6 +278,11 @@ class ConversationTurnUpdateTable
         table.groundingIds,
         value,
       );
+
+  _is.ColumnValue<String, String> image(String? value) => _is.ColumnValue(
+    table.image,
+    value,
+  );
 }
 
 class ConversationTurnTable extends _is.Table<int?> {
@@ -304,6 +321,10 @@ class ConversationTurnTable extends _is.Table<int?> {
       'groundingIds',
       this,
     );
+    image = _is.ColumnString(
+      'image',
+      this,
+    );
   }
 
   late final ConversationTurnUpdateTable updateTable;
@@ -324,6 +345,8 @@ class ConversationTurnTable extends _is.Table<int?> {
 
   late final _is.ColumnSerializable<List<int>> groundingIds;
 
+  late final _is.ColumnString image;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -335,6 +358,7 @@ class ConversationTurnTable extends _is.Table<int?> {
     rating,
     judgement,
     groundingIds,
+    image,
   ];
 }
 

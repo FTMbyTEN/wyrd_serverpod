@@ -13,7 +13,7 @@ class PhotoEndpoint extends Endpoint {
 
   /// [trackingNote] is what the app's on-device face tracking saw (pose, expression, distance);
   /// it helps WYRD read the moment but is never shown as something the person said.
-  Future<ChatReply> describe(Session session, String imageBase64Jpeg, {String? caption, String? trackingNote}) async {
+  Future<ChatReply> describe(Session session, String imageBase64Jpeg, {String? caption, String? trackingNote, String? thumb}) async {
     final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
 
     if (RateLimiter.isLimited('photo:$authUserId', _rateLimit, _rateWindow)) {
@@ -26,6 +26,7 @@ class PhotoEndpoint extends Endpoint {
       imageBase64Jpeg: imageBase64Jpeg,
       caption: caption,
       trackingNote: trackingNote,
+      thumb: thumb,
     );
     return ChatReply(reply: result.reply, mind: result.mind);
   }

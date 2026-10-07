@@ -3478,6 +3478,7 @@ class _PhotoEndpoint {
     String imageBase64Jpeg, {
     String? caption,
     String? trackingNote,
+    String? thumb,
   }) async {
     return _ist.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -3494,6 +3495,7 @@ class _PhotoEndpoint {
             'imageBase64Jpeg': imageBase64Jpeg,
             'caption': caption,
             'trackingNote': trackingNote,
+            'thumb': thumb,
           }),
           serializationManager: _serializationManager,
         );
@@ -3628,6 +3630,37 @@ class _ProfileEndpoint {
           endpointPath: 'profile',
           methodName: 'setUsername',
           parameters: _ist.testObjectToJson({'username': username}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ifiznghf.UserProfile>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ifiznghf.UserProfile> setAvatar(
+    _ist.TestSessionBuilder sessionBuilder,
+    String? dataUrl,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'profile',
+            method: 'setAvatar',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'profile',
+          methodName: 'setAvatar',
+          parameters: _ist.testObjectToJson({'dataUrl': dataUrl}),
           serializationManager: _serializationManager,
         );
         var _localReturnValue =

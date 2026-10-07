@@ -3,7 +3,6 @@ import '../generated/protocol.dart';
 import 'self_config_service.dart';
 import 'rate_limiter.dart';
 import 'public_cache.dart';
-import '../drone/drone_service.dart';
 import 'package:serverpod/serverpod.dart';
 
 /// Ports /api/self-config, /api/cop-log, and /api/self-modify/trigger from server.js.
@@ -23,10 +22,7 @@ class SelfConfigEndpoint extends Endpoint {
 
   /// COP's reviews of WYRD's self-changes: for WYRD's owner (the operator accounts) only.
   Future<List<CopLogEntry>> getCopLog(Session session, {int? limit}) async {
-    final who = session.authenticated?.userIdentifier;
-    if (who == null || !await DroneService.isOperator(session, UuidValue.fromString(who))) {
-      throw Exception('Only the owner can see COP.');
-    }
+    await OwnerGuard.check(session, 'COP');
     return PublicCache.get(session, 'self_config.getCopLog:$limit', const Duration(seconds: 30), () => _getCopLog(session, limit: limit));
   }
 

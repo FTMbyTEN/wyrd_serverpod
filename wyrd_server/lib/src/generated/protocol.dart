@@ -854,6 +854,12 @@ class Protocol extends _is.DatabaseSerializationManager {
           isNullable: true,
           dartType: 'List<int>?',
         ),
+        _isp.ColumnDefinition(
+          name: 'image',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
       ],
       foreignKeys: [],
       indexes: [
@@ -3390,6 +3396,12 @@ class Protocol extends _is.DatabaseSerializationManager {
         ),
         _isp.ColumnDefinition(
           name: 'email',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'avatar',
           columnType: _isp.ColumnType.text,
           isNullable: true,
           dartType: 'String?',

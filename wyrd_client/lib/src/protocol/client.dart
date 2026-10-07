@@ -1239,6 +1239,7 @@ class EndpointPhoto extends _isc.EndpointRef {
     String imageBase64Jpeg, {
     String? caption,
     String? trackingNote,
+    String? thumb,
   }) => caller.callServerEndpoint<_is592ckh.ChatReply>(
     'photo',
     'describe',
@@ -1246,6 +1247,7 @@ class EndpointPhoto extends _isc.EndpointRef {
       'imageBase64Jpeg': imageBase64Jpeg,
       'caption': caption,
       'trackingNote': trackingNote,
+      'thumb': thumb,
     },
   );
 
@@ -1289,6 +1291,14 @@ class EndpointProfile extends _isc.EndpointRef {
         'profile',
         'setUsername',
         {'username': username},
+      );
+
+  /// Sets (or, with null, removes) their profile picture: a small JPEG, PNG or WebP data URL.
+  _ida.Future<_ig38dtlp.UserProfile> setAvatar(String? dataUrl) =>
+      caller.callServerEndpoint<_ig38dtlp.UserProfile>(
+        'profile',
+        'setAvatar',
+        {'dataUrl': dataUrl},
       );
 }
 
@@ -1341,6 +1351,7 @@ class EndpointSelfConfig extends _isc.EndpointRef {
         {},
       );
 
+  /// COP's reviews of WYRD's self-changes: for WYRD's owner (the operator accounts) only.
   _ida.Future<List<_iudx1gwn.CopLogEntry>> getCopLog({int? limit}) =>
       caller.callServerEndpoint<List<_iudx1gwn.CopLogEntry>>(
         'selfConfig',

@@ -115,6 +115,7 @@ profile:
   - getProfile:
   - touchVisit:
   - setUsername:
+  - setAvatar:
 reasoning:
   - trigger:
   - getNotes:
