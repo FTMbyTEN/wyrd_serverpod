@@ -31,6 +31,7 @@ abstract class WorldCitizen
     this.rentPaidUntil,
     this.paidToday,
     this.guideDone,
+    this.story,
     required this.updatedAt,
   }) : standing = standing ?? 0,
        missionsDone = missionsDone ?? 0,
@@ -53,6 +54,7 @@ abstract class WorldCitizen
     DateTime? rentPaidUntil,
     String? paidToday,
     String? guideDone,
+    String? story,
     required DateTime updatedAt,
   }) = _WorldCitizenImpl;
 
@@ -82,6 +84,7 @@ abstract class WorldCitizen
             ),
       paidToday: jsonSerialization['paidToday'] as String?,
       guideDone: jsonSerialization['guideDone'] as String?,
+      story: jsonSerialization['story'] as String?,
       updatedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
@@ -130,6 +133,10 @@ abstract class WorldCitizen
   /// the first-time guide steps done (and paid), as a JSON list
   String? guideDone;
 
+  /// the story: reputation (district, faction, social), the branching missions' progress, and what
+  /// the city remembers of you -- JSON, written only by StoryService
+  String? story;
+
   DateTime updatedAt;
 
   @override
@@ -153,6 +160,7 @@ abstract class WorldCitizen
     DateTime? rentPaidUntil,
     String? paidToday,
     String? guideDone,
+    String? story,
     DateTime? updatedAt,
   });
   @override
@@ -173,6 +181,7 @@ abstract class WorldCitizen
       if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
       if (paidToday != null) 'paidToday': paidToday,
       if (guideDone != null) 'guideDone': guideDone,
+      if (story != null) 'story': story,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -195,6 +204,7 @@ abstract class WorldCitizen
       if (rentPaidUntil != null) 'rentPaidUntil': rentPaidUntil?.toJson(),
       if (paidToday != null) 'paidToday': paidToday,
       if (guideDone != null) 'guideDone': guideDone,
+      if (story != null) 'story': story,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -245,6 +255,7 @@ class _WorldCitizenImpl extends WorldCitizen {
     DateTime? rentPaidUntil,
     String? paidToday,
     String? guideDone,
+    String? story,
     required DateTime updatedAt,
   }) : super._(
          id: id,
@@ -261,6 +272,7 @@ class _WorldCitizenImpl extends WorldCitizen {
          rentPaidUntil: rentPaidUntil,
          paidToday: paidToday,
          guideDone: guideDone,
+         story: story,
          updatedAt: updatedAt,
        );
 
@@ -283,6 +295,7 @@ class _WorldCitizenImpl extends WorldCitizen {
     Object? rentPaidUntil = _Undefined,
     Object? paidToday = _Undefined,
     Object? guideDone = _Undefined,
+    Object? story = _Undefined,
     DateTime? updatedAt,
   }) {
     return WorldCitizen(
@@ -302,6 +315,7 @@ class _WorldCitizenImpl extends WorldCitizen {
           : this.rentPaidUntil,
       paidToday: paidToday is String? ? paidToday : this.paidToday,
       guideDone: guideDone is String? ? guideDone : this.guideDone,
+      story: story is String? ? story : this.story,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -378,6 +392,11 @@ class WorldCitizenUpdateTable extends _is.UpdateTable<WorldCitizenTable> {
     value,
   );
 
+  _is.ColumnValue<String, String> story(String? value) => _is.ColumnValue(
+    table.story,
+    value,
+  );
+
   _is.ColumnValue<DateTime, DateTime> updatedAt(DateTime value) =>
       _is.ColumnValue(
         table.updatedAt,
@@ -445,6 +464,10 @@ class WorldCitizenTable extends _is.Table<int?> {
       'guideDone',
       this,
     );
+    story = _is.ColumnString(
+      'story',
+      this,
+    );
     updatedAt = _is.ColumnDateTime(
       'updatedAt',
       this,
@@ -488,6 +511,10 @@ class WorldCitizenTable extends _is.Table<int?> {
   /// the first-time guide steps done (and paid), as a JSON list
   late final _is.ColumnString guideDone;
 
+  /// the story: reputation (district, faction, social), the branching missions' progress, and what
+  /// the city remembers of you -- JSON, written only by StoryService
+  late final _is.ColumnString story;
+
   late final _is.ColumnDateTime updatedAt;
 
   @override
@@ -506,6 +533,7 @@ class WorldCitizenTable extends _is.Table<int?> {
     rentPaidUntil,
     paidToday,
     guideDone,
+    story,
     updatedAt,
   ];
 }

@@ -25,6 +25,9 @@ fields:
   paidToday: String?
   ### the first-time guide steps done (and paid), as a JSON list
   guideDone: String?
+  ### the story: reputation (district, faction, social), the branching missions' progress, and what
+  ### the city remembers of you -- JSON, written only by StoryService
+  story: String?
   updatedAt: DateTime
 indexes:
   world_citizen_user_idx:

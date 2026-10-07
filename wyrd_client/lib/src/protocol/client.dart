@@ -1697,6 +1697,26 @@ class EndpointCity extends _isc.EndpointRef {
     {},
   );
 
+  /// Your story: reputation by district, faction and circle, and your missions (JSON).
+  _ida.Future<String> story() => caller.callServerEndpoint<String>(
+    'city',
+    'story',
+    {},
+  );
+
+  /// Take one step in a story mission (e.g. 'tomato', 'route:mile12'); the server checks and pays it.
+  _ida.Future<String> storyAct(
+    String mission,
+    String move,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'storyAct',
+    {
+      'mission': mission,
+      'move': move,
+    },
+  );
+
   /// Approve or reject one of WYRD's proposals. Approved live kinds change the game at once.
   _ida.Future<String> designDecide(
     int id,

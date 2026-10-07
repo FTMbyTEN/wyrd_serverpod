@@ -10,6 +10,7 @@ import 'city_design_service.dart';
 import 'world_authority.dart';
 import 'world_stats.dart';
 import 'wallet_service.dart';
+import 'story_service.dart';
 import 'place_service.dart';
 import 'job_service.dart';
 
@@ -126,6 +127,12 @@ class CityEndpoint extends Endpoint {
     await _operator(session);
     return jsonEncode([for (final n in await CityDesignService.notes(session)) CityDesignService.toJson(n)]);
   }
+
+  /// Your story: reputation by district, faction and circle, and your missions (JSON).
+  Future<String> story(Session session) => StoryService.get(session, _user(session));
+
+  /// Take one step in a story mission (e.g. 'tomato', 'route:mile12'); the server checks and pays it.
+  Future<String> storyAct(Session session, String mission, String move) => _money(session, (u) => StoryService.act(session, u, mission, move));
 
   /// Approve or reject one of WYRD's proposals. Approved live kinds change the game at once.
   Future<String> designDecide(Session session, int id, bool approve) async {

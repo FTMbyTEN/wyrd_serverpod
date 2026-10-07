@@ -2704,6 +2704,40 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
                   .designNotes(session),
         ),
+        'story': _is.MethodConnector(
+          name: 'story',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).story(session),
+        ),
+        'storyAct': _is.MethodConnector(
+          name: 'storyAct',
+          params: {
+            'mission': _is.ParameterDescription(
+              name: 'mission',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'move': _is.ParameterDescription(
+              name: 'move',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).storyAct(
+                session,
+                params['mission'],
+                params['move'],
+              ),
+        ),
         'designDecide': _is.MethodConnector(
           name: 'designDecide',
           params: {

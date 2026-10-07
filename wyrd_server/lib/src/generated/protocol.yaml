@@ -163,4 +163,6 @@ city:
   - canDesign:
   - designChat:
   - designNotes:
+  - story:
+  - storyAct:
   - designDecide:
