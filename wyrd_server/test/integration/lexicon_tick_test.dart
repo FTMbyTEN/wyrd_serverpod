@@ -1,3 +1,4 @@
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
 import 'package:wyrd_server/src/mind/lexicon_service.dart';
@@ -7,6 +8,8 @@ import 'test_tools/serverpod_test_tools.dart';
 // Only the paths that stop before the dictionary API is called -- the tests stay offline.
 void main() {
   withServerpod('Given the lexicon tick', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     tearDown(() => LexiconService.dictionaryForTesting = null);
 
     test(

@@ -1,3 +1,4 @@
+import 'owner_guard.dart';
 import '../generated/protocol.dart';
 import 'feed_service.dart';
 import 'ingest_filter.dart';
@@ -21,11 +22,13 @@ class FeedEndpoint extends Endpoint {
   }
 
   Future<bool> trigger(Session session) async {
-    PublicCache.clear();
+    // starting WYRD's work by hand is the owner's: strangers can't spend its budget or block its runs
+    await OwnerGuard.check(session, 'that');
     // public: a few per 10 minutes, so nobody can hammer it (the scheduler runs it anyway)
     if (RateLimiter.isLimited('trigger:feed', 3, const Duration(minutes: 10))) {
       throw Exception('slow down — try again in a few minutes');
     }
+    PublicCache.clear(); // only once a run really goes ahead
     return await FeedService.tick(session);
   }
 

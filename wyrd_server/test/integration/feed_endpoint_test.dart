@@ -1,9 +1,12 @@
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'package:test/test.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given Feed endpoint', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     test(
       'when triggering a tick then it ingests a real item (Wikipedia or Hacker News), stores '
       'a memory block, and updates Mind',

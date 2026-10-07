@@ -1,3 +1,4 @@
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
 
@@ -5,6 +6,8 @@ import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given SelfQuestion endpoint', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     test(
       'when fewer than 2 memory blocks exist then `trigger` returns false',
       () async {

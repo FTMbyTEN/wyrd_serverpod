@@ -1,3 +1,4 @@
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
 import 'package:wyrd_server/src/mind/reasoning_log_service.dart';
@@ -6,6 +7,8 @@ import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given Reasoning endpoint', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     test(
       'when there is no memory yet then `trigger` returns false',
       () async {

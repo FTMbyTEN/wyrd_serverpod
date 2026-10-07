@@ -10,6 +10,7 @@ import 'wallet_service.dart';
 /// phone snatcher. The server issues each one, times it, and pays it -- the game reports what
 /// happened (distance, passengers) and the server checks it was possible in the time taken.
 class JobService {
+  static final _lastChase = <String, DateTime>{};
   static const types = {'delivery', 'danfo', 'chase'};
   static final Map<String, ({String id, String type, DateTime at})> _open = {};
   static final _rnd = math.Random();
@@ -47,9 +48,13 @@ class JobService {
         pay = p * 250;
         note = '$p passengers carried.';
       default: // chase
+        // one paid chase every two minutes, so a script can't farm the reward
+        final last = _lastChase[user.uuid];
+        if (last != null && DateTime.now().toUtc().difference(last) < const Duration(minutes: 2)) return jsonEncode({'error': 'The streets are quiet -- no thief for a moment.'});
         if (secs > 95) return jsonEncode({'error': 'The thief got away.'});
         if (secs < 3) return jsonEncode({'error': 'Too quick to be true.'});
         pay = 3000;
+        _lastChase[user.uuid] = DateTime.now().toUtc();
         note = 'Phone recovered. The owner is grateful.';
     }
     var c = await WalletService.settle(session, user);

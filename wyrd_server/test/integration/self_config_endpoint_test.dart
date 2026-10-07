@@ -1,9 +1,12 @@
+import 'package:wyrd_server/src/mind/owner_guard.dart';
 import 'package:test/test.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
   withServerpod('Given SelfConfig endpoint', (sessionBuilder, endpoints) {
+    setUpAll(() => OwnerGuard.openForTesting = true);
+    tearDownAll(() => OwnerGuard.openForTesting = false);
     test(
       'when calling `getConfig` for the first time then it creates the default row',
       () async {

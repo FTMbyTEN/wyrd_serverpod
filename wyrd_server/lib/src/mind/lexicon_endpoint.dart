@@ -1,3 +1,4 @@
+import 'owner_guard.dart';
 import '../generated/protocol.dart';
 import 'lexicon_service.dart';
 import 'wordnet_service.dart';
@@ -15,11 +16,13 @@ class LexiconEndpoint extends Endpoint {
   /// Runs one learning tick now instead of waiting for the timer. False if there was nothing new
   /// to learn (or the wordlist isn't loaded yet).
   Future<bool> trigger(Session session) async {
-    PublicCache.clear();
+    // starting WYRD's work by hand is the owner's: strangers can't spend its budget or block its runs
+    await OwnerGuard.check(session, 'that');
     // public: a few per 10 minutes, so nobody can hammer it (the scheduler runs it anyway)
     if (RateLimiter.isLimited('trigger:lexicon', 6, const Duration(minutes: 10))) {
       throw Exception('slow down — try again in a few minutes');
     }
+    PublicCache.clear(); // only once a run really goes ahead
     return LexiconService.tick(session);
   }
 
