@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import 'story_service.dart';
 import 'wallet_service.dart';
 
 /// Jobs with real play: a timed delivery across town, a danfo driven stop to stop, a chase after a
@@ -58,7 +59,11 @@ class JobService {
         note = 'Phone recovered. The owner is grateful.';
     }
     var c = await WalletService.settle(session, user);
+    // your career: experience from every job, and more pay for the work it is about
+    final (bonus, story) = StoryService.careerBonus(c, j.type, pay);
+    if (bonus > 0) { pay += bonus; note = '$note Your trade adds ₦$bonus.'; }
     c = await WorldCitizen.db.updateRow(session, c.copyWith(
+      story: story ?? c.story,
       naira: c.naira + pay,
       standing: (c.standing + (j.type == 'chase' ? 2 : 1)).clamp(-100, 100),
       missionsDone: c.missionsDone + 1,

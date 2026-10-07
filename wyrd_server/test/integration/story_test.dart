@@ -84,6 +84,79 @@ void main() {
       expect(story['naira'], 31500);
     });
 
+    test('every one of the twenty-five missions can be finished, by every ending', () async {
+      StoryService.noWaitsForTesting = true;
+      final story = j(await endpoints.city.story(as('00000000-0000-4000-8000-0000000000f0')));
+      expect(story['cityVars'], hasLength(9));
+      // one player per ending, so each runs from the start
+      final endings = <String, List<List<String>>>{
+        'owambe': [['fix:rival'], ['fix:indoors'], ['fix:rain']],
+        'seawall': [['fix:atlantic'], ['fix:press'], ['fix:divers', 'divers']],
+        'union': [['vote:campaign'], ['vote:deal'], ['vote:expose']],
+        'phone': [['phone:return'], ['phone:leak'], ['phone:sell']],
+        'eyo': [['eyo:palace'], ['eyo:wyrd'], ['eyo:youth']],
+        'container': [['cargo:return'], ['cargo:whistle'], ['cargo:sell']],
+        'startup': [['buy:refuse'], ['buy:protect'], ['buy:sell']],
+        'goat': [['goat:gossip'], ['goat:trap']],
+        'flood': [['flood:boats'], ['flood:gates'], ['flood:drains']],
+        'leak': [['leak:publish'], ['leak:wyrd'], ['leak:blackmail']],
+        'peppersoup': [['soup:meal'], ['soup:prove'], ['soup:split']],
+        'ghostbus': [['ghost:investigate'], ['ghost:hack'], ['ghost:wyrd']],
+        'grandma': [['land:archive', 'records'], ['land:talk']],
+        'matchday': [['match:var'], ['match:legend'], ['match:wyrd']],
+        'japa': [['japa:job'], ['japa:scholarship']],
+        'dronestrike': [['drone:support'], ['drone:cross'], ['drone:negotiate']],
+        'voices': [['voices:elders'], ['voices:crowd'], ['voices:museum']],
+        'bankrun': [['bank:ajo'], ['bank:trace'], ['bank:peace']],
+        'finale': [['gate:atlantic'], ['gate:makoko'], ['gate:third'], ['gate:assembly']],
+      };
+      var n = 0x100;
+      for (final e in endings.entries) {
+        for (final path in e.value) {
+          final who = as('00000000-0000-4000-8000-000000000${(n++).toRadixString(16)}');
+          for (final mv in ['accept', ...path]) {
+            final r = j(await endpoints.city.storyAct(who, e.key, mv));
+            expect(r['ok'], isTrue, reason: '${e.key} $mv: ${r['error']}');
+          }
+          expect(j(await endpoints.city.story(who))['missions'][e.key]['step'], 'done', reason: '${e.key} ${path.last}');
+        }
+      }
+    });
+
+    test('an ending changes the city, the person you helped remembers, and WYRD says so', () async {
+      StoryService.noWaitsForTesting = true;
+      final fela = as('00000000-0000-4000-8000-0000000000f1');
+      await endpoints.city.storyAct(fela, 'flood', 'accept');
+      final r = j(await endpoints.city.storyAct(fela, 'flood', 'flood:gates'));
+      expect(r['bulletin'], contains('Makoko'));
+      final s = j(await endpoints.city.story(fela));
+      expect(s['city']['Makoko']['flooding'], 75 + 15); // Makoko's baseline, plus the water WYRD let in
+      expect(s['city']['Lekki']['flooding'], 65 - 12);
+      expect(s['people']['Tunde']['trust'], 2);
+      // the man you sold out remembers
+      await endpoints.city.storyAct(fela, 'container', 'accept');
+      await endpoints.city.storyAct(fela, 'container', 'cargo:sell');
+      final p = j(await endpoints.city.story(fela))['people']['Dr Bello'];
+      expect(p['trust'], -20);
+      expect((p['notes'] as List).last['felt'], 'betrayed');
+    });
+
+    test('a background is chosen once; a career pays more for its own work', () async {
+      final gbenga = as('00000000-0000-4000-8000-0000000000f2');
+      final before = j(await endpoints.city.story(gbenga))['naira'] as int;
+      expect(j(await endpoints.city.storyAct(gbenga, 'life', 'background:heir'))['ok'], isTrue);
+      final s = j(await endpoints.city.story(gbenga));
+      expect(s['naira'], before + 30000);
+      expect(s['rep']['social']['elite'], 12);
+      expect(j(await endpoints.city.storyAct(gbenga, 'life', 'background:nurse'))['error'], contains('once'));
+      expect(j(await endpoints.city.storyAct(gbenga, 'life', 'career:astronaut'))['error'], isNotNull);
+      expect(j(await endpoints.city.storyAct(gbenga, 'life', 'career:danfo'))['ok'], isTrue);
+      final job = j(await endpoints.city.jobStart(gbenga, 'danfo'));
+      final done = j(await endpoints.city.jobFinish(gbenga, job['id'] as String, 0, 0, 60));
+      expect(done['note'], isNot(contains('trade'))); // nobody carried, nothing extra
+      expect(j(await endpoints.city.story(gbenga))['careerStage'], 'Starting out');
+    });
+
     tearDownAll(() => StoryService.noWaitsForTesting = false);
   });
 }
