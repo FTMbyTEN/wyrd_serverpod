@@ -59,8 +59,10 @@ CacheControlHeader? appCacheControl(Request request, dynamic fileInfo) {
   final path = request.url.path;
   final hashed = path.contains('/_expo/static/') || RegExp(r'\.[0-9a-f]{16,}\.[a-z0-9]+$').hasMatch(path);
   if (hashed) return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 365).inSeconds, immutable: true);
-  if (RegExp(r'\.(png|ico|json|webmanifest)$').hasMatch(path)) {
+  if (RegExp(r'\.(ico|webmanifest)$').hasMatch(path)) {
     return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 1).inSeconds);
   }
+  // everything else -- the page, the game's map data (json) and pictures -- is checked with the server on
+  // each load (an unchanged file costs only a "not modified" reply), so a deploy shows at once
   return CacheControlHeader(privateCache: true, noCache: true);
 }
