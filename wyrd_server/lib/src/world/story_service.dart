@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'city_wire.dart';
+
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
@@ -502,6 +504,9 @@ class StoryService {
       people[who] = p;
       s['people'] = people;
     }
+    // on the live wire, for everyone in the city
+    final helper = who == null ? 'a citizen' : '$who and a citizen';
+    CityWire.say('deed', news.isEmpty ? 'Word from the streets: $helper just settled things. The city noticed.' : 'Word from the streets: $helper just settled things. ${news.first}.');
     if (news.isEmpty) return null;
     final bulletin = 'WYRD city bulletin: ${news.join('. ')}.';
     final b = ((s['bulletins'] as List?) ?? <dynamic>[])..add({'at': DateTime.now().toUtc().toIso8601String(), 'text': bulletin});

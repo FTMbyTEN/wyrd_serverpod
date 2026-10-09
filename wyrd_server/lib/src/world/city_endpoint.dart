@@ -9,6 +9,7 @@ import 'city_charter_service.dart';
 import 'city_design_service.dart';
 import 'world_authority.dart';
 import 'world_stats.dart';
+import 'city_wire.dart';
 import 'wallet_service.dart';
 import 'story_service.dart';
 import 'place_service.dart';
@@ -84,6 +85,9 @@ class CityEndpoint extends Endpoint {
 
   /// Your standing with the Authority and any mission it gave you, without asking it anything.
   Future<String> status(Session session) => WorldAuthority.status(session, _user(session));
+
+  /// WYRD's live wire: what's happened in the city since item [since] (0: the latest few), for every player. See CityWire.
+  Future<String> wire(Session session, int since) => CityWire.since(session, since);
 
   /// WYRD's charter for the city (how it means to deal with players, in its words) and the
   /// missions on its board open to you, as JSON: {charter, author, writtenAt, missions}.

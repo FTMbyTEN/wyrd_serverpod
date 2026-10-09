@@ -2706,6 +2706,24 @@ class Endpoints extends _is.EndpointDispatch {
               ) async =>
                   (endpoints['city'] as _ifkdhb4n.CityEndpoint).status(session),
         ),
+        'wire': _is.MethodConnector(
+          name: 'wire',
+          params: {
+            'since': _is.ParameterDescription(
+              name: 'since',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).wire(
+                session,
+                params['since'],
+              ),
+        ),
         'charter': _is.MethodConnector(
           name: 'charter',
           params: {},

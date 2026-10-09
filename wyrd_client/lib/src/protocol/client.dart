@@ -1701,6 +1701,13 @@ class EndpointCity extends _isc.EndpointRef {
     {},
   );
 
+  /// WYRD's live wire: what's happened in the city since item [since] (0: the latest few), for every player. See CityWire.
+  _ida.Future<String> wire(int since) => caller.callServerEndpoint<String>(
+    'city',
+    'wire',
+    {'since': since},
+  );
+
   /// WYRD's charter for the city (how it means to deal with players, in its words) and the
   /// missions on its board open to you, as JSON: {charter, author, writtenAt, missions}.
   _ida.Future<String> charter() => caller.callServerEndpoint<String>(

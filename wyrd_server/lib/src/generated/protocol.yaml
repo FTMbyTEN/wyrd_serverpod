@@ -160,6 +160,7 @@ city:
   - pulse:
   - stats:
   - status:
+  - wire:
   - charter:
   - design:
   - setTraining:
