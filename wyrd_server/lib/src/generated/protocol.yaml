@@ -43,6 +43,11 @@ games:
   - poll:
 greeting:
   - hello:
+konnectly:
+  - status:
+  - writeListing:
+  - care:
+  - checkReceipt:
 account:
   - exportData:
   - deleteMyData:

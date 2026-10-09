@@ -24,6 +24,7 @@ import '../drone/drone_bridge_endpoint.dart' as _igomlm42;
 import '../drone/drone_endpoint.dart' as _iec5mi4p;
 import '../games/games_endpoint.dart' as _ittu6d2n;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../konnectly/konnectly_endpoint.dart' as _i79gaqir;
 import '../mind/account_endpoint.dart' as _i45717np;
 import '../mind/alerts_endpoint.dart' as _impqu952;
 import '../mind/brain_endpoint.dart' as _iskgx6uk;
@@ -97,6 +98,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'konnectly': _i79gaqir.KonnectlyEndpoint()
+        ..initialize(
+          server,
+          'konnectly',
           null,
         ),
       'account': _i45717np.AccountEndpoint()
@@ -1054,6 +1061,109 @@ class Endpoints extends _is.EndpointDispatch {
                   (endpoints['greeting'] as _il624ik7.GreetingEndpoint).hello(
                     session,
                     params['name'],
+                  ),
+        ),
+      },
+    );
+    connectors['konnectly'] = _is.EndpointConnector(
+      name: 'konnectly',
+      endpoint: endpoints['konnectly']!,
+      methodConnectors: {
+        'status': _is.MethodConnector(
+          name: 'status',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['konnectly'] as _i79gaqir.KonnectlyEndpoint)
+                  .status(session),
+        ),
+        'writeListing': _is.MethodConnector(
+          name: 'writeListing',
+          params: {
+            'imageBase64Jpeg': _is.ParameterDescription(
+              name: 'imageBase64Jpeg',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+            'campus': _is.ParameterDescription(
+              name: 'campus',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['konnectly'] as _i79gaqir.KonnectlyEndpoint)
+                  .writeListing(
+                    session,
+                    params['imageBase64Jpeg'],
+                    note: params['note'],
+                    campus: params['campus'],
+                  ),
+        ),
+        'care': _is.MethodConnector(
+          name: 'care',
+          params: {
+            'message': _is.ParameterDescription(
+              name: 'message',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'lastTopic': _is.ParameterDescription(
+              name: 'lastTopic',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['konnectly'] as _i79gaqir.KonnectlyEndpoint).care(
+                    session,
+                    params['message'],
+                    lastTopic: params['lastTopic'],
+                  ),
+        ),
+        'checkReceipt': _is.MethodConnector(
+          name: 'checkReceipt',
+          params: {
+            'imageBase64Jpeg': _is.ParameterDescription(
+              name: 'imageBase64Jpeg',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'expectedAmount': _is.ParameterDescription(
+              name: 'expectedAmount',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+            'expectedAccount': _is.ParameterDescription(
+              name: 'expectedAccount',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['konnectly'] as _i79gaqir.KonnectlyEndpoint)
+                  .checkReceipt(
+                    session,
+                    params['imageBase64Jpeg'],
+                    expectedAmount: params['expectedAmount'],
+                    expectedAccount: params['expectedAccount'],
                   ),
         ),
       },

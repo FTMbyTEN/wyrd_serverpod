@@ -617,6 +617,70 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// WYRD for Konnectly, demo mode: open to anyone (no sign-in, no Konnectly data), so it is held to
+/// a shared pace and a daily allowance of its own (see KonnectlyService). The demo page lives at
+/// /konnectly on the web server. Replies are JSON strings so the page needs no generated client;
+/// a failure comes back as {"error": "..."} (a thrown exception would reach the page as a bare 500).
+/// {@category Endpoint}
+class EndpointKonnectly extends _isc.EndpointRef {
+  EndpointKonnectly(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'konnectly';
+
+  /// {"ready": bool, "left": calls left today}
+  _ida.Future<String> status() => caller.callServerEndpoint<String>(
+    'konnectly',
+    'status',
+    {},
+  );
+
+  /// See KonnectlyService.writeListing.
+  _ida.Future<String> writeListing(
+    String imageBase64Jpeg, {
+    String? note,
+    String? campus,
+  }) => caller.callServerEndpoint<String>(
+    'konnectly',
+    'writeListing',
+    {
+      'imageBase64Jpeg': imageBase64Jpeg,
+      'note': note,
+      'campus': campus,
+    },
+  );
+
+  /// Customer care, scripted (KonnectlyCare): no AI, so it costs nothing and isn't counted against
+  /// the demo's daily allowance. [lastTopic] is the topic of the previous reply, for follow-ups.
+  /// {"reply", "suggestions", "handoff", "topic"}
+  _ida.Future<String> care(
+    String message, {
+    String? lastTopic,
+  }) => caller.callServerEndpoint<String>(
+    'konnectly',
+    'care',
+    {
+      'message': message,
+      'lastTopic': lastTopic,
+    },
+  );
+
+  /// See KonnectlyService.checkReceipt.
+  _ida.Future<String> checkReceipt(
+    String imageBase64Jpeg, {
+    int? expectedAmount,
+    String? expectedAccount,
+  }) => caller.callServerEndpoint<String>(
+    'konnectly',
+    'checkReceipt',
+    {
+      'imageBase64Jpeg': imageBase64Jpeg,
+      'expectedAmount': expectedAmount,
+      'expectedAccount': expectedAccount,
+    },
+  );
+}
+
 /// Ports /api/account/export and /api/account/delete from server.js. Node's delete required
 /// re-entering the password and removed the login credential itself, not just app data --
 /// with Serverpod's built-in email auth, credential deletion isn't something this project's
@@ -1776,6 +1840,7 @@ class Client extends _isc.ServerpodClientShared {
     drone = EndpointDrone(this);
     games = EndpointGames(this);
     greeting = EndpointGreeting(this);
+    konnectly = EndpointKonnectly(this);
     account = EndpointAccount(this);
     alerts = EndpointAlerts(this);
     brain = EndpointBrain(this);
@@ -1819,6 +1884,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointGames games;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointKonnectly konnectly;
 
   late final EndpointAccount account;
 
@@ -1885,6 +1952,7 @@ class Client extends _isc.ServerpodClientShared {
     'drone': drone,
     'games': games,
     'greeting': greeting,
+    'konnectly': konnectly,
     'account': account,
     'alerts': alerts,
     'brain': brain,

@@ -56,6 +56,10 @@ void run(List<String> args) async {
     '/assets/assets/config.json',
   );
 
+  // WYRD for Konnectly (the campus marketplace), demo mode: a page of its own that calls the
+  // konnectly endpoint.
+  pod.webServer.addRoute(StaticRoute.file(File(Uri(path: 'web/pages/konnectly.html').toFilePath())), '/konnectly');
+
   // Checks if the flutter web app has been built and serves it if it has.
   final appDir = Directory(Uri(path: 'web/app').toFilePath());
   if (appDir.existsSync()) {
