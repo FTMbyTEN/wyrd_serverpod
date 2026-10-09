@@ -59,6 +59,11 @@ CacheControlHeader? appCacheControl(Request request, dynamic fileInfo) {
   final path = request.url.path;
   final hashed = path.contains('/_expo/static/') || RegExp(r'\.[0-9a-f]{16,}\.[a-z0-9]+$').hasMatch(path);
   if (hashed) return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 365).inSeconds, immutable: true);
+  // the game's map data and pictures asked for with the build's version (?v=..., see the app's world2d/asset.ts):
+  // that exact file never changes, so browsers keep it -- a returning player's map loads from their own disk
+  if (request.url.queryParameters.containsKey('v')) {
+    return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 30).inSeconds, immutable: true);
+  }
   if (RegExp(r'\.(ico|webmanifest)$').hasMatch(path)) {
     return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 1).inSeconds);
   }
