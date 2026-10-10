@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:serverpod/serverpod.dart';
+import 'bank.dart';
 
-import '../generated/protocol.dart';
 import 'wallet_service.dart';
 
 /// One thing you can do at a place: what it costs (negative) or pays (positive), the health it gives
@@ -63,11 +63,17 @@ class PlaceService {
       return jsonEncode({'error': 'Not yet -- come back in ${wait.inMinutes >= 1 ? '${wait.inMinutes} min' : '${wait.inSeconds} s'}.'});
     }
     var c = await WalletService.settle(session, user);
-    if (a.naira < 0 && c.naira < -a.naira) return jsonEncode({'error': "You can't afford it (₦${-a.naira})."});
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(
-      naira: c.naira + a.naira, standing: (c.standing + a.standing).clamp(-100, 100), updatedAt: now));
+    Map<String, dynamic>? receipt;
+    if (a.naira != 0) {
+      final r = await Bank.post(session, user, key: 'place:$kind:$id:${user.uuid}:${now.millisecondsSinceEpoch ~/ 5000}', amount: a.naira, kind: 'place',
+          counter: a.naira < 0 ? 'city:market' : 'city:treasury', memo: place.isEmpty ? a.label : '${a.label} · ${place.length > 40 ? place.substring(0, 40) : place}');
+      if (!r.ok) return jsonEncode({'error': "You can't afford it (₦${-a.naira})."});
+      if (r.repeat) return jsonEncode({'error': 'Done already.'});
+      receipt = Bank.receipt(r.entry!);
+    }
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(standing: (c.standing + a.standing).clamp(-100, 100), updatedAt: now));
     _last[key] = now;
     final w = jsonDecode(await WalletService.wallet(session, user)) as Map<String, dynamic>;
-    return jsonEncode({...w, 'text': a.done, 'delta': a.naira, 'heal': a.heal, 'standing': c.standing, 'place': place});
+    return jsonEncode({...w, 'text': a.done, 'delta': a.naira, 'heal': a.heal, 'standing': c.standing, 'place': place, 'receipt': receipt});
   }
 }

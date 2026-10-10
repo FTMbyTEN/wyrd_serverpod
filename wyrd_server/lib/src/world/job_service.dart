@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:serverpod/serverpod.dart';
+import 'bank.dart';
 
-import '../generated/protocol.dart';
 import 'story_service.dart';
 import 'wallet_service.dart';
 
@@ -62,13 +62,15 @@ class JobService {
     // your career: experience from every job, and more pay for the work it is about
     final (bonus, story) = StoryService.careerBonus(c, j.type, pay);
     if (bonus > 0) { pay += bonus; note = '$note Your trade adds ₦$bonus.'; }
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(
+    final r = await Bank.post(session, user, key: 'job:${j.id}', amount: pay, kind: 'job', counter: 'city:treasury',
+        memo: {'delivery': 'Delivery', 'danfo': 'Danfo run', 'chase': 'Phone recovered'}[j.type] ?? 'Job');
+    if (r.repeat) return jsonEncode({'error': 'That job was already paid.'});
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(
       story: story ?? c.story,
-      naira: c.naira + pay,
       standing: (c.standing + (j.type == 'chase' ? 2 : 1)).clamp(-100, 100),
       missionsDone: c.missionsDone + 1,
       updatedAt: DateTime.now().toUtc()));
     final w = jsonDecode(await WalletService.wallet(session, user)) as Map<String, dynamic>;
-    return jsonEncode({...w, 'paid': pay, 'note': note});
+    return jsonEncode({...w, 'paid': pay, 'note': note, 'receipt': Bank.receipt(r.entry!)});
   }
 }

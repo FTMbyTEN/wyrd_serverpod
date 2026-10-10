@@ -170,6 +170,8 @@ city:
   - canDesign:
   - designChat:
   - designNotes:
+  - receipts:
+  - ledgerAudit:
   - story:
   - storyAct:
   - designDecide:

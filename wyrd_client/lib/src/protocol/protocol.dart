@@ -119,6 +119,7 @@ import 'world/city_charter.dart' as _i1wlu2l5;
 import 'world/city_design_note.dart' as _iovwbeu0;
 import 'world/city_signal.dart' as _it2dv7hu;
 import 'world/game_exchange.dart' as _i565k4ep;
+import 'world/naira_entry.dart' as _il7m0dky;
 import 'world/player_character.dart' as _i14mz3cx;
 import 'world/world_citizen.dart' as _inb8mkev;
 export 'agent/agent_step.dart';
@@ -199,6 +200,7 @@ export 'world/city_charter.dart';
 export 'world/city_design_note.dart';
 export 'world/city_signal.dart';
 export 'world/game_exchange.dart';
+export 'world/naira_entry.dart';
 export 'world/player_character.dart';
 export 'world/world_citizen.dart';
 export 'client.dart';
@@ -471,6 +473,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i565k4ep.GameExchange) {
       return _i565k4ep.GameExchange.fromJson(data) as T;
     }
+    if (t == _il7m0dky.NairaEntry) {
+      return _il7m0dky.NairaEntry.fromJson(data) as T;
+    }
     if (t == _i14mz3cx.PlayerCharacter) {
       return _i14mz3cx.PlayerCharacter.fromJson(data) as T;
     }
@@ -731,6 +736,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_i565k4ep.GameExchange?>()) {
       return (data != null ? _i565k4ep.GameExchange.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_il7m0dky.NairaEntry?>()) {
+      return (data != null ? _il7m0dky.NairaEntry.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i14mz3cx.PlayerCharacter?>()) {
       return (data != null ? _i14mz3cx.PlayerCharacter.fromJson(data) : null)
@@ -1141,6 +1149,7 @@ class Protocol extends _isc.SerializationManager {
       _iovwbeu0.CityDesignNote => 'CityDesignNote',
       _it2dv7hu.CitySignal => 'CitySignal',
       _i565k4ep.GameExchange => 'GameExchange',
+      _il7m0dky.NairaEntry => 'NairaEntry',
       _i14mz3cx.PlayerCharacter => 'PlayerCharacter',
       _inb8mkev.WorldCitizen => 'WorldCitizen',
       _ => null,
@@ -1313,6 +1322,8 @@ class Protocol extends _isc.SerializationManager {
         return 'CitySignal';
       case _i565k4ep.GameExchange():
         return 'GameExchange';
+      case _il7m0dky.NairaEntry():
+        return 'NairaEntry';
       case _i14mz3cx.PlayerCharacter():
         return 'PlayerCharacter';
       case _inb8mkev.WorldCitizen():
@@ -1572,6 +1583,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'GameExchange') {
       return deserialize<_i565k4ep.GameExchange>(data['data']);
+    }
+    if (dataClassName == 'NairaEntry') {
+      return deserialize<_il7m0dky.NairaEntry>(data['data']);
     }
     if (dataClassName == 'PlayerCharacter') {
       return deserialize<_i14mz3cx.PlayerCharacter>(data['data']);

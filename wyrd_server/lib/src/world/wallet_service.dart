@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:serverpod/serverpod.dart';
+import 'bank.dart';
 
 import '../generated/protocol.dart';
 import 'world_authority.dart';
@@ -72,17 +73,21 @@ class WalletService {
     if (h == null || c.homeMode != 'rent') return c;
     final now = DateTime.now().toUtc();
     var paid = c.rentPaidUntil ?? now;
-    var naira = c.naira;
+    if (!paid.isBefore(now)) return c;
     var lost = false;
     while (paid.isBefore(now)) {
-      if (naira < h.rent) { lost = true; break; }
-      naira -= h.rent;
+      // each week's rent once, by its date (two requests at once can't charge it twice)
+      final week = paid.toIso8601String().substring(0, 10);
+      final r = await Bank.post(session, user, key: 'rent:${h.slug}:${user.uuid}:$week', amount: -h.rent, kind: 'rent',
+          counter: 'city:landlord', memo: 'Rent, ${h.name} (week from $week)');
+      if (!r.ok) { lost = true; break; }
       paid = paid.add(const Duration(days: 7));
     }
+    c = await Bank.fresh(session, user);
     c = lost
-        ? c.copyWith(naira: naira, homeSlug: null, homeMode: null, rentPaidUntil: null, updatedAt: now)
-        : c.copyWith(naira: naira, rentPaidUntil: paid, updatedAt: now);
-    return WorldCitizen.db.updateRow(session, c);
+        ? c.copyWith(homeSlug: null, homeMode: null, rentPaidUntil: null, updatedAt: now)
+        : c.copyWith(rentPaidUntil: paid, updatedAt: now);
+    return Bank.save(session, c);
   }
 
   static Map<String, dynamic> _wallet(WorldCitizen c) {
@@ -118,12 +123,13 @@ class WalletService {
     final other = await WorldCitizen.db.findFirstRow(session, where: (t) => t.homeSlug.equals(slug));
     if (other != null) return jsonEncode({'error': 'Someone already lives here.'});
     final cost = mode == 'rent' ? h.rent : h.price;
-    if (c.naira < cost) return jsonEncode({'error': 'You need ₦${_fmt(cost)} -- you have ₦${_fmt(c.naira)}.'});
     final now = DateTime.now().toUtc();
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(
-      naira: c.naira - cost, homeSlug: slug, homeMode: mode,
+    final r = await Bank.post(session, user, key: 'home:$slug:$mode:${user.uuid}:${now.millisecondsSinceEpoch ~/ 60000}', amount: -cost, kind: 'home',
+        counter: 'city:landlord', memo: mode == 'rent' ? 'First week\'s rent, ${h.name}' : 'Bought ${h.name}');
+    if (!r.ok) return jsonEncode({'error': 'You need ₦${_fmt(cost)} -- you have ₦${_fmt(r.balance)}.'});
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(homeSlug: slug, homeMode: mode,
       rentPaidUntil: mode == 'rent' ? now.add(const Duration(days: 7)) : null, updatedAt: now));
-    return jsonEncode(_wallet(c));
+    return jsonEncode({..._wallet(c), 'receipt': Bank.receipt(r.entry!)});
   }
 
   /// Move out (renting: no refund; owning: sold back for 70% of the price).
@@ -132,8 +138,13 @@ class WalletService {
     final h = home(c.homeSlug);
     if (h == null) return jsonEncode(_wallet(c));
     final back = c.homeMode == 'own' ? (h.price * 0.7).round() : 0;
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(
-      naira: c.naira + back, homeSlug: null, homeMode: null, rentPaidUntil: null, updatedAt: DateTime.now().toUtc()));
+    // out first, then paid: a second request finds no home to sell
+    c = await Bank.save(session, c.copyWith(homeSlug: null, homeMode: null, rentPaidUntil: null, updatedAt: DateTime.now().toUtc()));
+    if (back > 0) {
+      final r = await Bank.post(session, user, key: 'home:sell:${h.slug}:${user.uuid}:${DateTime.now().millisecondsSinceEpoch ~/ 60000}', amount: back,
+          kind: 'home', counter: 'city:landlord', memo: 'Sold ${h.name} back (70%)');
+      return jsonEncode({..._wallet(await Bank.fresh(session, user)), 'receipt': Bank.receipt(r.entry!)});
+    }
     return jsonEncode(_wallet(c));
   }
 
@@ -141,13 +152,23 @@ class WalletService {
   // (ride: a WYRD Ride by road; air: a WYRD Air flight -- ordered from the phone in NAIJA 2099)
   static const fares = {'maglev': 200, 'danfo': 100, 'ride': 500, 'air': 1500, 'fine': 2000, 'lawyer': 10000};
 
+  /// what each charge is on the books: its kind, the city account it goes to, and what the receipt says
+  static const _charge = <String, (String, String, String)>{
+    'maglev': ('fare', 'city:transport', 'Maglev fare'), 'danfo': ('fare', 'city:transport', 'Danfo fare across town'),
+    'ride': ('ride', 'city:transport', 'WYRD Ride'), 'air': ('air', 'city:transport', 'WYRD Air flight'),
+    'fine': ('fine', 'city:courts', 'Police fine'), 'lawyer': ('fee', 'city:services', 'Barr. Adeyemi, SAN: retainer'),
+  };
+
   static Future<String> pay(Session session, UuidValue user, String reason) async {
     final cost = fares[reason];
     if (cost == null) return jsonEncode({'error': 'Unknown charge.'});
-    var c = await settle(session, user);
-    if (c.naira < cost) return jsonEncode({'error': 'Not enough naira (₦${_fmt(cost)}).'});
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(naira: c.naira - cost, updatedAt: DateTime.now().toUtc()));
-    return jsonEncode(_wallet(c));
+    await settle(session, user);
+    final (kind, counter, memo) = _charge[reason]!;
+    // (a double tap within two seconds is one charge)
+    final r = await Bank.post(session, user, key: 'pay:$reason:${user.uuid}:${DateTime.now().millisecondsSinceEpoch ~/ 2000}',
+        amount: -cost, kind: kind, counter: counter, memo: memo);
+    if (!r.ok) return jsonEncode({'error': 'Not enough naira (₦${_fmt(cost)}).'});
+    return jsonEncode({..._wallet(await Bank.fresh(session, user)), 'paid': cost, 'receipt': Bank.receipt(r.entry!)});
   }
 
   /// The street board's missions and what they pay (each once a day).
@@ -174,9 +195,10 @@ class WalletService {
     }
     _lastStreet[user.uuid] = DateTime.now();
     ids.add(id);
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(
-      naira: c.naira + pay, paidToday: jsonEncode({'day': today, 'ids': ids}), updatedAt: DateTime.now().toUtc()));
-    return jsonEncode({..._wallet(c), 'paid': pay});
+    final r = await Bank.post(session, user, key: 'street:$id:$today:${user.uuid}', amount: pay, kind: 'mission', counter: 'city:treasury', memo: 'Street job paid');
+    if (r.repeat) return jsonEncode({..._wallet(await Bank.fresh(session, user)), 'paid': 0, 'note': 'Already paid today.'});
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(paidToday: jsonEncode({'day': today, 'ids': ids}), updatedAt: DateTime.now().toUtc()));
+    return jsonEncode({..._wallet(c), 'paid': pay, 'receipt': Bank.receipt(r.entry!)});
   }
 
   /// WYRD's own missions pay too, when it marks one done.
@@ -200,14 +222,15 @@ class GuideService {
     if (list.contains(step)) return jsonEncode({'guide': list, 'paid': 0, 'naira': c.naira});
     if (step == 'home' && c.homeSlug == null) return jsonEncode({'error': 'You have no home yet.'});
     list.add(step);
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(naira: c.naira + bonus, guideDone: jsonEncode(list), updatedAt: DateTime.now().toUtc()));
-    return jsonEncode({'guide': list, 'paid': bonus, 'naira': c.naira});
+    final r = await Bank.post(session, user, key: 'guide:$step:${user.uuid}', amount: bonus, kind: 'guide', counter: 'city:treasury', memo: 'Guide: $step');
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(guideDone: jsonEncode(list), updatedAt: DateTime.now().toUtc()));
+    return jsonEncode({'guide': list, 'paid': r.repeat ? 0 : bonus, 'naira': r.balance});
   }
 
   /// Skip the guide (counts every step done, pays nothing more).
   static Future<String> skip(Session session, UuidValue user) async {
     var c = await WalletService.settle(session, user);
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(guideDone: jsonEncode(steps.keys.toList()), updatedAt: DateTime.now().toUtc()));
+    c = await Bank.save(session, c.copyWith(guideDone: jsonEncode(steps.keys.toList()), updatedAt: DateTime.now().toUtc()));
     return jsonEncode({'guide': done(c), 'paid': 0, 'naira': c.naira});
   }
 }

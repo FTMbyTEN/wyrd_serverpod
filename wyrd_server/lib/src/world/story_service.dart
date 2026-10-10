@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'city_wire.dart';
 
 import 'package:serverpod/serverpod.dart';
+import 'bank.dart';
 
 import '../generated/protocol.dart';
 import 'wallet_service.dart';
@@ -558,7 +559,7 @@ class StoryService {
   static Future<String> _life(Session session, UuidValue user, String move) async {
     var c = await WalletService.settle(session, user);
     final s = read(c);
-    var naira = c.naira;
+    var start0 = 0;
     String say;
     if (move.startsWith('background:')) {
       final id = move.substring(11);
@@ -566,7 +567,7 @@ class StoryService {
       if (start == null) return jsonEncode({'error': 'Nobody in Lagos starts like that.'});
       if (s['background'] != null) return jsonEncode({'error': 'You only get to be born once.'});
       s['background'] = id;
-      naira += start.$1;
+      start0 = start.$1;
       for (final (g, k, d) in start.$2) _rep(s, g, k, d);
       say = 'You are a ${backgrounds[id]!.$1.toLowerCase()}. Lagos already knows a little of who you are.';
     } else if (move.startsWith('career:')) {
@@ -583,8 +584,14 @@ class StoryService {
       return jsonEncode({'error': 'That is not something you can do here.'});
     }
     _remember(s, 'life: $move');
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(naira: naira, story: jsonEncode(s), updatedAt: DateTime.now().toUtc()));
-    return jsonEncode({'ok': true, 'say': say, 'naira': c.naira, 'story': _view(read(c))});
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(story: jsonEncode(s), updatedAt: DateTime.now().toUtc()));
+    var naira = c.naira;
+    if (start0 > 0) {
+      final r = await Bank.post(session, user, key: 'life:background:${user.uuid}', amount: start0, kind: 'story', counter: 'city:treasury',
+          memo: 'Starting money: ${backgrounds[s['background']]?.$1 ?? 'your background'}');
+      naira = r.balance;
+    }
+    return jsonEncode({'ok': true, 'say': say, 'naira': naira, 'story': _view(read(c))});
   }
 
   /// The story as the app sees it, with the city's state worked out for now.
@@ -611,13 +618,19 @@ class StoryService {
       final have = (((s['rep'] as Map)[g] as Map)[k] as num?) ?? 0;
       if (have < min) return jsonEncode({'error': 'They don\'t know you well enough for favours yet.'});
     }
-    if (m.cost > 0 && c.naira < m.cost) return jsonEncode({'error': 'Not enough naira -- you need ₦${m.cost}.'});
+    // this step's money, once (the step's own time is in the key: a retry finds it, the next step is new)
+    final stepKey = 'story:$mission:$move:${user.uuid}:${state['at'] ?? 'start'}';
+    if (m.cost > 0) {
+      final r = await Bank.post(session, user, key: '$stepKey:cost', amount: -m.cost, kind: 'story', counter: 'city:market', memo: 'Story: $mission');
+      if (!r.ok) return jsonEncode({'error': 'Not enough naira -- you need ₦${m.cost}.'});
+      if (r.repeat) return jsonEncode({'error': 'Already done.'});
+    }
     for (final (g, k, d) in m.rep) _rep(s, g, k, d);
     missions[mission] = {...state, 'step': m.to, 'at': DateTime.now().toUtc().toIso8601String(), 'moves': [...(state['moves'] as List? ?? []), move]};
     String? bulletin;
     if (m.to == 'done') { _remember(s, '$mission: $move'); bulletin = _consequences(s, mission, move); }
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(
-      naira: c.naira - m.cost + m.pay,
+    if (m.pay > 0) await Bank.post(session, user, key: '$stepKey:pay', amount: m.pay, kind: 'story', counter: 'city:treasury', memo: 'Story: $mission');
+    c = await Bank.save(session, (await Bank.fresh(session, user)).copyWith(
       story: jsonEncode(s),
       missionsDone: c.missionsDone + (m.to == 'done' ? 1 : 0),
       updatedAt: DateTime.now().toUtc(),

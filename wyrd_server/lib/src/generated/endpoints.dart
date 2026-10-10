@@ -2850,6 +2850,27 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
                   .designNotes(session),
         ),
+        'receipts': _is.MethodConnector(
+          name: 'receipts',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).receipts(
+                session,
+              ),
+        ),
+        'ledgerAudit': _is.MethodConnector(
+          name: 'ledgerAudit',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .ledgerAudit(session),
+        ),
         'story': _is.MethodConnector(
           name: 'story',
           params: {},

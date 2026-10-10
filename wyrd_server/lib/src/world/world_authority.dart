@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
+import 'bank.dart';
 
 import '../generated/protocol.dart';
 import 'wallet_service.dart';
@@ -54,7 +55,7 @@ class WorldAuthority {
   /// The player's answer to "help train WYRD with your play?" -- changeable any time.
   static Future<String> setTraining(Session session, UuidValue user, bool optIn) async {
     final c = await citizen(session, user);
-    final u = await WorldCitizen.db.updateRow(session, c.copyWith(trainingOptIn: optIn, trainingAsked: true, updatedAt: DateTime.now().toUtc()));
+    final u = await Bank.save(session, c.copyWith(trainingOptIn: optIn, trainingAsked: true, updatedAt: DateTime.now().toUtc()));
     return _decree(u, '', const []);
   }
 
@@ -102,6 +103,7 @@ class WorldAuthority {
 
     var say = content.where((b) => b['type'] == 'text').map((b) => b['text']).join(' ').trim();
     final actions = <Map<String, dynamic>>[];
+    String? boardPaid; // (the mission WYRD marked done, paid after the citizen is saved)
     for (final u in content.where((b) => b['type'] == 'tool_use')) {
       final input = (u['input'] as Map?)?.cast<String, dynamic>() ?? {};
       final name = u['name'] as String;
@@ -128,7 +130,8 @@ class WorldAuthority {
         case 'complete_mission':
           if (c.mission != null && c.trainingOptIn) await GameLearning.missionDone(session, user);
           if (c.mission != null) {
-            c = c.copyWith(mission: null, missionsDone: c.missionsDone + 1, naira: c.naira + WalletService.boardPay);
+            boardPaid = c.mission;
+            c = c.copyWith(mission: null, missionsDone: c.missionsDone + 1);
             actions.add({'type': 'mission_done'});
           }
         default:
@@ -139,7 +142,11 @@ class WorldAuthority {
       }
     }
     if (say.isEmpty) say = _quiet(channel);
-    c = await WorldCitizen.db.updateRow(session, c.copyWith(updatedAt: now));
+    c = await Bank.save(session, c.copyWith(updatedAt: now));
+    if (boardPaid != null) {
+      await Bank.post(session, user, key: 'board:${user.uuid}:${boardPaid.hashCode}:${now.millisecondsSinceEpoch ~/ 60000}', amount: WalletService.boardPay,
+          kind: 'mission', counter: 'city:treasury', memo: 'WYRD mission done');
+    }
     final delta = actions.where((a) => a['type'] == 'standing').fold<int>(0, (s, a) => s + (a['delta'] as int));
     await GameLearning.record(session, user, channel: channel, situation: situation, said: said, reply: say, actions: actions,
         allowed: c.trainingOptIn, outcome: delta == 0 ? null : 'standing:${delta > 0 ? '+' : ''}$delta');

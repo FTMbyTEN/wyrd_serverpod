@@ -1,0 +1,31 @@
+### One movement of naira, kept for good: the player's side ([amount], + in / - out) and the city account on the other
+### side ([counter]), so every entry balances. Written only by Bank.post, in the same database transaction that changes
+### the player's balance; never edited (a mistake is put right by a reversing entry). [key] makes each action pay or
+### charge once, however often it's retried.
+class: NairaEntry
+table: naira_entry
+fields:
+  ### what this movement is, once: e.g. job:{id}, rent:{home}:{week}, ride:{user}:{bucket}
+  key: String
+  authUserId: UuidValue
+  ### + naira in, - naira out
+  amount: int
+  ### the player's balance just after it
+  balanceAfter: int
+  ### open | fare | ride | air | rent | home | fine | fee | job | mission | guide | story | place | refund | grant
+  kind: String
+  ### the other side: city:treasury, city:transport, city:landlord, city:courts, city:market, city:services
+  counter: String
+  ### what the player reads on the receipt
+  memo: String
+  ### posted | reversed
+  status: String, default='posted'
+  ### the entry this one reverses, if it's a reversal
+  reverses: int?
+  createdAt: DateTime
+indexes:
+  naira_entry_key_idx:
+    fields: key
+    unique: true
+  naira_entry_user_idx:
+    fields: authUserId, createdAt

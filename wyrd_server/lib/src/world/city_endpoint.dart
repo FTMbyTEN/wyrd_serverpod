@@ -12,6 +12,7 @@ import 'world_stats.dart';
 import 'city_wire.dart';
 import 'city_signals.dart';
 import 'wallet_service.dart';
+import 'bank.dart';
 import 'story_service.dart';
 import 'place_service.dart';
 import 'job_service.dart';
@@ -135,6 +136,15 @@ class CityEndpoint extends Endpoint {
   Future<String> designNotes(Session session) async {
     await _operator(session);
     return jsonEncode([for (final n in await CityDesignService.notes(session)) CityDesignService.toJson(n)]);
+  }
+
+  /// Your latest receipts, newest first (JSON list of {ref, kind, memo, amount, balance, at, reversed}).
+  Future<String> receipts(Session session) async => jsonEncode(await Bank.receipts(session, _user(session)));
+
+  /// The books checked (owner only): every player whose ledger doesn't add up to their balance; an empty list is all well.
+  Future<String> ledgerAudit(Session session) async {
+    await _operator(session);
+    return jsonEncode(await Bank.audit(session));
   }
 
   /// Your story: reputation by district, faction and circle, and your missions (JSON).

@@ -1777,6 +1777,20 @@ class EndpointCity extends _isc.EndpointRef {
     {},
   );
 
+  /// Your latest receipts, newest first (JSON list of {ref, kind, memo, amount, balance, at, reversed}).
+  _ida.Future<String> receipts() => caller.callServerEndpoint<String>(
+    'city',
+    'receipts',
+    {},
+  );
+
+  /// The books checked (owner only): every player whose ledger doesn't add up to their balance; an empty list is all well.
+  _ida.Future<String> ledgerAudit() => caller.callServerEndpoint<String>(
+    'city',
+    'ledgerAudit',
+    {},
+  );
+
   /// Your story: reputation by district, faction and circle, and your missions (JSON).
   _ida.Future<String> story() => caller.callServerEndpoint<String>(
     'city',
