@@ -138,6 +138,12 @@ class CityEndpoint extends Endpoint {
     return jsonEncode([for (final n in await CityDesignService.notes(session)) CityDesignService.toJson(n)]);
   }
 
+  /// Cancel your WYRD Ride or flight before it got you there: the fare back (all of it in the first minute, 80% after).
+  Future<String> refundRide(Session session) => _money(session, (u) => WalletService.refundRide(session, u));
+
+  /// Dispute a charge on your receipts ([ref]: its R-code; [reason]: not_delivered | wrong_amount | other).
+  Future<String> dispute(Session session, String ref, String reason) => _money(session, (u) => WalletService.dispute(session, u, ref, reason));
+
   /// Your latest receipts, newest first (JSON list of {ref, kind, memo, amount, balance, at, reversed}).
   Future<String> receipts(Session session) async => jsonEncode(await Bank.receipts(session, _user(session)));
 

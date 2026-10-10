@@ -32,12 +32,17 @@ abstract class WorldCitizen
     this.paidToday,
     this.guideDone,
     this.story,
+    int? debt,
+    this.debtSince,
+    this.rentGraceUntil,
+    this.fineWarnedAt,
     required this.updatedAt,
   }) : standing = standing ?? 0,
        missionsDone = missionsDone ?? 0,
        trainingOptIn = trainingOptIn ?? false,
        trainingAsked = trainingAsked ?? false,
-       naira = naira ?? 5000;
+       naira = naira ?? 5000,
+       debt = debt ?? 0;
 
   factory WorldCitizen({
     int? id,
@@ -55,6 +60,10 @@ abstract class WorldCitizen
     String? paidToday,
     String? guideDone,
     String? story,
+    int? debt,
+    DateTime? debtSince,
+    DateTime? rentGraceUntil,
+    DateTime? fineWarnedAt,
     required DateTime updatedAt,
   }) = _WorldCitizenImpl;
 
@@ -85,6 +94,20 @@ abstract class WorldCitizen
       paidToday: jsonSerialization['paidToday'] as String?,
       guideDone: jsonSerialization['guideDone'] as String?,
       story: jsonSerialization['story'] as String?,
+      debt: jsonSerialization['debt'] as int?,
+      debtSince: jsonSerialization['debtSince'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(jsonSerialization['debtSince']),
+      rentGraceUntil: jsonSerialization['rentGraceUntil'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(
+              jsonSerialization['rentGraceUntil'],
+            ),
+      fineWarnedAt: jsonSerialization['fineWarnedAt'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(
+              jsonSerialization['fineWarnedAt'],
+            ),
       updatedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
@@ -137,6 +160,19 @@ abstract class WorldCitizen
   /// the city remembers of you -- JSON, written only by StoryService
   String? story;
 
+  /// naira owed on a payment plan (fines over the floor, fares on credit): at most 10,000, no interest; a fifth of
+  /// each payout goes to it. Changed only by Bank, like naira
+  int debt;
+
+  /// since when something has been owed (debt under 2,000 owed for 30 days is forgiven)
+  DateTime? debtSince;
+
+  /// rent fell due and couldn't be paid: the home is kept until this date (two weeks from the first visit it was due)
+  DateTime? rentGraceUntil;
+
+  /// the last police stop let off with a warning (one warning a day)
+  DateTime? fineWarnedAt;
+
   DateTime updatedAt;
 
   @override
@@ -161,6 +197,10 @@ abstract class WorldCitizen
     String? paidToday,
     String? guideDone,
     String? story,
+    int? debt,
+    DateTime? debtSince,
+    DateTime? rentGraceUntil,
+    DateTime? fineWarnedAt,
     DateTime? updatedAt,
   });
   @override
@@ -182,6 +222,10 @@ abstract class WorldCitizen
       if (paidToday != null) 'paidToday': paidToday,
       if (guideDone != null) 'guideDone': guideDone,
       if (story != null) 'story': story,
+      'debt': debt,
+      if (debtSince != null) 'debtSince': debtSince?.toJson(),
+      if (rentGraceUntil != null) 'rentGraceUntil': rentGraceUntil?.toJson(),
+      if (fineWarnedAt != null) 'fineWarnedAt': fineWarnedAt?.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -205,6 +249,10 @@ abstract class WorldCitizen
       if (paidToday != null) 'paidToday': paidToday,
       if (guideDone != null) 'guideDone': guideDone,
       if (story != null) 'story': story,
+      'debt': debt,
+      if (debtSince != null) 'debtSince': debtSince?.toJson(),
+      if (rentGraceUntil != null) 'rentGraceUntil': rentGraceUntil?.toJson(),
+      if (fineWarnedAt != null) 'fineWarnedAt': fineWarnedAt?.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -256,6 +304,10 @@ class _WorldCitizenImpl extends WorldCitizen {
     String? paidToday,
     String? guideDone,
     String? story,
+    int? debt,
+    DateTime? debtSince,
+    DateTime? rentGraceUntil,
+    DateTime? fineWarnedAt,
     required DateTime updatedAt,
   }) : super._(
          id: id,
@@ -273,6 +325,10 @@ class _WorldCitizenImpl extends WorldCitizen {
          paidToday: paidToday,
          guideDone: guideDone,
          story: story,
+         debt: debt,
+         debtSince: debtSince,
+         rentGraceUntil: rentGraceUntil,
+         fineWarnedAt: fineWarnedAt,
          updatedAt: updatedAt,
        );
 
@@ -296,6 +352,10 @@ class _WorldCitizenImpl extends WorldCitizen {
     Object? paidToday = _Undefined,
     Object? guideDone = _Undefined,
     Object? story = _Undefined,
+    int? debt,
+    Object? debtSince = _Undefined,
+    Object? rentGraceUntil = _Undefined,
+    Object? fineWarnedAt = _Undefined,
     DateTime? updatedAt,
   }) {
     return WorldCitizen(
@@ -316,6 +376,14 @@ class _WorldCitizenImpl extends WorldCitizen {
       paidToday: paidToday is String? ? paidToday : this.paidToday,
       guideDone: guideDone is String? ? guideDone : this.guideDone,
       story: story is String? ? story : this.story,
+      debt: debt ?? this.debt,
+      debtSince: debtSince is DateTime? ? debtSince : this.debtSince,
+      rentGraceUntil: rentGraceUntil is DateTime?
+          ? rentGraceUntil
+          : this.rentGraceUntil,
+      fineWarnedAt: fineWarnedAt is DateTime?
+          ? fineWarnedAt
+          : this.fineWarnedAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -397,6 +465,29 @@ class WorldCitizenUpdateTable extends _is.UpdateTable<WorldCitizenTable> {
     value,
   );
 
+  _is.ColumnValue<int, int> debt(int value) => _is.ColumnValue(
+    table.debt,
+    value,
+  );
+
+  _is.ColumnValue<DateTime, DateTime> debtSince(DateTime? value) =>
+      _is.ColumnValue(
+        table.debtSince,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> rentGraceUntil(DateTime? value) =>
+      _is.ColumnValue(
+        table.rentGraceUntil,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> fineWarnedAt(DateTime? value) =>
+      _is.ColumnValue(
+        table.fineWarnedAt,
+        value,
+      );
+
   _is.ColumnValue<DateTime, DateTime> updatedAt(DateTime value) =>
       _is.ColumnValue(
         table.updatedAt,
@@ -468,6 +559,23 @@ class WorldCitizenTable extends _is.Table<int?> {
       'story',
       this,
     );
+    debt = _is.ColumnInt(
+      'debt',
+      this,
+      hasDefault: true,
+    );
+    debtSince = _is.ColumnDateTime(
+      'debtSince',
+      this,
+    );
+    rentGraceUntil = _is.ColumnDateTime(
+      'rentGraceUntil',
+      this,
+    );
+    fineWarnedAt = _is.ColumnDateTime(
+      'fineWarnedAt',
+      this,
+    );
     updatedAt = _is.ColumnDateTime(
       'updatedAt',
       this,
@@ -515,6 +623,19 @@ class WorldCitizenTable extends _is.Table<int?> {
   /// the city remembers of you -- JSON, written only by StoryService
   late final _is.ColumnString story;
 
+  /// naira owed on a payment plan (fines over the floor, fares on credit): at most 10,000, no interest; a fifth of
+  /// each payout goes to it. Changed only by Bank, like naira
+  late final _is.ColumnInt debt;
+
+  /// since when something has been owed (debt under 2,000 owed for 30 days is forgiven)
+  late final _is.ColumnDateTime debtSince;
+
+  /// rent fell due and couldn't be paid: the home is kept until this date (two weeks from the first visit it was due)
+  late final _is.ColumnDateTime rentGraceUntil;
+
+  /// the last police stop let off with a warning (one warning a day)
+  late final _is.ColumnDateTime fineWarnedAt;
+
   late final _is.ColumnDateTime updatedAt;
 
   @override
@@ -534,6 +655,10 @@ class WorldCitizenTable extends _is.Table<int?> {
     paidToday,
     guideDone,
     story,
+    debt,
+    debtSince,
+    rentGraceUntil,
+    fineWarnedAt,
     updatedAt,
   ];
 }

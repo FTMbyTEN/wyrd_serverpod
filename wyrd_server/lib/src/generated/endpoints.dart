@@ -2850,6 +2850,40 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
                   .designNotes(session),
         ),
+        'refundRide': _is.MethodConnector(
+          name: 'refundRide',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .refundRide(session),
+        ),
+        'dispute': _is.MethodConnector(
+          name: 'dispute',
+          params: {
+            'ref': _is.ParameterDescription(
+              name: 'ref',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'reason': _is.ParameterDescription(
+              name: 'reason',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).dispute(
+                session,
+                params['ref'],
+                params['reason'],
+              ),
+        ),
         'receipts': _is.MethodConnector(
           name: 'receipts',
           params: {},

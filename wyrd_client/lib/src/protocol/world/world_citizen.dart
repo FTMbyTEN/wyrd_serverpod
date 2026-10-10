@@ -32,12 +32,17 @@ abstract class WorldCitizen
     this.paidToday,
     this.guideDone,
     this.story,
+    int? debt,
+    this.debtSince,
+    this.rentGraceUntil,
+    this.fineWarnedAt,
     required this.updatedAt,
   }) : standing = standing ?? 0,
        missionsDone = missionsDone ?? 0,
        trainingOptIn = trainingOptIn ?? false,
        trainingAsked = trainingAsked ?? false,
-       naira = naira ?? 5000;
+       naira = naira ?? 5000,
+       debt = debt ?? 0;
 
   factory WorldCitizen({
     int? id,
@@ -55,6 +60,10 @@ abstract class WorldCitizen
     String? paidToday,
     String? guideDone,
     String? story,
+    int? debt,
+    DateTime? debtSince,
+    DateTime? rentGraceUntil,
+    DateTime? fineWarnedAt,
     required DateTime updatedAt,
   }) = _WorldCitizenImpl;
 
@@ -85,6 +94,20 @@ abstract class WorldCitizen
       paidToday: jsonSerialization['paidToday'] as String?,
       guideDone: jsonSerialization['guideDone'] as String?,
       story: jsonSerialization['story'] as String?,
+      debt: jsonSerialization['debt'] as int?,
+      debtSince: jsonSerialization['debtSince'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['debtSince']),
+      rentGraceUntil: jsonSerialization['rentGraceUntil'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['rentGraceUntil'],
+            ),
+      fineWarnedAt: jsonSerialization['fineWarnedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['fineWarnedAt'],
+            ),
       updatedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['updatedAt'],
       ),
@@ -135,6 +158,19 @@ abstract class WorldCitizen
   /// the city remembers of you -- JSON, written only by StoryService
   String? story;
 
+  /// naira owed on a payment plan (fines over the floor, fares on credit): at most 10,000, no interest; a fifth of
+  /// each payout goes to it. Changed only by Bank, like naira
+  int debt;
+
+  /// since when something has been owed (debt under 2,000 owed for 30 days is forgiven)
+  DateTime? debtSince;
+
+  /// rent fell due and couldn't be paid: the home is kept until this date (two weeks from the first visit it was due)
+  DateTime? rentGraceUntil;
+
+  /// the last police stop let off with a warning (one warning a day)
+  DateTime? fineWarnedAt;
+
   DateTime updatedAt;
 
   /// Returns a shallow copy of this [WorldCitizen]
@@ -156,6 +192,10 @@ abstract class WorldCitizen
     String? paidToday,
     String? guideDone,
     String? story,
+    int? debt,
+    DateTime? debtSince,
+    DateTime? rentGraceUntil,
+    DateTime? fineWarnedAt,
     DateTime? updatedAt,
   });
   @override
@@ -177,6 +217,10 @@ abstract class WorldCitizen
       if (paidToday != null) 'paidToday': paidToday,
       if (guideDone != null) 'guideDone': guideDone,
       if (story != null) 'story': story,
+      'debt': debt,
+      if (debtSince != null) 'debtSince': debtSince?.toJson(),
+      if (rentGraceUntil != null) 'rentGraceUntil': rentGraceUntil?.toJson(),
+      if (fineWarnedAt != null) 'fineWarnedAt': fineWarnedAt?.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -200,6 +244,10 @@ abstract class WorldCitizen
       if (paidToday != null) 'paidToday': paidToday,
       if (guideDone != null) 'guideDone': guideDone,
       if (story != null) 'story': story,
+      'debt': debt,
+      if (debtSince != null) 'debtSince': debtSince?.toJson(),
+      if (rentGraceUntil != null) 'rentGraceUntil': rentGraceUntil?.toJson(),
+      if (fineWarnedAt != null) 'fineWarnedAt': fineWarnedAt?.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -229,6 +277,10 @@ class _WorldCitizenImpl extends WorldCitizen {
     String? paidToday,
     String? guideDone,
     String? story,
+    int? debt,
+    DateTime? debtSince,
+    DateTime? rentGraceUntil,
+    DateTime? fineWarnedAt,
     required DateTime updatedAt,
   }) : super._(
          id: id,
@@ -246,6 +298,10 @@ class _WorldCitizenImpl extends WorldCitizen {
          paidToday: paidToday,
          guideDone: guideDone,
          story: story,
+         debt: debt,
+         debtSince: debtSince,
+         rentGraceUntil: rentGraceUntil,
+         fineWarnedAt: fineWarnedAt,
          updatedAt: updatedAt,
        );
 
@@ -269,6 +325,10 @@ class _WorldCitizenImpl extends WorldCitizen {
     Object? paidToday = _Undefined,
     Object? guideDone = _Undefined,
     Object? story = _Undefined,
+    int? debt,
+    Object? debtSince = _Undefined,
+    Object? rentGraceUntil = _Undefined,
+    Object? fineWarnedAt = _Undefined,
     DateTime? updatedAt,
   }) {
     return WorldCitizen(
@@ -289,6 +349,14 @@ class _WorldCitizenImpl extends WorldCitizen {
       paidToday: paidToday is String? ? paidToday : this.paidToday,
       guideDone: guideDone is String? ? guideDone : this.guideDone,
       story: story is String? ? story : this.story,
+      debt: debt ?? this.debt,
+      debtSince: debtSince is DateTime? ? debtSince : this.debtSince,
+      rentGraceUntil: rentGraceUntil is DateTime?
+          ? rentGraceUntil
+          : this.rentGraceUntil,
+      fineWarnedAt: fineWarnedAt is DateTime?
+          ? fineWarnedAt
+          : this.fineWarnedAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

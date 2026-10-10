@@ -1777,6 +1777,26 @@ class EndpointCity extends _isc.EndpointRef {
     {},
   );
 
+  /// Cancel your WYRD Ride or flight before it got you there: the fare back (all of it in the first minute, 80% after).
+  _ida.Future<String> refundRide() => caller.callServerEndpoint<String>(
+    'city',
+    'refundRide',
+    {},
+  );
+
+  /// Dispute a charge on your receipts ([ref]: its R-code; [reason]: not_delivered | wrong_amount | other).
+  _ida.Future<String> dispute(
+    String ref,
+    String reason,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'dispute',
+    {
+      'ref': ref,
+      'reason': reason,
+    },
+  );
+
   /// Your latest receipts, newest first (JSON list of {ref, kind, memo, amount, balance, at, reversed}).
   _ida.Future<String> receipts() => caller.callServerEndpoint<String>(
     'city',

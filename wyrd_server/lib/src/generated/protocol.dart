@@ -124,6 +124,7 @@ import 'world/city_charter.dart' as _i1wlu2l5;
 import 'world/city_design_note.dart' as _iovwbeu0;
 import 'world/city_signal.dart' as _it2dv7hu;
 import 'world/game_exchange.dart' as _i565k4ep;
+import 'world/naira_dispute.dart' as _i708bl2b;
 import 'world/naira_entry.dart' as _il7m0dky;
 import 'world/player_character.dart' as _i14mz3cx;
 import 'world/world_citizen.dart' as _inb8mkev;
@@ -205,6 +206,7 @@ export 'world/city_charter.dart';
 export 'world/city_design_note.dart';
 export 'world/city_signal.dart';
 export 'world/game_exchange.dart';
+export 'world/naira_dispute.dart';
 export 'world/naira_entry.dart';
 export 'world/player_character.dart';
 export 'world/world_citizen.dart';
@@ -2481,6 +2483,91 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'naira_dispute',
+      dartName: 'NairaDispute',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'entryId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reason',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'refundEntryId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'naira_dispute_entry_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'entryId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'naira_dispute_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'naira_entry',
       dartName: 'NairaEntry',
       schema: 'public',
@@ -3837,6 +3924,31 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'String?',
         ),
         _isp.ColumnDefinition(
+          name: 'debt',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'debtSince',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'rentGraceUntil',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'fineWarnedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
           name: 'updatedAt',
           columnType: _isp.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
@@ -4127,6 +4239,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i565k4ep.GameExchange) {
       return _i565k4ep.GameExchange.fromJson(data) as T;
     }
+    if (t == _i708bl2b.NairaDispute) {
+      return _i708bl2b.NairaDispute.fromJson(data) as T;
+    }
     if (t == _il7m0dky.NairaEntry) {
       return _il7m0dky.NairaEntry.fromJson(data) as T;
     }
@@ -4390,6 +4505,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_i565k4ep.GameExchange?>()) {
       return (data != null ? _i565k4ep.GameExchange.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i708bl2b.NairaDispute?>()) {
+      return (data != null ? _i708bl2b.NairaDispute.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_il7m0dky.NairaEntry?>()) {
       return (data != null ? _il7m0dky.NairaEntry.fromJson(data) : null) as T;
@@ -4806,6 +4924,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iovwbeu0.CityDesignNote => 'CityDesignNote',
       _it2dv7hu.CitySignal => 'CitySignal',
       _i565k4ep.GameExchange => 'GameExchange',
+      _i708bl2b.NairaDispute => 'NairaDispute',
       _il7m0dky.NairaEntry => 'NairaEntry',
       _i14mz3cx.PlayerCharacter => 'PlayerCharacter',
       _inb8mkev.WorldCitizen => 'WorldCitizen',
@@ -4979,6 +5098,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'CitySignal';
       case _i565k4ep.GameExchange():
         return 'GameExchange';
+      case _i708bl2b.NairaDispute():
+        return 'NairaDispute';
       case _il7m0dky.NairaEntry():
         return 'NairaEntry';
       case _i14mz3cx.PlayerCharacter():
@@ -5245,6 +5366,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'GameExchange') {
       return deserialize<_i565k4ep.GameExchange>(data['data']);
     }
+    if (dataClassName == 'NairaDispute') {
+      return deserialize<_i708bl2b.NairaDispute>(data['data']);
+    }
     if (dataClassName == 'NairaEntry') {
       return deserialize<_il7m0dky.NairaEntry>(data['data']);
     }
@@ -5373,6 +5497,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _it2dv7hu.CitySignal.t;
       case _i565k4ep.GameExchange:
         return _i565k4ep.GameExchange.t;
+      case _i708bl2b.NairaDispute:
+        return _i708bl2b.NairaDispute.t;
       case _il7m0dky.NairaEntry:
         return _il7m0dky.NairaEntry.t;
       case _i14mz3cx.PlayerCharacter:

@@ -1,0 +1,21 @@
+### A player disputing a charge on their receipts. Small ones are refunded at once (the goodwill rule: up to 1,000
+### naira a week, no questions); the rest wait here for the owner's review.
+class: NairaDispute
+table: naira_dispute
+fields:
+  authUserId: UuidValue
+  ### the disputed entry (NairaEntry id)
+  entryId: int
+  ### not_delivered | wrong_amount | other
+  reason: String
+  ### refunded | queued | declined
+  status: String
+  ### the refund's entry, if refunded
+  refundEntryId: int?
+  createdAt: DateTime
+indexes:
+  naira_dispute_entry_idx:
+    fields: entryId
+    unique: true
+  naira_dispute_user_idx:
+    fields: authUserId, createdAt
