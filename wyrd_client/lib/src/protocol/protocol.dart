@@ -122,6 +122,8 @@ import 'world/game_exchange.dart' as _i565k4ep;
 import 'world/naira_dispute.dart' as _i708bl2b;
 import 'world/naira_entry.dart' as _il7m0dky;
 import 'world/player_character.dart' as _i14mz3cx;
+import 'world/police_citation.dart' as _i0glbkxr;
+import 'world/wanted_state.dart' as _ijvtd7qh;
 import 'world/world_citizen.dart' as _inb8mkev;
 export 'agent/agent_step.dart';
 export 'agent/agent_task.dart';
@@ -204,6 +206,8 @@ export 'world/game_exchange.dart';
 export 'world/naira_dispute.dart';
 export 'world/naira_entry.dart';
 export 'world/player_character.dart';
+export 'world/police_citation.dart';
+export 'world/wanted_state.dart';
 export 'world/world_citizen.dart';
 export 'client.dart';
 
@@ -484,6 +488,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i14mz3cx.PlayerCharacter) {
       return _i14mz3cx.PlayerCharacter.fromJson(data) as T;
     }
+    if (t == _i0glbkxr.PoliceCitation) {
+      return _i0glbkxr.PoliceCitation.fromJson(data) as T;
+    }
+    if (t == _ijvtd7qh.WantedState) {
+      return _ijvtd7qh.WantedState.fromJson(data) as T;
+    }
     if (t == _inb8mkev.WorldCitizen) {
       return _inb8mkev.WorldCitizen.fromJson(data) as T;
     }
@@ -751,6 +761,13 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_i14mz3cx.PlayerCharacter?>()) {
       return (data != null ? _i14mz3cx.PlayerCharacter.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i0glbkxr.PoliceCitation?>()) {
+      return (data != null ? _i0glbkxr.PoliceCitation.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ijvtd7qh.WantedState?>()) {
+      return (data != null ? _ijvtd7qh.WantedState.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_inb8mkev.WorldCitizen?>()) {
       return (data != null ? _inb8mkev.WorldCitizen.fromJson(data) : null) as T;
@@ -1160,6 +1177,8 @@ class Protocol extends _isc.SerializationManager {
       _i708bl2b.NairaDispute => 'NairaDispute',
       _il7m0dky.NairaEntry => 'NairaEntry',
       _i14mz3cx.PlayerCharacter => 'PlayerCharacter',
+      _i0glbkxr.PoliceCitation => 'PoliceCitation',
+      _ijvtd7qh.WantedState => 'WantedState',
       _inb8mkev.WorldCitizen => 'WorldCitizen',
       _ => null,
     };
@@ -1337,6 +1356,10 @@ class Protocol extends _isc.SerializationManager {
         return 'NairaEntry';
       case _i14mz3cx.PlayerCharacter():
         return 'PlayerCharacter';
+      case _i0glbkxr.PoliceCitation():
+        return 'PoliceCitation';
+      case _ijvtd7qh.WantedState():
+        return 'WantedState';
       case _inb8mkev.WorldCitizen():
         return 'WorldCitizen';
     }
@@ -1603,6 +1626,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'PlayerCharacter') {
       return deserialize<_i14mz3cx.PlayerCharacter>(data['data']);
+    }
+    if (dataClassName == 'PoliceCitation') {
+      return deserialize<_i0glbkxr.PoliceCitation>(data['data']);
+    }
+    if (dataClassName == 'WantedState') {
+      return deserialize<_ijvtd7qh.WantedState>(data['data']);
     }
     if (dataClassName == 'WorldCitizen') {
       return deserialize<_inb8mkev.WorldCitizen>(data['data']);

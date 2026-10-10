@@ -236,6 +236,26 @@ class WalletService {
     return jsonEncode({..._wallet(await Bank.fresh(session, user)), 'warning': false, 'fine': fine, 'paid': payNow, 'owed': owed, 'waived': waived, 'receipt': receipt});
   }
 
+  /// Charge a fine of [amount] (once per [key]): paid down to the ₦500 floor, the rest on the payment plan, anything past
+  /// the plan's cap waived. Returns (paid, owed, waived, the entry if anything was paid).
+  static Future<(int, int, int, NairaEntry?)> chargeFine(Session session, UuidValue user, int amount, String key, String memo) async {
+    final c = await Bank.fresh(session, user);
+    final payNow = [amount, (c.naira - fineFloor).clamp(0, amount)].reduce((a, b) => a < b ? a : b);
+    var owed = amount - payNow, waived = 0;
+    NairaEntry? entry;
+    if (payNow > 0) {
+      final r = await Bank.post(session, user, key: key, amount: -payNow, kind: 'fine', counter: 'city:courts', memo: memo);
+      if (r.repeat) return (0, 0, 0, r.entry);
+      entry = r.entry;
+    }
+    if (owed > 0) {
+      final room = Bank.debtCap - (await Bank.fresh(session, user)).debt;
+      if (owed > room) { waived = owed - room.clamp(0, owed); owed -= waived; }
+      if (owed > 0) await Bank.owe(session, user, key: '$key:plan', amount: owed, memo: '$memo: ₦${_fmt(owed)} on your payment plan');
+    }
+    return (payNow, owed, waived, entry);
+  }
+
   /// WYRD Lift: a free ride by road for someone with under ₦500, once an hour.
   static Future<String> _lift(Session session, UuidValue user) async {
     final c = await settle(session, user);

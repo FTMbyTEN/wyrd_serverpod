@@ -13,6 +13,7 @@ import 'city_wire.dart';
 import 'city_signals.dart';
 import 'wallet_service.dart';
 import 'bank.dart';
+import 'police_service.dart';
 import 'story_service.dart';
 import 'place_service.dart';
 import 'job_service.dart';
@@ -137,6 +138,26 @@ class CityEndpoint extends Endpoint {
     await _operator(session);
     return jsonEncode([for (final n in await CityDesignService.notes(session)) CityDesignService.toJson(n)]);
   }
+
+  // ---- Fair Streets: the police, held by the server ----
+
+  /// An offence the game saw ({code, place, unit?, kmh?, witnesses?, patrol?}): the citation and your wanted status.
+  Future<String> policeReport(Session session, String report) => _money(session, (u) => PoliceService.report(session, u, report));
+
+  /// The pursuit as the game sees it ({dist, speed, seen, hazards, onFoot, place}): what happens next.
+  Future<String> policeTick(Session session, String tick) => _money(session, (u) => PoliceService.tick(session, u, tick));
+
+  /// A call from the phone to someone who can help (fines, wyrd, and who your background knows).
+  Future<String> policeCall(Session session, String contact) => _money(session, (u) => PoliceService.call(session, u, contact));
+
+  /// Your record: citations with their evidence, and your wanted status.
+  Future<String> policeCitations(Session session) => _money(session, (u) => PoliceService.citations(session, u));
+
+  /// Appeal a citation; the evidence is checked again.
+  Future<String> policeAppeal(Session session, int id, String reason) => _money(session, (u) => PoliceService.appeal(session, u, id, reason));
+
+  /// Calm streets: no pursuits, citations posted instead.
+  Future<String> policeSettings(Session session, bool calm) => _money(session, (u) => PoliceService.settings(session, u, calm));
 
   /// Cancel your WYRD Ride or flight before it got you there: the fare back (all of it in the first minute, 80% after).
   Future<String> refundRide(Session session) => _money(session, (u) => WalletService.refundRide(session, u));

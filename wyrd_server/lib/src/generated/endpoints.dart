@@ -2850,6 +2850,117 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
                   .designNotes(session),
         ),
+        'policeReport': _is.MethodConnector(
+          name: 'policeReport',
+          params: {
+            'report': _is.ParameterDescription(
+              name: 'report',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).policeReport(
+                    session,
+                    params['report'],
+                  ),
+        ),
+        'policeTick': _is.MethodConnector(
+          name: 'policeTick',
+          params: {
+            'tick': _is.ParameterDescription(
+              name: 'tick',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).policeTick(
+                    session,
+                    params['tick'],
+                  ),
+        ),
+        'policeCall': _is.MethodConnector(
+          name: 'policeCall',
+          params: {
+            'contact': _is.ParameterDescription(
+              name: 'contact',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).policeCall(
+                    session,
+                    params['contact'],
+                  ),
+        ),
+        'policeCitations': _is.MethodConnector(
+          name: 'policeCitations',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint)
+                  .policeCitations(session),
+        ),
+        'policeAppeal': _is.MethodConnector(
+          name: 'policeAppeal',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'reason': _is.ParameterDescription(
+              name: 'reason',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).policeAppeal(
+                    session,
+                    params['id'],
+                    params['reason'],
+                  ),
+        ),
+        'policeSettings': _is.MethodConnector(
+          name: 'policeSettings',
+          params: {
+            'calm': _is.ParameterDescription(
+              name: 'calm',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['city'] as _ifkdhb4n.CityEndpoint).policeSettings(
+                    session,
+                    params['calm'],
+                  ),
+        ),
         'refundRide': _is.MethodConnector(
           name: 'refundRide',
           params: {},

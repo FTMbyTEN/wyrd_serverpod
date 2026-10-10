@@ -170,6 +170,12 @@ city:
   - canDesign:
   - designChat:
   - designNotes:
+  - policeReport:
+  - policeTick:
+  - policeCall:
+  - policeCitations:
+  - policeAppeal:
+  - policeSettings:
   - refundRide:
   - dispute:
   - receipts:

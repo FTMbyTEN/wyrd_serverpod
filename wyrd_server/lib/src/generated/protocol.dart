@@ -127,6 +127,8 @@ import 'world/game_exchange.dart' as _i565k4ep;
 import 'world/naira_dispute.dart' as _i708bl2b;
 import 'world/naira_entry.dart' as _il7m0dky;
 import 'world/player_character.dart' as _i14mz3cx;
+import 'world/police_citation.dart' as _i0glbkxr;
+import 'world/wanted_state.dart' as _ijvtd7qh;
 import 'world/world_citizen.dart' as _inb8mkev;
 export 'agent/agent_step.dart';
 export 'agent/agent_task.dart';
@@ -209,6 +211,8 @@ export 'world/game_exchange.dart';
 export 'world/naira_dispute.dart';
 export 'world/naira_entry.dart';
 export 'world/player_character.dart';
+export 'world/police_citation.dart';
+export 'world/wanted_state.dart';
 export 'world/world_citizen.dart';
 
 class Protocol extends _is.DatabaseSerializationManager {
@@ -2896,6 +2900,141 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'police_citation',
+      dartName: 'PoliceCitation',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'code',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'place',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'evidence',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'confidence',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _isp.ColumnDefinition(
+          name: 'outcome',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'amount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'paid',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'owed',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'entryId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'settledBy',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appealReason',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appealResult',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'settledAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'police_citation_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'quarantined_item',
       dartName: 'QuarantinedItem',
       schema: 'public',
@@ -3734,6 +3873,125 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'wanted_state',
+      dartName: 'WantedState',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'heat',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'state',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'clear\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'stateAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'pursuitAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastPursuitAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastStopAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lostSince',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'complyingSince',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nearSince',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'searchUntil',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'calm',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'calls',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'wanted_state_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'word_sense',
       dartName: 'WordSense',
       schema: 'public',
@@ -4248,6 +4506,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i14mz3cx.PlayerCharacter) {
       return _i14mz3cx.PlayerCharacter.fromJson(data) as T;
     }
+    if (t == _i0glbkxr.PoliceCitation) {
+      return _i0glbkxr.PoliceCitation.fromJson(data) as T;
+    }
+    if (t == _ijvtd7qh.WantedState) {
+      return _ijvtd7qh.WantedState.fromJson(data) as T;
+    }
     if (t == _inb8mkev.WorldCitizen) {
       return _inb8mkev.WorldCitizen.fromJson(data) as T;
     }
@@ -4515,6 +4779,13 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i14mz3cx.PlayerCharacter?>()) {
       return (data != null ? _i14mz3cx.PlayerCharacter.fromJson(data) : null)
           as T;
+    }
+    if (t == _is.getType<_i0glbkxr.PoliceCitation?>()) {
+      return (data != null ? _i0glbkxr.PoliceCitation.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ijvtd7qh.WantedState?>()) {
+      return (data != null ? _ijvtd7qh.WantedState.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_inb8mkev.WorldCitizen?>()) {
       return (data != null ? _inb8mkev.WorldCitizen.fromJson(data) : null) as T;
@@ -4927,6 +5198,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i708bl2b.NairaDispute => 'NairaDispute',
       _il7m0dky.NairaEntry => 'NairaEntry',
       _i14mz3cx.PlayerCharacter => 'PlayerCharacter',
+      _i0glbkxr.PoliceCitation => 'PoliceCitation',
+      _ijvtd7qh.WantedState => 'WantedState',
       _inb8mkev.WorldCitizen => 'WorldCitizen',
       _ => null,
     };
@@ -5104,6 +5377,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'NairaEntry';
       case _i14mz3cx.PlayerCharacter():
         return 'PlayerCharacter';
+      case _i0glbkxr.PoliceCitation():
+        return 'PoliceCitation';
+      case _ijvtd7qh.WantedState():
+        return 'WantedState';
       case _inb8mkev.WorldCitizen():
         return 'WorldCitizen';
     }
@@ -5375,6 +5652,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'PlayerCharacter') {
       return deserialize<_i14mz3cx.PlayerCharacter>(data['data']);
     }
+    if (dataClassName == 'PoliceCitation') {
+      return deserialize<_i0glbkxr.PoliceCitation>(data['data']);
+    }
+    if (dataClassName == 'WantedState') {
+      return deserialize<_ijvtd7qh.WantedState>(data['data']);
+    }
     if (dataClassName == 'WorldCitizen') {
       return deserialize<_inb8mkev.WorldCitizen>(data['data']);
     }
@@ -5503,6 +5786,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _il7m0dky.NairaEntry.t;
       case _i14mz3cx.PlayerCharacter:
         return _i14mz3cx.PlayerCharacter.t;
+      case _i0glbkxr.PoliceCitation:
+        return _i0glbkxr.PoliceCitation.t;
+      case _ijvtd7qh.WantedState:
+        return _ijvtd7qh.WantedState.t;
       case _inb8mkev.WorldCitizen:
         return _inb8mkev.WorldCitizen.t;
     }

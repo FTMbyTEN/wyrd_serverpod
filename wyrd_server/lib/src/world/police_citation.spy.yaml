@@ -1,0 +1,33 @@
+### One offence on a player's record (Fair Streets): its code, where, the evidence and how sure the city is, what came of
+### it, and any appeal. A fine is "pending" until a stop, a posting or a call settles it; then paid (and/or on the plan),
+### a caution, or waived.
+class: PoliceCitation
+table: police_citation
+fields:
+  authUserId: UuidValue
+  ### RL-1 | SP-1 | SP-2 | CD-1 | PT-1 | FS-1
+  code: String
+  place: String
+  ### JSON list of {source, id, confidence, detail}
+  evidence: String
+  confidence: double
+  ### note | warning | fine
+  outcome: String
+  ### the fine as issued (0 for notes and warnings)
+  amount: int, default=0
+  ### note | warning | pending | paid | caution | waived | overturned
+  status: String
+  ### what was paid now and put on the plan when it was settled, and the ledger entry
+  paid: int, default=0
+  owed: int, default=0
+  entryId: int?
+  ### how it was settled: stop | complied | posted | desk | counsel | favour | cooled
+  settledBy: String?
+  appealReason: String?
+  ### overturned | reduced | upheld | queued
+  appealResult: String?
+  createdAt: DateTime
+  settledAt: DateTime?
+indexes:
+  police_citation_user_idx:
+    fields: authUserId, createdAt

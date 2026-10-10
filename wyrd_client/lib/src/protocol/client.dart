@@ -1777,6 +1777,58 @@ class EndpointCity extends _isc.EndpointRef {
     {},
   );
 
+  /// An offence the game saw ({code, place, unit?, kmh?, witnesses?, patrol?}): the citation and your wanted status.
+  _ida.Future<String> policeReport(String report) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'policeReport',
+        {'report': report},
+      );
+
+  /// The pursuit as the game sees it ({dist, speed, seen, hazards, onFoot, place}): what happens next.
+  _ida.Future<String> policeTick(String tick) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'policeTick',
+        {'tick': tick},
+      );
+
+  /// A call from the phone to someone who can help (fines, wyrd, and who your background knows).
+  _ida.Future<String> policeCall(String contact) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'policeCall',
+        {'contact': contact},
+      );
+
+  /// Your record: citations with their evidence, and your wanted status.
+  _ida.Future<String> policeCitations() => caller.callServerEndpoint<String>(
+    'city',
+    'policeCitations',
+    {},
+  );
+
+  /// Appeal a citation; the evidence is checked again.
+  _ida.Future<String> policeAppeal(
+    int id,
+    String reason,
+  ) => caller.callServerEndpoint<String>(
+    'city',
+    'policeAppeal',
+    {
+      'id': id,
+      'reason': reason,
+    },
+  );
+
+  /// Calm streets: no pursuits, citations posted instead.
+  _ida.Future<String> policeSettings(bool calm) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'policeSettings',
+        {'calm': calm},
+      );
+
   /// Cancel your WYRD Ride or flight before it got you there: the fare back (all of it in the first minute, 80% after).
   _ida.Future<String> refundRide() => caller.callServerEndpoint<String>(
     'city',

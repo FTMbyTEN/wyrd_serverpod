@@ -1,0 +1,26 @@
+### Where a player stands with the police, held by the server (Fair Streets): their heat (stars are its whole part),
+### the wanted state machine's state and its timers, the Calm streets setting, and when they last made each call.
+class: WantedState
+table: wanted_state
+fields:
+  authUserId: UuidValue
+  heat: double, default=0
+  ### clear | watched | pursuit | complying | searching | cooling
+  state: String, default='clear'
+  stateAt: DateTime
+  pursuitAt: DateTime?
+  lastPursuitAt: DateTime?
+  lastStopAt: DateTime?
+  lostSince: DateTime?
+  complyingSince: DateTime?
+  nearSince: DateTime?
+  searchUntil: DateTime?
+  ### pursuits become posted citations
+  calm: bool, default=false
+  ### when each contact was last called, JSON {id: iso}
+  calls: String?
+  updatedAt: DateTime
+indexes:
+  wanted_state_user_idx:
+    fields: authUserId
+    unique: true
