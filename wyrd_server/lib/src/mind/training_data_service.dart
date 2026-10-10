@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../world/city_signals.dart';
 import '../world/game_learning.dart';
 import 'llm_service.dart';
 
@@ -125,6 +126,9 @@ class TrainingDataService {
 
     // 4. the open world: play from players who agreed, and the owner's design sessions (kept as they happen)
     examples.addAll(await GameLearning.trainingExamples(session, count));
+    // 5. what the city saw: anonymous weekly tallies from players who agreed (crash and red-light hotspots, jams,
+    //    where people ride), as dated questions and answers
+    examples.addAll(await CitySignals.trainingExamples(session, count));
 
     // a stable split: an example lands in validation by a hash of its content, so re-exports agree
     final train = <TrainingExample>[], validation = <TrainingExample>[];
