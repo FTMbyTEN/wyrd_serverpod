@@ -13,6 +13,7 @@ dependencies:
   serverpod_auth_idp_server: 4.0.0
   serverpod_cloud_storage: 4.0.0
   http: ^1.2.0
+  crypto: ^3.0.3
   puppeteer: ^3.26.0
   chess: ^0.8.1
 

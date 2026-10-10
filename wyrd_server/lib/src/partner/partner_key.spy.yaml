@@ -1,0 +1,19 @@
+### A partner's API key (Konnectly first). Only a SHA-256 hash of the key is kept: a lost key can't be recovered,
+### only replaced. [env] is test (staging) or live (production); two keys can be active at once for rotation.
+class: PartnerKey
+table: partner_key
+fields:
+  keyHash: String
+  ### the first characters of the key, to recognise it in lists (e.g. kn_test_a1b2)
+  prefix: String
+  partner: String
+  env: String
+  label: String
+  active: bool, default=true
+  createdAt: DateTime
+  revokedAt: DateTime?
+  lastUsedAt: DateTime?
+indexes:
+  partner_key_hash_idx:
+    fields: keyHash
+    unique: true

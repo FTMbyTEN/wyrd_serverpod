@@ -1,0 +1,16 @@
+### A partner's usage per day, environment and surface: requests, tokens and what the model cost (millionths of a dollar).
+class: PartnerUsage
+table: partner_usage
+fields:
+  day: String
+  partner: String
+  env: String
+  surface: String
+  requests: int, default=0
+  inputTokens: int, default=0
+  outputTokens: int, default=0
+  costMicros: int, default=0
+indexes:
+  partner_usage_idx:
+    fields: day, partner, env, surface
+    unique: true

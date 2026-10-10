@@ -1,0 +1,14 @@
+### A partner request made with an Idempotency-Key: its body's hash and the response sent, so a retry within 24 hours
+### gets the same response instead of being processed again.
+class: PartnerIdem
+table: partner_idem
+fields:
+  idemKey: String
+  bodyHash: String
+  status: int
+  response: String
+  createdAt: DateTime
+indexes:
+  partner_idem_key_idx:
+    fields: idemKey
+    unique: true

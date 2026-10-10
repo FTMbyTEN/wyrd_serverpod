@@ -1,0 +1,15 @@
+### A deletion a partner asked for (one conversation, or everything for a user reference), so it can be confirmed.
+class: PartnerDeletion
+table: partner_deletion
+fields:
+  deletionId: String
+  partner: String
+  env: String
+  what: String
+  status: String
+  createdAt: DateTime
+  doneAt: DateTime?
+indexes:
+  partner_deletion_id_idx:
+    fields: deletionId
+    unique: true

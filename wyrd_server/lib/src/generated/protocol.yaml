@@ -143,6 +143,12 @@ training:
 world:
   - getCountries:
   - getCountry:
+partnerAdmin:
+  - issueKey:
+  - revokeKey:
+  - openStaging:
+  - selfTest:
+  - keys:
 city:
   - address:
   - wallet:

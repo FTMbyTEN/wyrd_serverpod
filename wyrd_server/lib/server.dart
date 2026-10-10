@@ -6,6 +6,7 @@ import 'package:serverpod_auth_idp_server/providers/email.dart';
 import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 
 import 'src/cache_busting.dart';
+import 'src/partner/partner_route.dart';
 import 'src/generated/serverpod.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/fast_asset_route.dart';
@@ -59,6 +60,9 @@ void run(List<String> args) async {
   // WYRD for Konnectly (the campus marketplace), demo mode: a page of its own that calls the
   // konnectly endpoint.
   pod.webServer.addRoute(StaticRoute.file(File(Uri(path: 'web/pages/konnectly.html').toFilePath())), '/konnectly');
+
+  // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.
+  pod.webServer.addRoute(PartnerRoute(), '/partner/v1/**');
 
   // Checks if the flutter web app has been built and serves it if it has.
   final appDir = Directory(Uri(path: 'web/app').toFilePath());

@@ -1,0 +1,12 @@
+### One message in a partner conversation: the customer's (user) or WYRD's (assistant).
+class: PartnerMessage
+table: partner_message
+fields:
+  convId: String
+  msgId: String
+  role: String
+  text: String
+  createdAt: DateTime
+indexes:
+  partner_message_conv_idx:
+    fields: convId, createdAt

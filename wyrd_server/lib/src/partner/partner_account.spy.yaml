@@ -1,0 +1,17 @@
+### What a partner has paid for in one environment: staging is an allowance (requests and an end date); production
+### has no allowance (null) and is billed on usage.
+class: PartnerAccount
+table: partner_account
+fields:
+  partner: String
+  env: String
+  allowance: int?
+  used: int, default=0
+  validUntil: DateTime?
+  ### how it was paid for (the owner's note), for the record
+  note: String?
+  createdAt: DateTime
+indexes:
+  partner_account_idx:
+    fields: partner, env
+    unique: true

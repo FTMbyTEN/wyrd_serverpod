@@ -51,6 +51,7 @@ import '../mind/synthesis_endpoint.dart' as _i6ave7v9;
 import '../mind/topic_endpoint.dart' as _i2t0sh8b;
 import '../mind/training_endpoint.dart' as _igyenhzn;
 import '../mind/world_endpoint.dart' as _iaj95ngr;
+import '../partner/partner_admin_endpoint.dart' as _iaek1pkr;
 import '../world/city_endpoint.dart' as _ifkdhb4n;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
@@ -260,6 +261,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'world',
+          null,
+        ),
+      'partnerAdmin': _iaek1pkr.PartnerAdminEndpoint()
+        ..initialize(
+          server,
+          'partnerAdmin',
           null,
         ),
       'city': _ifkdhb4n.CityEndpoint()
@@ -2415,6 +2422,121 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['code'],
                   ),
+        ),
+      },
+    );
+    connectors['partnerAdmin'] = _is.EndpointConnector(
+      name: 'partnerAdmin',
+      endpoint: endpoints['partnerAdmin']!,
+      methodConnectors: {
+        'issueKey': _is.MethodConnector(
+          name: 'issueKey',
+          params: {
+            'partner': _is.ParameterDescription(
+              name: 'partner',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'env': _is.ParameterDescription(
+              name: 'env',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'label': _is.ParameterDescription(
+              name: 'label',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['partnerAdmin'] as _iaek1pkr.PartnerAdminEndpoint)
+                      .issueKey(
+                        session,
+                        params['partner'],
+                        params['env'],
+                        params['label'],
+                      ),
+        ),
+        'revokeKey': _is.MethodConnector(
+          name: 'revokeKey',
+          params: {
+            'prefix': _is.ParameterDescription(
+              name: 'prefix',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['partnerAdmin'] as _iaek1pkr.PartnerAdminEndpoint)
+                      .revokeKey(
+                        session,
+                        params['prefix'],
+                      ),
+        ),
+        'openStaging': _is.MethodConnector(
+          name: 'openStaging',
+          params: {
+            'partner': _is.ParameterDescription(
+              name: 'partner',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['partnerAdmin'] as _iaek1pkr.PartnerAdminEndpoint)
+                      .openStaging(
+                        session,
+                        params['partner'],
+                        params['note'],
+                      ),
+        ),
+        'selfTest': _is.MethodConnector(
+          name: 'selfTest',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['partnerAdmin'] as _iaek1pkr.PartnerAdminEndpoint)
+                      .selfTest(session),
+        ),
+        'keys': _is.MethodConnector(
+          name: 'keys',
+          params: {
+            'partner': _is.ParameterDescription(
+              name: 'partner',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['partnerAdmin'] as _iaek1pkr.PartnerAdminEndpoint)
+                      .keys(
+                        session,
+                        params['partner'],
+                      ),
         ),
       },
     );

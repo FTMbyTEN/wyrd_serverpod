@@ -115,6 +115,13 @@ import 'mind/word_sense.dart' as _itj7bvl5;
 import 'mind/work_hit.dart' as _i3gwmipu;
 import 'mind/work_part_info.dart' as _ijuqu3gj;
 import 'mind/world_country.dart' as _iu995zpj;
+import 'partner/partner_account.dart' as _igi6zu7t;
+import 'partner/partner_conversation.dart' as _iw3gx6dr;
+import 'partner/partner_deletion.dart' as _itz87ij1;
+import 'partner/partner_idem.dart' as _iao0fru0;
+import 'partner/partner_key.dart' as _igpr6wl9;
+import 'partner/partner_message.dart' as _i2alchov;
+import 'partner/partner_usage.dart' as _ibg0xksq;
 import 'world/city_charter.dart' as _i1wlu2l5;
 import 'world/city_design_note.dart' as _iovwbeu0;
 import 'world/city_flag.dart' as _il4e48h1;
@@ -200,6 +207,13 @@ export 'mind/word_sense.dart';
 export 'mind/work_hit.dart';
 export 'mind/work_part_info.dart';
 export 'mind/world_country.dart';
+export 'partner/partner_account.dart';
+export 'partner/partner_conversation.dart';
+export 'partner/partner_deletion.dart';
+export 'partner/partner_idem.dart';
+export 'partner/partner_key.dart';
+export 'partner/partner_message.dart';
+export 'partner/partner_usage.dart';
 export 'world/city_charter.dart';
 export 'world/city_design_note.dart';
 export 'world/city_flag.dart';
@@ -468,6 +482,27 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iu995zpj.WorldCountry) {
       return _iu995zpj.WorldCountry.fromJson(data) as T;
+    }
+    if (t == _igi6zu7t.PartnerAccount) {
+      return _igi6zu7t.PartnerAccount.fromJson(data) as T;
+    }
+    if (t == _iw3gx6dr.PartnerConversation) {
+      return _iw3gx6dr.PartnerConversation.fromJson(data) as T;
+    }
+    if (t == _itz87ij1.PartnerDeletion) {
+      return _itz87ij1.PartnerDeletion.fromJson(data) as T;
+    }
+    if (t == _iao0fru0.PartnerIdem) {
+      return _iao0fru0.PartnerIdem.fromJson(data) as T;
+    }
+    if (t == _igpr6wl9.PartnerKey) {
+      return _igpr6wl9.PartnerKey.fromJson(data) as T;
+    }
+    if (t == _i2alchov.PartnerMessage) {
+      return _i2alchov.PartnerMessage.fromJson(data) as T;
+    }
+    if (t == _ibg0xksq.PartnerUsage) {
+      return _ibg0xksq.PartnerUsage.fromJson(data) as T;
     }
     if (t == _i1wlu2l5.CityCharter) {
       return _i1wlu2l5.CityCharter.fromJson(data) as T;
@@ -743,6 +778,33 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iu995zpj.WorldCountry?>()) {
       return (data != null ? _iu995zpj.WorldCountry.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_igi6zu7t.PartnerAccount?>()) {
+      return (data != null ? _igi6zu7t.PartnerAccount.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iw3gx6dr.PartnerConversation?>()) {
+      return (data != null
+              ? _iw3gx6dr.PartnerConversation.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_itz87ij1.PartnerDeletion?>()) {
+      return (data != null ? _itz87ij1.PartnerDeletion.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iao0fru0.PartnerIdem?>()) {
+      return (data != null ? _iao0fru0.PartnerIdem.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_igpr6wl9.PartnerKey?>()) {
+      return (data != null ? _igpr6wl9.PartnerKey.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i2alchov.PartnerMessage?>()) {
+      return (data != null ? _i2alchov.PartnerMessage.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ibg0xksq.PartnerUsage?>()) {
+      return (data != null ? _ibg0xksq.PartnerUsage.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i1wlu2l5.CityCharter?>()) {
       return (data != null ? _i1wlu2l5.CityCharter.fromJson(data) : null) as T;
@@ -1178,6 +1240,13 @@ class Protocol extends _isc.SerializationManager {
       _i3gwmipu.WorkHit => 'WorkHit',
       _ijuqu3gj.WorkPartInfo => 'WorkPartInfo',
       _iu995zpj.WorldCountry => 'WorldCountry',
+      _igi6zu7t.PartnerAccount => 'PartnerAccount',
+      _iw3gx6dr.PartnerConversation => 'PartnerConversation',
+      _itz87ij1.PartnerDeletion => 'PartnerDeletion',
+      _iao0fru0.PartnerIdem => 'PartnerIdem',
+      _igpr6wl9.PartnerKey => 'PartnerKey',
+      _i2alchov.PartnerMessage => 'PartnerMessage',
+      _ibg0xksq.PartnerUsage => 'PartnerUsage',
       _i1wlu2l5.CityCharter => 'CityCharter',
       _iovwbeu0.CityDesignNote => 'CityDesignNote',
       _il4e48h1.CityFlag => 'CityFlag',
@@ -1351,6 +1420,20 @@ class Protocol extends _isc.SerializationManager {
         return 'WorkPartInfo';
       case _iu995zpj.WorldCountry():
         return 'WorldCountry';
+      case _igi6zu7t.PartnerAccount():
+        return 'PartnerAccount';
+      case _iw3gx6dr.PartnerConversation():
+        return 'PartnerConversation';
+      case _itz87ij1.PartnerDeletion():
+        return 'PartnerDeletion';
+      case _iao0fru0.PartnerIdem():
+        return 'PartnerIdem';
+      case _igpr6wl9.PartnerKey():
+        return 'PartnerKey';
+      case _i2alchov.PartnerMessage():
+        return 'PartnerMessage';
+      case _ibg0xksq.PartnerUsage():
+        return 'PartnerUsage';
       case _i1wlu2l5.CityCharter():
         return 'CityCharter';
       case _iovwbeu0.CityDesignNote():
@@ -1616,6 +1699,27 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'WorldCountry') {
       return deserialize<_iu995zpj.WorldCountry>(data['data']);
+    }
+    if (dataClassName == 'PartnerAccount') {
+      return deserialize<_igi6zu7t.PartnerAccount>(data['data']);
+    }
+    if (dataClassName == 'PartnerConversation') {
+      return deserialize<_iw3gx6dr.PartnerConversation>(data['data']);
+    }
+    if (dataClassName == 'PartnerDeletion') {
+      return deserialize<_itz87ij1.PartnerDeletion>(data['data']);
+    }
+    if (dataClassName == 'PartnerIdem') {
+      return deserialize<_iao0fru0.PartnerIdem>(data['data']);
+    }
+    if (dataClassName == 'PartnerKey') {
+      return deserialize<_igpr6wl9.PartnerKey>(data['data']);
+    }
+    if (dataClassName == 'PartnerMessage') {
+      return deserialize<_i2alchov.PartnerMessage>(data['data']);
+    }
+    if (dataClassName == 'PartnerUsage') {
+      return deserialize<_ibg0xksq.PartnerUsage>(data['data']);
     }
     if (dataClassName == 'CityCharter') {
       return deserialize<_i1wlu2l5.CityCharter>(data['data']);

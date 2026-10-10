@@ -1545,6 +1545,68 @@ class EndpointWorld extends _isc.EndpointRef {
       );
 }
 
+/// The owner's controls for the partner API: issue and revoke keys, open staging once it's paid for, see the keys.
+/// Owner only.
+/// {@category Endpoint}
+class EndpointPartnerAdmin extends _isc.EndpointRef {
+  EndpointPartnerAdmin(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'partnerAdmin';
+
+  /// A new key for [partner] in [env] ("test" for staging, "live" for production). The key is in the answer once and
+  /// never again (only its hash is kept): pass it on through a one-time secret link.
+  _ida.Future<String> issueKey(
+    String partner,
+    String env,
+    String label,
+  ) => caller.callServerEndpoint<String>(
+    'partnerAdmin',
+    'issueKey',
+    {
+      'partner': partner,
+      'env': env,
+      'label': label,
+    },
+  );
+
+  /// Revoke the key that starts with [prefix] (as listed by [keys]).
+  _ida.Future<String> revokeKey(String prefix) =>
+      caller.callServerEndpoint<String>(
+        'partnerAdmin',
+        'revokeKey',
+        {'prefix': prefix},
+      );
+
+  /// Open (or renew) staging for [partner] once it's paid: 2,000 requests for 30 days. [note]: how it was paid.
+  _ida.Future<String> openStaging(
+    String partner,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'partnerAdmin',
+    'openStaging',
+    {
+      'partner': partner,
+      'note': note,
+    },
+  );
+
+  /// One real call to the model in the partner API's support shape, with this server's own key: confirms the API works
+  /// end to end before a partner uses it. Costs a fraction of a cent. Nothing is stored.
+  _ida.Future<String> selfTest() => caller.callServerEndpoint<String>(
+    'partnerAdmin',
+    'selfTest',
+    {},
+  );
+
+  /// The keys (prefixes only), staging allowances and this month's usage.
+  _ida.Future<String> keys(String partner) => caller.callServerEndpoint<String>(
+    'partnerAdmin',
+    'keys',
+    {'partner': partner},
+  );
+}
+
 /// The open world's line to WYRD, its Authority.
 /// {@category Endpoint}
 class EndpointCity extends _isc.EndpointRef {
@@ -1969,6 +2031,7 @@ class Client extends _isc.ServerpodClientShared {
     topic = EndpointTopic(this);
     training = EndpointTraining(this);
     world = EndpointWorld(this);
+    partnerAdmin = EndpointPartnerAdmin(this);
     city = EndpointCity(this);
     modules = Modules(this);
   }
@@ -2041,6 +2104,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointWorld world;
 
+  late final EndpointPartnerAdmin partnerAdmin;
+
   late final EndpointCity city;
 
   late final Modules modules;
@@ -2081,6 +2146,7 @@ class Client extends _isc.ServerpodClientShared {
     'topic': topic,
     'training': training,
     'world': world,
+    'partnerAdmin': partnerAdmin,
     'city': city,
   };
 

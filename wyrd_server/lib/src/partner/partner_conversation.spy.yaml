@@ -1,0 +1,18 @@
+### One partner conversation, belonging to one user reference and one partner environment. Deleted 30 days after its
+### last message (7 on staging).
+class: PartnerConversation
+table: partner_conversation
+fields:
+  convId: String
+  partner: String
+  env: String
+  userRef: String
+  surface: String
+  createdAt: DateTime
+  lastAt: DateTime
+indexes:
+  partner_conversation_id_idx:
+    fields: convId
+    unique: true
+  partner_conversation_user_idx:
+    fields: partner, env, userRef
