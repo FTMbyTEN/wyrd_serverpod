@@ -1,0 +1,12 @@
+### Something true of the whole city, set once by what a player did (e.g. unit-fixed:T-31 -- the faulty WYRD unit in
+### Mushin, fixed by whoever finished the Unit T-31 mission): its name, a value, and when.
+class: CityFlag
+table: city_flag
+fields:
+  name: String
+  value: String
+  at: DateTime
+indexes:
+  city_flag_name_idx:
+    fields: name
+    unique: true

@@ -77,9 +77,48 @@ class PoliceService {
 
   // ---- evidence ----
 
+  /// Units that are faulty in the story until a player fixes them (the Unit T-31 mission): they read wrong and the city
+  /// doesn't know it -- every citation they issue looks sound until it's appealed, or the unit is fixed.
+  static const storyFaults = {'T-31'};
+  static final Set<String> _fixed = {};
+  static DateTime _fixedAt = DateTime.fromMillisecondsSinceEpoch(0);
+  static Set<String> get fixedUnits => _fixed;
+
+  /// What's been fixed, from the city's flags (read again at most once a minute).
+  static Future<void> loadFixed(Session session) async {
+    if (DateTime.now().difference(_fixedAt) < const Duration(minutes: 1)) return;
+    _fixedAt = DateTime.now();
+    final flags = await CityFlag.db.find(session, where: (t) => t.name.like('unit-fixed:%'));
+    _fixed..clear()..addAll(flags.map((f) => f.name.substring('unit-fixed:'.length)));
+  }
+
+  /// Fix a faulty unit for the whole city: every citation it issued, for every player, is overturned and refunded
+  /// through the ledger, and the live wire says so. Returns how many drivers and how much came back.
+  static Future<(int, int)> fixUnit(Session session, String unit, String how) async {
+    final flag = 'unit-fixed:$unit';
+    if (await CityFlag.db.findFirstRow(session, where: (t) => t.name.equals(flag)) == null) {
+      try { await CityFlag.db.insertRow(session, CityFlag(name: flag, value: how, at: DateTime.now().toUtc())); } catch (_) {}
+    }
+    _fixed.add(unit);
+    final cites = await PoliceCitation.db.find(session, where: (t) => t.evidence.like('%"id":"$unit"%') &
+        (t.status.equals('pending') | t.status.equals('paid') | t.status.equals('caution') | t.status.equals('warning')));
+    final drivers = <String>{};
+    var back = 0;
+    for (final c in cites) {
+      final (refund, unowed) = await _undo(session, c.authUserId, c, 'overturned');
+      await PoliceCitation.db.updateRow(session, (await PoliceCitation.db.findById(session, c.id!))!.copyWith(appealResult: 'unit fixed'));
+      drivers.add(c.authUserId.uuid);
+      back += refund + unowed;
+    }
+    CityWire.say('fault', 'WYRD: Unit $unit was reading 20 km/h high. It\'s fixed now, and every citation it issued is cancelled'
+        '${back > 0 ? ': ${drivers.length} driver${drivers.length == 1 ? '' : 's'}, ₦$back back' : ''}. Thank the citizen who proved it.');
+    return (drivers.length, back);
+  }
+
   /// A unit's sensor health: most weeks 1; one week in ten a unit reads wrong (0.5). The city only finds out after the
   /// fault's first two days, so a citation issued in that window looks sound -- until someone appeals it.
   static (double, bool) unitHealth(String unit, DateTime at) {
+    if (storyFaults.contains(unit) && !_fixed.contains(unit)) return (0.5, false);
     final week = at.millisecondsSinceEpoch ~/ (7 * 86400000);
     final h = '$unit:$week'.codeUnits.fold<int>(7, (a, b) => (a * 31 + b) & 0x7fffffff);
     if (h % 10 != 0) return (1.0, true);
@@ -109,6 +148,7 @@ class PoliceService {
   static Future<String> report(Session session, UuidValue user, String json) async {
     final Map<String, dynamic> m;
     try { m = jsonDecode(json) as Map<String, dynamic>; } catch (_) { return jsonEncode({'error': 'Not a report.'}); }
+    await loadFixed(session);
     final code = m['code'], place = _clean(m['place']);
     if (code is! String || !offences.containsKey(code) || place == null) return jsonEncode({'error': 'Unknown offence.'});
     final now = DateTime.now().toUtc();

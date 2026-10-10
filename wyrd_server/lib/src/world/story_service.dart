@@ -7,6 +7,7 @@ import 'bank.dart';
 
 import '../generated/protocol.dart';
 import 'wallet_service.dart';
+import 'police_service.dart';
 
 /// NAIJA 2099's story layer (design/naija2099): reputation that differs by district, faction and
 /// social circle, and the branching missions. Everything is decided here -- the app only asks to
@@ -47,7 +48,8 @@ class StoryService {
   /// The story as the app reads it: reputation, missions, and the names to show.
   static Future<String> get(Session session, UuidValue user) async {
     final c = await WalletService.settle(session, user);
-    return jsonEncode({..._view(read(c)), 'factions': factions, 'social': social, 'naira': c.naira, 'cityVars': _varNames,
+    await PoliceService.loadFixed(session);
+    return jsonEncode({..._view(read(c)), 'fixedUnits': PoliceService.fixedUnits.toList(), 'factions': factions, 'social': social, 'naira': c.naira, 'cityVars': _varNames,
       'backgrounds': {for (final e in backgrounds.entries) e.key: [e.value.$1, e.value.$2]},
       'careers': {for (final e in careers.entries) e.key: e.value.$1}, 'careerStages': careerStages});
   }
@@ -138,6 +140,22 @@ class StoryService {
           say: 'Your post goes everywhere. The prophet is finished -- and some of his flock blame you, not him.'),
       'tell:private': _Move(after: {'choose'}, wait: 20, to: 'done', rep: [('faction', 'faith', 6), ('social', 'street', 6), ('district', 'Mushin', 10)],
           say: 'You show him the results to his face. He refunds every bottle and closes the stall. No one else ever knows how.'),
+    },
+    // ---- Unit T-31 (Fair Streets): a WYRD unit in Mushin reading 20 km/h high ----
+    't31': {
+      'accept': _Move(after: {null}, to: 'pace', say: 'Rasheed: "T-31 dey fine my riders for speeds wey okada no fit reach. Prove am, and we go remember you."'),
+      'pace': _Move(after: {'pace'}, wait: 20, to: 'witnesses',
+          say: 'You drive past T-31 at a steady speed and note it. Your speedometer says one thing; T-31 logs you 20 km/h faster. Now find people who saw it happen to others.'),
+      'witness:listen': _Move(after: {'witnesses'}, wait: 30, to: 'compare', rep: [('social', 'street', 4), ('district', 'Mushin', 4)],
+          say: 'Three riders and a mama who sells by the junction tell the same story, with dates. You write it all down.'),
+      'witness:cctv': _Move(after: {'witnesses'}, wait: 10, cost: 1000, to: 'compare', rep: [('district', 'Mushin', 2)],
+          say: 'The phone shop sells you a week of its CCTV for ₦1,000: bikes crawling past while T-31 logs them speeding.'),
+      'expose:wyrd': _Move(after: {'compare'}, wait: 20, to: 'done', pay: 4000, rep: [('social', 'wyrd', 8), ('district', 'Mushin', 8), ('social', 'street', 4)],
+          say: 'You file it with WYRD, readings and statements side by side. WYRD checks T-31 against its patrols, finds the fault, and fixes it on the spot.'),
+      'expose:press': _Move(after: {'compare'}, wait: 20, to: 'done', pay: 4000, rep: [('social', 'online', 10), ('district', 'Mushin', 6), ('social', 'wyrd', -3)],
+          say: 'Your thread goes everywhere: "The robot that fines okadas for flying." By evening WYRD has fixed T-31 and apologised in public.'),
+      'expose:riders': _Move(after: {'compare'}, wait: 20, to: 'done', pay: 4000, rep: [('faction', 'nurtw', 10), ('district', 'Mushin', 10), ('social', 'street', 6)],
+          say: 'You hand everything to Rasheed\'s union. They march it to WYRD together; T-31 is fixed before the riders have finished their tea.'),
     },
     // ---- 10. Generator Wars (Arc C) ----
     'generator': {
@@ -373,6 +391,9 @@ class StoryService {
     'tomato:sell:fair': [('Lagos Island', 'wealth', 5), ('Lagos Island', 'trust', 5)],
     'tomato:sell:hold': [('Lagos Island', 'wealth', 2), ('Lagos Island', 'trust', -6)],
     'gridlock:fix:wyrd': [('Ojuelegba', 'transport', 8), ('Ojuelegba', 'trust', 4)],
+    't31:expose:wyrd': [('Mushin', 'trust', 8)],
+    't31:expose:press': [('Mushin', 'trust', 6), ('Mushin', 'culture', 2)],
+    't31:expose:riders': [('Mushin', 'trust', 8), ('Mushin', 'transport', 3)],
     'gridlock:fix:hack': [('Ojuelegba', 'transport', 8), ('Ojuelegba', 'crime', 2)],
     'gridlock:fix:area': [('Ojuelegba', 'transport', 5), ('Ojuelegba', 'crime', 3)],
     'school:arrive': [('Makoko', 'culture', 5), ('Makoko', 'trust', 6)],
@@ -447,7 +468,7 @@ class StoryService {
   /// Whom each mission puts you in front of; they remember how it ended (bible Part 2 §5).
   static const _people = {
     'tomato': 'Iya Rofiat', 'gridlock': 'Officer Ngozi', 'school': 'Mr Ayọ̀', 'masters': 'Baba Tunde', 'water': 'Sister Grace',
-    'generator': 'Mrs Lawal', 'owambe': 'Mama Tolu', 'seawall': 'Engr. Hauwa', 'union': 'Mama Kemi', 'phone': 'Musa',
+    'generator': 'Mrs Lawal', 't31': 'Rasheed', 'owambe': 'Mama Tolu', 'seawall': 'Engr. Hauwa', 'union': 'Mama Kemi', 'phone': 'Musa',
     'eyo': "The Ìdẹ̀jọ chief's aide", 'container': 'Dr Bello', 'startup': 'Chidinma', 'goat': 'Malam Sani', 'flood': 'Tunde',
     'leak': 'Mustapha', 'peppersoup': 'Mama Ireti', 'ghostbus': 'Sule', 'grandma': 'Grandma Adunni', 'matchday': 'Coach Emeka',
     'japa': 'Tobi', 'dronestrike': 'Ifeoma', 'voices': 'Mrs Hunpatin', 'bankrun': 'Mr Coker', 'finale': 'WYRD',
@@ -635,7 +656,12 @@ class StoryService {
       missionsDone: c.missionsDone + (m.to == 'done' ? 1 : 0),
       updatedAt: DateTime.now().toUtc(),
     ));
-    return jsonEncode({'ok': true, 'say': m.say, 'step': m.to, 'naira': c.naira, 'paid': m.pay, 'cost': m.cost, 'bulletin': bulletin, 'story': _view(read(c))});
+    var say = m.say;
+    if (mission == 't31' && m.to == 'done') {
+      final (drivers, back) = await PoliceService.fixUnit(session, 'T-31', move);
+      if (back > 0) say = '$say Every citation T-31 issued is cancelled: $drivers driver${drivers == 1 ? '' : 's'} refunded, ₦$back in all.';
+    }
+    return jsonEncode({'ok': true, 'say': say, 'step': m.to, 'naira': c.naira, 'paid': m.pay, 'cost': m.cost, 'bulletin': bulletin, 'story': _view(read(c))});
   }
 }
 

@@ -122,6 +122,7 @@ import 'mind/work_part_info.dart' as _ijuqu3gj;
 import 'mind/world_country.dart' as _iu995zpj;
 import 'world/city_charter.dart' as _i1wlu2l5;
 import 'world/city_design_note.dart' as _iovwbeu0;
+import 'world/city_flag.dart' as _il4e48h1;
 import 'world/city_signal.dart' as _it2dv7hu;
 import 'world/game_exchange.dart' as _i565k4ep;
 import 'world/naira_dispute.dart' as _i708bl2b;
@@ -206,6 +207,7 @@ export 'mind/work_part_info.dart';
 export 'mind/world_country.dart';
 export 'world/city_charter.dart';
 export 'world/city_design_note.dart';
+export 'world/city_flag.dart';
 export 'world/city_signal.dart';
 export 'world/game_exchange.dart';
 export 'world/naira_dispute.dart';
@@ -798,6 +800,56 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'city_flag',
+      dartName: 'CityFlag',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'at',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'city_flag_name_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'name',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -4491,6 +4543,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iovwbeu0.CityDesignNote) {
       return _iovwbeu0.CityDesignNote.fromJson(data) as T;
     }
+    if (t == _il4e48h1.CityFlag) {
+      return _il4e48h1.CityFlag.fromJson(data) as T;
+    }
     if (t == _it2dv7hu.CitySignal) {
       return _it2dv7hu.CitySignal.fromJson(data) as T;
     }
@@ -4763,6 +4818,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iovwbeu0.CityDesignNote?>()) {
       return (data != null ? _iovwbeu0.CityDesignNote.fromJson(data) : null)
           as T;
+    }
+    if (t == _is.getType<_il4e48h1.CityFlag?>()) {
+      return (data != null ? _il4e48h1.CityFlag.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_it2dv7hu.CitySignal?>()) {
       return (data != null ? _it2dv7hu.CitySignal.fromJson(data) : null) as T;
@@ -5193,6 +5251,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iu995zpj.WorldCountry => 'WorldCountry',
       _i1wlu2l5.CityCharter => 'CityCharter',
       _iovwbeu0.CityDesignNote => 'CityDesignNote',
+      _il4e48h1.CityFlag => 'CityFlag',
       _it2dv7hu.CitySignal => 'CitySignal',
       _i565k4ep.GameExchange => 'GameExchange',
       _i708bl2b.NairaDispute => 'NairaDispute',
@@ -5367,6 +5426,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'CityCharter';
       case _iovwbeu0.CityDesignNote():
         return 'CityDesignNote';
+      case _il4e48h1.CityFlag():
+        return 'CityFlag';
       case _it2dv7hu.CitySignal():
         return 'CitySignal';
       case _i565k4ep.GameExchange():
@@ -5637,6 +5698,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'CityDesignNote') {
       return deserialize<_iovwbeu0.CityDesignNote>(data['data']);
     }
+    if (dataClassName == 'CityFlag') {
+      return deserialize<_il4e48h1.CityFlag>(data['data']);
+    }
     if (dataClassName == 'CitySignal') {
       return deserialize<_it2dv7hu.CitySignal>(data['data']);
     }
@@ -5776,6 +5840,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i1wlu2l5.CityCharter.t;
       case _iovwbeu0.CityDesignNote:
         return _iovwbeu0.CityDesignNote.t;
+      case _il4e48h1.CityFlag:
+        return _il4e48h1.CityFlag.t;
       case _it2dv7hu.CitySignal:
         return _it2dv7hu.CitySignal.t;
       case _i565k4ep.GameExchange:
