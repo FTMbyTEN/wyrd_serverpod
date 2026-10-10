@@ -1708,6 +1708,15 @@ class EndpointCity extends _isc.EndpointRef {
     {'since': since},
   );
 
+  /// What the city saw around you, for WYRD to learn from: anonymous tallies, and only if you agreed to let WYRD
+  /// learn from your play. [batch]: JSON list of {k, p, n, v}. See CitySignals.
+  _ida.Future<String> signals(String batch) =>
+      caller.callServerEndpoint<String>(
+        'city',
+        'signals',
+        {'batch': batch},
+      );
+
   /// WYRD's charter for the city (how it means to deal with players, in its words) and the
   /// missions on its board open to you, as JSON: {charter, author, writtenAt, missions}.
   _ida.Future<String> charter() => caller.callServerEndpoint<String>(

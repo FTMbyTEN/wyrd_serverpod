@@ -10,6 +10,7 @@ import 'city_design_service.dart';
 import 'world_authority.dart';
 import 'world_stats.dart';
 import 'city_wire.dart';
+import 'city_signals.dart';
 import 'wallet_service.dart';
 import 'story_service.dart';
 import 'place_service.dart';
@@ -88,6 +89,10 @@ class CityEndpoint extends Endpoint {
 
   /// WYRD's live wire: what's happened in the city since item [since] (0: the latest few), for every player. See CityWire.
   Future<String> wire(Session session, int since) => CityWire.since(session, since);
+
+  /// What the city saw around you, for WYRD to learn from: anonymous tallies, and only if you agreed to let WYRD
+  /// learn from your play. [batch]: JSON list of {k, p, n, v}. See CitySignals.
+  Future<String> signals(Session session, String batch) => CitySignals.record(session, _user(session), batch);
 
   /// WYRD's charter for the city (how it means to deal with players, in its words) and the
   /// missions on its board open to you, as JSON: {charter, author, writtenAt, missions}.

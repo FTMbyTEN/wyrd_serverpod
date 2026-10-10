@@ -161,6 +161,7 @@ city:
   - stats:
   - status:
   - wire:
+  - signals:
   - charter:
   - design:
   - setTraining:

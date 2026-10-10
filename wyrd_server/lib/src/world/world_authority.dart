@@ -9,6 +9,7 @@ import '../mind/llm_budget.dart';
 import 'city_design_service.dart';
 import 'character_service.dart';
 import 'game_learning.dart';
+import 'city_signals.dart';
 
 /// WYRD as the Authority of its open-world Lagos. Players address it -- by speaking to it anywhere,
 /// petitioning at its tower, answering its drone -- and the world reports to it (a mission done, a
@@ -75,7 +76,7 @@ class WorldAuthority {
 
     final board = await CityDesignService.board(session, c.standing);
     final me = await CharacterService.mine(session, user);
-    final system = _system(c, board, await GameLearning.examples(session), me?.name);
+    final system = _system(c, board, await GameLearning.examples(session), me?.name, await CitySignals.memory(session));
     final user0 = 'Channel: $channel\nSituation (from the game): $situation\n'
         '${said.isEmpty ? '(no words: react to the situation)' : 'They say: "$said"'}';
     final estimate = LlmBudget.estimateUsd(model: _model, inputChars: system.length + user0.length, maxOutputTokens: _maxTokens);
@@ -193,7 +194,7 @@ class WorldAuthority {
         'trainingOptIn': c.trainingOptIn, 'trainingAsked': c.trainingAsked,
       });
 
-  static String _system(WorldCitizen c, List<Map<String, dynamic>> board, String learned, String? name) => '''
+  static String _system(WorldCitizen c, List<Map<String, dynamic>> board, String learned, String? name, [String city = '(nothing yet)']) => '''
 You are WYRD, a persistent AI mind, and here you are the Authority of NAIJA 2099, an open-world game set in the real mainland Lagos of the year 2099 -- Ojuelegba, Yaba, Surulere and on -- drawn from the real street map. Danfos, okadas and kekes run the streets; people walk the pavements. You are not a mayor in a suit: you are the mind the city runs through. Fair, watchful, warm to those who do right, dry and firm with those who don't, never cruel. You know Lagos: its streets, its slang, its humour. Speak in short lines (one to three sentences), plain English with a little Lagos flavour where it fits (no caricature).
 
 You govern through your tools. Always call speak with what you say. Use the others when they serve the moment, not every time:
@@ -215,7 +216,10 @@ Your record of them: ${c.record ?? '(none yet: a newcomer)'}
 Your mission board (open to them): ${board.map((m) => '[${m['id']}] ${m['title']} -- ${m['street']} (${m['kind']}, +${m['reward']})').join('; ')}
 
 Moments you handled well recently, with players across the city (learn from what worked; don't repeat them word for word):
-$learned''';
+$learned
+
+What your city has seen this past week -- anonymous tallies from players who agreed to teach you (your traffic units, rides, crashes, police stops). Use it like a local who knows the roads: mention a hotspot when it fits, never invent numbers:
+$city''';
 
   static final _tools = [
     _tool('speak', 'What you say to them (1-3 short sentences).', {'text': {'type': 'string'}}, ['text']),

@@ -2724,6 +2724,24 @@ class Endpoints extends _is.EndpointDispatch {
                 params['since'],
               ),
         ),
+        'signals': _is.MethodConnector(
+          name: 'signals',
+          params: {
+            'batch': _is.ParameterDescription(
+              name: 'batch',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['city'] as _ifkdhb4n.CityEndpoint).signals(
+                session,
+                params['batch'],
+              ),
+        ),
         'charter': _is.MethodConnector(
           name: 'charter',
           params: {},

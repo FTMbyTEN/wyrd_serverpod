@@ -1,0 +1,22 @@
+### What NAIJA 2099's city has seen, kept to teach WYRD -- anonymous and counted, never personal: how many times
+### something happened at one place in one hour (cars queued at a junction, crashes on a street, rides to a
+### district...). Only from players who agreed to let WYRD learn from their play. No player is stored with it.
+class: CitySignal
+table: city_signal
+fields:
+  ### the hour it happened in (UTC, on the hour)
+  hour: DateTime
+  ### queue | ride | air | crash | redlight | speeding | caught | lost | call | switch
+  kind: String
+  ### a street, junction or district name from the game's map (at most 60 characters)
+  place: String
+  ### how many times
+  times: int
+  ### a quantity summed over them, where the kind has one (cars waiting, km ridden, km/h...)
+  total: double
+indexes:
+  city_signal_key_idx:
+    fields: hour, kind, place
+    unique: true
+  city_signal_hour_idx:
+    fields: hour
