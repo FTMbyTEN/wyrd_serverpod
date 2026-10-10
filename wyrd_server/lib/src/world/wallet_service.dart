@@ -138,7 +138,8 @@ class WalletService {
   }
 
   /// What things cost; the game names the reason, the server sets the price.
-  static const fares = {'maglev': 200, 'danfo': 100};
+  // (ride: a WYRD Ride by road; air: a WYRD Air flight -- ordered from the phone in NAIJA 2099)
+  static const fares = {'maglev': 200, 'danfo': 100, 'ride': 500, 'air': 1500};
 
   static Future<String> pay(Session session, UuidValue user, String reason) async {
     final cost = fares[reason];
