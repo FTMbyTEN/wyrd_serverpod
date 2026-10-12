@@ -81,6 +81,13 @@ class LocalBrainService {
 
   static const _passageChars = 2400; // what fits comfortably in a chat bubble
 
+  /// True when a message carries a piece of text of its own: a quoted passage, or text after a colon
+  /// or on its own lines.
+  static bool carriesText(String t) =>
+      RegExp('["“”«»\'][^"“”«»]{40,}["“”«»\']').hasMatch(t) ||
+      RegExp(r':\s*\S[^\n]{40,}').hasMatch(t) ||
+      RegExp(r'\n\s*\S[^\n]{30,}').hasMatch(t);
+
   static Future<LocalAnswer?> answer(
     Session session, {
     required UuidValue authUserId,
@@ -91,6 +98,10 @@ class LocalBrainService {
   }) async {
     final t = text.trim();
     if (t.isEmpty || t.length > 300) return null;
+    // A message that brings its own text to work on ("summarise this: ..." with a quote or a pasted
+    // block) is about that text, not the last page WYRD read: the AI answers it. (It once summarised an
+    // old search page instead of the note the person had pasted.)
+    if (carriesText(t)) return null;
 
     // reading
     final cont = _continue.firstMatch(t);

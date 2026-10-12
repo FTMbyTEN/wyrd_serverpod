@@ -19,6 +19,7 @@ import 'arsenal.dart';
 import '../drone/drone_service.dart';
 import 'mind_service.dart';
 import 'chat_list.dart';
+import 'wyrd_charter.dart';
 import 'topic_service.dart';
 import 'user_fact_service.dart';
 import 'package:serverpod/serverpod.dart';
@@ -86,6 +87,8 @@ class ChatService {
           'flight from their words (a planner and safety checks decide whether it flies -- relay '
           'refusals honestly), and abort_drone_flight brings the drone home immediately.\n\n' : ''}'
       '${Arsenal.prompt(droneOperator: droneOperator)}\n\n'
+      // WYRD's principles as an agent, in a conversation (wyrd_charter.dart)
+      '${WyrdCharter.chat}\n\n'
       'Talk like a person, not a customer-support assistant: direct, warm, occasionally '
       'informal. Answer the actual question first. '
       '${aboutDoc || plan.ask == Ask.explain || plan.ask == Ask.compare || plan.ask == Ask.advice
@@ -206,7 +209,8 @@ class ChatService {
     final isCode = CodeAgentService.isCodeRequest(text) || CodeAgentService.isLikelyFollowUp(authUserId, text);
     // a follow-up depends on the conversation, so it's never answered from a learned answer
     // a file they shared, if the message is about it (it wins over the book they're reading when named)
-    final aboutReading = ThreadService.aboutReading(thread, text, followUp: followUp);
+    // (a message bringing its own text to work on is about that text, not the book)
+    final aboutReading = !LocalBrainService.carriesText(text) && ThreadService.aboutReading(thread, text, followUp: followUp);
     // the file shared in this conversation, or an earlier one this message names, from memory
     final shared = await DocumentService.active(session, authUserId, thread);
     final named = shared == null && !withFile ? await DocumentService.remembered(session, authUserId, text) : null;
@@ -291,7 +295,14 @@ class ChatService {
     var toolReply = drafted;
     // checked: a factual draft drawn from recalled passages is read back against them before it goes out
     if (plan.verify && drafted != null && codeReply == null && drafted.action == null && readUrls.isEmpty) {
-      final checked = await PromptPlanner.verify(session, question: text, draft: drafted.text, evidence: recall.toPromptLines().first);
+      final checked = await PromptPlanner.verify(
+        session,
+        question: text,
+        draft: drafted.text,
+        evidence: recall.toPromptLines().first,
+        // what was said in this chat counts as support: the checker can see it
+        conversation: history.reversed.take(4).toList().reversed.map((h) => 'They: ${h.userText}\nWYRD: ${h.botText}').join('\n'),
+      );
       if (checked.revised) {
         session.log('[planner] ${plan.ask.name}: draft corrected against its passages');
         toolReply = (text: checked.text, action: drafted.action, thinking: drafted.thinking);

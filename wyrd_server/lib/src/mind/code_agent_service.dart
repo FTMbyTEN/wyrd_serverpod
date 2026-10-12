@@ -110,7 +110,13 @@ class CodeAgentService {
       "actually pops up live in the user's interface, instead of just describing it in text. If "
       'what\'s being asked for is visual/interactive, always prefer preview_app over only writing '
       'the code in the reply — "done" with no popup is not actually done. You cannot execute code '
-      "yourself here, so don't claim to have run or tested anything.";
+      "yourself here, so don't claim to have run or tested anything.\n\n"
+      // WYRD's principles as an agent, for code (wyrd_charter.dart)
+      'Work as a careful engineer: understand what they actually need before writing, and if the request is '
+      'ambiguous but low-risk, take the sensible reading and say which. Plan the structure briefly, then write it. '
+      'Before you finish, check the code against what they asked for -- every requirement met, edge cases handled, '
+      'no half-wired features -- and say plainly what you could not verify (it has not been run) and any known '
+      'limits. Never present unfinished code as complete.';
 
   /// Null when there's no API key or the call fails -- the caller falls back to the normal
   /// conversational path, same safety net as Node.

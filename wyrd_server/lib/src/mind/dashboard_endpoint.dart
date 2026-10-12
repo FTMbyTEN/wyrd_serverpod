@@ -23,8 +23,11 @@ class DashboardEndpoint extends Endpoint {
     return user;
   }
 
-  Future<int> _count(Session session, String sql) async =>
-      ((await session.db.unsafeQuery(sql)).first.first as num? ?? 0).toInt();
+  // (a SUM over bigints comes back as Postgres numeric, which the driver hands over as text)
+  Future<int> _count(Session session, String sql) async {
+    final v = (await session.db.unsafeQuery(sql)).first.first;
+    return v is num ? v.toInt() : num.tryParse('$v')?.toInt() ?? 0;
+  }
 
   /// Everything on the dashboard, as JSON.
   Future<String> get(Session session) async {

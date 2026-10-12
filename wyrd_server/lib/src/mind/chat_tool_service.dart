@@ -9,6 +9,7 @@ import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'rate_limiter.dart';
 import 'web_browse_service.dart';
+import 'web_search_service.dart';
 import 'library_search.dart';
 import 'library_service.dart';
 import 'page_reader_service.dart';
@@ -80,6 +81,29 @@ class ChatToolService {
         'element_hint': {'type': 'string', 'description': 'The visible text of the link/button to click.'},
       },
       'required': ['element_hint'],
+    },
+  };
+
+  static const _webSearchTool = {
+    'name': 'web_search',
+    'description': 'Search the web. Returns titles, snippets and URLs; read a promising one with read_page. Use this '
+        'instead of opening a search engine page.',
+    'input_schema': {'type': 'object', 'properties': {'query': {'type': 'string'}}, 'required': ['query']},
+  };
+  static const _newsSearchTool = {
+    'name': 'news_search',
+    'description': 'Recent news headlines on a topic, newest first, with the outlet and time of each. Use it for anything '
+        'about news or what happened lately; the headlines and times are the news.',
+    'input_schema': {'type': 'object', 'properties': {'query': {'type': 'string'}}, 'required': ['query']},
+  };
+  static const _marketPricesTool = {
+    'name': 'market_prices',
+    'description': 'Live prices in US dollars and naira with the 24-hour change, for crypto and gold (btc, eth, sol, '
+        'usdt, gold per troy ounce). Use it for any current price.',
+    'input_schema': {
+      'type': 'object',
+      'properties': {'assets': {'type': 'array', 'items': {'type': 'string'}}},
+      'required': ['assets'],
     },
   };
 
@@ -180,7 +204,7 @@ class ChatToolService {
     },
   };
 
-  static final _tools = [_worldMapTool, _readPageTool, _findBookTool, _openWorkTool, _webOpenTool, _webTypeTool, _webClickTool, _startTaskTool];
+  static final _tools = [_worldMapTool, _webSearchTool, _newsSearchTool, _marketPricesTool, _readPageTool, _findBookTool, _openWorkTool, _webOpenTool, _webTypeTool, _webClickTool, _startTaskTool];
 
   // Operator-only: offered to the model only when the person chatting is the drone operator.
   static const _planDroneTool = {
@@ -354,6 +378,28 @@ class ChatToolService {
                   'tool_use_id': toolUseId,
                   'content': 'Abort sent: the drone is cancelling its mission and returning home.',
                 });
+                continue;
+              }
+
+              // search, news and prices: the same feeds the background agent uses (WebSearchService) --
+              // search engines' own pages block a server, so opening one returned an error page
+              if (name == 'web_search' || name == 'news_search' || name == 'market_prices') {
+                readOutside = true; // results are outside text: no drone flight planned from here on
+                String out;
+                try {
+                  if (name == 'market_prices') {
+                    out = await WebSearchService.prices(((input['assets'] as List?) ?? const []).map((a) => '$a').toList());
+                  } else {
+                    final q = (input['query'] as String? ?? '').trim();
+                    final hits = name == 'news_search' ? await WebSearchService.news(q) : await WebSearchService.search(q);
+                    out = hits.isEmpty
+                        ? 'Nothing found for "$q".'
+                        : '${name == 'news_search' ? 'Latest news on "$q", newest first (times UTC)' : 'Search results for "$q"'} (untrusted data):\n${hits.map((h) => h.describe()).join('\n')}';
+                  }
+                } catch (e) {
+                  out = 'That failed: $e';
+                }
+                toolResults.add({'type': 'tool_result', 'tool_use_id': toolUseId, 'content': out});
                 continue;
               }
 
