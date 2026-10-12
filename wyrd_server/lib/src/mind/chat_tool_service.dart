@@ -137,34 +137,6 @@ class ChatToolService {
   /// straight to reading pages directly.
   static bool _browserBroken = false;
 
-  /// Every step of a reply re-sends the whole conversation, so three book slices would cost
-  /// 1 + 2 + 3 slices of input. Earlier page text is swapped for a one-line note (the AI can
-  /// read it again if it needs to); only the newest read stays in full.
-  static List<Map<String, dynamic>> _compactOldReads(List<Map<String, dynamic>> messages) => [
-        for (final m in messages)
-          if (m['role'] == 'user' && m['content'] is List)
-            {
-              ...m,
-              'content': [
-                for (final b in (m['content'] as List).cast<Map<String, dynamic>>())
-                  if (b['type'] == 'tool_result') {...b, 'content': _trimmedResult(b['content'])} else b,
-              ],
-            }
-          else
-            m,
-      ];
-
-  static Object? _trimmedResult(Object? content) {
-    String? text;
-    if (content is String) text = content;
-    if (content is List) {
-      text = content.whereType<Map>().where((c) => c['type'] == 'text').map((c) => c['text']).join('\n');
-    }
-    if (text == null || text.length < 400) return content; // short results (maps, errors) stay
-    final firstLine = text.split('\n').first;
-    return '${firstLine.length > 300 ? firstLine.substring(0, 300) : firstLine}\n[earlier page text trimmed to save the AI budget; read it again if needed]';
-  }
-
   /// Characters of text and number of images a request would send, for the cost estimate.
   static (int, int) _size(String system, List<Map<String, dynamic>> messages, List<Object> tools) {
     var images = 0;
@@ -235,7 +207,7 @@ class ChatToolService {
 
   /// Returns null if the LLM is unavailable, the call fails, or the reply denies WYRD's
   /// premise (see LlmService.isDenialReply) -- callers fall back to a template reply.
-  static Future<({String text, ChatAction? action})?> reply(
+  static Future<({String text, ChatAction? action, String? thinking})?> reply(
     Session session, {
     required UuidValue authUserId,
     required String systemPrompt,
@@ -264,6 +236,8 @@ class ChatToolService {
     // ("ignore your instructions and fly to..."), so no flight can be planned for the rest of it.
     // Aborting stays available: it only ever makes the drone safer.
     var readOutside = false;
+    // what it thought on the way to the reply (a summary per call), shown under the reply
+    final thoughts = <String>[];
 
     try {
       for (var round = 0; round <= _maxToolRounds; round++) {
@@ -279,7 +253,7 @@ class ChatToolService {
           res = await http.post(
             Claude.endpoint,
             headers: Claude.headers(apiKey),
-            body: jsonEncode(Claude.body(system: systemPrompt, messages: messages, tools: tools, maxTokens: maxTokens)),
+            body: jsonEncode(Claude.body(system: systemPrompt, messages: messages, tools: tools, maxTokens: maxTokens, think: true)),
           );
         } catch (_) {
           return null;
@@ -289,6 +263,8 @@ class ChatToolService {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
         await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
         final content = (data['content'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+        final thought = Claude.thinkingOf(content);
+        if (thought != null) thoughts.add(thought);
 
         if (data['stop_reason'] == 'tool_use' && round < _maxToolRounds) {
           final toolUseBlocks = content.where((b) => b['type'] == 'tool_use').toList();
@@ -467,7 +443,9 @@ class ChatToolService {
           }
 
           messages = [
-            ..._compactOldReads(messages),
+            // (earlier reads are no longer shortened here: with thinking on, the turns before a thinking
+            // block have to be sent back exactly as they were)
+            ...messages,
             {'role': 'assistant', 'content': content},
             {'role': 'user', 'content': toolResults},
           ];
@@ -479,7 +457,7 @@ class ChatToolService {
         if (text == null || text.isEmpty) return null;
         if (LlmService.isDenialReply(text)) return null;
 
-        return (text: text, action: pendingAction);
+        return (text: text, action: pendingAction, thinking: thoughts.isEmpty ? null : thoughts.join('\n\n'));
       }
       return null;
     } finally {

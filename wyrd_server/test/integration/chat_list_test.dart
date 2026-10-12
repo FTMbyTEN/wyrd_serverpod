@@ -46,5 +46,20 @@ void main() {
       final other = sessionBuilder.copyWith(authentication: AuthenticationOverride.authenticationInfo('12121212-1212-4212-8212-121212121212', {}));
       expect(() => endpoints.chat.openChat(other, chats.first['id'] as int), throwsA(anything));
     });
+
   });
+
+  // (simultaneous requests can't run under the per-test rollback, so this group keeps its data)
+  withServerpod('Given a first load', (sessionBuilder, endpoints) {
+    test('two requests at once make one chat, not two', () async {
+      final fresh = sessionBuilder.copyWith(authentication: AuthenticationOverride.authenticationInfo('34343434-3434-4434-8434-343434343434', {}));
+      await ConversationTurn.db.insertRow(
+        sessionBuilder.build(),
+        ConversationTurn(authUserId: UuidValue.fromString('34343434-3434-4434-8434-343434343434'), userText: 'hi', botText: 'hello', timestamp: DateTime.now().toUtc()),
+      );
+      await Future.wait([endpoints.chat.chats(fresh), endpoints.chat.getHistory(fresh), endpoints.chat.chats(fresh)]);
+      final n = await Chat.db.count(sessionBuilder.build(), where: (t) => t.authUserId.equals(UuidValue.fromString('34343434-3434-4434-8434-343434343434')));
+      expect(n, 1);
+    });
+  }, rollbackDatabase: RollbackDatabase.disabled);
 }

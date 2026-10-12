@@ -3,9 +3,10 @@
 /// Claude Haiku 5.5: a tenth of Haiku 4.5's price ($0.10 / $0.50 per million tokens for prompts up
 /// to 100K tokens), so the same daily cap buys far more thinking. Three differences from 4.5 matter
 /// here:
-/// - it thinks before answering unless told not to. Thinking stays off: the replies are short, a
-///   small max_tokens could be spent entirely on thinking, and the agent shortens its own history
-///   as it goes, which a conversation carrying thinking blocks doesn't allow;
+/// - it thinks before answering unless told not to. Dialogue Link's replies think (low effort, with
+///   [thinkingRoom] on top of max_tokens so thinking can't use up the reply) and return a summary
+///   the person can open; everything else runs with thinking off -- the agent shortens its own
+///   history as it goes, which a conversation carrying thinking blocks doesn't allow;
 /// - the same text counts as about 30% more tokens, so [room] scales max_tokens to keep replies
 ///   the same length;
 /// - prompts from 512 tokens can be cached (4.5 needed 4,096). Only the agent caches: its steps
@@ -24,7 +25,9 @@ class Claude {
   /// [maxTokens] as it was sized for Haiku 4.5's tokenizer.
   static int room(int maxTokens) => (maxTokens * 1.3).ceil();
 
-  /// A request body for [model] (WYRD's core model unless said otherwise). [cachedSystem] is the
+  /// A request body for [model] (WYRD's core model unless said otherwise). [think]: Dialogue Link's
+  /// replies think first (low effort) and return a summary of it, shown under the reply; everything
+  /// else runs with thinking off. [cachedSystem] is the
   /// part of the system prompt that stays the same across the calls of a loop: it's cached, with
   /// the [tools] ahead of it. [system] is the rest, which may change each call.
   static Map<String, dynamic> body({
@@ -34,10 +37,11 @@ class Claude {
     required List<Map<String, dynamic>> messages,
     required int maxTokens,
     List<Map<String, dynamic>>? tools,
+    bool think = false,
   }) =>
       {
         'model': model,
-        'max_tokens': room(maxTokens),
+        'max_tokens': room(maxTokens) + (think ? thinkingRoom : 0),
         if (cachedSystem == null)
           'system': system
         else
@@ -47,6 +51,19 @@ class Claude {
           ],
         'messages': messages,
         if (tools != null) 'tools': tools,
-        'thinking': {'type': 'disabled'},
+        'thinking': think ? {'type': 'adaptive', 'display': 'summarized'} : {'type': 'disabled'},
+        if (think) 'output_config': {'effort': 'low'},
       };
+
+  /// Room for thinking on top of the reply's own (it counts toward max_tokens).
+  static const thinkingRoom = 2048;
+
+  /// The summary of what the model thought, from a response's content (empty blocks skipped), or null.
+  static String? thinkingOf(List<Map<String, dynamic>> content) {
+    final parts = [
+      for (final b in content)
+        if (b['type'] == 'thinking' && (b['thinking'] as String? ?? '').trim().isNotEmpty) (b['thinking'] as String).trim(),
+    ];
+    return parts.isEmpty ? null : parts.join('\n\n');
+  }
 }

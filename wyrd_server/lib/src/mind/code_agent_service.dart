@@ -106,7 +106,7 @@ class CodeAgentService {
 
   /// Null when there's no API key or the call fails -- the caller falls back to the normal
   /// conversational path, same safety net as Node.
-  static Future<({String text, ChatAction? action})?> reply(
+  static Future<({String text, ChatAction? action, String? thinking})?> reply(
     Session session, {
     required UuidValue authUserId,
     required List<({String userText, String botText})> history,
@@ -124,6 +124,7 @@ class CodeAgentService {
       {'role': 'user', 'content': userText},
     ];
     ChatAction? pendingAction;
+    final thoughts = <String>[]; // shown under the reply
 
     for (var round = 0; round <= _maxToolRounds; round++) {
       final http.Response res;
@@ -132,7 +133,7 @@ class CodeAgentService {
             .post(
               Claude.endpoint,
               headers: Claude.headers(apiKey),
-              body: jsonEncode(Claude.body(system: _systemPrompt, messages: messages, tools: [_previewAppTool], maxTokens: _maxTokens)),
+              body: jsonEncode(Claude.body(system: _systemPrompt, messages: messages, tools: [_previewAppTool], maxTokens: _maxTokens, think: true)),
             )
             .timeout(const Duration(seconds: 90));
       } catch (e) {
@@ -151,6 +152,8 @@ class CodeAgentService {
       await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
       final content = (data['content'] as List<dynamic>? ?? [])
           .cast<Map<String, dynamic>>();
+      final thought = Claude.thinkingOf(content);
+      if (thought != null) thoughts.add(thought);
 
       if (data['stop_reason'] == 'tool_use' && round < _maxToolRounds) {
         final toolResults = <Map<String, dynamic>>[];
@@ -191,7 +194,7 @@ class CodeAgentService {
       if (LlmService.isDenialReply(text)) return null;
 
       _recentCodeReplyAt[authUserId.toString()] = DateTime.now();
-      return (text: text, action: pendingAction);
+      return (text: text, action: pendingAction, thinking: thoughts.isEmpty ? null : thoughts.join('\n\n'));
     }
     return null;
   }

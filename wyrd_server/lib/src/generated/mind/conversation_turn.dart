@@ -26,6 +26,8 @@ abstract class ConversationTurn
     this.judgement,
     this.groundingIds,
     this.chatId,
+    this.thinking,
+    this.appHtml,
     this.image,
   });
 
@@ -40,6 +42,8 @@ abstract class ConversationTurn
     String? judgement,
     List<int>? groundingIds,
     int? chatId,
+    String? thinking,
+    String? appHtml,
     String? image,
   }) = _ConversationTurnImpl;
 
@@ -63,6 +67,8 @@ abstract class ConversationTurn
               jsonSerialization['groundingIds'],
             ),
       chatId: jsonSerialization['chatId'] as int?,
+      thinking: jsonSerialization['thinking'] as String?,
+      appHtml: jsonSerialization['appHtml'] as String?,
       image: jsonSerialization['image'] as String?,
     );
   }
@@ -92,6 +98,10 @@ abstract class ConversationTurn
 
   int? chatId;
 
+  String? thinking;
+
+  String? appHtml;
+
   String? image;
 
   @override
@@ -111,6 +121,8 @@ abstract class ConversationTurn
     String? judgement,
     List<int>? groundingIds,
     int? chatId,
+    String? thinking,
+    String? appHtml,
     String? image,
   });
   @override
@@ -127,6 +139,8 @@ abstract class ConversationTurn
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
       if (chatId != null) 'chatId': chatId,
+      if (thinking != null) 'thinking': thinking,
+      if (appHtml != null) 'appHtml': appHtml,
       if (image != null) 'image': image,
     };
   }
@@ -145,6 +159,8 @@ abstract class ConversationTurn
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
       if (chatId != null) 'chatId': chatId,
+      if (thinking != null) 'thinking': thinking,
+      if (appHtml != null) 'appHtml': appHtml,
       if (image != null) 'image': image,
     };
   }
@@ -191,6 +207,8 @@ class _ConversationTurnImpl extends ConversationTurn {
     String? judgement,
     List<int>? groundingIds,
     int? chatId,
+    String? thinking,
+    String? appHtml,
     String? image,
   }) : super._(
          id: id,
@@ -203,6 +221,8 @@ class _ConversationTurnImpl extends ConversationTurn {
          judgement: judgement,
          groundingIds: groundingIds,
          chatId: chatId,
+         thinking: thinking,
+         appHtml: appHtml,
          image: image,
        );
 
@@ -221,6 +241,8 @@ class _ConversationTurnImpl extends ConversationTurn {
     Object? judgement = _Undefined,
     Object? groundingIds = _Undefined,
     Object? chatId = _Undefined,
+    Object? thinking = _Undefined,
+    Object? appHtml = _Undefined,
     Object? image = _Undefined,
   }) {
     return ConversationTurn(
@@ -238,6 +260,8 @@ class _ConversationTurnImpl extends ConversationTurn {
           ? groundingIds
           : this.groundingIds?.map((e0) => e0).toList(),
       chatId: chatId is int? ? chatId : this.chatId,
+      thinking: thinking is String? ? thinking : this.thinking,
+      appHtml: appHtml is String? ? appHtml : this.appHtml,
       image: image is String? ? image : this.image,
     );
   }
@@ -296,6 +320,16 @@ class ConversationTurnUpdateTable
     value,
   );
 
+  _is.ColumnValue<String, String> thinking(String? value) => _is.ColumnValue(
+    table.thinking,
+    value,
+  );
+
+  _is.ColumnValue<String, String> appHtml(String? value) => _is.ColumnValue(
+    table.appHtml,
+    value,
+  );
+
   _is.ColumnValue<String, String> image(String? value) => _is.ColumnValue(
     table.image,
     value,
@@ -342,6 +376,14 @@ class ConversationTurnTable extends _is.Table<int?> {
       'chatId',
       this,
     );
+    thinking = _is.ColumnString(
+      'thinking',
+      this,
+    );
+    appHtml = _is.ColumnString(
+      'appHtml',
+      this,
+    );
     image = _is.ColumnString(
       'image',
       this,
@@ -368,6 +410,10 @@ class ConversationTurnTable extends _is.Table<int?> {
 
   late final _is.ColumnInt chatId;
 
+  late final _is.ColumnString thinking;
+
+  late final _is.ColumnString appHtml;
+
   late final _is.ColumnString image;
 
   @override
@@ -382,6 +428,8 @@ class ConversationTurnTable extends _is.Table<int?> {
     judgement,
     groundingIds,
     chatId,
+    thinking,
+    appHtml,
     image,
   ];
 }

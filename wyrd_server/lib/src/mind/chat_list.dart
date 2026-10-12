@@ -11,19 +11,32 @@ class ChatList {
   static Future<Chat> current(Session session, UuidValue user) async {
     final latest = await Chat.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.updatedAt.desc());
     if (latest != null) return latest;
-    final now = DateTime.now().toUtc();
-    final first = await ConversationTurn.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.id);
-    final chat = await Chat.db.insertRow(
-      session,
-      Chat(authUserId: user, title: first == null ? null : 'Earlier conversation', createdAt: first?.timestamp ?? now, updatedAt: now),
-    );
-    if (first != null) {
+    // The app asks for the chat list and the history at the same moment on first load: a lock per
+    // person makes the second wait and find the first's chat, instead of making a second one.
+    return session.db.transaction((tx) async {
       await session.db.unsafeExecute(
-        'UPDATE "conversation_turn" SET "chatId" = @c WHERE "authUserId" = CAST(@u AS uuid) AND "chatId" IS NULL',
-        parameters: QueryParameters.named({'c': chat.id, 'u': user.uuid}),
+        'SELECT pg_advisory_xact_lock(hashtext(@k))',
+        parameters: QueryParameters.named({'k': 'chat:${user.uuid}'}),
+        transaction: tx,
       );
-    }
-    return chat;
+      final again = await Chat.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.updatedAt.desc(), transaction: tx);
+      if (again != null) return again;
+      final now = DateTime.now().toUtc();
+      final first = await ConversationTurn.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.id, transaction: tx);
+      final chat = await Chat.db.insertRow(
+        session,
+        Chat(authUserId: user, title: first == null ? null : 'Earlier conversation', createdAt: first?.timestamp ?? now, updatedAt: now),
+        transaction: tx,
+      );
+      if (first != null) {
+        await session.db.unsafeExecute(
+          'UPDATE "conversation_turn" SET "chatId" = @c WHERE "authUserId" = CAST(@u AS uuid) AND "chatId" IS NULL',
+          parameters: QueryParameters.named({'c': chat.id, 'u': user.uuid}),
+          transaction: tx,
+        );
+      }
+      return chat;
+    });
   }
 
   /// A new, empty chat, now current (the current one, if it's still empty, is reused).
@@ -65,6 +78,8 @@ class ChatList {
     );
     return [
       for (final r in rows)
+        // an empty chat you're not in is nothing to go back to (and once a duplicate): not listed
+        if ((r[3] as num) > 0 || r[0] == cur.id)
         {
           'id': r[0],
           'title': r[1] ?? 'New chat',

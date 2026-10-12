@@ -26,6 +26,8 @@ abstract class ConversationTurn
     this.judgement,
     this.groundingIds,
     this.chatId,
+    this.thinking,
+    this.appHtml,
     this.image,
   });
 
@@ -40,6 +42,8 @@ abstract class ConversationTurn
     String? judgement,
     List<int>? groundingIds,
     int? chatId,
+    String? thinking,
+    String? appHtml,
     String? image,
   }) = _ConversationTurnImpl;
 
@@ -63,6 +67,8 @@ abstract class ConversationTurn
               jsonSerialization['groundingIds'],
             ),
       chatId: jsonSerialization['chatId'] as int?,
+      thinking: jsonSerialization['thinking'] as String?,
+      appHtml: jsonSerialization['appHtml'] as String?,
       image: jsonSerialization['image'] as String?,
     );
   }
@@ -90,6 +96,10 @@ abstract class ConversationTurn
 
   int? chatId;
 
+  String? thinking;
+
+  String? appHtml;
+
   String? image;
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -106,6 +116,8 @@ abstract class ConversationTurn
     String? judgement,
     List<int>? groundingIds,
     int? chatId,
+    String? thinking,
+    String? appHtml,
     String? image,
   });
   @override
@@ -122,6 +134,8 @@ abstract class ConversationTurn
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
       if (chatId != null) 'chatId': chatId,
+      if (thinking != null) 'thinking': thinking,
+      if (appHtml != null) 'appHtml': appHtml,
       if (image != null) 'image': image,
     };
   }
@@ -140,6 +154,8 @@ abstract class ConversationTurn
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
       if (chatId != null) 'chatId': chatId,
+      if (thinking != null) 'thinking': thinking,
+      if (appHtml != null) 'appHtml': appHtml,
       if (image != null) 'image': image,
     };
   }
@@ -164,6 +180,8 @@ class _ConversationTurnImpl extends ConversationTurn {
     String? judgement,
     List<int>? groundingIds,
     int? chatId,
+    String? thinking,
+    String? appHtml,
     String? image,
   }) : super._(
          id: id,
@@ -176,6 +194,8 @@ class _ConversationTurnImpl extends ConversationTurn {
          judgement: judgement,
          groundingIds: groundingIds,
          chatId: chatId,
+         thinking: thinking,
+         appHtml: appHtml,
          image: image,
        );
 
@@ -194,6 +214,8 @@ class _ConversationTurnImpl extends ConversationTurn {
     Object? judgement = _Undefined,
     Object? groundingIds = _Undefined,
     Object? chatId = _Undefined,
+    Object? thinking = _Undefined,
+    Object? appHtml = _Undefined,
     Object? image = _Undefined,
   }) {
     return ConversationTurn(
@@ -211,6 +233,8 @@ class _ConversationTurnImpl extends ConversationTurn {
           ? groundingIds
           : this.groundingIds?.map((e0) => e0).toList(),
       chatId: chatId is int? ? chatId : this.chatId,
+      thinking: thinking is String? ? thinking : this.thinking,
+      appHtml: appHtml is String? ? appHtml : this.appHtml,
       image: image is String? ? image : this.image,
     );
   }

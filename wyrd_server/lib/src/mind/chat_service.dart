@@ -175,10 +175,23 @@ class ChatService {
           'about them comes up, follow up on it for real.';
     }
 
+    // An app WYRD built is kept on its turn: the conversation says so (it used to forget it had
+    // built anything and told people it had no record), and the code writer gets the code back
+    // so it can change it.
+    String appNote(ConversationTurn t) => t.appHtml == null
+        ? ''
+        : '\n\n[In this reply you built and showed them an app${_appTitle(t.appHtml!) == null ? '' : ' ("${_appTitle(t.appHtml!)}")'}. '
+            'It is saved in this chat: they can open it again or download its code as a .zip from the card under '
+            'this reply. If they ask where it is or how to get it, point them to that card.]';
     final codeHistory = recentTurns.reversed
-        .map((t) => (userText: t.userText, botText: t.botText))
+        .map((t) => (
+              userText: t.userText,
+              botText: '${t.botText}${appNote(t)}'
+                  '${t.appHtml == null ? '' : '\n\nThe app\'s code:\n```html\n${t.appHtml!.length > 24000 ? '${t.appHtml!.substring(0, 24000)}\n<!-- (cut) -->' : t.appHtml}\n```'}',
+            ))
         .toList();
-    final history = codeHistory; // the last _historyTurns exchanges, oldest first
+    // the last _historyTurns exchanges, oldest first
+    final history = recentTurns.reversed.map((t) => (userText: t.userText, botText: '${t.botText}${appNote(t)}')).toList();
 
     // Recycle as learning: this message judges the learned answer WYRD gave last (if it gave
     // one), then WYRD tries its own learned answers before spending an AI call.
@@ -272,7 +285,7 @@ class ChatService {
       final checked = await PromptPlanner.verify(session, question: text, draft: drafted.text, evidence: recall.toPromptLines().first);
       if (checked.revised) {
         session.log('[planner] ${plan.ask.name}: draft corrected against its passages');
-        toolReply = (text: checked.text, action: drafted.action);
+        toolReply = (text: checked.text, action: drafted.action, thinking: drafted.thinking);
       }
     }
     final action = local?.action ?? toolReply?.action;
@@ -348,6 +361,9 @@ class ChatService {
         learnedAnswerId: usedLearned?.id ?? learnedNow,
         groundingIds: recall.groundingIds.isEmpty ? null : recall.groundingIds,
         judgement: judgement?.summary,
+        // what it thought, when this reply came from the AI (not a learned answer or its own brain)
+        thinking: usedLearned == null && local == null ? toolReply?.thinking : null,
+        appHtml: action?.type == 'preview_app' && (action?.html ?? '').isNotEmpty ? action!.html : null,
       ),
     );
     await ChatList.used(session, chat, shownAs ?? text);
@@ -377,6 +393,12 @@ class ChatService {
     );
 
     return (reply: reply, turn: turn, mind: updatedMind, action: action, fromMemory: usedLearned != null || local != null, judgement: judgement != null && !judgement.passed ? judgement.verdict : null);
+  }
+
+  /// An app's name, from its <title>.
+  static String? _appTitle(String html) {
+    final t = RegExp(r'<title[^>]*>([^<]{1,80})</title>', caseSensitive: false).firstMatch(html)?.group(1)?.trim();
+    return t == null || t.isEmpty ? null : t;
   }
 
   /// Average trust (Bias 2) of the sources behind the recalled memories, or null when none.

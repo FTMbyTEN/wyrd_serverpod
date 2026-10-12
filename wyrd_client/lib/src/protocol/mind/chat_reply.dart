@@ -23,6 +23,7 @@ abstract class ChatReply
     this.action,
     this.fromMemory,
     this.turnId,
+    this.thinking,
     this.judgement,
   });
 
@@ -32,6 +33,7 @@ abstract class ChatReply
     _i3mvbw8t.ChatAction? action,
     bool? fromMemory,
     int? turnId,
+    String? thinking,
     String? judgement,
   }) = _ChatReplyImpl;
 
@@ -50,6 +52,7 @@ abstract class ChatReply
           ? null
           : _isc.BoolJsonExtension.fromJson(jsonSerialization['fromMemory']),
       turnId: jsonSerialization['turnId'] as int?,
+      thinking: jsonSerialization['thinking'] as String?,
       judgement: jsonSerialization['judgement'] as String?,
     );
   }
@@ -64,6 +67,8 @@ abstract class ChatReply
 
   int? turnId;
 
+  String? thinking;
+
   String? judgement;
 
   /// Returns a shallow copy of this [ChatReply]
@@ -75,6 +80,7 @@ abstract class ChatReply
     _i3mvbw8t.ChatAction? action,
     bool? fromMemory,
     int? turnId,
+    String? thinking,
     String? judgement,
   });
   @override
@@ -86,6 +92,7 @@ abstract class ChatReply
       if (action != null) 'action': action?.toJson(),
       if (fromMemory != null) 'fromMemory': fromMemory,
       if (turnId != null) 'turnId': turnId,
+      if (thinking != null) 'thinking': thinking,
       if (judgement != null) 'judgement': judgement,
     };
   }
@@ -99,6 +106,7 @@ abstract class ChatReply
       if (action != null) 'action': action?.toJsonForProtocol(),
       if (fromMemory != null) 'fromMemory': fromMemory,
       if (turnId != null) 'turnId': turnId,
+      if (thinking != null) 'thinking': thinking,
       if (judgement != null) 'judgement': judgement,
     };
   }
@@ -118,6 +126,7 @@ class _ChatReplyImpl extends ChatReply {
     _i3mvbw8t.ChatAction? action,
     bool? fromMemory,
     int? turnId,
+    String? thinking,
     String? judgement,
   }) : super._(
          reply: reply,
@@ -125,6 +134,7 @@ class _ChatReplyImpl extends ChatReply {
          action: action,
          fromMemory: fromMemory,
          turnId: turnId,
+         thinking: thinking,
          judgement: judgement,
        );
 
@@ -138,6 +148,7 @@ class _ChatReplyImpl extends ChatReply {
     Object? action = _Undefined,
     Object? fromMemory = _Undefined,
     Object? turnId = _Undefined,
+    Object? thinking = _Undefined,
     Object? judgement = _Undefined,
   }) {
     return ChatReply(
@@ -148,6 +159,7 @@ class _ChatReplyImpl extends ChatReply {
           : this.action?.copyWith(),
       fromMemory: fromMemory is bool? ? fromMemory : this.fromMemory,
       turnId: turnId is int? ? turnId : this.turnId,
+      thinking: thinking is String? ? thinking : this.thinking,
       judgement: judgement is String? ? judgement : this.judgement,
     );
   }

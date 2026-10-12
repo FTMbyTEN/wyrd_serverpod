@@ -45,7 +45,7 @@ class ChatEndpoint extends Endpoint {
     ];
     final result = await ChatService.processMessage(session, authUserId, question,
         shownAs: attached == null ? null : text, withFile: attached != null, passages: parts.isEmpty ? null : parts);
-    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement);
+    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement, thinking: result.turn.thinking);
   }
 
   /// The current chat's turns, oldest first (the last [limit]).

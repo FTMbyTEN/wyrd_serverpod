@@ -5,4 +5,5 @@ fields:
   action: ChatAction?
   fromMemory: bool? # answered from a learned answer, without calling the AI
   turnId: int?
+  thinking: String? # what WYRD thought on the way to this reply (a summary), or null
   judgement: String? # softened / corrected / blocked, when the gate changed the reply # so the app can rate this exact reply
