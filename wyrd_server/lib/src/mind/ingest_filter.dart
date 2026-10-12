@@ -5,7 +5,13 @@ import 'package:serverpod/serverpod.dart';
 
 /// What the filter decided about one incoming item.
 class IngestVerdict {
-  IngestVerdict({required this.keep, required this.duplicate, required this.score, required this.reasons, required this.category});
+  IngestVerdict({
+    required this.keep,
+    required this.duplicate,
+    required this.score,
+    required this.reasons,
+    required this.category,
+  });
   final bool keep;
   final bool duplicate;
   final double score;
@@ -39,14 +45,167 @@ class IngestFilter {
   );
 
   static const _categories = <String, Set<String>>{
-    'tech': {'software', 'code', 'coding', 'programming', 'developer', 'developers', 'rust', 'python', 'javascript', 'typescript', 'linux', 'windows', 'apple', 'google', 'microsoft', 'llm', 'llms', 'model', 'models', 'agent', 'agents', 'gpu', 'chip', 'chips', 'cpu', 'compiler', 'database', 'server', 'cloud', 'security', 'vulnerability', 'browser', 'api', 'open-source', 'github', 'app', 'apps', 'web', 'network', 'kernel', 'robot', 'robots', 'token', 'tokens', 'inference', 'openai', 'anthropic', 'claude'},
-    'science': {'physics', 'biology', 'chemistry', 'quantum', 'space', 'nasa', 'planet', 'planets', 'star', 'stars', 'galaxy', 'climate', 'research', 'researchers', 'study', 'scientists', 'math', 'mathematics', 'theorem', 'brain', 'cells', 'dna', 'genes', 'evolution', 'species', 'medicine', 'medical', 'disease', 'vaccine', 'energy', 'fusion', 'ocean'},
-    'business': {'startup', 'startups', 'company', 'companies', 'market', 'markets', 'funding', 'investors', 'revenue', 'profit', 'economy', 'economic', 'price', 'prices', 'stock', 'bank', 'banks', 'layoffs', 'acquisition', 'ceo', 'billion', 'million'},
-    'world': {'government', 'election', 'elections', 'war', 'law', 'laws', 'court', 'policy', 'president', 'minister', 'country', 'countries', 'city', 'cities', 'military', 'police', 'rights', 'europe', 'china', 'russia', 'africa', 'nigeria', 'america'},
-    'culture': {'art', 'music', 'film', 'films', 'movie', 'book', 'books', 'novel', 'history', 'game', 'games', 'design', 'writing', 'language', 'languages', 'culture', 'museum', 'photography', 'philosophy'},
+    'tech': {
+      'software',
+      'code',
+      'coding',
+      'programming',
+      'developer',
+      'developers',
+      'rust',
+      'python',
+      'javascript',
+      'typescript',
+      'linux',
+      'windows',
+      'apple',
+      'google',
+      'microsoft',
+      'llm',
+      'llms',
+      'model',
+      'models',
+      'agent',
+      'agents',
+      'gpu',
+      'chip',
+      'chips',
+      'cpu',
+      'compiler',
+      'database',
+      'server',
+      'cloud',
+      'security',
+      'vulnerability',
+      'browser',
+      'api',
+      'open-source',
+      'github',
+      'app',
+      'apps',
+      'web',
+      'network',
+      'kernel',
+      'robot',
+      'robots',
+      'token',
+      'tokens',
+      'inference',
+      'openai',
+      'anthropic',
+      'claude',
+    },
+    'science': {
+      'physics',
+      'biology',
+      'chemistry',
+      'quantum',
+      'space',
+      'nasa',
+      'planet',
+      'planets',
+      'star',
+      'stars',
+      'galaxy',
+      'climate',
+      'research',
+      'researchers',
+      'study',
+      'scientists',
+      'math',
+      'mathematics',
+      'theorem',
+      'brain',
+      'cells',
+      'dna',
+      'genes',
+      'evolution',
+      'species',
+      'medicine',
+      'medical',
+      'disease',
+      'vaccine',
+      'energy',
+      'fusion',
+      'ocean',
+    },
+    'business': {
+      'startup',
+      'startups',
+      'company',
+      'companies',
+      'market',
+      'markets',
+      'funding',
+      'investors',
+      'revenue',
+      'profit',
+      'economy',
+      'economic',
+      'price',
+      'prices',
+      'stock',
+      'bank',
+      'banks',
+      'layoffs',
+      'acquisition',
+      'ceo',
+      'billion',
+      'million',
+    },
+    'world': {
+      'government',
+      'election',
+      'elections',
+      'war',
+      'law',
+      'laws',
+      'court',
+      'policy',
+      'president',
+      'minister',
+      'country',
+      'countries',
+      'city',
+      'cities',
+      'military',
+      'police',
+      'rights',
+      'europe',
+      'china',
+      'russia',
+      'africa',
+      'nigeria',
+      'america',
+    },
+    'culture': {
+      'art',
+      'music',
+      'film',
+      'films',
+      'movie',
+      'book',
+      'books',
+      'novel',
+      'history',
+      'game',
+      'games',
+      'design',
+      'writing',
+      'language',
+      'languages',
+      'culture',
+      'museum',
+      'photography',
+      'philosophy',
+    },
   };
 
-  static String _normTitle(String t) => t.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+  static String _normTitle(String t) => t
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9 ]'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
 
   /// The category whose words overlap the item's topics most ('general' when none do).
   static String categoryOf(List<String> topics) {
@@ -63,7 +222,11 @@ class IngestFilter {
   }
 
   /// Scores an item's quality from its text alone (no duplicate check). 1.0 = clean.
-  static ({double score, List<String> reasons}) quality(String title, String extract, List<String> topics) {
+  static ({double score, List<String> reasons}) quality(
+    String title,
+    String extract,
+    List<String> topics,
+  ) {
     var score = 1.0;
     final reasons = <String>[];
     final all = '$title $extract';
@@ -79,7 +242,8 @@ class IngestFilter {
     final upper = RegExp(r'[A-Z]').allMatches(title).length;
     if (letters >= 12 && upper / letters > 0.6) hit(0.3, 'shouting (all caps)');
     final visible = all.replaceAll(RegExp(r'\s'), '');
-    if (visible.isNotEmpty && RegExp(r'[A-Za-z]').allMatches(visible).length / visible.length < 0.5) {
+    if (visible.isNotEmpty &&
+        RegExp(r'[A-Za-z]').allMatches(visible).length / visible.length < 0.5) {
       hit(0.5, 'garbled or not text');
     }
     final ideas = topics.where(TopicService.isIdea).toSet();
@@ -89,11 +253,18 @@ class IngestFilter {
   }
 
   /// Is this item already in memory? Same link, or the same title from the same kind of source.
-  static Future<bool> isDuplicate(Session session, {required String title, String? url}) async {
+  static Future<bool> isDuplicate(
+    Session session, {
+    required String title,
+    String? url,
+  }) async {
     final rows = await session.db.unsafeQuery(
       'SELECT 1 FROM "memory_block" WHERE "source" = \'net\' AND ((@url::text IS NOT NULL AND "url" = @url) '
       'OR lower("title") = @title) LIMIT 1',
-      parameters: QueryParameters.named({'url': url, 'title': title.toLowerCase()}),
+      parameters: QueryParameters.named({
+        'url': url,
+        'title': title.toLowerCase(),
+      }),
     );
     if (rows.isNotEmpty) return true;
     // near-identical titles (punctuation, case) among recent items
@@ -116,20 +287,43 @@ class IngestFilter {
     final category = categoryOf(topics);
     if (await isDuplicate(session, title: title, url: url)) {
       await _count(session, duplicate: true);
-      return IngestVerdict(keep: false, duplicate: true, score: 0, reasons: ['already in memory'], category: category);
+      return IngestVerdict(
+        keep: false,
+        duplicate: true,
+        score: 0,
+        reasons: ['already in memory'],
+        category: category,
+      );
     }
     final q0 = quality(title, extract, topics);
     // Bias 2: a site that has earned trust lifts a borderline item, a doubted one sinks it
     final site = TrustService.sourceKey(url: url, feedSource: source);
-    final trust = await TrustService.scoreFor(session, TrustService.source, site);
+    final trust = await TrustService.scoreFor(
+      session,
+      TrustService.source,
+      site,
+    );
     // a site that is mostly junk (trust under 0.3) has earned real skepticism, not a nudge
     final doubted = trust < 0.3;
-    final adjusted = (q0.score + (trust - 0.5) * 0.4 - (doubted ? 0.3 : 0)).clamp(0.0, 1.0).toDouble();
-    final q = (score: adjusted, reasons: [...q0.reasons, if (trust < 0.4) 'from a source WYRD has learned to doubt']);
+    final adjusted = (q0.score + (trust - 0.5) * 0.4 - (doubted ? 0.3 : 0))
+        .clamp(0.0, 1.0)
+        .toDouble();
+    final q = (
+      score: adjusted,
+      reasons: [
+        ...q0.reasons,
+        if (trust < 0.4) 'from a source WYRD has learned to doubt',
+      ],
+    );
     final keep = q.score >= _keepAt;
     if (site != null) {
       // clean items build a site's trust slowly; kept-out ones cost it more
-      await TrustService.record(session, TrustService.source, site, keep ? 0.2 * q0.score : -0.5);
+      await TrustService.record(
+        session,
+        TrustService.source,
+        site,
+        keep ? 0.2 * q0.score : -0.5,
+      );
     }
     if (keep) {
       await _count(session, kept: true, category: category);
@@ -141,7 +335,9 @@ class IngestFilter {
           source: source,
           title: title,
           url: url,
-          extract: extract.length > 400 ? '${extract.substring(0, 399)}…' : extract,
+          extract: extract.length > 400
+              ? '${extract.substring(0, 399)}…'
+              : extract,
           score: q.score,
           reasons: q.reasons,
         ),
@@ -152,15 +348,42 @@ class IngestFilter {
       );
       await _count(session, reasons: q.reasons);
     }
-    return IngestVerdict(keep: keep, duplicate: false, score: q.score, reasons: q.reasons, category: category);
+    return IngestVerdict(
+      keep: keep,
+      duplicate: false,
+      score: q.score,
+      reasons: q.reasons,
+      category: category,
+    );
   }
 
-  static String _today() => DateTime.now().toUtc().toIso8601String().substring(0, 10);
+  static String _today() =>
+      DateTime.now().toUtc().toIso8601String().substring(0, 10);
 
-  static Future<void> _count(Session session, {bool kept = false, bool duplicate = false, String? category, List<String> reasons = const []}) async {
+  static Future<void> _count(
+    Session session, {
+    bool kept = false,
+    bool duplicate = false,
+    String? category,
+    List<String> reasons = const [],
+  }) async {
     final day = _today();
-    final row = await IngestDay.db.findFirstRow(session, where: (t) => t.day.equals(day)) ??
-        await IngestDay.db.insertRow(session, IngestDay(day: day, kept: 0, duplicates: 0, quarantined: 0, reasons: {}, categories: {}));
+    final row =
+        await IngestDay.db.findFirstRow(
+          session,
+          where: (t) => t.day.equals(day),
+        ) ??
+        await IngestDay.db.insertRow(
+          session,
+          IngestDay(
+            day: day,
+            kept: 0,
+            duplicates: 0,
+            quarantined: 0,
+            reasons: {},
+            categories: {},
+          ),
+        );
     final r = Map<String, int>.from(row.reasons);
     for (final why in reasons) {
       r[why] = (r[why] ?? 0) + 1;
@@ -181,8 +404,15 @@ class IngestFilter {
 
   static Future<FilterReport> report(Session session) async {
     final day = _today();
-    final row = await IngestDay.db.findFirstRow(session, where: (t) => t.day.equals(day));
-    final recent = await QuarantinedItem.db.find(session, orderBy: (t) => t.id.desc(), limit: 8);
+    final row = await IngestDay.db.findFirstRow(
+      session,
+      where: (t) => t.day.equals(day),
+    );
+    final recent = await QuarantinedItem.db.find(
+      session,
+      orderBy: (t) => t.id.desc(),
+      limit: 8,
+    );
     return FilterReport(
       day: day,
       kept: row?.kept ?? 0,

@@ -19,7 +19,11 @@ class LexiconEndpoint extends Endpoint {
     // starting WYRD's work by hand is the owner's: strangers can't spend its budget or block its runs
     await OwnerGuard.check(session, 'that');
     // public: a few per 10 minutes, so nobody can hammer it (the scheduler runs it anyway)
-    if (RateLimiter.isLimited('trigger:lexicon', 6, const Duration(minutes: 10))) {
+    if (RateLimiter.isLimited(
+      'trigger:lexicon',
+      6,
+      const Duration(minutes: 10),
+    )) {
       throw Exception('slow down — try again in a few minutes');
     }
     PublicCache.clear(); // only once a run really goes ahead
@@ -32,11 +36,18 @@ class LexiconEndpoint extends Endpoint {
 
   /// Two counts and the five newest understood words -- not the whole lexicon, which grows
   /// every 30s and was being loaded in full on every poll.
-  Future<LexiconStats> getStats(Session session) =>
-      PublicCache.get(session, 'lexicon-stats', const Duration(seconds: 20), () => _getStats(session));
+  Future<LexiconStats> getStats(Session session) => PublicCache.get(
+    session,
+    'lexicon-stats',
+    const Duration(seconds: 20),
+    () => _getStats(session),
+  );
 
   Future<LexiconStats> _getStats(Session session) async {
-    final learned = await LexiconEntry.db.count(session, where: (t) => t.understood.equals(true));
+    final learned = await LexiconEntry.db.count(
+      session,
+      where: (t) => t.understood.equals(true),
+    );
     final attempted = await LexiconEntry.db.count(session);
     final newest = await LexiconEntry.db.find(
       session,
@@ -49,11 +60,14 @@ class LexiconEndpoint extends Endpoint {
       attempted: attempted,
       recentWords: [
         for (final e in newest.reversed)
-          LexiconWordSummary(word: e.word, definition: e.definition, partOfSpeech: e.partOfSpeech),
+          LexiconWordSummary(
+            word: e.word,
+            definition: e.definition,
+            partOfSpeech: e.partOfSpeech,
+          ),
       ],
     );
   }
-
 
   Future<LexiconEntry?> getWord(Session session, String word) async {
     return await LexiconEntry.db.findFirstRow(

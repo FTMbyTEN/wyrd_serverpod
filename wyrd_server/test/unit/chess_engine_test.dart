@@ -21,11 +21,19 @@ void main() {
   test('every level answers the opening with a legal move, quickly', () {
     for (var level = 1; level <= 6; level++) {
       final watch = Stopwatch()..start();
-      final san = ChessEngine.bestMove(ch.Chess.DEFAULT_POSITION, level, rng: Random(level));
+      final san = ChessEngine.bestMove(
+        ch.Chess.DEFAULT_POSITION,
+        level,
+        rng: Random(level),
+      );
       watch.stop();
       expect(san, isNotNull);
       expect(ch.Chess().move(san), isTrue);
-      expect(watch.elapsedMilliseconds, lessThan(4000), reason: 'level $level took ${watch.elapsedMilliseconds} ms');
+      expect(
+        watch.elapsedMilliseconds,
+        lessThan(4000),
+        reason: 'level $level took ${watch.elapsedMilliseconds} ms',
+      );
     }
   });
 
@@ -35,10 +43,13 @@ void main() {
     expect(ChessEngine.levelFor(2500), 6);
   });
 
-  test('Elo: beating a stronger level gains more than beating a weaker one', () {
-    final up = GameService.elo(1000, 1400, 1, games: 20) - 1000;
-    final down = GameService.elo(1000, 700, 1, games: 20) - 1000;
-    expect(up, greaterThan(down));
-    expect(GameService.elo(1000, 1000, 0.5, games: 20), closeTo(1000, 0.01));
-  });
+  test(
+    'Elo: beating a stronger level gains more than beating a weaker one',
+    () {
+      final up = GameService.elo(1000, 1400, 1, games: 20) - 1000;
+      final down = GameService.elo(1000, 700, 1, games: 20) - 1000;
+      expect(up, greaterThan(down));
+      expect(GameService.elo(1000, 1000, 0.5, games: 20), closeTo(1000, 0.01));
+    },
+  );
 }

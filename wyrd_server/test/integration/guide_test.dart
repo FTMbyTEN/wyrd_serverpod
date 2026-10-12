@@ -8,7 +8,9 @@ import 'test_tools/serverpod_test_tools.dart';
 void main() {
   withServerpod('Given the first-time guide', (sessionBuilder, endpoints) {
     final ada = UuidValue.fromString('00000000-0000-4000-8000-0000000000e1');
-    final asAda = sessionBuilder.copyWith(authentication: AuthenticationOverride.authenticationInfo(ada.uuid, {}));
+    final asAda = sessionBuilder.copyWith(
+      authentication: AuthenticationOverride.authenticationInfo(ada.uuid, {}),
+    );
     Map<String, dynamic> j(String s) => jsonDecode(s) as Map<String, dynamic>;
 
     test('a step pays its bonus once', () async {
@@ -22,8 +24,14 @@ void main() {
     });
 
     test("'home' needs a home; unknown steps refused", () async {
-      expect(j(await endpoints.city.guideMark(asAda, 'home'))['error'], contains('no home'));
-      expect(j(await endpoints.city.guideMark(asAda, 'fly'))['error'], isNotNull);
+      expect(
+        j(await endpoints.city.guideMark(asAda, 'home'))['error'],
+        contains('no home'),
+      );
+      expect(
+        j(await endpoints.city.guideMark(asAda, 'fly'))['error'],
+        isNotNull,
+      );
     });
 
     test('skipping marks all steps, pays nothing', () async {

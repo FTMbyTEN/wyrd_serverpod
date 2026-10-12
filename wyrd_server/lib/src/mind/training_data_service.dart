@@ -16,8 +16,10 @@ class TrainingExample {
   final List<({String role, String content})> messages;
 
   String toJsonLine() => jsonEncode({
-        'messages': [for (final m in messages) {'role': m.role, 'content': m.content}],
-      });
+    'messages': [
+      for (final m in messages) {'role': m.role, 'content': m.content},
+    ],
+  });
 }
 
 class TrainingSet {
@@ -28,7 +30,8 @@ class TrainingSet {
   final Map<String, int> stats; // kept per source, and dropped per reason
 
   String get trainJsonl => train.map((e) => e.toJsonLine()).join('\n');
-  String get validationJsonl => validation.map((e) => e.toJsonLine()).join('\n');
+  String get validationJsonl =>
+      validation.map((e) => e.toJsonLine()).join('\n');
 }
 
 /// Fine-tuning, step one: the dataset for WYRD's everyday voice. It gathers what WYRD has said that
@@ -43,7 +46,8 @@ class TrainingDataService {
       'direct, warm, curious, occasionally informal, no bullet points. Answer the actual question first.';
 
   static const _maxTurns = 20000;
-  static const _contextTurns = 2; // earlier exchanges kept as context, from the same person
+  static const _contextTurns =
+      2; // earlier exchanges kept as context, from the same person
   static const _contextGap = Duration(minutes: 30);
 
   static Future<TrainingSet> build(Session session) async {
@@ -53,7 +57,11 @@ class TrainingDataService {
     final seen = <String>{};
 
     // 1. conversations, oldest first per person so each reply can carry what came before
-    final turns = await ConversationTurn.db.find(session, orderBy: (t) => t.id, limit: _maxTurns);
+    final turns = await ConversationTurn.db.find(
+      session,
+      orderBy: (t) => t.id,
+      limit: _maxTurns,
+    );
     final byPerson = <UuidValue, List<ConversationTurn>>{};
     for (final t in turns) {
       byPerson.putIfAbsent(t.authUserId, () => []).add(t);
@@ -71,13 +79,17 @@ class TrainingDataService {
           count('dropped.duplicate');
           continue;
         }
-        final messages = <({String role, String content})>[(role: 'system', content: system)];
+        final messages = <({String role, String content})>[
+          (role: 'system', content: system),
+        ];
         // context: the exchanges just before, if they were part of the same sitting and clean themselves
         final context = <ConversationTurn>[];
         for (var j = i - 1; j >= 0 && context.length < _contextTurns; j--) {
           final p = list[j];
           final next = j + 1 < list.length ? list[j + 1] : t;
-          if (next.timestamp.difference(p.timestamp) > _contextGap || rejectReason(p) != null) break;
+          if (next.timestamp.difference(p.timestamp) > _contextGap ||
+              rejectReason(p) != null)
+            break;
           context.insert(0, p);
         }
         for (final p in context) {
@@ -93,18 +105,27 @@ class TrainingDataService {
     }
 
     // 2. learned answers that have earned their standing
-    final learned = await LearnedAnswer.db.find(session, where: (a) => a.retired.equals(false) & (a.score >= 0.6));
+    final learned = await LearnedAnswer.db.find(
+      session,
+      where: (a) => a.retired.equals(false) & (a.score >= 0.6),
+    );
     for (final a in learned) {
       final reply = a.answer.trim();
-      if (reply.length < 20 || reply.length > 1500 || LlmService.isDenialReply(reply) || _personal(a.question) || !seen.add(_norm(a.question))) {
+      if (reply.length < 20 ||
+          reply.length > 1500 ||
+          LlmService.isDenialReply(reply) ||
+          _personal(a.question) ||
+          !seen.add(_norm(a.question))) {
         count('dropped.learned');
         continue;
       }
-      examples.add(TrainingExample('learned', [
-        (role: 'system', content: system),
-        (role: 'user', content: scrub(a.question)),
-        (role: 'assistant', content: scrub(reply)),
-      ]));
+      examples.add(
+        TrainingExample('learned', [
+          (role: 'system', content: system),
+          (role: 'user', content: scrub(a.question)),
+          (role: 'assistant', content: scrub(reply)),
+        ]),
+      );
       count('kept.learned');
     }
 
@@ -116,11 +137,13 @@ class TrainingDataService {
         count('dropped.diary');
         continue;
       }
-      examples.add(TrainingExample('diary', [
-        (role: 'system', content: system),
-        (role: 'user', content: 'Write your diary entry for ${d.date}.'),
-        (role: 'assistant', content: scrub(text)),
-      ]));
+      examples.add(
+        TrainingExample('diary', [
+          (role: 'system', content: system),
+          (role: 'user', content: 'Write your diary entry for ${d.date}.'),
+          (role: 'assistant', content: scrub(text)),
+        ]),
+      );
       count('kept.diary');
     }
 
@@ -146,7 +169,8 @@ class TrainingDataService {
     if (t.rating == -1) return 'rated_down';
     if (t.judgement != null && t.judgement != 'pass') return 'failed_judgement';
     if (user.length < 2 || bot.length < 20) return 'too_short';
-    if (bot.length > 1500) return 'too_long'; // long answers are files and documents: Claude's job
+    if (bot.length > 1500)
+      return 'too_long'; // long answers are files and documents: Claude's job
     if (bot.contains('```') || _codeAsk.hasMatch(user)) return 'code';
     if (_toolTalk.hasMatch(bot) || user.startsWith('[')) return 'tools';
     if (LlmService.isDenialReply(bot)) return 'denial';
@@ -165,7 +189,11 @@ class TrainingDataService {
 
   static bool _personal(String s) => _personalRe.hasMatch(s);
 
-  static String _norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
+  static String _norm(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9 ]'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
 
   static int _bucket(String s) {
     var h = 0;
@@ -175,15 +203,26 @@ class TrainingDataService {
     return h % 100;
   }
 
-  static final _email = RegExp(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b');
+  static final _email = RegExp(
+    r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b',
+  );
   static final _phone = RegExp(r'(?<!\w)\+?\d[\d\s().\-]{7,}\d(?!\w)');
   static final _url = RegExp(r'https?://\S+\?\S+');
   static final _digits = RegExp(r'\b\d{9,}\b');
-  static final _secret = RegExp(r'(sk-[A-Za-z0-9_\-]{16,}|pa-[A-Za-z0-9_\-]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.)|\bpassword\b', caseSensitive: false);
+  static final _secret = RegExp(
+    r'(sk-[A-Za-z0-9_\-]{16,}|pa-[A-Za-z0-9_\-]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.)|\bpassword\b',
+    caseSensitive: false,
+  );
   static final _personalRe = RegExp(
     r"\b(my (name|email|phone|number|address|password|pin|bank|account|card|salary|diagnosis|doctor)|i live (at|in|on)|i'?m \d{1,2} years|i am \d{1,2} years|my (wife|husband|girlfriend|boyfriend|son|daughter|mum|mom|dad)\b)",
     caseSensitive: false,
   );
-  static final _codeAsk = RegExp(r'\b(write|fix|debug|refactor) (me )?(a |the |some |this )?(code|function|script|program|bug)\b|\b(python|javascript|typescript|dart|sql|html|css)\b.*\b(code|function|error)\b', caseSensitive: false);
-  static final _toolTalk = RegExp(r'\b(I(?:\x27ve| have) (opened|put|queued)|on your desk|on the globe|flight (planned|queued))\b', caseSensitive: false);
+  static final _codeAsk = RegExp(
+    r'\b(write|fix|debug|refactor) (me )?(a |the |some |this )?(code|function|script|program|bug)\b|\b(python|javascript|typescript|dart|sql|html|css)\b.*\b(code|function|error)\b',
+    caseSensitive: false,
+  );
+  static final _toolTalk = RegExp(
+    r'\b(I(?:\x27ve| have) (opened|put|queued)|on your desk|on the globe|flight (planned|queued))\b',
+    caseSensitive: false,
+  );
 }

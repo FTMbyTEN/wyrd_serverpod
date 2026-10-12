@@ -13,7 +13,12 @@ class DreamEndpoint extends Endpoint {
 
   Future<List<DreamEntry>> getEntries(Session session, {int? limit}) async {
     await OwnerGuard.check(session, 'the dreams');
-    return PublicCache.get(session, 'dream.getEntries:$limit', const Duration(seconds: 60), () => _getEntries(session, limit: limit));
+    return PublicCache.get(
+      session,
+      'dream.getEntries:$limit',
+      const Duration(seconds: 60),
+      () => _getEntries(session, limit: limit),
+    );
   }
 
   Future<List<DreamEntry>> _getEntries(Session session, {int? limit}) async {

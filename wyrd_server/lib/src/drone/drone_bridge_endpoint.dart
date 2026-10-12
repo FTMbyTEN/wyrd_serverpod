@@ -48,7 +48,11 @@ class DroneBridgeEndpoint extends Endpoint {
       for (final m in stuck) {
         await DroneMission.db.updateRow(
           session,
-          m.copyWith(status: 'aborted', reason: 'the drone bridge restarted and no longer has this flight', updatedAt: now),
+          m.copyWith(
+            status: 'aborted',
+            reason: 'the drone bridge restarted and no longer has this flight',
+            updatedAt: now,
+          ),
         );
       }
     }

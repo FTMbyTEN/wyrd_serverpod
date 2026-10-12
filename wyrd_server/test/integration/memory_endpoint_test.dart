@@ -38,12 +38,16 @@ void main() {
         expect(blocks, hasLength(2));
 
         final graph = await endpoints.memory.getConcepts(sessionBuilder);
-        final determinism = graph.nodes.firstWhere((n) => n.id == 'determinism');
+        final determinism = graph.nodes.firstWhere(
+          (n) => n.id == 'determinism',
+        );
         expect(determinism.count, 2);
         expect(
-          graph.edges.any((e) =>
-              (e.a == 'determinism' && e.b == 'free-will') ||
-              (e.a == 'free-will' && e.b == 'determinism')),
+          graph.edges.any(
+            (e) =>
+                (e.a == 'determinism' && e.b == 'free-will') ||
+                (e.a == 'free-will' && e.b == 'determinism'),
+          ),
           isTrue,
         );
       },

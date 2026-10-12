@@ -9,7 +9,11 @@ class ChatList {
   /// Their current chat, made on first need. The first time, turns from before chats existed are
   /// gathered into it as their earlier conversation.
   static Future<Chat> current(Session session, UuidValue user) async {
-    final latest = await Chat.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.updatedAt.desc());
+    final latest = await Chat.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(user),
+      orderBy: (t) => t.updatedAt.desc(),
+    );
     if (latest != null) return latest;
     // The app asks for the chat list and the history at the same moment on first load: a lock per
     // person makes the second wait and find the first's chat, instead of making a second one.
@@ -19,13 +23,28 @@ class ChatList {
         parameters: QueryParameters.named({'k': 'chat:${user.uuid}'}),
         transaction: tx,
       );
-      final again = await Chat.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.updatedAt.desc(), transaction: tx);
+      final again = await Chat.db.findFirstRow(
+        session,
+        where: (t) => t.authUserId.equals(user),
+        orderBy: (t) => t.updatedAt.desc(),
+        transaction: tx,
+      );
       if (again != null) return again;
       final now = DateTime.now().toUtc();
-      final first = await ConversationTurn.db.findFirstRow(session, where: (t) => t.authUserId.equals(user), orderBy: (t) => t.id, transaction: tx);
+      final first = await ConversationTurn.db.findFirstRow(
+        session,
+        where: (t) => t.authUserId.equals(user),
+        orderBy: (t) => t.id,
+        transaction: tx,
+      );
       final chat = await Chat.db.insertRow(
         session,
-        Chat(authUserId: user, title: first == null ? null : 'Earlier conversation', createdAt: first?.timestamp ?? now, updatedAt: now),
+        Chat(
+          authUserId: user,
+          title: first == null ? null : 'Earlier conversation',
+          createdAt: first?.timestamp ?? now,
+          updatedAt: now,
+        ),
         transaction: tx,
       );
       if (first != null) {
@@ -43,32 +62,56 @@ class ChatList {
   static Future<Chat> start(Session session, UuidValue user) async {
     final now = DateTime.now().toUtc();
     final cur = await current(session, user);
-    final used = await ConversationTurn.db.count(session, where: (t) => t.chatId.equals(cur.id));
-    if (used == 0) return Chat.db.updateRow(session, cur.copyWith(updatedAt: now));
-    return Chat.db.insertRow(session, Chat(authUserId: user, createdAt: now, updatedAt: now));
+    final used = await ConversationTurn.db.count(
+      session,
+      where: (t) => t.chatId.equals(cur.id),
+    );
+    if (used == 0)
+      return Chat.db.updateRow(session, cur.copyWith(updatedAt: now));
+    return Chat.db.insertRow(
+      session,
+      Chat(authUserId: user, createdAt: now, updatedAt: now),
+    );
   }
 
   /// Makes one of their chats current again.
   static Future<Chat> open(Session session, UuidValue user, int id) async {
     final chat = await Chat.db.findById(session, id);
-    if (chat == null || chat.authUserId != user) throw Exception('No such chat.');
-    return Chat.db.updateRow(session, chat.copyWith(updatedAt: DateTime.now().toUtc()));
+    if (chat == null || chat.authUserId != user)
+      throw Exception('No such chat.');
+    return Chat.db.updateRow(
+      session,
+      chat.copyWith(updatedAt: DateTime.now().toUtc()),
+    );
   }
 
   /// After a message in [chat]: it stays current, and gets its title from the first message.
   static Future<void> used(Session session, Chat chat, String said) async {
-    final words = said.replaceAll(RegExp(r'^📎 [^\n]+\n+'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
+    final words = said
+        .replaceAll(RegExp(r'^📎 [^\n]+\n+'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
     await Chat.db.updateRow(
       session,
       chat.copyWith(
         updatedAt: DateTime.now().toUtc(),
-        title: chat.title ?? (words.isEmpty ? null : words.length > 48 ? '${words.substring(0, 47).trimRight()}…' : words),
+        title:
+            chat.title ??
+            (words.isEmpty
+                ? null
+                : words.length > 48
+                ? '${words.substring(0, 47).trimRight()}…'
+                : words),
       ),
     );
   }
 
   /// Their chats, most recent first, with how many messages each has and when it was last used.
-  static Future<List<Map<String, dynamic>>> list(Session session, UuidValue user, {int limit = 50}) async {
+  static Future<List<Map<String, dynamic>>> list(
+    Session session,
+    UuidValue user, {
+    int limit = 50,
+  }) async {
     final cur = await current(session, user);
     final rows = await session.db.unsafeQuery(
       'SELECT c."id", c."title", c."updatedAt", COUNT(t."id") AS turns FROM "chat" c '
@@ -80,13 +123,13 @@ class ChatList {
       for (final r in rows)
         // an empty chat you're not in is nothing to go back to (and once a duplicate): not listed
         if ((r[3] as num) > 0 || r[0] == cur.id)
-        {
-          'id': r[0],
-          'title': r[1] ?? 'New chat',
-          'updatedAt': (r[2] as DateTime).toIso8601String(),
-          'turns': (r[3] as num).toInt(),
-          'current': r[0] == cur.id,
-        },
+          {
+            'id': r[0],
+            'title': r[1] ?? 'New chat',
+            'updatedAt': (r[2] as DateTime).toIso8601String(),
+            'turns': (r[3] as num).toInt(),
+            'current': r[0] == cur.id,
+          },
     ];
   }
 }

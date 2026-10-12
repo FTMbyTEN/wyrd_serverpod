@@ -15,7 +15,8 @@ import 'package:serverpod/serverpod.dart';
 class WordNetService {
   // under web/ because the server image only copies config/, web/ and migrations/
   static const _dataFile = 'web/data/wordnet.tsv.gz';
-  static const _importMark = 'wordnet-3.1-s4'; // up to 4 senses per word and part of speech
+  static const _importMark =
+      'wordnet-3.1-s4'; // up to 4 senses per word and part of speech
   static const _batch = 800;
 
   static bool? _ready;
@@ -29,7 +30,10 @@ class WordNetService {
     status = msg;
     // ignore: avoid_print
     print('[wordnet] $msg'); // container log, in case session logs are sampled
-    session.log('[wordnet] $msg', level: warn ? LogLevel.warning : LogLevel.info);
+    session.log(
+      '[wordnet] $msg',
+      level: warn ? LogLevel.warning : LogLevel.info,
+    );
   }
 
   /// Starts an import in the background if WordNet isn't loaded, none is running, and the last
@@ -37,7 +41,9 @@ class WordNetService {
   static void retryIfNeeded(Future<void> Function() run) {
     if (_ready == true || _importing) return;
     final last = _lastAttempt;
-    if (last != null && DateTime.now().difference(last) < const Duration(minutes: 10)) return;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(minutes: 10))
+      return;
     _lastAttempt = DateTime.now();
     run();
   }
@@ -45,7 +51,10 @@ class WordNetService {
   /// True once the import has finished (cached after the first positive check).
   static Future<bool> isReady(Session session) async {
     if (_ready == true) return true;
-    final mark = await MaintenanceRun.db.findFirstRow(session, where: (t) => t.name.equals(_importMark));
+    final mark = await MaintenanceRun.db.findFirstRow(
+      session,
+      where: (t) => t.name.equals(_importMark),
+    );
     return _ready = mark != null;
   }
 
@@ -62,7 +71,11 @@ class WordNetService {
     try {
       final file = File(_dataFile);
       if (!file.existsSync()) {
-        _say(session, '$_dataFile not found (looked in ${file.absolute.path}); using web dictionaries', warn: true);
+        _say(
+          session,
+          '$_dataFile not found (looked in ${file.absolute.path}); using web dictionaries',
+          warn: true,
+        );
         return;
       }
       _say(session, 'importing from ${file.absolute.path}');
@@ -76,11 +89,17 @@ class WordNetService {
 
   static Future<void> _import(Session session, File file) async {
     final sw = Stopwatch()..start();
-    final lines = const LineSplitter().convert(utf8.decode(gzip.decode(await file.readAsBytes())));
+    final lines = const LineSplitter().convert(
+      utf8.decode(gzip.decode(await file.readAsBytes())),
+    );
     final n = await importLines(session, lines);
     await session.db.unsafeExecute(
       'INSERT INTO "maintenance_run" ("name", "ranAt", "note") VALUES (@n, @t, @note) ON CONFLICT ("name") DO NOTHING',
-      parameters: QueryParameters.named({'n': _importMark, 't': DateTime.now().toUtc(), 'note': '$n senses'}),
+      parameters: QueryParameters.named({
+        'n': _importMark,
+        't': DateTime.now().toUtc(),
+        'note': '$n senses',
+      }),
     );
     _ready = true;
     _say(session, 'ready: imported $n senses in ${sw.elapsed.inSeconds}s');
@@ -90,7 +109,10 @@ class WordNetService {
   static Future<int> importLines(Session session, List<String> lines) async {
     var count = 0;
     for (var i = 0; i < lines.length; i += _batch) {
-      final chunk = lines.sublist(i, min(i + _batch, lines.length)).where((l) => l.isNotEmpty).toList();
+      final chunk = lines
+          .sublist(i, min(i + _batch, lines.length))
+          .where((l) => l.isNotEmpty)
+          .toList();
       if (chunk.isEmpty) continue;
       final params = <String, Object?>{};
       final values = <String>[];
@@ -121,9 +143,24 @@ class WordNetService {
   // ---- morphology: WordNet's "morphy" suffix rules, to find the dictionary form of a word ----
 
   static const _rules = [
-    ('ses', 's'), ('xes', 'x'), ('zes', 'z'), ('ches', 'ch'), ('shes', 'sh'), ('men', 'man'), ('ies', 'y'),
-    ('s', ''), ('es', 'e'), ('es', ''), ('ed', 'e'), ('ed', ''), ('ing', 'e'), ('ing', ''), ('er', ''), ('est', ''),
-    ('er', 'e'), ('est', 'e'),
+    ('ses', 's'),
+    ('xes', 'x'),
+    ('zes', 'z'),
+    ('ches', 'ch'),
+    ('shes', 'sh'),
+    ('men', 'man'),
+    ('ies', 'y'),
+    ('s', ''),
+    ('es', 'e'),
+    ('es', ''),
+    ('ed', 'e'),
+    ('ed', ''),
+    ('ing', 'e'),
+    ('ing', ''),
+    ('er', ''),
+    ('est', ''),
+    ('er', 'e'),
+    ('est', 'e'),
   ];
 
   /// The word itself plus every base form the suffix rules allow ("languages" -> "language").
@@ -131,13 +168,17 @@ class WordNetService {
     final w = word.toLowerCase();
     final out = {w};
     for (final (suffix, repl) in _rules) {
-      if (w.length > suffix.length + 2 && w.endsWith(suffix)) out.add(w.substring(0, w.length - suffix.length) + repl);
+      if (w.length > suffix.length + 2 && w.endsWith(suffix))
+        out.add(w.substring(0, w.length - suffix.length) + repl);
     }
     return out;
   }
 
   /// Which of [words] WordNet knows, each mapped to the base form it was found under.
-  static Future<Map<String, String>> known(Session session, Iterable<String> words) async {
+  static Future<Map<String, String>> known(
+    Session session,
+    Iterable<String> words,
+  ) async {
     final forms = {for (final w in words) w: baseForms(w)};
     final all = forms.values.expand((f) => f).toSet().toList();
     if (all.isEmpty) return {};
@@ -149,7 +190,14 @@ class WordNetService {
     final out = <String, String>{};
     forms.forEach((w, f) {
       // prefer the word as written, then the shortest base form
-      final found = f.where(hit.contains).toList()..sort((a, b) => a == w ? -1 : b == w ? 1 : a.length.compareTo(b.length));
+      final found = f.where(hit.contains).toList()
+        ..sort(
+          (a, b) => a == w
+              ? -1
+              : b == w
+              ? 1
+              : a.length.compareTo(b.length),
+        );
       if (found.isNotEmpty) out[w] = found.first;
     });
     return out;
@@ -157,9 +205,43 @@ class WordNetService {
 
   static final _token = RegExp(r"[a-z][a-z'-]+");
   static const _ignore = {
-    'the', 'and', 'for', 'with', 'that', 'this', 'from', 'into', 'used', 'using', 'which', 'something', 'someone',
-    'having', 'being', 'make', 'made', 'act', 'state', 'quality', 'person', 'thing', 'things', 'especially',
-    'other', 'more', 'most', 'one', 'two', 'its', 'their', 'such', 'not', 'any', 'all', 'way', 'part',
+    'the',
+    'and',
+    'for',
+    'with',
+    'that',
+    'this',
+    'from',
+    'into',
+    'used',
+    'using',
+    'which',
+    'something',
+    'someone',
+    'having',
+    'being',
+    'make',
+    'made',
+    'act',
+    'state',
+    'quality',
+    'person',
+    'thing',
+    'things',
+    'especially',
+    'other',
+    'more',
+    'most',
+    'one',
+    'two',
+    'its',
+    'their',
+    'such',
+    'not',
+    'any',
+    'all',
+    'way',
+    'part',
   };
 
   static Set<String> _words(String text) => _token
@@ -169,19 +251,29 @@ class WordNetService {
       .expand(baseForms)
       .toSet();
 
-  static Set<String> _signature(WordSense s) =>
-      _words([s.definition, s.example ?? '', s.synonyms.join(' '), s.hypernym ?? ''].join(' '));
+  static Set<String> _signature(WordSense s) => _words(
+    [
+      s.definition,
+      s.example ?? '',
+      s.synonyms.join(' '),
+      s.hypernym ?? '',
+    ].join(' '),
+  );
 
   /// Defines [word] from WordNet, choosing the sense that best fits [context] (the words WYRD
   /// read around it). Null if WordNet doesn't know the word.
-  static Future<({String partOfSpeech, String definition, String lemma})?> define(
+  static Future<({String partOfSpeech, String definition, String lemma})?>
+  define(
     Session session,
     String word, {
     Iterable<String> context = const [],
   }) async {
     final lemma = (await known(session, [word]))[word];
     if (lemma == null) return null;
-    final senses = await WordSense.db.find(session, where: (t) => t.lemma.equals(lemma));
+    final senses = await WordSense.db.find(
+      session,
+      where: (t) => t.lemma.equals(lemma),
+    );
     if (senses.isEmpty) return null;
 
     final own = baseForms(word);
@@ -207,19 +299,35 @@ class WordNetService {
     int direct(WordSense s) => _signature(s).intersection(ctx).length;
     int indirect(WordSense s) => _signature(s).intersection(extended).length;
     double score(WordSense s) =>
-        direct(s) * 3 // Lesk: shared words with what WYRD read around it
-        + indirect(s) * 1.0 // extended Lesk: shared words with what those words mean
-        + (s.rank == 0 ? 1 : 0) // WordNet lists a word's commonest sense first
-        + (maxTag > 0 ? 1.5 * s.tagCount / maxTag : 0) // how common this part of speech is for the word
-        + (s.pos == 'noun' ? 0.3 : 0); // topics are mostly things, not actions
+        direct(s) *
+            3 // Lesk: shared words with what WYRD read around it
+            +
+        indirect(s) *
+            1.0 // extended Lesk: shared words with what those words mean
+            +
+        (s.rank == 0 ? 1 : 0) // WordNet lists a word's commonest sense first
+        +
+        (maxTag > 0
+            ? 1.5 * s.tagCount / maxTag
+            : 0) // how common this part of speech is for the word
+        +
+        (s.pos == 'noun' ? 0.3 : 0); // topics are mostly things, not actions
 
     senses.sort((a, b) => score(b).compareTo(score(a)));
     final best = senses.first;
 
     // A rare word whose every sense is unrelated to a rich context is probably something else
     // here (e.g. "llms" -> LL.M., a law degree, among AI topics): better unknown than wrong.
-    if (ctx.length >= 10 && maxTag == 0 && direct(best) == 0 && indirect(best) <= 1) return null;
+    if (ctx.length >= 10 &&
+        maxTag == 0 &&
+        direct(best) == 0 &&
+        indirect(best) <= 1)
+      return null;
     final def = best.definition[0].toUpperCase() + best.definition.substring(1);
-    return (partOfSpeech: best.pos, definition: def.endsWith('.') ? def : '$def.', lemma: lemma);
+    return (
+      partOfSpeech: best.pos,
+      definition: def.endsWith('.') ? def : '$def.',
+      lemma: lemma,
+    );
   }
 }

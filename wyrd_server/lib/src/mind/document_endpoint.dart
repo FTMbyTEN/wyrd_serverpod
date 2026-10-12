@@ -10,7 +10,8 @@ class DocumentEndpoint extends Endpoint {
   @override
   bool get requireLogin => true;
 
-  UuidValue _me(Session session) => UuidValue.fromString(session.authenticated!.userIdentifier);
+  UuidValue _me(Session session) =>
+      UuidValue.fromString(session.authenticated!.userIdentifier);
 
   static const _kinds = {'pdf', 'docx', 'text', 'html', 'csv', 'json', 'code'};
 
@@ -20,19 +21,50 @@ class DocumentEndpoint extends Endpoint {
   /// it asks the question, so no first-look turn is added.
   /// [text] is a sample of the file (its beginning and pieces from throughout) and [words] its
   /// full length: the file itself stays in their browser and is never stored.
-  Future<DocumentUpload> upload(Session session, String name, String kind, String text, {int? pages, bool staged = false, int? words}) async {
+  Future<DocumentUpload> upload(
+    Session session,
+    String name,
+    String kind,
+    String text, {
+    int? pages,
+    bool staged = false,
+    int? words,
+  }) async {
     final me = _me(session);
-    if (RateLimiter.isLimited('doc:${me.uuid}', 12, const Duration(minutes: 10))) {
+    if (RateLimiter.isLimited(
+      'doc:${me.uuid}',
+      12,
+      const Duration(minutes: 10),
+    )) {
       throw Exception('slow down — try again in a few minutes');
     }
-    if (!_kinds.contains(kind)) throw Exception('that kind of file is not supported yet');
-    if (text.trim().length < 20) throw Exception('I couldn\'t find readable text in that file (a scanned PDF is an image, not text).');
-    final doc = await DocumentService.store(session, me, name: name.trim().isEmpty ? 'file' : name.trim(), kind: kind, text: text, pages: pages, totalWords: words);
+    if (!_kinds.contains(kind))
+      throw Exception('that kind of file is not supported yet');
+    if (text.trim().length < 20)
+      throw Exception(
+        'I couldn\'t find readable text in that file (a scanned PDF is an image, not text).',
+      );
+    final doc = await DocumentService.store(
+      session,
+      me,
+      name: name.trim().isEmpty ? 'file' : name.trim(),
+      kind: kind,
+      text: text,
+      pages: pages,
+      totalWords: words,
+    );
 
     final thread = await ThreadService.load(session, me);
     final now = DateTime.now().toUtc();
-    final next = (thread ?? ChatThread(authUserId: me, subject: const [], updatedAt: now))
-        .copyWith(lastDocumentId: doc.id, lastDocumentName: doc.name, documentAt: now, updatedAt: now);
+    final next =
+        (thread ??
+                ChatThread(authUserId: me, subject: const [], updatedAt: now))
+            .copyWith(
+              lastDocumentId: doc.id,
+              lastDocumentName: doc.name,
+              documentAt: now,
+              updatedAt: now,
+            );
     if (thread == null) {
       await ChatThread.db.insertRow(session, next);
     } else {
@@ -41,15 +73,37 @@ class DocumentEndpoint extends Endpoint {
 
     final reply = doc.summary ?? DocumentService.overview(doc);
     if (staged) {
-      return DocumentUpload(id: doc.id!, name: doc.name, kind: doc.kind, words: doc.words, pages: doc.pages, reply: reply, turnId: null);
+      return DocumentUpload(
+        id: doc.id!,
+        name: doc.name,
+        kind: doc.kind,
+        words: doc.words,
+        pages: doc.pages,
+        reply: reply,
+        turnId: null,
+      );
     }
     final chat = await ChatList.current(session, me);
     final turn = await ConversationTurn.db.insertRow(
       session,
-      ConversationTurn(authUserId: me, userText: '📎 ${doc.name}', botText: reply, timestamp: now, chatId: chat.id),
+      ConversationTurn(
+        authUserId: me,
+        userText: '📎 ${doc.name}',
+        botText: reply,
+        timestamp: now,
+        chatId: chat.id,
+      ),
     );
     await ChatList.used(session, chat, '📎 ${doc.name}');
-    return DocumentUpload(id: doc.id!, name: doc.name, kind: doc.kind, words: doc.words, pages: doc.pages, reply: reply, turnId: turn.id);
+    return DocumentUpload(
+      id: doc.id!,
+      name: doc.name,
+      kind: doc.kind,
+      words: doc.words,
+      pages: doc.pages,
+      reply: reply,
+      turnId: turn.id,
+    );
   }
 
   /// Your shared files, newest first (without their text).

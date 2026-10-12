@@ -13,9 +13,17 @@ class GrowthEndpoint extends Endpoint {
   static const _maxSnapshots = 500;
 
   Future<List<GrowthSnapshot>> getSnapshots(Session session, {int? limit}) =>
-      PublicCache.get(session, 'growth.getSnapshots:$limit', const Duration(seconds: 60), () => _getSnapshots(session, limit: limit));
+      PublicCache.get(
+        session,
+        'growth.getSnapshots:$limit',
+        const Duration(seconds: 60),
+        () => _getSnapshots(session, limit: limit),
+      );
 
-  Future<List<GrowthSnapshot>> _getSnapshots(Session session, {int? limit}) async {
+  Future<List<GrowthSnapshot>> _getSnapshots(
+    Session session, {
+    int? limit,
+  }) async {
     final take = (limit ?? 120).clamp(1, _maxSnapshots);
     final snapshots = await GrowthSnapshot.db.find(
       session,
@@ -28,9 +36,17 @@ class GrowthEndpoint extends Endpoint {
   /// Growth over a readable span -- 'day', 'week', 'month' or 'all' -- averaged into at most
   /// ~120 points, so the panel can show days and weeks instead of only the newest few hours.
   Future<List<GrowthSnapshot>> getHistory(Session session, String range) =>
-      PublicCache.get(session, 'growth.getHistory:$range', const Duration(seconds: 120), () => _getHistory(session, range));
+      PublicCache.get(
+        session,
+        'growth.getHistory:$range',
+        const Duration(seconds: 120),
+        () => _getHistory(session, range),
+      );
 
-  Future<List<GrowthSnapshot>> _getHistory(Session session, String range) async {
+  Future<List<GrowthSnapshot>> _getHistory(
+    Session session,
+    String range,
+  ) async {
     final span = switch (range) {
       'day' => const Duration(days: 1),
       'week' => const Duration(days: 7),
@@ -46,7 +62,10 @@ class GrowthEndpoint extends Endpoint {
     );
     if (first == null) return [];
     final start = from ?? first.timestamp;
-    final bucketSec = (now.difference(start).inSeconds / 120).ceil().clamp(60, 1 << 30);
+    final bucketSec = (now.difference(start).inSeconds / 120).ceil().clamp(
+      60,
+      1 << 30,
+    );
 
     final rows = await session.db.unsafeQuery(
       'SELECT max("timestamp"), max("vocabCount"), max("blockCount"), avg("digestPercent")::float8, '
@@ -68,8 +87,13 @@ class GrowthEndpoint extends Endpoint {
   }
 
   /// How much WYRD has learned from its own answers: kept, shared, reused (AI calls saved), improved.
-  Future<LearningStats> getLearning(Session session) =>
-      PublicCache.get(session, 'growth.getLearning', const Duration(seconds: 60), () => _getLearning(session));
+  Future<LearningStats> getLearning(Session session) => PublicCache.get(
+    session,
+    'growth.getLearning',
+    const Duration(seconds: 60),
+    () => _getLearning(session),
+  );
 
-  Future<LearningStats> _getLearning(Session session) => LearnedAnswerService.stats(session);
+  Future<LearningStats> _getLearning(Session session) =>
+      LearnedAnswerService.stats(session);
 }

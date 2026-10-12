@@ -18,23 +18,33 @@ import 'package:serverpod/serverpod.dart';
 ///  5. prune the faintest synapses
 /// and write a plain-English sleep report into the reasoning log.
 class SleepService {
-  static const _nightStartHour = 2, _nightEndHour = 5; // UTC: early morning in Lagos, when WYRD is quiet
+  static const _nightStartHour = 2,
+      _nightEndHour = 5; // UTC: early morning in Lagos, when WYRD is quiet
   static const _awakeBatch = 64;
   static const _nightBatches = 8; // x 512 memories
   static const _staleAfter = Duration(days: 60);
-  static const _sameAnswer = 0.05; // cosine distance: two learned answers to the same question
+  static const _sameAnswer =
+      0.05; // cosine distance: two learned answers to the same question
 
   static Future<void> tick(Session session) async {
     await EmbeddingService.backfillMemories(session, limit: _awakeBatch);
     final now = DateTime.now().toUtc();
     if (now.hour < _nightStartHour || now.hour >= _nightEndHour) return;
     final mark = 'sleep:${now.toIso8601String().substring(0, 10)}';
-    if (await MaintenanceRun.db.findFirstRow(session, where: (t) => t.name.equals(mark)) != null) return;
+    if (await MaintenanceRun.db.findFirstRow(
+          session,
+          where: (t) => t.name.equals(mark),
+        ) !=
+        null)
+      return;
     await sleep(session, mark: mark);
   }
 
   /// One night's consolidation. Returns the report it wrote.
-  static Future<Map<String, Object?>> sleep(Session session, {String? mark}) async {
+  static Future<Map<String, Object?>> sleep(
+    Session session, {
+    String? mark,
+  }) async {
     final started = DateTime.now().toUtc();
 
     // 1. meaning fingerprints for what's missing them
@@ -59,11 +69,17 @@ class SleepService {
     for (final p in pairs) {
       final ia = p[0] as int, ib = p[1] as int;
       if (gone.contains(ia) || gone.contains(ib)) continue;
-      final a = await LearnedAnswer.db.findById(session, ia), b = await LearnedAnswer.db.findById(session, ib);
+      final a = await LearnedAnswer.db.findById(session, ia),
+          b = await LearnedAnswer.db.findById(session, ib);
       if (a == null || b == null) continue;
-      final keep = (a.score, a.uses) == (b.score, b.uses) ? (a.updatedAt.isAfter(b.updatedAt) ? a : b) : (a.score >= b.score ? a : b);
+      final keep = (a.score, a.uses) == (b.score, b.uses)
+          ? (a.updatedAt.isAfter(b.updatedAt) ? a : b)
+          : (a.score >= b.score ? a : b);
       final drop = identical(keep, a) ? b : a;
-      await LearnedAnswer.db.updateRow(session, keep.copyWith(uses: keep.uses + drop.uses));
+      await LearnedAnswer.db.updateRow(
+        session,
+        keep.copyWith(uses: keep.uses + drop.uses),
+      );
       await LearnedAnswer.db.updateRow(session, drop.copyWith(retired: true));
       gone.add(drop.id!);
       merged++;
@@ -86,7 +102,9 @@ class SleepService {
     );
 
     // 5. the faintest synapses
-    final pruned = await session.db.unsafeQuery('DELETE FROM "synapse" WHERE "weight" < 0.05 RETURNING "id"');
+    final pruned = await session.db.unsafeQuery(
+      'DELETE FROM "synapse" WHERE "weight" < 0.05 RETURNING "id"',
+    );
 
     final report = <String, Object?>{
       'embedded': embedded,
@@ -98,11 +116,19 @@ class SleepService {
       'minutes': DateTime.now().toUtc().difference(started).inSeconds / 60,
     };
     report['summary'] = _summary(report, EmbeddingService.enabled(session));
-    await ReasoningLogService.record(session, kind: 'sleep', content: jsonEncode(report));
+    await ReasoningLogService.record(
+      session,
+      kind: 'sleep',
+      content: jsonEncode(report),
+    );
     if (mark != null) {
       await session.db.unsafeExecute(
         'INSERT INTO "maintenance_run" ("name", "ranAt", "note") VALUES (@n, @t, @note) ON CONFLICT ("name") DO NOTHING',
-        parameters: QueryParameters.named({'n': mark, 't': DateTime.now().toUtc(), 'note': report['summary']}),
+        parameters: QueryParameters.named({
+          'n': mark,
+          't': DateTime.now().toUtc(),
+          'note': report['summary'],
+        }),
       );
     }
     return report;
@@ -110,12 +136,18 @@ class SleepService {
 
   static String _summary(Map<String, Object?> r, bool embeddings) {
     final parts = <String>[
-      if (embeddings) 'gave ${r['embedded']} memories a meaning fingerprint'
-      else 'skipped meaning fingerprints (no embedding key set)',
-      if ((r['mergedAnswers'] as int) > 0) 'merged ${r['mergedAnswers']} learned answers that said the same thing',
-      if ((r['retiredAnswers'] as int) > 0) 'retired ${r['retiredAnswers']} answers that never proved useful',
-      if ((r['duplicateMemories'] as int) > 0) 'cleared ${r['duplicateMemories']} duplicate memories',
-      if ((r['prunedSynapses'] as int) > 0) 'pruned ${r['prunedSynapses']} faint synapses',
+      if (embeddings)
+        'gave ${r['embedded']} memories a meaning fingerprint'
+      else
+        'skipped meaning fingerprints (no embedding key set)',
+      if ((r['mergedAnswers'] as int) > 0)
+        'merged ${r['mergedAnswers']} learned answers that said the same thing',
+      if ((r['retiredAnswers'] as int) > 0)
+        'retired ${r['retiredAnswers']} answers that never proved useful',
+      if ((r['duplicateMemories'] as int) > 0)
+        'cleared ${r['duplicateMemories']} duplicate memories',
+      if ((r['prunedSynapses'] as int) > 0)
+        'pruned ${r['prunedSynapses']} faint synapses',
     ];
     return 'While it slept, WYRD ${parts.join(', ')}.';
   }

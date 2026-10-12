@@ -12,8 +12,12 @@ class StatusEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
-  Future<SystemStatus> getStatus(Session session) =>
-      PublicCache.get(session, 'status.getStatus', const Duration(seconds: 15), () => _getStatus(session));
+  Future<SystemStatus> getStatus(Session session) => PublicCache.get(
+    session,
+    'status.getStatus',
+    const Duration(seconds: 15),
+    () => _getStatus(session),
+  );
 
   Future<SystemStatus> _getStatus(Session session) async {
     final llmActive = LlmService.isConfigured(session);

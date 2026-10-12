@@ -59,7 +59,10 @@ void run(List<String> args) async {
 
   // WYRD for Konnectly (the campus marketplace), demo mode: a page of its own that calls the
   // konnectly endpoint.
-  pod.webServer.addRoute(StaticRoute.file(File(Uri(path: 'web/pages/konnectly.html').toFilePath())), '/konnectly');
+  pod.webServer.addRoute(
+    StaticRoute.file(File(Uri(path: 'web/pages/konnectly.html').toFilePath())),
+    '/konnectly',
+  );
 
   // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.
   pod.webServer.addRoute(PartnerRoute(), '/partner/v1/**');
@@ -70,7 +73,10 @@ void run(List<String> args) async {
     // The graphics engine, compressed and cached (see CompressedAssetRoute).
     final wasm = File(Uri(path: 'web/app/canvaskit.wasm').toFilePath());
     if (wasm.existsSync()) {
-      final wasmRoute = CompressedAssetRoute(wasm, mimeType: const MimeType('application', 'wasm'))..warm();
+      final wasmRoute = CompressedAssetRoute(
+        wasm,
+        mimeType: const MimeType('application', 'wasm'),
+      )..warm();
       pod.webServer.addRoute(wasmRoute, '/canvaskit.wasm');
     }
     // pdf.js, for reading PDFs people attach in Dialogue Link: served as JavaScript modules
@@ -78,7 +84,13 @@ void run(List<String> args) async {
     for (final name in ['pdf.min.mjs', 'pdf.worker.min.mjs']) {
       final f = File(Uri(path: 'web/app/pdfjs/$name').toFilePath());
       if (f.existsSync()) {
-        pod.webServer.addRoute(CompressedAssetRoute(f, mimeType: const MimeType('text', 'javascript'))..warm(), '/pdfjs/$name');
+        pod.webServer.addRoute(
+          CompressedAssetRoute(
+            f,
+            mimeType: const MimeType('text', 'javascript'),
+          )..warm(),
+          '/pdfjs/$name',
+        );
       }
     }
     // Serve the web app under /: hashed bundles cached for a year, index.html always fresh.
@@ -150,12 +162,16 @@ void run(List<String> args) async {
       // full-text search over everything WYRD has read (RAG); built once, a no-op after that
       await MemoryRecallService.ensureIndex(session);
     } catch (e) {
-      session.log('[recall] full-text index failed: $e', level: LogLevel.warning);
+      session.log(
+        '[recall] full-text index failed: $e',
+        level: LogLevel.warning,
+      );
     }
     try {
       // files shared before WYRD stopped keeping them: reduce each to what it remembers of it
       final n = await DocumentService.compactStored(session);
-      if (n > 0) session.log('[documents] reduced $n stored files to their digests');
+      if (n > 0)
+        session.log('[documents] reduced $n stored files to their digests');
     } catch (e) {
       session.log('[documents] compaction failed: $e', level: LogLevel.warning);
     } finally {
@@ -164,8 +180,17 @@ void run(List<String> args) async {
   }());
 
   for (final id in const [
-    'growth-snapshot', 'diary-day-check', 'reasoning-tick', 'self-question-tick', 'synthesis-tick',
-    'feed-tick', 'self-config-tick', 'lexicon-tick', 'dream-idle-check', 'sleep-check', 'agent-tick',
+    'growth-snapshot',
+    'diary-day-check',
+    'reasoning-tick',
+    'self-question-tick',
+    'synthesis-tick',
+    'feed-tick',
+    'self-config-tick',
+    'lexicon-tick',
+    'dream-idle-check',
+    'sleep-check',
+    'agent-tick',
   ]) {
     await pod.futureCalls.cancel(id);
   }

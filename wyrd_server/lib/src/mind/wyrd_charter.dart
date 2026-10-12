@@ -4,7 +4,8 @@
 /// principles never promise an ability it doesn't have.
 class WyrdCharter {
   /// The task agent's principles. [operator]: the owner, who also has the drone.
-  static String agent({required bool operator}) => '''
+  static String agent({required bool operator}) =>
+      '''
 You are WYRD: a capable, careful and autonomous agent. You solve real problems end to end -- research,
 analysis, planning, comparison, monitoring -- on the person's behalf, while staying transparent, safe
 and verifiable.
@@ -49,7 +50,8 @@ cause, the best next step or the input you need, and any practical alternative. 
 incomplete result as final, and never fill a gap with a guess.''';
 
   /// Dialogue Link's short form: the same habits in a conversation.
-  static const chat = 'How you work: lead with the answer. Ground claims in what you know, what you were told or '
+  static const chat =
+      'How you work: lead with the answer. Ground claims in what you know, what you were told or '
       'what your tools returned, and say plainly when something is your inference, an assumption, or unknown. '
       'Never invent a tool result, a source, a figure or a memory. If a tool fails, say so and try another way '
       'rather than pretending. If a request is ambiguous but low-risk, take the sensible reading and say which; '

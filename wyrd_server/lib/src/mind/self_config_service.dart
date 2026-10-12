@@ -20,7 +20,13 @@ class SelfConfigService {
     if (existing != null) return existing;
     return await SelfConfig.db.insertRow(
       session,
-      SelfConfig(id: 1, toneNote: '', replyLengthMax: 4, curiosityLevel: 'moderate', history: []),
+      SelfConfig(
+        id: 1,
+        toneNote: '',
+        replyLengthMax: 4,
+        curiosityLevel: 'moderate',
+        history: [],
+      ),
     );
   }
 
@@ -69,11 +75,21 @@ class SelfConfigService {
 
   /// Returns the applied change, or null if the model decided nothing warranted changing, its
   /// response wasn't valid JSON, or the proposed value failed schema validation.
-  static Future<SelfConfigChange?> attemptSelfModification(Session session) async {
+  static Future<SelfConfigChange?> attemptSelfModification(
+    Session session,
+  ) async {
     final config = await _loadOrCreate(session);
     final mind = await MindService.load(session);
-    final recentBlocks = await MemoryBlock.db.find(session, orderBy: (t) => t.id.desc(), limit: 30);
-    final recentTopics = recentBlocks.expand((b) => b.topics).toSet().take(15).toList();
+    final recentBlocks = await MemoryBlock.db.find(
+      session,
+      orderBy: (t) => t.id.desc(),
+      limit: 30,
+    );
+    final recentTopics = recentBlocks
+        .expand((b) => b.topics)
+        .toSet()
+        .take(15)
+        .toList();
     final blockCount = await MemoryBlock.db.count(session);
 
     final currentConfigJson = jsonEncode({
@@ -98,12 +114,21 @@ class SelfConfigService {
         "${recentTopics.isEmpty ? 'none yet' : recentTopics.join(', ')}. "
         'Total memory blocks: $blockCount.';
 
-    final raw = await LlmService.callSimple(session, systemPrompt, userPrompt, 300);
+    final raw = await LlmService.callSimple(
+      session,
+      systemPrompt,
+      userPrompt,
+      300,
+    );
     if (raw == null) return null;
 
     Map<String, dynamic> parsed;
     try {
-      final cleaned = raw.trim().replaceFirst(RegExp(r'^```(?:json)?', caseSensitive: false), '').replaceFirst(RegExp(r'```$'), '').trim();
+      final cleaned = raw
+          .trim()
+          .replaceFirst(RegExp(r'^```(?:json)?', caseSensitive: false), '')
+          .replaceFirst(RegExp(r'```$'), '')
+          .trim();
       parsed = jsonDecode(cleaned) as Map<String, dynamic>;
     } catch (_) {
       return null;
@@ -118,7 +143,10 @@ class SelfConfigService {
 
     final oldValue = _currentValue(config, key);
     final reason = (parsed['reason'] as String? ?? '');
-    final reasonTrimmed = reason.substring(0, reason.length > 300 ? 300 : reason.length);
+    final reasonTrimmed = reason.substring(
+      0,
+      reason.length > 300 ? 300 : reason.length,
+    );
 
     final change = SelfConfigChange(
       timestamp: DateTime.now().toUtc(),
@@ -130,7 +158,8 @@ class SelfConfigService {
 
     var updated = _applyValue(config, key, value);
     var history = [...updated.history, change];
-    if (history.length > _maxHistory) history = history.sublist(history.length - _maxHistory);
+    if (history.length > _maxHistory)
+      history = history.sublist(history.length - _maxHistory);
     updated = updated.copyWith(history: history);
     await SelfConfig.db.updateRow(session, updated);
 
@@ -143,7 +172,11 @@ class SelfConfigService {
   /// Independent second LLM call (separate system prompt, no shared context with the change
   /// that proposed it) reviewing an already-applied change. Always writes a log entry, even
   /// if the LLM call itself fails (with an honest "no independent assessment available" note).
-  static Future<CopLogEntry> copReview(Session session, SelfConfigChange change, SelfConfig config) async {
+  static Future<CopLogEntry> copReview(
+    Session session,
+    SelfConfigChange change,
+    SelfConfig config,
+  ) async {
     final recent = await CopLogEntry.db.find(
       session,
       where: (t) => t.kind.equals('config'),
@@ -154,8 +187,11 @@ class SelfConfigService {
     final historyLines = recentChrono.isEmpty
         ? '(none — this is the first self-modification on record)'
         : recentChrono
-            .map((e) => '- ${e.timestamp.toIso8601String()}: ${e.configKey} → ${e.newValueJson} (I said: "${e.verdict.substring(0, e.verdict.length > 80 ? 80 : e.verdict.length)}")')
-            .join('\n');
+              .map(
+                (e) =>
+                    '- ${e.timestamp.toIso8601String()}: ${e.configKey} → ${e.newValueJson} (I said: "${e.verdict.substring(0, e.verdict.length > 80 ? 80 : e.verdict.length)}")',
+              )
+              .join('\n');
 
     const systemPrompt =
         'You are COP, an independent overseer of an AI system called WYRD. WYRD just '
@@ -178,14 +214,20 @@ class SelfConfigService {
         'Change: set "${change.key}" from ${change.oldValueJson} to ${change.newValueJson}.\n'
         'WYRD\'s stated reason: "${change.reason}"\n'
         'Full current config after the change: ${jsonEncode({
-              'toneNote': config.toneNote,
-              'replyLengthMax': config.replyLengthMax,
-              'curiosityLevel': config.curiosityLevel,
-            })}\n\n'
+          'toneNote': config.toneNote,
+          'replyLengthMax': config.replyLengthMax,
+          'curiosityLevel': config.curiosityLevel,
+        })}\n\n'
         'Your last ${recentChrono.length} reviews of this kind of change:\n$historyLines';
 
-    var verdict = await LlmService.callSimple(session, systemPrompt, userPrompt, 180);
-    verdict ??= 'Reviewed — no independent assessment available this cycle (LLM call failed). '
+    var verdict = await LlmService.callSimple(
+      session,
+      systemPrompt,
+      userPrompt,
+      180,
+    );
+    verdict ??=
+        'Reviewed — no independent assessment available this cycle (LLM call failed). '
         'Raw change: ${change.key} → ${change.newValueJson}.';
 
     final entry = await CopLogEntry.db.insertRow(
@@ -203,7 +245,11 @@ class SelfConfigService {
 
     final total = await CopLogEntry.db.count(session);
     if (total > _maxCopLog) {
-      final oldest = await CopLogEntry.db.find(session, orderBy: (t) => t.id.asc(), limit: total - _maxCopLog);
+      final oldest = await CopLogEntry.db.find(
+        session,
+        orderBy: (t) => t.id.asc(),
+        limit: total - _maxCopLog,
+      );
       for (final o in oldest) {
         await CopLogEntry.db.deleteRow(session, o);
       }

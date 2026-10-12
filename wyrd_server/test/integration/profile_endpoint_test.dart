@@ -26,7 +26,11 @@ void main() {
         final before = await endpoints.profile.getProfile(authed);
         final after = await endpoints.profile.touchVisit(authed);
         expect(after.visitCount, before.visitCount + 1);
-        expect(after.lastSeen.isAfter(before.lastSeen) || after.lastSeen.isAtSameMomentAs(before.lastSeen), isTrue);
+        expect(
+          after.lastSeen.isAfter(before.lastSeen) ||
+              after.lastSeen.isAtSameMomentAs(before.lastSeen),
+          isTrue,
+        );
       },
     );
 

@@ -31,13 +31,21 @@ class SelfQuestionService {
     _qChanges,
   ];
 
-  static String _qImplies(String t) => 'What does "$t" actually imply, based on everything I\'ve gathered so far?';
-  static String _qContradiction(String t) => 'Is there a contradiction hiding near "$t" that I haven\'t noticed yet?';
-  static String _qFollows(String t) => 'If "$t" is true, what else should follow from it?';
+  static String _qImplies(String t) =>
+      'What does "$t" actually imply, based on everything I\'ve gathered so far?';
+  static String _qContradiction(String t) =>
+      'Is there a contradiction hiding near "$t" that I haven\'t noticed yet?';
+  static String _qFollows(String t) =>
+      'If "$t" is true, what else should follow from it?';
   static String _qMissing(String t) => 'What am I still missing about "$t"?';
-  static String _qChanges(String t) => 'How does "$t" change what I thought I knew before?';
+  static String _qChanges(String t) =>
+      'How does "$t" change what I thought I knew before?';
 
-  static Future<List<MemoryBlock>> _recallRelated(Session session, String topic, List<MemoryBlock> pool) async {
+  static Future<List<MemoryBlock>> _recallRelated(
+    Session session,
+    String topic,
+    List<MemoryBlock> pool,
+  ) async {
     final scored = <(MemoryBlock, int)>[];
     for (final block in pool) {
       if (block.topics.contains(topic)) scored.add((block, 1));
@@ -50,7 +58,9 @@ class SelfQuestionService {
   static Future<bool> tick(Session session) async {
     // WYRD's own thinking (beliefs from evidence) comes first; the old question templates only
     // run while it has nothing to think about yet
-    if (session.serverpod.runMode != 'test' && await ThinkingService.think(session)) return true;
+    if (session.serverpod.runMode != 'test' &&
+        await ThinkingService.think(session))
+      return true;
     final pool = await MemoryBlock.db.find(
       session,
       // never people's chats or photos: what comes out of here is public
@@ -74,8 +84,12 @@ class SelfQuestionService {
         .toSet();
 
     final rand = Random();
-    final unanswered = topicFreq.keys.where((t) => !answeredTopics.contains(t)).toList();
-    final explorePool = unanswered.isNotEmpty && rand.nextDouble() > 0.15 ? unanswered : topicFreq.keys.toList();
+    final unanswered = topicFreq.keys
+        .where((t) => !answeredTopics.contains(t))
+        .toList();
+    final explorePool = unanswered.isNotEmpty && rand.nextDouble() > 0.15
+        ? unanswered
+        : topicFreq.keys.toList();
     if (explorePool.isEmpty) return false;
 
     final userEngagedTopics = pool
@@ -83,23 +97,30 @@ class SelfQuestionService {
         .expand((b) => b.topics)
         .toSet();
     final engagedSlice = explorePool.where(userEngagedTopics.contains).toList();
-    final biasedPool = engagedSlice.isNotEmpty && rand.nextDouble() < 0.6 ? engagedSlice : explorePool;
+    final biasedPool = engagedSlice.isNotEmpty && rand.nextDouble() < 0.6
+        ? engagedSlice
+        : explorePool;
 
     final topic = biasedPool[rand.nextInt(biasedPool.length)];
-    final question = _questionTemplates[rand.nextInt(_questionTemplates.length)](topic);
+    final question =
+        _questionTemplates[rand.nextInt(_questionTemplates.length)](topic);
 
     final related = await _recallRelated(session, topic, pool);
 
     String? answer;
     final now = DateTime.now().toUtc();
-    if (_lastLlmCallAt == null || now.difference(_lastLlmCallAt!) >= _llmMinGap) {
+    if (_lastLlmCallAt == null ||
+        now.difference(_lastLlmCallAt!) >= _llmMinGap) {
       _lastLlmCallAt = now;
       final context = related.isEmpty
           ? '(nothing directly related in memory yet)'
           : related
-              .take(5)
-              .map((r) => '- ${(r.userText ?? r.title ?? r.botText ?? '').substring(0, min(160, (r.userText ?? r.title ?? r.botText ?? '').length))}')
-              .join('\n');
+                .take(5)
+                .map(
+                  (r) =>
+                      '- ${(r.userText ?? r.title ?? r.botText ?? '').substring(0, min(160, (r.userText ?? r.title ?? r.botText ?? '').length))}',
+                )
+                .join('\n');
       const systemPrompt =
           'You are WYRD, privately reasoning to yourself about something in your own memory — '
           "no one is reading this except you. Answer your own question below in 1-2 sentences, "
@@ -107,8 +128,14 @@ class SelfQuestionService {
           "memory is empty, say plainly that you don't have enough yet and what you'd need — "
           "don't fake a connection.";
       final userPrompt = 'Question: $question\n\nRelated memory:\n$context';
-      final llmAnswer = await LlmService.callSimple(session, systemPrompt, userPrompt, 150);
-      if (llmAnswer != null && !LlmService.isDenialReply(llmAnswer)) answer = llmAnswer;
+      final llmAnswer = await LlmService.callSimple(
+        session,
+        systemPrompt,
+        userPrompt,
+        150,
+      );
+      if (llmAnswer != null && !LlmService.isDenialReply(llmAnswer))
+        answer = llmAnswer;
     }
 
     // A canned answer is WYRD musing, not knowing: it goes to the reasoning log only. Storing it
@@ -117,30 +144,33 @@ class SelfQuestionService {
     final isRealAnswer = answer != null;
     answer ??= related.isNotEmpty
         ? (related.length > 1
-            ? '"$topic" ties back to a few things I\'ve run into before — feels like a real thread, not just a guess.'
-            : '"$topic" connects to something I\'ve seen before, so I\'ve got at least a little to go on here.')
+              ? '"$topic" ties back to a few things I\'ve run into before — feels like a real thread, not just a guess.'
+              : '"$topic" connects to something I\'ve seen before, so I\'ve got at least a little to go on here.')
         : 'I don\'t have much on "$topic" yet — keeping it as an open question until more comes in.';
 
-    final topics = isRealAnswer ? TopicService.extractTopics('$topic $answer') : [topic];
+    final topics = isRealAnswer
+        ? TopicService.extractTopics('$topic $answer')
+        : [topic];
 
     if (isRealAnswer) {
       await MemoryBlock.db.insertRow(
-      session,
-      MemoryBlock(
-        timestamp: now,
-        source: 'self',
-        question: question,
-        answer: answer,
-        answeredTopic: topic,
-        topics: topics,
-      ),
-    );
+        session,
+        MemoryBlock(
+          timestamp: now,
+          source: 'self',
+          question: question,
+          answer: answer,
+          answeredTopic: topic,
+          topics: topics,
+        ),
+      );
     }
 
     await ReasoningLogService.record(
       session,
       kind: 'self',
-      content: '# Self-questioning\n\n'
+      content:
+          '# Self-questioning\n\n'
           '- time: ${now.toIso8601String()}\n'
           '- topic: $topic\n'
           '- supporting blocks: ${related.isEmpty ? 'none' : related.map((r) => r.id).join(', ')}\n\n'

@@ -23,25 +23,37 @@ void main() {
         final session = sessionBuilder.build();
         await MemoryBlock.db.insertRow(
           session,
-          MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'net', title: 'Heat death', topics: ['entropy']), // public memories only: chats never feed self-questions
+          MemoryBlock(
+            timestamp: DateTime.now().toUtc(),
+            source: 'net',
+            title: 'Heat death',
+            topics: ['entropy'],
+          ), // public memories only: chats never feed self-questions
         );
         await MemoryBlock.db.insertRow(
           session,
-          MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'net', title: 'Entropy', topics: ['entropy', 'thermodynamics']),
+          MemoryBlock(
+            timestamp: DateTime.now().toUtc(),
+            source: 'net',
+            title: 'Entropy',
+            topics: ['entropy', 'thermodynamics'],
+          ),
         );
 
         final ran = await endpoints.selfQuestion.trigger(sessionBuilder);
         expect(ran, isTrue);
 
         // a template answer is not knowledge -- storing it is what caused the self-echo loop
-        final blocks = await MemoryBlock.db.find(session, where: (t) => t.source.equals('self'));
+        final blocks = await MemoryBlock.db.find(
+          session,
+          where: (t) => t.source.equals('self'),
+        );
         expect(blocks, isEmpty);
 
         final mind = await endpoints.mind.getMind(sessionBuilder);
         expect(mind.lastEvent, 'musing');
         expect(mind.explorationCount, 0);
       },
-
     );
   });
 }

@@ -9,7 +9,10 @@ void main() {
       () async {
         final session = await WebBrowseService.openSession();
         try {
-          final snap = await WebBrowseService.open(session, 'https://example.com');
+          final snap = await WebBrowseService.open(
+            session,
+            'https://example.com',
+          );
           expect(snap.title, contains('Example'));
           expect(snap.text, isNotEmpty);
           expect(snap.url, contains('example.com'));

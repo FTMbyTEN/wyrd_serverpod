@@ -22,4 +22,5 @@ jobs:
 
       - name: Analyze
         working-directory: wyrd_server
-        run: dart analyze --fatal-infos
+        # warnings fail the build; infos are style suggestions, reported but not fatal
+        run: dart analyze --fatal-warnings

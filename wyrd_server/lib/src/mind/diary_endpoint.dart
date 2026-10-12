@@ -15,7 +15,12 @@ class DiaryEndpoint extends Endpoint {
 
   Future<List<DiaryEntry>> getEntries(Session session, {int? limit}) async {
     await OwnerGuard.check(session, 'the diary');
-    return PublicCache.get(session, 'diary.getEntries:$limit', const Duration(seconds: 60), () => _getEntries(session, limit: limit));
+    return PublicCache.get(
+      session,
+      'diary.getEntries:$limit',
+      const Duration(seconds: 60),
+      () => _getEntries(session, limit: limit),
+    );
   }
 
   Future<List<DiaryEntry>> _getEntries(Session session, {int? limit}) async {
@@ -32,7 +37,11 @@ class DiaryEndpoint extends Endpoint {
     await OwnerGuard.check(session, 'the diary');
     PublicCache.clear();
     // public and AI-backed: a few per 10 minutes, so nobody can spend WYRD's budget on demand
-    if (RateLimiter.isLimited('trigger:diary', 3, const Duration(minutes: 10))) {
+    if (RateLimiter.isLimited(
+      'trigger:diary',
+      3,
+      const Duration(minutes: 10),
+    )) {
       throw Exception('slow down — try again in a few minutes');
     }
     return await DiaryService.generateEntry(session);

@@ -41,11 +41,14 @@ class FeedService {
   static final List<FeedIngest> _recentIngests = [];
   static const _maxRecentIngests = 20;
 
-  static List<FeedIngest> get recentIngests => List.unmodifiable(_recentIngests);
+  static List<FeedIngest> get recentIngests =>
+      List.unmodifiable(_recentIngests);
 
   static Future<_FetchedItem> _fetchWikipediaSummary(String title) async {
     final res = await http.get(
-      Uri.parse('https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(title)}'),
+      Uri.parse(
+        'https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(title)}',
+      ),
       headers: {'User-Agent': 'wyrd-bot/1.0'},
     );
     if (res.statusCode != 200) throw Exception('wikipedia ${res.statusCode}');
@@ -54,7 +57,9 @@ class FeedService {
       source: 'wikipedia',
       title: data['title'] as String? ?? title,
       extract: data['extract'] as String? ?? '',
-      url: (data['content_urls'] as Map<String, dynamic>?)?['desktop']?['page'] as String?,
+      url:
+          (data['content_urls'] as Map<String, dynamic>?)?['desktop']?['page']
+              as String?,
     );
   }
 
@@ -78,13 +83,19 @@ class FeedService {
   }
 
   static Future<_FetchedItem> _fetchHackerNews() async {
-    final topRes = await http.get(Uri.parse('https://hacker-news.firebaseio.com/v0/topstories.json'));
-    if (topRes.statusCode != 200) throw Exception('hn top ${topRes.statusCode}');
+    final topRes = await http.get(
+      Uri.parse('https://hacker-news.firebaseio.com/v0/topstories.json'),
+    );
+    if (topRes.statusCode != 200)
+      throw Exception('hn top ${topRes.statusCode}');
     final ids = (jsonDecode(topRes.body) as List).cast<int>();
     final id = ids[Random().nextInt(min(30, ids.length))];
 
-    final itemRes = await http.get(Uri.parse('https://hacker-news.firebaseio.com/v0/item/$id.json'));
-    if (itemRes.statusCode != 200) throw Exception('hn item ${itemRes.statusCode}');
+    final itemRes = await http.get(
+      Uri.parse('https://hacker-news.firebaseio.com/v0/item/$id.json'),
+    );
+    if (itemRes.statusCode != 200)
+      throw Exception('hn item ${itemRes.statusCode}');
     final item = jsonDecode(itemRes.body) as Map<String, dynamic>;
 
     final text = item['text'] as String?;
@@ -109,9 +120,13 @@ class FeedService {
       late List<String> topics;
       late IngestVerdict verdict;
       for (var attempt = 0; attempt < _maxAttempts; attempt++) {
-        final candidate = wikipediaEnabled && _netIndex == 0 ? await _fetchWikipedia(session) : await _fetchHackerNews();
+        final candidate = wikipediaEnabled && _netIndex == 0
+            ? await _fetchWikipedia(session)
+            : await _fetchHackerNews();
         final text = '${candidate.title}. ${candidate.extract}';
-        topics = TopicService.extractTopics(text.substring(0, min(2000, text.length)));
+        topics = TopicService.extractTopics(
+          text.substring(0, min(2000, text.length)),
+        );
         verdict = await IngestFilter.judge(
           session,
           source: candidate.source,
@@ -124,7 +139,8 @@ class FeedService {
         if (verdict.keep) item = candidate;
         break;
       }
-      if (item == null) return false; // only duplicates on offer, or it was quarantined
+      if (item == null)
+        return false; // only duplicates on offer, or it was quarantined
       final now = DateTime.now().toUtc();
 
       await MemoryBlock.db.insertRow(
@@ -159,10 +175,19 @@ class FeedService {
         _recentIngests.removeLast();
       }
 
-      await MindService.recordEvent(session, eventType: 'ingest', recentTopics: topics, newSeenTopics: topics);
+      await MindService.recordEvent(
+        session,
+        eventType: 'ingest',
+        recentTopics: topics,
+        newSeenTopics: topics,
+      );
       return true;
     } catch (_) {
-      await MindService.recordEvent(session, eventType: 'error', recentTopics: []);
+      await MindService.recordEvent(
+        session,
+        eventType: 'error',
+        recentTopics: [],
+      );
       return false;
     }
   }

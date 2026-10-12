@@ -6,9 +6,16 @@ import 'package:serverpod/serverpod.dart';
 
 /// One piece of knowledge put in front of the model, with where it came from.
 class Passage {
-  Passage({required this.id, required this.text, required this.label, this.trust, this.age});
+  Passage({
+    required this.id,
+    required this.text,
+    required this.label,
+    this.trust,
+    this.age,
+  });
   final int id;
   final String text;
+
   /// its source, as a reader would name it ("bbc.co.uk", "Project Gutenberg", "your own reasoning")
   final String label;
   final double? trust;
@@ -26,10 +33,10 @@ class Passage {
   static String _ago(Duration d) => d.inMinutes < 90
       ? 'just now'
       : d.inHours < 36
-          ? '${d.inHours}h ago'
-          : d.inDays < 60
-              ? '${d.inDays} days ago'
-              : '${(d.inDays / 30).round()} months ago';
+      ? '${d.inHours}h ago'
+      : d.inDays < 60
+      ? '${d.inDays} days ago'
+      : '${(d.inDays / 30).round()} months ago';
 }
 
 /// What chat recall hands the model: what WYRD knows that bears on the message -- numbered, with
@@ -67,19 +74,26 @@ class RecallContext {
   /// Dictionary definitions it has learned for words in the message.
   final List<String> definitions;
 
-  bool get isEmpty => passages.isEmpty && beliefs.isEmpty && pastChats.isEmpty && definitions.isEmpty;
+  bool get isEmpty =>
+      passages.isEmpty &&
+      beliefs.isEmpty &&
+      pastChats.isEmpty &&
+      definitions.isEmpty;
 
   /// Context-prompt lines, most trustworthy first.
   List<String> toPromptLines() => [
-        if (passages.isNotEmpty)
-          'What you know that bears on this, numbered with where it came from. Rely on these over '
-              'guesses; when you use one, say where it is from in plain words ("according to bbc.co.uk…", '
-              '"from what I read in…"), and if they don\'t answer the question, say so:\n'
-              '${[for (var i = 0; i < passages.length; i++) '[${i + 1}] (${passages[i].cite}) ${passages[i].text}'].join('\n')}',
-        if (beliefs.isNotEmpty) 'What you have come to believe from evidence (with how sure you are): ${beliefs.join(' | ')}',
-        if (pastChats.isNotEmpty) 'Earlier in your conversations with THIS person on the same subject: ${pastChats.join(' | ')}',
-        if (definitions.isNotEmpty) "Word meanings you've learned: ${definitions.join(' | ')}",
-      ];
+    if (passages.isNotEmpty)
+      'What you know that bears on this, numbered with where it came from. Rely on these over '
+          'guesses; when you use one, say where it is from in plain words ("according to bbc.co.uk…", '
+          '"from what I read in…"), and if they don\'t answer the question, say so:\n'
+          '${[for (var i = 0; i < passages.length; i++) '[${i + 1}] (${passages[i].cite}) ${passages[i].text}'].join('\n')}',
+    if (beliefs.isNotEmpty)
+      'What you have come to believe from evidence (with how sure you are): ${beliefs.join(' | ')}',
+    if (pastChats.isNotEmpty)
+      'Earlier in your conversations with THIS person on the same subject: ${pastChats.join(' | ')}',
+    if (definitions.isNotEmpty)
+      "Word meanings you've learned: ${definitions.join(' | ')}",
+  ];
 }
 
 /// Retrieval for every answer (RAG): the knowledge WYRD has -- what it read, what it worked out,
@@ -92,7 +106,15 @@ class RecallContext {
 /// person's conversation must not surface in your reply; your own history comes from
 /// conversation_turn, keyed by you.
 class MemoryRecallService {
-  static const _sharedSources = ['self', 'net', 'feed', 'ingest', 'synthesis', 'curriculum', 'library'];
+  static const _sharedSources = [
+    'self',
+    'net',
+    'feed',
+    'ingest',
+    'synthesis',
+    'curriculum',
+    'library',
+  ];
   static const _maxItemChars = 280;
   static const _news = {'net', 'feed', 'ingest'};
 
@@ -104,14 +126,43 @@ class MemoryRecallService {
 
   /// Builds the full-text index if it isn't there yet (once, in the background at startup).
   static Future<void> ensureIndex(Session session) async {
-    await session.db.unsafeExecute('CREATE INDEX IF NOT EXISTS "memory_block_fts_idx" ON "memory_block" USING gin ($_doc)');
+    await session.db.unsafeExecute(
+      'CREATE INDEX IF NOT EXISTS "memory_block_fts_idx" ON "memory_block" USING gin ($_doc)',
+    );
   }
 
   /// Words that shape a question but aren't its subject (Node's QUESTION_SCAFFOLD).
   static const scaffold = {
-    'what', 'how', 'why', 'who', 'when', 'where', 'explain', 'tell', 'describe', 'give', 'know',
-    'think', 'say', 'does', 'is', 'are', 'can', 'could', 'would', 'should', "what's", "who's",
-    "how's", "where's", "when's", "that's", "it's", 'up', 'good', 'going',
+    'what',
+    'how',
+    'why',
+    'who',
+    'when',
+    'where',
+    'explain',
+    'tell',
+    'describe',
+    'give',
+    'know',
+    'think',
+    'say',
+    'does',
+    'is',
+    'are',
+    'can',
+    'could',
+    'would',
+    'should',
+    "what's",
+    "who's",
+    "how's",
+    "where's",
+    "when's",
+    "that's",
+    "it's",
+    'up',
+    'good',
+    'going',
   };
 
   static List<String> contentTopics(List<String> topics) {
@@ -121,15 +172,29 @@ class MemoryRecallService {
 
   static String _clip(String s) {
     final flat = s.replaceAll(RegExp(r'\s+'), ' ').trim();
-    return flat.length <= _maxItemChars ? flat : '${flat.substring(0, _maxItemChars - 1).trimRight()}…';
+    return flat.length <= _maxItemChars
+        ? flat
+        : '${flat.substring(0, _maxItemChars - 1).trimRight()}…';
   }
 
   /// [query] is the message itself (for full-text search); [meaning] its embedding (see
   /// EmbeddingService), when available.
-  static Future<RecallContext> recall(Session session, UuidValue authUserId, List<String> topics, {Vector? meaning, String? query}) async {
+  static Future<RecallContext> recall(
+    Session session,
+    UuidValue authUserId,
+    List<String> topics, {
+    Vector? meaning,
+    String? query,
+  }) async {
     final t = contentTopics(topics).take(12).toList();
     final q = (query ?? '').trim();
-    if (t.isEmpty && meaning == null && q.isEmpty) return RecallContext(digested: [], knowledge: [], pastChats: [], definitions: []);
+    if (t.isEmpty && meaning == null && q.isEmpty)
+      return RecallContext(
+        digested: [],
+        knowledge: [],
+        pastChats: [],
+        definitions: [],
+      );
 
     final results = await Future.wait<Object>([
       t.isEmpty ? Future.value(<int>[]) : _byTopics(session, t),
@@ -143,7 +208,11 @@ class MemoryRecallService {
     // Reciprocal rank fusion: a memory high in any ranking is a strong candidate; one in several
     // rankings is stronger still. k = 60 is the usual constant.
     final fused = <int, double>{};
-    for (final ranking in [results[0], results[1], results[2]].cast<List<int>>()) {
+    for (final ranking in [
+      results[0],
+      results[1],
+      results[2],
+    ].cast<List<int>>()) {
       for (var i = 0; i < ranking.length; i++) {
         fused[ranking[i]] = (fused[ranking[i]] ?? 0) + 1 / (60 + i + 1);
       }
@@ -165,23 +234,46 @@ class MemoryRecallService {
     );
   }
 
-  static bool _wantsNews(String q) => RegExp(r'\b(today|latest|news|now|current|recent|this week|yesterday|update)\b', caseSensitive: false).hasMatch(q);
+  static bool _wantsNews(String q) => RegExp(
+    r'\b(today|latest|news|now|current|recent|this week|yesterday|update)\b',
+    caseSensitive: false,
+  ).hasMatch(q);
 
   /// The best of the fused candidates, as passages: weighted by trust and (for news) freshness,
   /// at most 2 of its own answers and 5 things it read, no near-duplicates.
-  static Future<List<Passage>> _passages(Session session, Map<int, double> fused, {required bool wantsNews}) async {
+  static Future<List<Passage>> _passages(
+    Session session,
+    Map<int, double> fused, {
+    required bool wantsNews,
+  }) async {
     if (fused.isEmpty) return [];
-    final top = (fused.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).take(24).map((e) => e.key).toSet();
-    final blocks = await MemoryBlock.db.find(session, where: (b) => b.id.inSet(top));
-    String? keyOf(MemoryBlock b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource);
-    final trust = await TrustService.scores(session, TrustService.source, blocks.map(keyOf).whereType<String>());
+    final top =
+        (fused.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
+            .take(24)
+            .map((e) => e.key)
+            .toSet();
+    final blocks = await MemoryBlock.db.find(
+      session,
+      where: (b) => b.id.inSet(top),
+    );
+    String? keyOf(MemoryBlock b) =>
+        TrustService.sourceKey(url: b.url, feedSource: b.feedSource);
+    final trust = await TrustService.scores(
+      session,
+      TrustService.source,
+      blocks.map(keyOf).whereType<String>(),
+    );
     final now = DateTime.now().toUtc();
 
     double weight(MemoryBlock b) {
       var w = fused[b.id]! * (0.5 + (trust[keyOf(b)] ?? 0.5));
       if (_news.contains(b.source)) {
         final days = now.difference(b.timestamp).inHours / 24;
-        w *= wantsNews ? 1.6 * exp(-days / 3) + 0.2 : 0.8 + 0.2 * exp(-days / 30); // news ages; asked for news, much faster
+        w *= wantsNews
+            ? 1.6 * exp(-days / 3) + 0.2
+            : 0.8 +
+                  0.2 *
+                      exp(-days / 30); // news ages; asked for news, much faster
       }
       if (b.source == 'self') w *= 1.15; // its own worked-out understanding
       return w;
@@ -210,13 +302,17 @@ class MemoryRecallService {
         text = b.extract != null ? '${b.title}: ${b.extract}' : b.title!;
         label = switch (b.source) {
           'library' => b.feedSource ?? 'your library',
-          'curriculum' => 'your curriculum${b.curriculumSubject != null ? ' (${b.curriculumSubject})' : ''}',
+          'curriculum' =>
+            'your curriculum${b.curriculumSubject != null ? ' (${b.curriculumSubject})' : ''}',
           _ => keyOf(b) ?? b.source,
         };
       }
       final clipped = _clip(text);
       final norm = clipped.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-      final fingerprint = norm.substring(0, min(60, norm.length)); // near-duplicates share their opening
+      final fingerprint = norm.substring(
+        0,
+        min(60, norm.length),
+      ); // near-duplicates share their opening
       if (!seen.add(fingerprint)) continue;
       if (b.source == 'self') {
         own++;
@@ -224,14 +320,21 @@ class MemoryRecallService {
         if (read >= 5) continue;
         read++;
       }
-      out.add(Passage(
-        id: b.id!,
-        text: clipped,
-        label: label,
-        // shown only where WYRD has an opinion of the source (unrated sources come back as exactly 0.5)
-        trust: b.source == 'self' || b.source == 'synthesis' || (trust[keyOf(b)] ?? 0.5) == 0.5 ? null : trust[keyOf(b)],
-        age: _news.contains(b.source) ? now.difference(b.timestamp) : null,
-      ));
+      out.add(
+        Passage(
+          id: b.id!,
+          text: clipped,
+          label: label,
+          // shown only where WYRD has an opinion of the source (unrated sources come back as exactly 0.5)
+          trust:
+              b.source == 'self' ||
+                  b.source == 'synthesis' ||
+                  (trust[keyOf(b)] ?? 0.5) == 0.5
+              ? null
+              : trust[keyOf(b)],
+          age: _news.contains(b.source) ? now.difference(b.timestamp) : null,
+        ),
+      );
       if (own + read >= 7) break;
     }
     return out;
@@ -244,11 +347,17 @@ class MemoryRecallService {
         'SELECT "id" FROM "memory_block", websearch_to_tsquery(\'english\', @q) query '
         'WHERE "source" = ANY(@sources::text[]) AND $_doc @@ query '
         'ORDER BY ts_rank_cd($_doc, query) DESC LIMIT 30',
-        parameters: QueryParameters.named({'q': _orQuery(q), 'sources': _sharedSources}),
+        parameters: QueryParameters.named({
+          'q': _orQuery(q),
+          'sources': _sharedSources,
+        }),
       );
       return [for (final r in rows) r[0] as int];
     } catch (e) {
-      session.log('[recall] full-text search failed: $e', level: LogLevel.warning);
+      session.log(
+        '[recall] full-text search failed: $e',
+        level: LogLevel.warning,
+      );
       return [];
     }
   }
@@ -256,7 +365,11 @@ class MemoryRecallService {
   /// The message's meaningful words joined with OR, so a memory needn't contain every word of a
   /// conversational question to be found (ranking still prefers the ones that match more).
   static String _orQuery(String q) {
-    final words = RegExp(r"[\p{L}\p{N}']{3,}", unicode: true).allMatches(q.toLowerCase()).map((m) => m.group(0)!).where((w) => !scaffold.contains(w)).toSet();
+    final words = RegExp(r"[\p{L}\p{N}']{3,}", unicode: true)
+        .allMatches(q.toLowerCase())
+        .map((m) => m.group(0)!)
+        .where((w) => !scaffold.contains(w))
+        .toSet();
     return words.isEmpty ? q : words.join(' OR ');
   }
 
@@ -266,7 +379,11 @@ class MemoryRecallService {
     final rows = await session.db.unsafeQuery(
       'SELECT "id" FROM "memory_block" WHERE "embedding" IS NOT NULL AND "source" = ANY(@sources::text[]) '
       'AND ("embedding" <=> @q::vector) < @max ORDER BY "embedding" <=> @q::vector LIMIT 20',
-      parameters: QueryParameters.named({'q': '[${meaning.toList().join(',')}]', 'sources': _sharedSources, 'max': maxDistance}),
+      parameters: QueryParameters.named({
+        'q': '[${meaning.toList().join(',')}]',
+        'sources': _sharedSources,
+        'max': maxDistance,
+      }),
     );
     return [for (final r in rows) r[0] as int];
   }
@@ -294,7 +411,8 @@ class MemoryRecallService {
             final overlap = (r[3] as int).toDouble();
             final union = t.length + (r[4] as int) - overlap;
             var s = union > 0 ? overlap / union : 0.0;
-            if (r[1] == 'self' && t.contains(r[2])) s += 0.5; // answered exactly this topic
+            if (r[1] == 'self' && t.contains(r[2]))
+              s += 0.5; // answered exactly this topic
             return s;
           }(),
         ),
@@ -308,19 +426,32 @@ class MemoryRecallService {
     final set = t.toSet();
     final rows = await Belief.db.find(
       session,
-      where: (b) => (b.a.inSet(set) | b.b.inSet(set)) & b.status.inSet({'held', 'hypothesis', 'doubted'}) & b.claim.notEquals(''),
+      where: (b) =>
+          (b.a.inSet(set) | b.b.inSet(set)) &
+          b.status.inSet({'held', 'hypothesis', 'doubted'}) &
+          b.claim.notEquals(''),
       orderBy: (b) => b.confidence.desc(),
       limit: 3,
     );
     return [
       for (final b in rows)
-        _clip('${b.status == 'doubted' ? 'You DOUBT this' : b.status == 'held' ? 'You hold this' : 'You suspect this'} '
-            '(${(b.confidence * 100).round()}%, ${b.sources} source${b.sources == 1 ? '' : 's'}${b.against > 0 ? ', ${b.against} against' : ''}): ${b.claim}'),
+        _clip(
+          '${b.status == 'doubted'
+              ? 'You DOUBT this'
+              : b.status == 'held'
+              ? 'You hold this'
+              : 'You suspect this'} '
+          '(${(b.confidence * 100).round()}%, ${b.sources} source${b.sources == 1 ? '' : 's'}${b.against > 0 ? ', ${b.against} against' : ''}): ${b.claim}',
+        ),
     ];
   }
 
   /// This person's own earlier turns that share the message's topics.
-  static Future<List<String>> _ownChats(Session session, UuidValue authUserId, List<String> t) async {
+  static Future<List<String>> _ownChats(
+    Session session,
+    UuidValue authUserId,
+    List<String> t,
+  ) async {
     final pattern = t.map(RegExp.escape).join('|');
     final rows = await session.db.unsafeQuery(
       '''
@@ -330,17 +461,28 @@ class MemoryRecallService {
       OFFSET 8 LIMIT 3
       ''',
       // the 8 newest turns are already in the prompt as live history (ChatService._historyTurns)
-      parameters: QueryParameters.named({'id': authUserId.uuid, 're': '\\m($pattern)\\M'}),
+      parameters: QueryParameters.named({
+        'id': authUserId.uuid,
+        're': '\\m($pattern)\\M',
+      }),
     );
-    return rows.map((r) => _clip('they said "${r[0]}" and you said "${r[1]}"')).toList();
+    return rows
+        .map((r) => _clip('they said "${r[0]}" and you said "${r[1]}"'))
+        .toList();
   }
 
-  static Future<List<String>> _definitions(Session session, List<String> t) async {
+  static Future<List<String>> _definitions(
+    Session session,
+    List<String> t,
+  ) async {
     final entries = await LexiconEntry.db.find(
       session,
       where: (e) => e.word.inSet(t.toSet()) & e.understood.equals(true),
       limit: 3,
     );
-    return entries.where((e) => e.definition != null).map((e) => _clip('${e.word}: ${e.definition}')).toList();
+    return entries
+        .where((e) => e.definition != null)
+        .map((e) => _clip('${e.word}: ${e.definition}'))
+        .toList();
   }
 }

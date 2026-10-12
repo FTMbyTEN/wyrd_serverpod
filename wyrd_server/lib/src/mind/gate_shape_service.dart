@@ -72,7 +72,8 @@ class GateShapeService {
 
     GateShape? shape;
     final now = DateTime.now();
-    if (LlmService.isConfigured(session) && (_lastLlmAt == null || now.difference(_lastLlmAt!) >= _llmMinGap)) {
+    if (LlmService.isConfigured(session) &&
+        (_lastLlmAt == null || now.difference(_lastLlmAt!) >= _llmMinGap)) {
       _lastLlmAt = now;
       final raw = await LlmService.callSimple(
         session,

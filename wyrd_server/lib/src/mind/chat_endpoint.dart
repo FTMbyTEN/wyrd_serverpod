@@ -22,8 +22,14 @@ class ChatEndpoint extends Endpoint {
 
   /// [passages]: while a file shared in this conversation is open in their browser, the parts of
   /// it relevant to this message (the file itself is never sent whole or stored).
-  Future<ChatReply> sendMessage(Session session, String text, {List<String>? passages}) async {
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+  Future<ChatReply> sendMessage(
+    Session session,
+    String text, {
+    List<String>? passages,
+  }) async {
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
 
     if (RateLimiter.isLimited('chat:$authUserId', _rateLimit, _rateWindow)) {
       throw Exception('slow down a bit — try again in a moment');
@@ -43,14 +49,33 @@ class ChatEndpoint extends Endpoint {
       for (final p in passages ?? const <String>[])
         if (p.trim().isNotEmpty && (budget -= p.length) >= 0) p,
     ];
-    final result = await ChatService.processMessage(session, authUserId, question,
-        shownAs: attached == null ? null : text, withFile: attached != null, passages: parts.isEmpty ? null : parts);
-    return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement, thinking: result.turn.thinking);
+    final result = await ChatService.processMessage(
+      session,
+      authUserId,
+      question,
+      shownAs: attached == null ? null : text,
+      withFile: attached != null,
+      passages: parts.isEmpty ? null : parts,
+    );
+    return ChatReply(
+      reply: result.reply,
+      mind: result.mind,
+      action: result.action,
+      fromMemory: result.fromMemory,
+      turnId: result.turn.id,
+      judgement: result.judgement,
+      thinking: result.turn.thinking,
+    );
   }
 
   /// The current chat's turns, oldest first (the last [limit]).
-  Future<List<ConversationTurn>> getHistory(Session session, {int? limit}) async {
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+  Future<List<ConversationTurn>> getHistory(
+    Session session, {
+    int? limit,
+  }) async {
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
     final take = (limit ?? 50).clamp(1, 2000);
     final chat = await ChatList.current(session, authUserId);
     final turns = await ConversationTurn.db.find(
@@ -63,49 +88,95 @@ class ChatEndpoint extends Endpoint {
   }
 
   /// Your chats, most recent first: [{id, title, updatedAt, turns, current}] as JSON.
-  Future<String> chats(Session session) async =>
-      jsonEncode(await ChatList.list(session, UuidValue.fromString(session.authenticated!.userIdentifier)));
+  Future<String> chats(Session session) async => jsonEncode(
+    await ChatList.list(
+      session,
+      UuidValue.fromString(session.authenticated!.userIdentifier),
+    ),
+  );
 
   /// Start a new chat (it becomes current; WYRD keeps what it knows about you, not the conversation).
   Future<void> newChat(Session session) async {
-    await ChatList.start(session, UuidValue.fromString(session.authenticated!.userIdentifier));
+    await ChatList.start(
+      session,
+      UuidValue.fromString(session.authenticated!.userIdentifier),
+    );
   }
 
   /// Go back to one of your chats (it becomes current); then getHistory shows it.
   Future<void> openChat(Session session, int chatId) async {
-    await ChatList.open(session, UuidValue.fromString(session.authenticated!.userIdentifier), chatId);
+    await ChatList.open(
+      session,
+      UuidValue.fromString(session.authenticated!.userIdentifier),
+      chatId,
+    );
   }
 
   /// 👍 (1), 👎 (-1) or clear (0) one of your own conversation turns. Trains the learned answer
   /// behind it, and is kept on the turn as a record of what helped.
   Future<void> rate(Session session, int turnId, int rating) async {
     if (rating < -1 || rating > 1) throw Exception('rating must be -1, 0 or 1');
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
     final turn = await ConversationTurn.db.findById(session, turnId);
-    if (turn == null || turn.authUserId != authUserId) throw Exception('no such reply');
+    if (turn == null || turn.authUserId != authUserId)
+      throw Exception('no such reply');
     await LearnedAnswerService.rate(session, turn, rating);
     await _trustFromRating(session, turn, rating - (turn.rating ?? 0));
-    await ConversationTurn.db.updateRow(session, turn.copyWith(rating: rating == 0 ? null : rating), columns: (t) => [t.rating]);
+    await ConversationTurn.db.updateRow(
+      session,
+      turn.copyWith(rating: rating == 0 ? null : rating),
+      columns: (t) => [t.rating],
+    );
   }
 
   /// Bias 2: a rating is evidence about where the reply's knowledge came from and what was asked.
   /// [delta] is the change (a changed mind only counts the difference).
-  static Future<void> _trustFromRating(Session session, ConversationTurn turn, int delta) async {
+  static Future<void> _trustFromRating(
+    Session session,
+    ConversationTurn turn,
+    int delta,
+  ) async {
     if (delta == 0) return;
     // each person has one capped vote per source and topic, however many replies they rate
     final weight = await RatingVoteService.weightFor(session, turn.authUserId);
     final ids = turn.groundingIds ?? const [];
     if (ids.isNotEmpty) {
-      final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(ids.toSet()));
-      final sources = blocks.map((b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource)).whereType<String>().toSet();
+      final blocks = await MemoryBlock.db.find(
+        session,
+        where: (t) => t.id.inSet(ids.toSet()),
+      );
+      final sources = blocks
+          .map(
+            (b) => TrustService.sourceKey(url: b.url, feedSource: b.feedSource),
+          )
+          .whereType<String>()
+          .toSet();
       for (final s in sources) {
-        final change = await RatingVoteService.apply(session, turn.authUserId, TrustService.source, s, delta * weight, limit: 1);
+        final change = await RatingVoteService.apply(
+          session,
+          turn.authUserId,
+          TrustService.source,
+          s,
+          delta * weight,
+          limit: 1,
+        );
         await TrustService.record(session, TrustService.source, s, change);
       }
     }
-    final topics = MemoryRecallService.contentTopics(TopicService.extractTopics(turn.userText)).where(TopicService.isIdea).toSet();
+    final topics = MemoryRecallService.contentTopics(
+      TopicService.extractTopics(turn.userText),
+    ).where(TopicService.isIdea).toSet();
     for (final t in topics.take(6)) {
-      final change = await RatingVoteService.apply(session, turn.authUserId, TrustService.topic, t, delta * 0.5 * weight, limit: 0.5);
+      final change = await RatingVoteService.apply(
+        session,
+        turn.authUserId,
+        TrustService.topic,
+        t,
+        delta * 0.5 * weight,
+        limit: 0.5,
+      );
       await TrustService.record(session, TrustService.topic, t, change);
     }
   }

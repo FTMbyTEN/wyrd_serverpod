@@ -11,8 +11,12 @@ class AlertsEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
-  Future<List<AlertNote>> getAlerts(Session session) =>
-      PublicCache.get(session, 'alerts', const Duration(seconds: 30), () => _getAlerts(session));
+  Future<List<AlertNote>> getAlerts(Session session) => PublicCache.get(
+    session,
+    'alerts',
+    const Duration(seconds: 30),
+    () => _getAlerts(session),
+  );
 
   Future<List<AlertNote>> _getAlerts(Session session) async {
     final now = DateTime.now().toUtc();
@@ -23,9 +27,19 @@ class AlertsEndpoint extends Endpoint {
     ));
 
     // the four sources are independent: ask for them all at once, not one round trip after another
-    final diaryF = DiaryEntry.db.findFirstRow(session, orderBy: (t) => t.id.desc());
-    final dreamF = DreamEntry.db.findFirstRow(session, orderBy: (t) => t.id.desc());
-    final copF = CopLogEntry.db.find(session, orderBy: (t) => t.id.desc(), limit: 5);
+    final diaryF = DiaryEntry.db.findFirstRow(
+      session,
+      orderBy: (t) => t.id.desc(),
+    );
+    final dreamF = DreamEntry.db.findFirstRow(
+      session,
+      orderBy: (t) => t.id.desc(),
+    );
+    final copF = CopLogEntry.db.find(
+      session,
+      orderBy: (t) => t.id.desc(),
+      limit: 5,
+    );
     final mindF = MindService.load(session);
     await Future.wait<Object?>([diaryF, dreamF, copF, mindF]);
 

@@ -12,32 +12,55 @@ class LibraryEndpoint extends Endpoint {
   @override
   bool get requireLogin => true;
 
-  UuidValue _me(Session session) => UuidValue.fromString(session.authenticated!.userIdentifier);
+  UuidValue _me(Session session) =>
+      UuidValue.fromString(session.authenticated!.userIdentifier);
 
   void _pace(Session session, String what, {int limit = 30}) {
-    if (RateLimiter.isLimited('library:$what:${_me(session).uuid}', limit, const Duration(minutes: 5))) {
+    if (RateLimiter.isLimited(
+      'library:$what:${_me(session).uuid}',
+      limit,
+      const Duration(minutes: 5),
+    )) {
       throw Exception('slow down — try again in a few minutes');
     }
   }
 
   ReadingSlice _slice((ReadingItem, PageSlice) r) => ReadingSlice(
-        item: r.$1,
-        text: r.$2.text,
-        offset: r.$2.offset,
-        finished: LibraryService.finished(r.$1),
-      );
+    item: r.$1,
+    text: r.$2.text,
+    offset: r.$2.offset,
+    finished: LibraryService.finished(r.$1),
+  );
 
-  Future<List<ReadingItem>> list(Session session) => LibraryService.list(session, _me(session));
+  Future<List<ReadingItem>> list(Session session) =>
+      LibraryService.list(session, _me(session));
 
   /// The next part of item [id] (or its start with [restart], or the start of section [part]).
-  Future<ReadingSlice> readOn(Session session, int id, {bool restart = false, int? part}) async {
+  Future<ReadingSlice> readOn(
+    Session session,
+    int id, {
+    bool restart = false,
+    int? part,
+  }) async {
     _pace(session, 'read');
     final me = _me(session);
     final item = await ReadingItem.db.findById(session, id);
-    if (item == null || item.authUserId != me) throw Exception('not in your library');
-    final r = await LibraryService.readOn(session, me, item, restart: restart, jumpToPart: part);
+    if (item == null || item.authUserId != me)
+      throw Exception('not in your library');
+    final r = await LibraryService.readOn(
+      session,
+      me,
+      item,
+      restart: restart,
+      jumpToPart: part,
+    );
     if (r == null) {
-      return ReadingSlice(item: item, text: '', offset: item.total, finished: true);
+      return ReadingSlice(
+        item: item,
+        text: '',
+        offset: item.total,
+        finished: true,
+      );
     }
     return _slice(r);
   }
@@ -48,46 +71,77 @@ class LibraryEndpoint extends Endpoint {
     _pace(session, 'read');
     final me = _me(session);
     final item = await ReadingItem.db.findById(session, id);
-    if (item == null || item.authUserId != me) throw Exception('not in your library');
+    if (item == null || item.authUserId != me)
+      throw Exception('not in your library');
     final r = await LibraryService.current(session, me, item);
-    return ReadingSlice(item: item, text: r?.$2.text ?? '', offset: r?.$2.offset ?? 0, finished: LibraryService.finished(item));
+    return ReadingSlice(
+      item: item,
+      text: r?.$2.text ?? '',
+      offset: r?.$2.offset ?? 0,
+      finished: LibraryService.finished(item),
+    );
   }
 
   /// Quiz me: questions from [passage] (the part of item [id] just read). Words missed in
   /// recent rounds on this item come back first. No AI.
-  Future<List<QuizQuestion>> quiz(Session session, int id, String passage) async {
+  Future<List<QuizQuestion>> quiz(
+    Session session,
+    int id,
+    String passage,
+  ) async {
     _pace(session, 'quiz');
     final me = _me(session);
     final item = await ReadingItem.db.findById(session, id);
-    if (item == null || item.authUserId != me) throw Exception('not in your library');
+    if (item == null || item.authUserId != me)
+      throw Exception('not in your library');
     final text = passage.length > 12000 ? passage.substring(0, 12000) : passage;
-    return QuizService.make(session, text, missed: await QuizService.missed(session, me, id));
+    return QuizService.make(
+      session,
+      text,
+      missed: await QuizService.missed(session, me, id),
+    );
   }
 
   /// Records a finished round, so missed words are asked again and progress adds up.
-  Future<QuizStats> quizDone(Session session, int id, int correct, int total, List<String> missed) async {
+  Future<QuizStats> quizDone(
+    Session session,
+    int id,
+    int correct,
+    int total,
+    List<String> missed,
+  ) async {
     final me = _me(session);
     final item = await ReadingItem.db.findById(session, id);
-    if (item == null || item.authUserId != me) throw Exception('not in your library');
-    if (total < 1 || total > 20 || correct < 0 || correct > total) throw Exception('that score does not add up');
-    await QuizAttempt.db.insertRow(session, QuizAttempt(
-      authUserId: me,
-      readingItemId: id,
-      title: item.title,
-      correct: correct,
-      total: total,
-      missed: missed.take(20).map((m) => m.length > 60 ? m.substring(0, 60) : m).toList(),
-      at: DateTime.now().toUtc(),
-    ));
+    if (item == null || item.authUserId != me)
+      throw Exception('not in your library');
+    if (total < 1 || total > 20 || correct < 0 || correct > total)
+      throw Exception('that score does not add up');
+    await QuizAttempt.db.insertRow(
+      session,
+      QuizAttempt(
+        authUserId: me,
+        readingItemId: id,
+        title: item.title,
+        correct: correct,
+        total: total,
+        missed: missed
+            .take(20)
+            .map((m) => m.length > 60 ? m.substring(0, 60) : m)
+            .toList(),
+        at: DateTime.now().toUtc(),
+      ),
+    );
     return QuizService.stats(session, me);
   }
 
-  Future<QuizStats> quizStats(Session session) => QuizService.stats(session, _me(session));
+  Future<QuizStats> quizStats(Session session) =>
+      QuizService.stats(session, _me(session));
 
   /// A work's table of contents (sections of a textbook, chapters on Wikisource).
   Future<List<WorkPartInfo>> contents(Session session, int id) async {
     final item = await ReadingItem.db.findById(session, id);
-    if (item == null || item.authUserId != _me(session)) throw Exception('not in your library');
+    if (item == null || item.authUserId != _me(session))
+      throw Exception('not in your library');
     return LibraryService.contents(item);
   }
 
@@ -95,15 +149,22 @@ class LibraryEndpoint extends Endpoint {
   /// stopped if you've started it. Null when no free copy exists.
   Future<ReadingSlice?> openBook(Session session, String query) async {
     final q = query.trim();
-    if (q.isEmpty || q.length > 120) throw Exception('name a book (and author, if you like)');
+    if (q.isEmpty || q.length > 120)
+      throw Exception('name a book (and author, if you like)');
     _pace(session, 'open', limit: 20);
     final r = await LibraryService.openBook(session, _me(session), q);
     return r == null ? null : _slice(r);
   }
 
   /// Opens a work found through [textbooks], [searchWikisource] or [searchBooks].
-  Future<ReadingSlice?> openWork(Session session, String source, String id) async {
-    if (!const {'openstax', 'wikisource', 'gutenberg'}.contains(source) || id.isEmpty || id.length > 300) {
+  Future<ReadingSlice?> openWork(
+    Session session,
+    String source,
+    String id,
+  ) async {
+    if (!const {'openstax', 'wikisource', 'gutenberg'}.contains(source) ||
+        id.isEmpty ||
+        id.length > 300) {
       throw Exception('unknown work');
     }
     _pace(session, 'open', limit: 20);
@@ -115,7 +176,11 @@ class LibraryEndpoint extends Endpoint {
   Future<List<WorkHit>> textbooks(Session session) => WorksService.textbooks();
 
   /// Wikisource works in [lang] matching [query].
-  Future<List<WorkHit>> searchWikisource(Session session, String lang, String query) async {
+  Future<List<WorkHit>> searchWikisource(
+    Session session,
+    String lang,
+    String query,
+  ) async {
     final q = query.trim();
     if (q.isEmpty || q.length > 120) return [];
     _pace(session, 'search');
@@ -123,8 +188,9 @@ class LibraryEndpoint extends Endpoint {
   }
 
   /// The Wikisource languages on offer, as "code|name in its own script".
-  Future<List<String>> wikisourceLanguages(Session session) async =>
-      [for (final (code, name) in WorksService.wikisourceLanguages) '$code|$name'];
+  Future<List<String>> wikisourceLanguages(Session session) async => [
+    for (final (code, name) in WorksService.wikisourceLanguages) '$code|$name',
+  ];
 
   /// Free books on Project Gutenberg matching [query].
   Future<List<WorkHit>> searchBooks(Session session, String query) async {
@@ -134,7 +200,13 @@ class LibraryEndpoint extends Endpoint {
     final hits = await PageReaderService.findBooks(q);
     return [
       for (final h in hits.where((h) => h.textUrl != null))
-        WorkHit(source: 'gutenberg', id: h.textUrl!, title: h.title, author: h.authors.isEmpty ? null : h.authors.join(', '), subjects: const []),
+        WorkHit(
+          source: 'gutenberg',
+          id: h.textUrl!,
+          title: h.title,
+          author: h.authors.isEmpty ? null : h.authors.join(', '),
+          subjects: const [],
+        ),
     ];
   }
 

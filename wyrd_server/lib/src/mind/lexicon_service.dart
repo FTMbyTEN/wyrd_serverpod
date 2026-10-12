@@ -56,7 +56,9 @@ class LexiconService {
   /// Looks [word] up in Wiktionary, falling back to dictionaryapi.dev. Returns the definition,
   /// or null when a source answered that the word doesn't exist (404). Throws when no source
   /// could be reached -- an outage must not be recorded as "not a word".
-  static Future<({String partOfSpeech, String definition})?> _define(String word) async {
+  static Future<({String partOfSpeech, String definition})?> _define(
+    String word,
+  ) async {
     final sources = [_fromWiktionary, _fromDictionaryApi];
     Object? lastError;
     var anyNotFound = false;
@@ -74,40 +76,67 @@ class LexiconService {
   }
 
   /// Wiktionary's REST API. Null on a 404 (unknown word) or when it has no usable English sense.
-  static Future<({String partOfSpeech, String definition})?> _fromWiktionary(String word) async {
-    final res = await http.get(
-      Uri.parse('https://en.wiktionary.org/api/rest_v1/page/definition/${Uri.encodeComponent(word)}'),
-      headers: {'User-Agent': _userAgent, 'Accept': 'application/json'},
-    ).timeout(_lookupTimeout);
+  static Future<({String partOfSpeech, String definition})?> _fromWiktionary(
+    String word,
+  ) async {
+    final res = await http
+        .get(
+          Uri.parse(
+            'https://en.wiktionary.org/api/rest_v1/page/definition/${Uri.encodeComponent(word)}',
+          ),
+          headers: {'User-Agent': _userAgent, 'Accept': 'application/json'},
+        )
+        .timeout(_lookupTimeout);
     if (res.statusCode == 404) return null;
-    if (res.statusCode != 200) throw Exception('wiktionary http ${res.statusCode}');
-    final senses = (jsonDecode(res.body) as Map<String, dynamic>)['en'] as List<dynamic>? ?? [];
+    if (res.statusCode != 200)
+      throw Exception('wiktionary http ${res.statusCode}');
+    final senses =
+        (jsonDecode(res.body) as Map<String, dynamic>)['en']
+            as List<dynamic>? ??
+        [];
     final candidates = <({String partOfSpeech, String definition})>[];
     for (final sense in senses.cast<Map<String, dynamic>>()) {
       final pos = (sense['partOfSpeech'] as String? ?? 'unknown').toLowerCase();
-      for (final d in (sense['definitions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) {
+      for (final d
+          in (sense['definitions'] as List<dynamic>? ?? [])
+              .cast<Map<String, dynamic>>()) {
         final text = stripHtml(d['definition'] as String? ?? '');
-        if (text.isNotEmpty) candidates.add((partOfSpeech: pos, definition: text));
+        if (text.isNotEmpty)
+          candidates.add((partOfSpeech: pos, definition: text));
       }
     }
     return bestSense(candidates);
   }
 
   /// dictionaryapi.dev (the original server.js source). Null on a 404 (unknown word).
-  static Future<({String partOfSpeech, String definition})?> _fromDictionaryApi(String word) async {
+  static Future<({String partOfSpeech, String definition})?> _fromDictionaryApi(
+    String word,
+  ) async {
     final res = await http
-        .get(Uri.parse('https://api.dictionaryapi.dev/api/v2/entries/en/${Uri.encodeComponent(word)}'))
+        .get(
+          Uri.parse(
+            'https://api.dictionaryapi.dev/api/v2/entries/en/${Uri.encodeComponent(word)}',
+          ),
+        )
         .timeout(_lookupTimeout);
     if (res.statusCode == 404) return null;
-    if (res.statusCode != 200) throw Exception('dictionaryapi http ${res.statusCode}');
+    if (res.statusCode != 200)
+      throw Exception('dictionaryapi http ${res.statusCode}');
     final data = jsonDecode(res.body);
     if (data is! List || data.isEmpty) return null;
     final candidates = <({String partOfSpeech, String definition})>[];
-    for (final m in ((data.first as Map<String, dynamic>)['meanings'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) {
+    for (final m
+        in ((data.first as Map<String, dynamic>)['meanings']
+                    as List<dynamic>? ??
+                [])
+            .cast<Map<String, dynamic>>()) {
       final pos = (m['partOfSpeech'] as String? ?? 'unknown').toLowerCase();
-      for (final d in (m['definitions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) {
+      for (final d
+          in (m['definitions'] as List<dynamic>? ?? [])
+              .cast<Map<String, dynamic>>()) {
         final text = (d['definition'] as String? ?? '').trim();
-        if (text.isNotEmpty) candidates.add((partOfSpeech: pos, definition: text));
+        if (text.isNotEmpty)
+          candidates.add((partOfSpeech: pos, definition: text));
       }
     }
     return bestSense(candidates);
@@ -117,13 +146,22 @@ class LexiconService {
   // listed (symbol, abbreviation, initialism, proper noun, letter, affix...) is a last resort --
   // that's how "got" ended up defined as "ISO 639 language code for Gothic".
   static const _posRank = {
-    'noun': 0, 'verb': 0, 'adjective': 0, 'adverb': 0,
-    'pronoun': 1, 'preposition': 1, 'conjunction': 1, 'determiner': 1,
-    'interjection': 1, 'numeral': 1, 'particle': 1, 'participle': 1,
+    'noun': 0,
+    'verb': 0,
+    'adjective': 0,
+    'adverb': 0,
+    'pronoun': 1,
+    'preposition': 1,
+    'conjunction': 1,
+    'determiner': 1,
+    'interjection': 1,
+    'numeral': 1,
+    'particle': 1,
+    'participle': 1,
   };
   static final _technical = RegExp(
     r'\b(ISO 639|language code|abbreviation of|initialism of|acronym of|symbol for|chemical symbol|'
-        r'alternative (letter-case|spelling) form of|misspelling of)\b',
+    r'alternative (letter-case|spelling) form of|misspelling of)\b',
     caseSensitive: false,
   );
   static final _marginal = RegExp(
@@ -156,7 +194,8 @@ class LexiconService {
   /// True for entries learned before [bestSense] existed that are clearly the wrong sense.
   static bool isPoorDefinition(LexiconEntry e) =>
       e.understood &&
-      ((e.partOfSpeech != null && !_posRank.containsKey(e.partOfSpeech)) || _technical.hasMatch(e.definition ?? ''));
+      ((e.partOfSpeech != null && !_posRank.containsKey(e.partOfSpeech)) ||
+          _technical.hasMatch(e.definition ?? ''));
 
   /// Wiktionary definitions are HTML fragments (links, spans, italics). Plain text for storage.
   static String stripHtml(String html) => html
@@ -176,11 +215,66 @@ class LexiconService {
   // WYRD is learning; its vocabulary time goes to meaningful words instead.
   static const _minWordLength = 4;
   static const _filler = {
-    'that', 'this', 'with', 'from', 'have', 'been', 'were', 'they', 'them', 'then', 'than', 'what', 'when',
-    'where', 'which', 'while', 'would', 'could', 'should', 'there', 'these', 'those', 'their', 'about', 'into',
-    'just', 'like', 'some', 'only', 'over', 'very', 'also', 'more', 'most', 'much', 'many', 'such', 'here',
-    'your', 'yours', 'ours', 'will', 'shall', 'does', 'done', 'being', 'each', 'every', 'other', 'another',
-    'thing', 'things', 'something', 'anything', 'nothing', 'before', 'after', 'least', 'little', 'seen',
+    'that',
+    'this',
+    'with',
+    'from',
+    'have',
+    'been',
+    'were',
+    'they',
+    'them',
+    'then',
+    'than',
+    'what',
+    'when',
+    'where',
+    'which',
+    'while',
+    'would',
+    'could',
+    'should',
+    'there',
+    'these',
+    'those',
+    'their',
+    'about',
+    'into',
+    'just',
+    'like',
+    'some',
+    'only',
+    'over',
+    'very',
+    'also',
+    'more',
+    'most',
+    'much',
+    'many',
+    'such',
+    'here',
+    'your',
+    'yours',
+    'ours',
+    'will',
+    'shall',
+    'does',
+    'done',
+    'being',
+    'each',
+    'every',
+    'other',
+    'another',
+    'thing',
+    'things',
+    'something',
+    'anything',
+    'nothing',
+    'before',
+    'after',
+    'least',
+    'little',
+    'seen',
   };
 
   /// Re-defines one word that was learned with the wrong sense (e.g. "got" as a language code).
@@ -200,15 +294,27 @@ class LexiconService {
     } catch (_) {
       return false; // dictionaries unreachable -- try again later
     }
-    final fixed = def != null && !isPoorDefinition(poor.copyWith(partOfSpeech: def.partOfSpeech, definition: def.definition));
+    final fixed =
+        def != null &&
+        !isPoorDefinition(
+          poor.copyWith(
+            partOfSpeech: def.partOfSpeech,
+            definition: def.definition,
+          ),
+        );
     await LexiconEntry.db.updateRow(
       session,
       fixed
-          ? poor.copyWith(partOfSpeech: def.partOfSpeech, definition: def.definition)
+          ? poor.copyWith(
+              partOfSpeech: def.partOfSpeech,
+              definition: def.definition,
+            )
           // only a code/symbol sense exists: it isn't vocabulary, so stop counting it as understood
           : poor.copyWith(understood: false),
     );
-    session.log('[lexicon] repaired "${poor.word}": ${fixed ? def.definition : 'no everyday sense'}');
+    session.log(
+      '[lexicon] repaired "${poor.word}": ${fixed ? def.definition : 'no everyday sense'}',
+    );
     return true;
   }
 
@@ -246,7 +352,10 @@ class LexiconService {
         .where((w) => w.length >= _minWordLength && !_filler.contains(w))
         .toSet();
     if (seen.isEmpty) return false;
-    final already = (await LexiconEntry.db.find(session, where: (t) => t.word.inSet(seen))).map((e) => e.word).toSet();
+    final already = (await LexiconEntry.db.find(
+      session,
+      where: (t) => t.word.inSet(seen),
+    )).map((e) => e.word).toSet();
     final fresh = seen.difference(already);
     if (fresh.isEmpty) return false;
     final inWordNet = await WordNetService.known(session, fresh);
@@ -255,13 +364,21 @@ class LexiconService {
     final words = inWordNet.keys.toList()..shuffle();
     var learned = 0;
     for (final word in words.take(_wordsPerTick)) {
-      final context = pool.where((b) => b.topics.contains(word)).expand((b) => b.topics).toList();
+      final context = pool
+          .where((b) => b.topics.contains(word))
+          .expand((b) => b.topics)
+          .toList();
       final def = await WordNetService.define(session, word, context: context);
       if (def == null) continue;
       await session.db.unsafeExecute(
         'INSERT INTO "lexicon_entry" ("word", "understood", "definition", "partOfSpeech", "learnedAt") '
         'VALUES (@w, true, @d, @p, @t) ON CONFLICT ("word") DO NOTHING',
-        parameters: QueryParameters.named({'w': word, 'd': def.definition, 'p': def.partOfSpeech, 't': DateTime.now().toUtc()}),
+        parameters: QueryParameters.named({
+          'w': word,
+          'd': def.definition,
+          'p': def.partOfSpeech,
+          't': DateTime.now().toUtc(),
+        }),
       );
       learned++;
     }
@@ -272,7 +389,10 @@ class LexiconService {
   /// Once WordNet is loaded, re-defines the words learned earlier from the web, choosing the
   /// sense that fits what WYRD actually read (fixes e.g. "programming" as TV scheduling).
   static Future<bool> _relearnSome(Session session) async {
-    final mark = await MaintenanceRun.db.findFirstRow(session, where: (t) => t.name.equals(_relearnMark));
+    final mark = await MaintenanceRun.db.findFirstRow(
+      session,
+      where: (t) => t.name.equals(_relearnMark),
+    );
     if (mark?.note == 'done') return false;
     final lastId = int.tryParse(mark?.note ?? '') ?? 0;
     final batch = await LexiconEntry.db.find(
@@ -287,10 +407,23 @@ class LexiconService {
         'AND "topics"::jsonb ? @w ORDER BY "id" DESC LIMIT 15',
         parameters: QueryParameters.named({'w': e.word}),
       );
-      final context = ctxRows.expand((r) => (jsonDecode(r[0] as String) as List).cast<String>()).toList();
-      final def = await WordNetService.define(session, e.word, context: context);
+      final context = ctxRows
+          .expand((r) => (jsonDecode(r[0] as String) as List).cast<String>())
+          .toList();
+      final def = await WordNetService.define(
+        session,
+        e.word,
+        context: context,
+      );
       if (def != null) {
-        await LexiconEntry.db.updateRow(session, e.copyWith(understood: true, definition: def.definition, partOfSpeech: def.partOfSpeech));
+        await LexiconEntry.db.updateRow(
+          session,
+          e.copyWith(
+            understood: true,
+            definition: def.definition,
+            partOfSpeech: def.partOfSpeech,
+          ),
+        );
       } else if ((await WordNetService.known(session, [e.word])).isNotEmpty) {
         // WordNet knows the word but none of its meanings fit how WYRD meets it (e.g. "llms" as a
         // law degree): better not understood than wrong
@@ -301,9 +434,14 @@ class LexiconService {
     await session.db.unsafeExecute(
       'INSERT INTO "maintenance_run" ("name", "ranAt", "note") VALUES (@n, @t, @note) '
       'ON CONFLICT ("name") DO UPDATE SET "note" = @note, "ranAt" = @t',
-      parameters: QueryParameters.named({'n': _relearnMark, 't': DateTime.now().toUtc(), 'note': note}),
+      parameters: QueryParameters.named({
+        'n': _relearnMark,
+        't': DateTime.now().toUtc(),
+        'note': note,
+      }),
     );
-    if (note == 'done') session.log('[lexicon] relearned existing vocabulary from WordNet');
+    if (note == 'done')
+      session.log('[lexicon] relearned existing vocabulary from WordNet');
     return batch.isNotEmpty;
   }
 
@@ -313,7 +451,10 @@ class LexiconService {
     await Mind.db.updateRow(
       session,
       mind.copyWith(
-        confidence: min(0.98, ((mind.confidence * (1 - pull) + 0.9 * pull) * 100).round() / 100),
+        confidence: min(
+          0.98,
+          ((mind.confidence * (1 - pull) + 0.9 * pull) * 100).round() / 100,
+        ),
         lastEvent: 'lexicon',
         updatedAt: DateTime.now().toUtc(),
       ),
@@ -332,7 +473,12 @@ class LexiconService {
     );
     final seen = pool
         .expand((b) => b.topics)
-        .where((w) => w.length >= _minWordLength && !_filler.contains(w) && dictionary.contains(w))
+        .where(
+          (w) =>
+              w.length >= _minWordLength &&
+              !_filler.contains(w) &&
+              dictionary.contains(w),
+        )
         .toSet();
     if (seen.isEmpty) return false;
 

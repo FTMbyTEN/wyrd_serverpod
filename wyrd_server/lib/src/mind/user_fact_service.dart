@@ -21,16 +21,63 @@ class UserFactService {
   static const _factHalfLifeDays = 21.0;
 
   static final _nameStopwords = <String>{
-    'not', 'just', 'still', 'also', 'really', 'very', 'so', 'here', 'there',
-    'going', 'trying', 'sure', 'happy', 'sad', 'tired', 'fine', 'okay', 'ok',
-    'ready', 'done', 'sorry', 'glad', 'afraid', 'worried', 'confused', 'excited',
-    'curious', 'interested', 'feeling', 'gonna', 'about', 'back', 'thinking',
-    'wondering', 'guessing', 'saying', 'asking', 'telling', 'kidding', 'joking',
-    'serious', 'confident', 'nervous', 'stressed', 'exhausted', 'bored', 'lost',
+    'not',
+    'just',
+    'still',
+    'also',
+    'really',
+    'very',
+    'so',
+    'here',
+    'there',
+    'going',
+    'trying',
+    'sure',
+    'happy',
+    'sad',
+    'tired',
+    'fine',
+    'okay',
+    'ok',
+    'ready',
+    'done',
+    'sorry',
+    'glad',
+    'afraid',
+    'worried',
+    'confused',
+    'excited',
+    'curious',
+    'interested',
+    'feeling',
+    'gonna',
+    'about',
+    'back',
+    'thinking',
+    'wondering',
+    'guessing',
+    'saying',
+    'asking',
+    'telling',
+    'kidding',
+    'joking',
+    'serious',
+    'confident',
+    'nervous',
+    'stressed',
+    'exhausted',
+    'bored',
+    'lost',
   };
 
   static final _blockedTerms = <String>[
-    'nigger', 'faggot', 'retard', 'kike', 'spic', 'chink', 'tranny',
+    'nigger',
+    'faggot',
+    'retard',
+    'kike',
+    'spic',
+    'chink',
+    'tranny',
   ];
 
   static bool _containsBlockedContent(String text) {
@@ -45,62 +92,99 @@ class UserFactService {
       (m) => 'Name: ${m.group(1)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi'?m (?:called|known as) ([a-z][a-z '-]{1,30})", caseSensitive: false),
+      RegExp(
+        r"\bi'?m (?:called|known as) ([a-z][a-z '-]{1,30})",
+        caseSensitive: false,
+      ),
       'name',
       (m) => 'Goes by: ${m.group(1)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi(?:'m| am) ([a-z][a-z'-]{1,20})(?=[.,!?]|\$)", caseSensitive: false),
+      RegExp(
+        r"\bi(?:'m| am) ([a-z][a-z'-]{1,20})(?=[.,!?]|\$)",
+        caseSensitive: false,
+      ),
       'name',
       (m) => 'Name: ${m.group(1)!.trim()}',
       guard: (m) => !_nameStopwords.contains(m.group(1)!.trim().toLowerCase()),
     ),
     _FactPattern(
-      RegExp(r"\bi live in ([a-z][a-z ,'-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)", caseSensitive: false),
+      RegExp(
+        r"\bi live in ([a-z][a-z ,'-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)",
+        caseSensitive: false,
+      ),
       'location',
       (m) => 'Lives in ${m.group(1)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi'?m from ([a-z][a-z ,'-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)", caseSensitive: false),
+      RegExp(
+        r"\bi'?m from ([a-z][a-z ,'-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)",
+        caseSensitive: false,
+      ),
       'location',
       (m) => 'From ${m.group(1)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi work (?:as|at) (?:an? )?([a-z][a-z0-9 '-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)", caseSensitive: false),
+      RegExp(
+        r"\bi work (?:as|at) (?:an? )?([a-z][a-z0-9 '-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)",
+        caseSensitive: false,
+      ),
       'work',
-      (m) => 'Works ${m.group(0)!.toLowerCase().startsWith('i work at') ? 'at' : 'as'} ${m.group(1)!.trim()}',
+      (m) =>
+          'Works ${m.group(0)!.toLowerCase().startsWith('i work at') ? 'at' : 'as'} ${m.group(1)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi'?m (?:a|an) ([a-z][a-z0-9 '-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)", caseSensitive: false),
+      RegExp(
+        r"\bi'?m (?:a|an) ([a-z][a-z0-9 '-]{2,40}?)(?=[.,!?]|\$|\band\b|\bbut\b)",
+        caseSensitive: false,
+      ),
       'identity',
       (m) {
         final value = m.group(1)!.trim();
-        final article = RegExp(r'^[aeiou]', caseSensitive: false).hasMatch(value) ? 'n' : '';
+        final article =
+            RegExp(r'^[aeiou]', caseSensitive: false).hasMatch(value)
+            ? 'n'
+            : '';
         return 'Is a$article $value';
       },
     ),
     _FactPattern(
-      RegExp(r"\bmy (?:dog|cat|pet)(?:'s name)? is ([a-z][a-z '-]{1,30})", caseSensitive: false),
+      RegExp(
+        r"\bmy (?:dog|cat|pet)(?:'s name)? is ([a-z][a-z '-]{1,30})",
+        caseSensitive: false,
+      ),
       'pet',
       (m) => "Pet's name: ${m.group(1)!.trim()}",
     ),
     _FactPattern(
-      RegExp(r"\bi have (a|an|\d+|two|three|four|five) ([a-z][a-z0-9 '-]{2,40})(?=[.,!?]|\$)", caseSensitive: false),
+      RegExp(
+        r"\bi have (a|an|\d+|two|three|four|five) ([a-z][a-z0-9 '-]{2,40})(?=[.,!?]|\$)",
+        caseSensitive: false,
+      ),
       'life',
       (m) => 'Has ${m.group(1)} ${m.group(2)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bmy (?:favorite|favourite) ([a-z]+) is ([a-z0-9 '-]{2,40})(?=[.,!?]|\$)", caseSensitive: false),
+      RegExp(
+        r"\bmy (?:favorite|favourite) ([a-z]+) is ([a-z0-9 '-]{2,40})(?=[.,!?]|\$)",
+        caseSensitive: false,
+      ),
       'preference',
       (m) => 'Favorite ${m.group(1)}: ${m.group(2)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi (?:really )?(?:love|enjoy) ([a-z][a-z0-9 '-]{2,40})(?=[.,!?]|\$)", caseSensitive: false),
+      RegExp(
+        r"\bi (?:really )?(?:love|enjoy) ([a-z][a-z0-9 '-]{2,40})(?=[.,!?]|\$)",
+        caseSensitive: false,
+      ),
       'preference',
       (m) => 'Likes ${m.group(1)!.trim()}',
     ),
     _FactPattern(
-      RegExp(r"\bi (?:hate|dislike|can'?t stand) ([a-z][a-z0-9 '-]{2,40})(?=[.,!?]|\$)", caseSensitive: false),
+      RegExp(
+        r"\bi (?:hate|dislike|can'?t stand) ([a-z][a-z0-9 '-]{2,40})(?=[.,!?]|\$)",
+        caseSensitive: false,
+      ),
       'preference',
       (m) => 'Dislikes ${m.group(1)!.trim()}',
     ),
@@ -116,7 +200,14 @@ class UserFactService {
       try {
         final label = p.label(m).replaceAll(RegExp(r'\s+'), ' ').trim();
         if (label.length > 4 && label.length < 120) {
-          facts.add(UserFact(text: label, category: p.category, timestamp: now, lastMentioned: now));
+          facts.add(
+            UserFact(
+              text: label,
+              category: p.category,
+              timestamp: now,
+              lastMentioned: now,
+            ),
+          );
         }
       } catch (_) {
         // a pattern's label callback threw (e.g. an unexpectedly empty group) -- skip it,
@@ -129,7 +220,10 @@ class UserFactService {
   /// Loads the UserProfile for [authUserId], creating a fresh one if this is their first
   /// activity of any kind (chat, profile view, etc.) -- shared with ProfileEndpoint so both
   /// entry points agree on what "first-time user" means.
-  static Future<UserProfile> loadOrCreateProfile(Session session, UuidValue authUserId) async {
+  static Future<UserProfile> loadOrCreateProfile(
+    Session session,
+    UuidValue authUserId,
+  ) async {
     final existing = await UserProfile.db.findFirstRow(
       session,
       where: (t) => t.authUserId.equals(authUserId),
@@ -173,7 +267,9 @@ class UserFactService {
         return el == lower || el.contains(lower) || lower.contains(el);
       });
       if (existingIndex != -1) {
-        facts[existingIndex] = facts[existingIndex].copyWith(lastMentioned: now);
+        facts[existingIndex] = facts[existingIndex].copyWith(
+          lastMentioned: now,
+        );
         continue;
       }
       facts.add(f);
@@ -199,7 +295,9 @@ class UserFactService {
   static List<UserFact> mostRelevantFacts(List<UserFact> facts, int limit) {
     final now = DateTime.now().toUtc();
     final ranked = facts.toList()
-      ..sort((a, b) => _factRelevance(b, now).compareTo(_factRelevance(a, now)));
+      ..sort(
+        (a, b) => _factRelevance(b, now).compareTo(_factRelevance(a, now)),
+      );
     return ranked.take(limit).toList();
   }
 }

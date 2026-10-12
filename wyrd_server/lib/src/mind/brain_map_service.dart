@@ -43,21 +43,36 @@ class BrainMapService {
     final firings = <BrainFiring>[];
     for (final n in notes.reversed) {
       try {
-        final path = ((jsonDecode(n.content) as Map<String, dynamic>)['path'] as List).cast<String>();
-        if (path.isNotEmpty) firings.add(BrainFiring(path: path, at: n.timestamp));
-      } catch (_) {/* an unreadable note is skipped */}
+        final path =
+            ((jsonDecode(n.content) as Map<String, dynamic>)['path'] as List)
+                .cast<String>();
+        if (path.isNotEmpty)
+          firings.add(BrainFiring(path: path, at: n.timestamp));
+      } catch (_) {
+        /* an unreadable note is skipped */
+      }
     }
 
-    final pool = await Synapse.db.find(session, orderBy: (t) => t.weight.desc(), limit: _synapsePool);
+    final pool = await Synapse.db.find(
+      session,
+      orderBy: (t) => t.weight.desc(),
+      limit: _synapsePool,
+    );
     // the synapses the firings crossed, even if they aren't among the strongest
     final pathPairs = <String>{
       for (final f in firings)
-        for (var i = 0; i + 1 < f.path.length; i++) _pair(f.path[i], f.path[i + 1]),
+        for (var i = 0; i + 1 < f.path.length; i++)
+          _pair(f.path[i], f.path[i + 1]),
     };
-    final missing = pathPairs.where((k) => !pool.any((s) => _pair(s.a, s.b) == k)).toList();
+    final missing = pathPairs
+        .where((k) => !pool.any((s) => _pair(s.a, s.b) == k))
+        .toList();
     if (missing.isNotEmpty) {
       final ends = {for (final k in missing) ...k.split('\u0000')};
-      final extra = await Synapse.db.find(session, where: (t) => t.a.inSet(ends) & t.b.inSet(ends));
+      final extra = await Synapse.db.find(
+        session,
+        where: (t) => t.a.inSet(ends) & t.b.inSet(ends),
+      );
       pool.addAll(extra.where((s) => pathPairs.contains(_pair(s.a, s.b))));
     }
 
@@ -68,7 +83,8 @@ class BrainMapService {
       strength[s.b] = (strength[s.b] ?? 0) + s.weight;
     }
     final chosen = <String>{for (final f in firings) ...f.path};
-    final ranked = strength.keys.toList()..sort((x, y) => strength[y]!.compareTo(strength[x]!));
+    final ranked = strength.keys.toList()
+      ..sort((x, y) => strength[y]!.compareTo(strength[x]!));
     for (final id in ranked) {
       if (chosen.length >= maxNeurons) break;
       chosen.add(id);
@@ -76,7 +92,8 @@ class BrainMapService {
 
     final synapses = [
       for (final s in pool)
-        if (chosen.contains(s.a) && chosen.contains(s.b)) BrainSynapse(a: s.a, b: s.b, weight: s.weight, fires: s.fires),
+        if (chosen.contains(s.a) && chosen.contains(s.b))
+          BrainSynapse(a: s.a, b: s.b, weight: s.weight, fires: s.fires),
     ];
     final degree = <String, int>{};
     for (final s in synapses) {
@@ -84,10 +101,12 @@ class BrainMapService {
       degree[s.b] = (degree[s.b] ?? 0) + 1;
     }
     final neurons = [
-      for (final id in chosen) BrainNeuron(id: id, weight: strength[id] ?? 0, degree: degree[id] ?? 0),
+      for (final id in chosen)
+        BrainNeuron(id: id, weight: strength[id] ?? 0, degree: degree[id] ?? 0),
     ]..sort((x, y) => y.weight.compareTo(x.weight));
     return BrainMap(neurons: neurons, synapses: synapses, firings: firings);
   }
 
-  static String _pair(String a, String b) => a.compareTo(b) < 0 ? '$a\u0000$b' : '$b\u0000$a';
+  static String _pair(String a, String b) =>
+      a.compareTo(b) < 0 ? '$a\u0000$b' : '$b\u0000$a';
 }

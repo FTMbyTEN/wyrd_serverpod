@@ -12,7 +12,8 @@ import 'package:serverpod/serverpod.dart';
 /// ported here -- only the description and its effect on Memory/Mind, which is the part that
 /// actually matters to the rest of the app.
 class PhotoService {
-  static const _maxBase64Chars = 6 * 1024 * 1024; // ~4.5MB decoded -- generous for one JPEG frame
+  static const _maxBase64Chars =
+      6 * 1024 * 1024; // ~4.5MB decoded -- generous for one JPEG frame
 
   static Future<({String reply, Mind mind})> describe(
     Session session, {
@@ -23,7 +24,12 @@ class PhotoService {
     String? thumb,
   }) async {
     // the preview kept in the chat: a small JPEG data URL, or nothing
-    final keep = thumb != null && thumb.length <= 80000 && RegExp(r"^data:image/jpeg;base64,[A-Za-z0-9+/=]+$").hasMatch(thumb) ? thumb : null;
+    final keep =
+        thumb != null &&
+            thumb.length <= 80000 &&
+            RegExp(r"^data:image/jpeg;base64,[A-Za-z0-9+/=]+$").hasMatch(thumb)
+        ? thumb
+        : null;
     if (imageBase64Jpeg.length > _maxBase64Chars) {
       throw Exception('image too large');
     }
@@ -42,7 +48,9 @@ class PhotoService {
         'tracking are hints only; trust the image. If the '
         'image is dark or unclear, say so honestly instead of guessing. Never guess anyone\'s '
         'identity, age, ethnicity or health.';
-    final question = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : 'Look at me. What do you see?';
+    final question = (caption != null && caption.trim().isNotEmpty)
+        ? caption.trim()
+        : 'Look at me. What do you see?';
     final note = trackingNote?.trim();
 
     // what WYRD saw of this person before (their rows only), newest first
@@ -55,16 +63,25 @@ class PhotoService {
     final memory = earlier.isEmpty
         ? 'This is the first time you have seen this person.'
         : 'What you saw of this person before (newest first): '
-            '${earlier.map((s) => '[${_ago(s.timestamp)}] ${s.description}').join(' | ')}';
+              '${earlier.map((s) => '[${_ago(s.timestamp)}] ${s.description}').join(' | ')}';
 
     final userPrompt = [
       question,
       memory,
-      if (note != null && note.isNotEmpty) '(On-device tracking, for context only: ${note.length > 300 ? note.substring(0, 300) : note})',
+      if (note != null && note.isNotEmpty)
+        '(On-device tracking, for context only: ${note.length > 300 ? note.substring(0, 300) : note})',
     ].join('\n\n');
 
-    final visionReply = await LlmService.callWithImage(session, systemPrompt, imageBase64Jpeg, userPrompt, 260);
-    final reply = visionReply ?? "I couldn't take a proper look just now — give it a moment and try again, maybe with a bit more light.";
+    final visionReply = await LlmService.callWithImage(
+      session,
+      systemPrompt,
+      imageBase64Jpeg,
+      userPrompt,
+      260,
+    );
+    final reply =
+        visionReply ??
+        "I couldn't take a proper look just now — give it a moment and try again, maybe with a bit more light.";
 
     if (visionReply != null) {
       await Sighting.db.insertRow(
@@ -73,13 +90,17 @@ class PhotoService {
           authUserId: authUserId,
           timestamp: DateTime.now().toUtc(),
           description: visionReply,
-          question: (caption != null && caption.trim().isNotEmpty) ? caption.trim() : null,
+          question: (caption != null && caption.trim().isNotEmpty)
+              ? caption.trim()
+              : null,
           trackingNote: note,
         ),
       );
     }
 
-    final displayCaption = (caption != null && caption.trim().isNotEmpty) ? caption.trim() : '[let you look through their camera]';
+    final displayCaption = (caption != null && caption.trim().isNotEmpty)
+        ? caption.trim()
+        : '[let you look through their camera]';
     final topics = TopicService.extractTopics(reply);
 
     await MemoryBlock.db.insertRow(
@@ -129,7 +150,10 @@ class PhotoService {
   }
 
   /// One line for the chat prompt: what WYRD last saw of this person, so it knows its own sight.
-  static Future<String> sightAwareness(Session session, UuidValue authUserId) async {
+  static Future<String> sightAwareness(
+    Session session,
+    UuidValue authUserId,
+  ) async {
     final last = await Sighting.db.findFirstRow(
       session,
       where: (t) => t.authUserId.equals(authUserId),
@@ -145,10 +169,14 @@ class PhotoService {
   }
 
   /// This person's own visual memory, newest first, for the OPTIC_LINK panel.
-  static Future<List<Sighting>> recent(Session session, UuidValue authUserId, int limit) => Sighting.db.find(
-        session,
-        where: (t) => t.authUserId.equals(authUserId),
-        orderBy: (t) => t.timestamp.desc(),
-        limit: limit,
-      );
+  static Future<List<Sighting>> recent(
+    Session session,
+    UuidValue authUserId,
+    int limit,
+  ) => Sighting.db.find(
+    session,
+    where: (t) => t.authUserId.equals(authUserId),
+    orderBy: (t) => t.timestamp.desc(),
+    limit: limit,
+  );
 }

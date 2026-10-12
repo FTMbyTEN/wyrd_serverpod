@@ -22,8 +22,10 @@ class SynthesisService {
   );
 
   static String? _summarize(MemoryBlock b) {
-    if (b.source == 'net') return '[from the web] ${b.title}: ${(b.extract ?? '').substring(0, min(220, (b.extract ?? '').length))}';
-    if (b.source == 'self') return '[self-question] Q: ${b.question} A: ${b.answer}';
+    if (b.source == 'net')
+      return '[from the web] ${b.title}: ${(b.extract ?? '').substring(0, min(220, (b.extract ?? '').length))}';
+    if (b.source == 'self')
+      return '[self-question] Q: ${b.question} A: ${b.answer}';
     if (b.source == 'synthesis') return '[earlier insight] ${b.insight}';
     if (b.userText != null) {
       final bot = (b.botText ?? '');
@@ -38,11 +40,18 @@ class SynthesisService {
     return 1;
   }
 
-  static List<(MemoryBlock, String)> _pickDiverseFragments(List<MemoryBlock> pool, int count, Random rand) {
+  static List<(MemoryBlock, String)> _pickDiverseFragments(
+    List<MemoryBlock> pool,
+    int count,
+    Random rand,
+  ) {
     final picked = <(MemoryBlock, String)>[];
     final usedTopics = <String>{};
-    final scored = pool.map((b) => (b, _sourceWeight(b) + (rand.nextDouble() - 0.5) * 1.5)).toList()
-      ..sort((a, b) => b.$2.compareTo(a.$2));
+    final scored =
+        pool
+            .map((b) => (b, _sourceWeight(b) + (rand.nextDouble() - 0.5) * 1.5))
+            .toList()
+          ..sort((a, b) => b.$2.compareTo(a.$2));
     final weighted = scored.map((s) => s.$1).toList();
 
     for (final b in weighted) {
@@ -58,8 +67,15 @@ class SynthesisService {
     return picked;
   }
 
-  static Future<String?> _callSynthesisLlm(Session session, List<(MemoryBlock, String)> fragments) async {
-    final list = fragments.asMap().entries.map((e) => '${e.key + 1}. ${e.value.$2}').join('\n\n');
+  static Future<String?> _callSynthesisLlm(
+    Session session,
+    List<(MemoryBlock, String)> fragments,
+  ) async {
+    final list = fragments
+        .asMap()
+        .entries
+        .map((e) => '${e.key + 1}. ${e.value.$2}')
+        .join('\n\n');
     final prompt =
         "Here are several unrelated things I've picked up recently:\n\n$list\n\n"
         'Is there a genuinely surprising, non-obvious connection between any of these — the '

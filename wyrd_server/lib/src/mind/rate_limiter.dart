@@ -11,7 +11,9 @@ class RateLimiter {
     final now = DateTime.now();
     _cleanupIfDue(now);
 
-    final hits = (_buckets[key] ?? []).where((t) => now.difference(t) < window).toList();
+    final hits = (_buckets[key] ?? [])
+        .where((t) => now.difference(t) < window)
+        .toList();
     hits.add(now);
     _buckets[key] = hits;
     return hits.length > limit;

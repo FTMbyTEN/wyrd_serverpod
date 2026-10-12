@@ -11,18 +11,27 @@ import 'test_tools/serverpod_test_tools.dart';
 void main() {
   withServerpod('Given the test questions', (sessionBuilder, endpoints) {
     test('with no API key every question fails, and the run is kept', () async {
-      final run = await EvalService.run(sessionBuilder.build(), UuidValue.fromString('77777777-7777-4777-8777-777777777777'));
+      final run = await EvalService.run(
+        sessionBuilder.build(),
+        UuidValue.fromString('77777777-7777-4777-8777-777777777777'),
+      );
       expect(run.id, isNotNull);
       expect(run.total, EvalService.cases.length);
       expect(run.passed, 0);
       final results = jsonDecode(run.results) as List;
       expect(results.first['why'], isNotEmpty);
-      expect((await EvalService.recent(sessionBuilder.build())).first.id, run.id);
+      expect(
+        (await EvalService.recent(sessionBuilder.build())).first.id,
+        run.id,
+      );
     });
 
     test('the dashboard is refused to anyone but the owner', () async {
       final player = sessionBuilder.copyWith(
-        authentication: AuthenticationOverride.authenticationInfo('88888888-8888-4888-8888-888888888888', {}),
+        authentication: AuthenticationOverride.authenticationInfo(
+          '88888888-8888-4888-8888-888888888888',
+          {},
+        ),
       );
       expect(() => endpoints.dashboard.get(player), throwsA(anything));
       expect(() => endpoints.dashboard.runEval(player), throwsA(anything));

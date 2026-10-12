@@ -17,7 +17,8 @@ class TrustService {
   static const source = 'source';
   static const topic = 'topic';
 
-  static double scoreOf(double good, double bad) => (good + 1) / (good + bad + 2);
+  static double scoreOf(double good, double bad) =>
+      (good + 1) / (good + bad + 2);
 
   /// The source key for a memory or item: its website (without "www."), or its feed.
   static String? sourceKey({String? url, String? feedSource}) {
@@ -30,7 +31,12 @@ class TrustService {
   }
 
   /// Adds evidence: [weight] > 0 is good, < 0 is bad.
-  static Future<void> record(Session session, String kind, String key, double weight) async {
+  static Future<void> record(
+    Session session,
+    String kind,
+    String key,
+    double weight,
+  ) async {
     if (key.isEmpty || weight == 0) return;
     final good = weight > 0 ? weight : 0.0, bad = weight < 0 ? -weight : 0.0;
     await session.db.unsafeExecute(
@@ -38,20 +44,37 @@ class TrustService {
       'VALUES (@kind, @key, @g::float8, @b::float8, (@g::float8 + 1) / (@g::float8 + @b::float8 + 2), @t) '
       'ON CONFLICT ("kind", "key") DO UPDATE SET "good" = "trust_score"."good" + @g::float8, "bad" = "trust_score"."bad" + @b::float8, '
       '"score" = ("trust_score"."good" + @g::float8 + 1) / ("trust_score"."good" + @g::float8 + "trust_score"."bad" + @b::float8 + 2), "updatedAt" = @t',
-      parameters: QueryParameters.named({'kind': kind, 'key': key, 'g': good, 'b': bad, 't': DateTime.now().toUtc()}),
+      parameters: QueryParameters.named({
+        'kind': kind,
+        'key': key,
+        'g': good,
+        'b': bad,
+        't': DateTime.now().toUtc(),
+      }),
     );
   }
 
   /// Trust for each of [keys] (0.5, neutral, for any without evidence yet).
-  static Future<Map<String, double>> scores(Session session, String kind, Iterable<String> keys) async {
+  static Future<Map<String, double>> scores(
+    Session session,
+    String kind,
+    Iterable<String> keys,
+  ) async {
     final set = keys.where((k) => k.isNotEmpty).toSet();
     if (set.isEmpty) return {};
-    final rows = await TrustScore.db.find(session, where: (t) => t.kind.equals(kind) & t.key.inSet(set));
+    final rows = await TrustScore.db.find(
+      session,
+      where: (t) => t.kind.equals(kind) & t.key.inSet(set),
+    );
     final known = {for (final r in rows) r.key: r.score};
     return {for (final k in set) k: known[k] ?? 0.5};
   }
 
-  static Future<double> scoreFor(Session session, String kind, String? key) async =>
+  static Future<double> scoreFor(
+    Session session,
+    String kind,
+    String? key,
+  ) async =>
       key == null ? 0.5 : (await scores(session, kind, [key]))[key] ?? 0.5;
 
   /// The most and least trusted sources and topics that have real evidence behind them.
@@ -64,15 +87,34 @@ class TrustService {
         parameters: QueryParameters.named({'kind': kind}),
       );
       final order = [for (final r in rows) r[0] as int];
-      final found = await TrustScore.db.find(session, where: (t) => t.id.inSet(order.toSet()));
-      return found..sort((a, b) => order.indexOf(a.id!).compareTo(order.indexOf(b.id!)));
+      final found = await TrustScore.db.find(
+        session,
+        where: (t) => t.id.inSet(order.toSet()),
+      );
+      return found
+        ..sort((a, b) => order.indexOf(a.id!).compareTo(order.indexOf(b.id!)));
     }
-    final evidence = await session.db.unsafeQuery('SELECT count(*), coalesce(sum("good" + "bad"), 0)::float8 FROM "trust_score"');
+
+    final evidence = await session.db.unsafeQuery(
+      'SELECT count(*), coalesce(sum("good" + "bad"), 0)::float8 FROM "trust_score"',
+    );
     return TrustReport(
-      trustedSources: (await pick(source, top: true)).where((s) => s.score >= 0.5).toList(),
-      doubtedSources: (await pick(source, top: false)).where((s) => s.score < 0.5).toList(),
-      trustedTopics: (await pick(topic, top: true)).where((s) => s.score >= 0.5).toList(),
-      doubtedTopics: (await pick(topic, top: false)).where((s) => s.score < 0.5).toList(),
+      trustedSources: (await pick(
+        source,
+        top: true,
+      )).where((s) => s.score >= 0.5).toList(),
+      doubtedSources: (await pick(
+        source,
+        top: false,
+      )).where((s) => s.score < 0.5).toList(),
+      trustedTopics: (await pick(
+        topic,
+        top: true,
+      )).where((s) => s.score >= 0.5).toList(),
+      doubtedTopics: (await pick(
+        topic,
+        top: false,
+      )).where((s) => s.score < 0.5).toList(),
       tracked: evidence.first[0] as int,
       evidence: (evidence.first[1] as num).toDouble(),
     );

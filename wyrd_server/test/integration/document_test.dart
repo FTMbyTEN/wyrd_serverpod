@@ -26,72 +26,205 @@ A new reservoir at Adiyan will add 70 million litres per day of capacity by 2027
 void main() {
   withServerpod('Given shared documents', (sessionBuilder, endpoints) {
     const meId = '81818181-8181-4818-8818-818181818181';
-    final me = sessionBuilder.copyWith(authentication: AuthenticationOverride.authenticationInfo(meId, {}));
+    final me = sessionBuilder.copyWith(
+      authentication: AuthenticationOverride.authenticationInfo(meId, {}),
+    );
 
-    test('uploading keeps it privately, gives a first look, and makes it the subject', () async {
-      final up = await endpoints.document.upload(me, 'water-report-2025.pdf', 'pdf', _report, pages: 2, staged: false);
-      expect(up.words, greaterThan(50));
-      expect(up.reply, contains('water-report-2025.pdf'));
-      final s = sessionBuilder.build();
-      final thread = await ChatThread.db.findFirstRow(s, where: (t) => t.authUserId.equals(UuidValue.fromString(meId)));
-      expect(thread!.lastDocumentId, up.id);
-      expect((await endpoints.document.list(me)).single.text, isEmpty); // listing never sends the text
-      expect(() => endpoints.document.upload(me, 'x.pdf', 'pdf', '   ', staged: false), throwsA(anything));
-    });
+    test(
+      'uploading keeps it privately, gives a first look, and makes it the subject',
+      () async {
+        final up = await endpoints.document.upload(
+          me,
+          'water-report-2025.pdf',
+          'pdf',
+          _report,
+          pages: 2,
+          staged: false,
+        );
+        expect(up.words, greaterThan(50));
+        expect(up.reply, contains('water-report-2025.pdf'));
+        final s = sessionBuilder.build();
+        final thread = await ChatThread.db.findFirstRow(
+          s,
+          where: (t) => t.authUserId.equals(UuidValue.fromString(meId)),
+        );
+        expect(thread!.lastDocumentId, up.id);
+        expect(
+          (await endpoints.document.list(me)).single.text,
+          isEmpty,
+        ); // listing never sends the text
+        expect(
+          () => endpoints.document.upload(
+            me,
+            'x.pdf',
+            'pdf',
+            '   ',
+            staged: false,
+          ),
+          throwsA(anything),
+        );
+      },
+    );
 
-    test('questions find the right part of the file, and it answers without an AI', () async {
-      final s = sessionBuilder.build();
-      final doc = await DocumentService.store(s, UuidValue.fromString(meId), name: 'water.txt', kind: 'text', text: _report);
-      expect(DocumentService.relevant(doc, 'Why did treatment cost rise?'), contains('electricity prices'));
-      expect(DocumentService.relevant(doc, 'reservoir capacity'), contains('Adiyan'));
-      expect(DocumentService.answerLocally(doc, 'how many samples met the standard?'), contains('1,240 samples'));
-      expect(DocumentService.isAbout(doc, 'summarize this file', followUp: false, aboutReading: false), isTrue);
-      expect(DocumentService.isAbout(doc, 'what is the capital of France?', followUp: false, aboutReading: false), isFalse);
-    });
+    test(
+      'questions find the right part of the file, and it answers without an AI',
+      () async {
+        final s = sessionBuilder.build();
+        final doc = await DocumentService.store(
+          s,
+          UuidValue.fromString(meId),
+          name: 'water.txt',
+          kind: 'text',
+          text: _report,
+        );
+        expect(
+          DocumentService.relevant(doc, 'Why did treatment cost rise?'),
+          contains('electricity prices'),
+        );
+        expect(
+          DocumentService.relevant(doc, 'reservoir capacity'),
+          contains('Adiyan'),
+        );
+        expect(
+          DocumentService.answerLocally(
+            doc,
+            'how many samples met the standard?',
+          ),
+          contains('1,240 samples'),
+        );
+        expect(
+          DocumentService.isAbout(
+            doc,
+            'summarize this file',
+            followUp: false,
+            aboutReading: false,
+          ),
+          isTrue,
+        );
+        expect(
+          DocumentService.isAbout(
+            doc,
+            'what is the capital of France?',
+            followUp: false,
+            aboutReading: false,
+          ),
+          isFalse,
+        );
+      },
+    );
 
-    test('chat answers about the file from the file when no AI is configured', () async {
-      await endpoints.document.upload(me, 'water.txt', 'text', _report, staged: false);
-      final reply = await endpoints.chat.sendMessage(me, 'What does the file say about chlorine levels?');
-      expect(reply.reply, contains('0.6 mg/L'));
-    });
+    test(
+      'chat answers about the file from the file when no AI is configured',
+      () async {
+        await endpoints.document.upload(
+          me,
+          'water.txt',
+          'text',
+          _report,
+          staged: false,
+        );
+        final reply = await endpoints.chat.sendMessage(
+          me,
+          'What does the file say about chlorine levels?',
+        );
+        expect(reply.reply, contains('0.6 mg/L'));
+      },
+    );
 
-    test('a file sent with a question waits for it: one turn, showing the file, answering the question', () async {
-      final up = await endpoints.document.upload(me, 'report.txt', 'text', _report, staged: true);
-      expect(up.turnId, isNull);
-      const message = '📎 report.txt\nWhat does it say about chlorine levels?';
-      final reply = await endpoints.chat.sendMessage(me, message);
-      expect(reply.reply, contains('0.6 mg/L'));
-      final history = await endpoints.chat.getHistory(me, limit: 5);
-      expect(history.last.userText, message);
-      expect(history.where((t) => t.userText == '📎 report.txt'), isEmpty);
-    });
+    test(
+      'a file sent with a question waits for it: one turn, showing the file, answering the question',
+      () async {
+        final up = await endpoints.document.upload(
+          me,
+          'report.txt',
+          'text',
+          _report,
+          staged: true,
+        );
+        expect(up.turnId, isNull);
+        const message =
+            '📎 report.txt\nWhat does it say about chlorine levels?';
+        final reply = await endpoints.chat.sendMessage(me, message);
+        expect(reply.reply, contains('0.6 mg/L'));
+        final history = await endpoints.chat.getHistory(me, limit: 5);
+        expect(history.last.userText, message);
+        expect(history.where((t) => t.userText == '📎 report.txt'), isEmpty);
+      },
+    );
 
-    test('the file is not kept, only what WYRD took from it; a new file wins over an earlier one', () async {
-      final s = sessionBuilder.build();
-      final longStory = List.filled(40, 'The ferryman crossed the grey river each morning, counting the gulls. ').join();
-      await endpoints.document.upload(me, 'story.txt', 'text', longStory, staged: false, words: 20000);
-      final up = await endpoints.document.upload(me, 'water-report.txt', 'text', _report, staged: true, words: 5000);
-      final kept = await UserDocument.db.findById(s, up.id);
-      expect(kept!.summary, contains('water-report.txt'));
-      expect(kept.words, 5000); // the whole file's length, from their browser
-      expect(kept.text, isNot(_report.trim())); // a digest, not the file
-      expect((await UserDocument.db.find(s, where: (t) => t.name.equals('story.txt'))).single.text, isNot(longStory.trim()));
+    test(
+      'the file is not kept, only what WYRD took from it; a new file wins over an earlier one',
+      () async {
+        final s = sessionBuilder.build();
+        final longStory = List.filled(
+          40,
+          'The ferryman crossed the grey river each morning, counting the gulls. ',
+        ).join();
+        await endpoints.document.upload(
+          me,
+          'story.txt',
+          'text',
+          longStory,
+          staged: false,
+          words: 20000,
+        );
+        final up = await endpoints.document.upload(
+          me,
+          'water-report.txt',
+          'text',
+          _report,
+          staged: true,
+          words: 5000,
+        );
+        final kept = await UserDocument.db.findById(s, up.id);
+        expect(kept!.summary, contains('water-report.txt'));
+        expect(kept.words, 5000); // the whole file's length, from their browser
+        expect(kept.text, isNot(_report.trim())); // a digest, not the file
+        expect(
+          (await UserDocument.db.find(
+            s,
+            where: (t) => t.name.equals('story.txt'),
+          )).single.text,
+          isNot(longStory.trim()),
+        );
 
-      // vague, and the conversation was about the story: the attached file still wins, answered
-      // from the passages their browser sent
-      final reply = await endpoints.chat.sendMessage(me, '📎 water-report.txt\nTell me more about the costs',
-          passages: ['Treatment cost rose to 0.82 naira per litre because of higher electricity prices at the Iju pumping station.']);
-      expect(reply.reply, contains('0.82 naira'));
-      expect(reply.reply, isNot(contains('ferryman')));
-    });
+        // vague, and the conversation was about the story: the attached file still wins, answered
+        // from the passages their browser sent
+        final reply = await endpoints.chat.sendMessage(
+          me,
+          '📎 water-report.txt\nTell me more about the costs',
+          passages: [
+            'Treatment cost rose to 0.82 naira per litre because of higher electricity prices at the Iju pumping station.',
+          ],
+        );
+        expect(reply.reply, contains('0.82 naira'));
+        expect(reply.reply, isNot(contains('ferryman')));
+      },
+    );
 
-    test('an earlier file is recalled by name from what WYRD remembers of it', () async {
-      final s = sessionBuilder.build();
-      final me2 = UuidValue.fromString(meId);
-      await DocumentService.store(s, me2, name: 'annual-water-report.pdf', kind: 'pdf', text: _report);
-      final doc = await DocumentService.remembered(s, me2, 'what did the water report say about the reservoir?');
-      expect(doc?.name, 'annual-water-report.pdf');
-      expect(DocumentService.answerLocally(doc!, 'the reservoir capacity'), contains('Adiyan'));
-    });
+    test(
+      'an earlier file is recalled by name from what WYRD remembers of it',
+      () async {
+        final s = sessionBuilder.build();
+        final me2 = UuidValue.fromString(meId);
+        await DocumentService.store(
+          s,
+          me2,
+          name: 'annual-water-report.pdf',
+          kind: 'pdf',
+          text: _report,
+        );
+        final doc = await DocumentService.remembered(
+          s,
+          me2,
+          'what did the water report say about the reservoir?',
+        );
+        expect(doc?.name, 'annual-water-report.pdf');
+        expect(
+          DocumentService.answerLocally(doc!, 'the reservoir capacity'),
+          contains('Adiyan'),
+        );
+      },
+    );
   });
 }

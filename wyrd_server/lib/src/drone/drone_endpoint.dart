@@ -15,17 +15,21 @@ class DroneEndpoint extends Endpoint {
     return DroneService.getState(session);
   }
 
-  Future<List<DroneMission>> getMissions(Session session, {int limit = 20}) async {
+  Future<List<DroneMission>> getMissions(
+    Session session, {
+    int limit = 20,
+  }) async {
     await _requireOperator(session);
     return DroneMission.db.find(
-        session,
-        where: (t) => t.droneId.equals(DroneService.droneId),
-        orderBy: (t) => t.id.desc(),
-        limit: limit.clamp(1, 100),
-      );
+      session,
+      where: (t) => t.droneId.equals(DroneService.droneId),
+      orderBy: (t) => t.id.desc(),
+      limit: limit.clamp(1, 100),
+    );
   }
 
-  Future<bool> isOperator(Session session) => DroneService.isOperator(session, _userId(session));
+  Future<bool> isOperator(Session session) =>
+      DroneService.isOperator(session, _userId(session));
 
   /// WYRD plans a flight from [instruction]; see DroneService.plan.
   Future<DronePlanResult> plan(Session session, String instruction) async {
@@ -39,7 +43,8 @@ class DroneEndpoint extends Endpoint {
     return DroneService.abort(session, _userId(session));
   }
 
-  static UuidValue _userId(Session session) => UuidValue.fromString(session.authenticated!.userIdentifier);
+  static UuidValue _userId(Session session) =>
+      UuidValue.fromString(session.authenticated!.userIdentifier);
 
   static Future<void> _requireOperator(Session session) async {
     if (!await DroneService.isOperator(session, _userId(session))) {

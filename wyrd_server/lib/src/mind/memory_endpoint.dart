@@ -29,7 +29,15 @@ class MemoryEndpoint extends Endpoint {
     return blocks.reversed.toList();
   }
 
-  static const _sharedSources = ['net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum', 'library'];
+  static const _sharedSources = [
+    'net',
+    'self',
+    'synthesis',
+    'feed',
+    'ingest',
+    'curriculum',
+    'library',
+  ];
   static final _stoplist = TopicService.noise.toList();
 
   static const _conceptsTtl = Duration(minutes: 1);
@@ -39,8 +47,12 @@ class MemoryEndpoint extends Endpoint {
   /// co-occur. Computed in Postgres: doing it in Dart meant loading 5000 full blocks and counting
   /// every topic pair in each, which blocked the server's single isolate for ~30s -- stalling
   /// every other request while it ran. Cached briefly since the graph changes slowly.
-  Future<ConceptGraph> getConcepts(Session session) =>
-      PublicCache.get(session, 'memory.getConcepts', const Duration(seconds: 60), () => _getConcepts(session));
+  Future<ConceptGraph> getConcepts(Session session) => PublicCache.get(
+    session,
+    'memory.getConcepts',
+    const Duration(seconds: 60),
+    () => _getConcepts(session),
+  );
 
   Future<ConceptGraph> _getConcepts(Session session) async {
     final cached = _conceptsCache;
@@ -57,7 +69,12 @@ class MemoryEndpoint extends Endpoint {
         "WHERE t.topic <> ALL(@stop::text[]) AND length(t.topic) > 2 AND t.topic !~ '^[0-9]+\$'), "
         'top AS (SELECT topic, count(*) AS c FROM bt GROUP BY topic ORDER BY c DESC, topic LIMIT @maxNodes) ';
     // postgres rejects unused parameters, so each query gets exactly the ones it references
-    final base = {'maxBlocks': _maxBlocks, 'maxNodes': _maxConceptNodes, 'sources': _sharedSources, 'stop': _stoplist};
+    final base = {
+      'maxBlocks': _maxBlocks,
+      'maxNodes': _maxConceptNodes,
+      'sources': _sharedSources,
+      'stop': _stoplist,
+    };
 
     final nodeRows = await session.db.unsafeQuery(
       '${recentTopics}SELECT topic, c FROM top ORDER BY c DESC, topic',
@@ -94,7 +111,12 @@ class MemoryEndpoint extends Endpoint {
 
   /// Everything the CONCEPT_MAP shows for one concept, in plain terms (see ConceptDetail).
   Future<ConceptDetail> getConceptDetail(Session session, String topic) =>
-      PublicCache.get(session, 'memory.getConceptDetail:$topic', const Duration(seconds: 60), () => _getConceptDetail(session, topic));
+      PublicCache.get(
+        session,
+        'memory.getConceptDetail:$topic',
+        const Duration(seconds: 60),
+        () => _getConceptDetail(session, topic),
+      );
 
   Future<ConceptDetail> _getConceptDetail(Session session, String topic) async {
     final t = topic.trim().toLowerCase();
@@ -105,7 +127,10 @@ class MemoryEndpoint extends Endpoint {
         'ORDER BY "id" DESC LIMIT @maxBlocks), '
         'hit AS (SELECT * FROM recent WHERE "topics"::jsonb ? @t) ';
 
-    final mentions = await session.db.unsafeQuery('${recent}SELECT count(*) FROM hit', parameters: QueryParameters.named(params));
+    final mentions = await session.db.unsafeQuery(
+      '${recent}SELECT count(*) FROM hit',
+      parameters: QueryParameters.named(params),
+    );
     final related = await session.db.unsafeQuery(
       '${recent}SELECT x AS topic, count(*) AS c FROM hit, json_array_elements_text(hit."topics") AS x '
       'WHERE x <> @t AND x <> ALL(@stop::text[]) AND length(x) > 2 GROUP BY x ORDER BY c DESC, x LIMIT 8',
@@ -116,11 +141,16 @@ class MemoryEndpoint extends Endpoint {
       'FROM hit ORDER BY "timestamp" DESC LIMIT 12',
       parameters: QueryParameters.named(params),
     );
-    final word = await LexiconEntry.db.findFirstRow(session, where: (e) => e.word.equals(t) & e.understood.equals(true));
+    final word = await LexiconEntry.db.findFirstRow(
+      session,
+      where: (e) => e.word.equals(t) & e.understood.equals(true),
+    );
 
     String clip(String? s, int n) {
       final flat = (s ?? '').replaceAll(RegExp(r'\s+'), ' ').trim();
-      return flat.length <= n ? flat : '${flat.substring(0, n - 1).trimRight()}…';
+      return flat.length <= n
+          ? flat
+          : '${flat.substring(0, n - 1).trimRight()}…';
     }
 
     final seen = <String>{};
@@ -140,13 +170,15 @@ class MemoryEndpoint extends Endpoint {
         snippet = r[3] == null ? null : clip(r[3] as String?, 220);
       }
       if (title.isEmpty || !seen.add(title)) continue;
-      out.add(ConceptExample(
-        source: source == 'net' ? ((r[1] as String?) ?? 'web') : source,
-        title: title,
-        snippet: (snippet == null || snippet.isEmpty) ? null : snippet,
-        url: r[7] as String?,
-        timestamp: r[8] as DateTime,
-      ));
+      out.add(
+        ConceptExample(
+          source: source == 'net' ? ((r[1] as String?) ?? 'web') : source,
+          title: title,
+          snippet: (snippet == null || snippet.isEmpty) ? null : snippet,
+          url: r[7] as String?,
+          timestamp: r[8] as DateTime,
+        ),
+      );
       if (out.length == 4) break;
     }
 
@@ -155,11 +187,15 @@ class MemoryEndpoint extends Endpoint {
       mentions: mentions.first[0] as int,
       definition: word?.definition,
       partOfSpeech: word?.partOfSpeech,
-      related: [for (final r in related) ConceptNode(id: r[0] as String, count: r[1] as int)],
+      related: [
+        for (final r in related)
+          ConceptNode(id: r[0] as String, count: r[1] as int),
+      ],
       examples: out,
     );
   }
 
   /// Whether search by meaning is working: key seen, share of memory fingerprinted, last problem.
-  Future<String> embeddingStatus(Session session) => EmbeddingService.status(session);
+  Future<String> embeddingStatus(Session session) =>
+      EmbeddingService.status(session);
 }

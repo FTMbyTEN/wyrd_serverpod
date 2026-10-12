@@ -48,19 +48,40 @@ void main() {
       },
     );
 
-    test('a call that would push the day past the cap is refused before it is sent', () async {
-      final session = sessionBuilder.build();
-      final cap = LlmBudget.dailyCapUsd(session);
-      // spend all but ~a cent of the cap
-      final inputTokens = ((cap - 0.01) * 1000000).round(); // haiku input is  per million
-      await LlmBudget.record(session, {'input_tokens': inputTokens, 'output_tokens': 0});
-      final small = LlmBudget.estimateUsd(model: 'claude-haiku-4-5', inputChars: 3500, maxOutputTokens: 200); // ~/usr/bin/bash.002
-      final huge = LlmBudget.estimateUsd(model: 'claude-haiku-4-5', inputChars: 3500 * 20000, maxOutputTokens: 200); // ~/usr/bin/bash.02
-      expect(small, lessThan(0.01));
-      expect(huge, greaterThan(0.01));
-      expect(await LlmBudget.allow(session, background: false, estimateUsd: small), isTrue);
-      expect(await LlmBudget.allow(session, background: false, estimateUsd: huge), isFalse);
-    });
+    test(
+      'a call that would push the day past the cap is refused before it is sent',
+      () async {
+        final session = sessionBuilder.build();
+        final cap = LlmBudget.dailyCapUsd(session);
+        // spend all but ~a cent of the cap
+        final inputTokens = ((cap - 0.01) * 1000000)
+            .round(); // haiku input is  per million
+        await LlmBudget.record(session, {
+          'input_tokens': inputTokens,
+          'output_tokens': 0,
+        });
+        final small = LlmBudget.estimateUsd(
+          model: 'claude-haiku-4-5',
+          inputChars: 3500,
+          maxOutputTokens: 200,
+        ); // ~/usr/bin/bash.002
+        final huge = LlmBudget.estimateUsd(
+          model: 'claude-haiku-4-5',
+          inputChars: 3500 * 20000,
+          maxOutputTokens: 200,
+        ); // ~/usr/bin/bash.02
+        expect(small, lessThan(0.01));
+        expect(huge, greaterThan(0.01));
+        expect(
+          await LlmBudget.allow(session, background: false, estimateUsd: small),
+          isTrue,
+        );
+        expect(
+          await LlmBudget.allow(session, background: false, estimateUsd: huge),
+          isFalse,
+        );
+      },
+    );
 
     test('the status endpoint reports today\'s spend and the cap', () async {
       final session = sessionBuilder.build();
@@ -73,18 +94,32 @@ void main() {
       expect(status.llmDailyCapUsd, LlmBudget.dailyCapUsd(session));
     });
 
-    test('one signed-in person stops at their allowance while others can still use the cap', () async {
-      Session as(String id) => sessionBuilder
-          .copyWith(authentication: AuthenticationOverride.authenticationInfo(id, {}))
-          .build();
-      final heavy = as('44444444-4444-4444-8444-444444444444');
-      final other = as('55555555-5555-4555-8555-555555555555');
-      final allowance = LlmBudget.userDailyCapUsd(heavy);
-      expect(await LlmBudget.allow(heavy, background: false), isTrue);
-      await LlmBudget.record(heavy, {'input_tokens': 0, 'output_tokens': (allowance * 1.1 / 5 * 1000000).ceil()});
-      expect(await LlmBudget.spentTodayByUsd(heavy, UuidValue.fromString('44444444-4444-4444-8444-444444444444')), greaterThan(allowance));
-      expect(await LlmBudget.allow(heavy, background: false), isFalse);
-      expect(await LlmBudget.allow(other, background: false), isTrue);
-    });
+    test(
+      'one signed-in person stops at their allowance while others can still use the cap',
+      () async {
+        Session as(String id) => sessionBuilder
+            .copyWith(
+              authentication: AuthenticationOverride.authenticationInfo(id, {}),
+            )
+            .build();
+        final heavy = as('44444444-4444-4444-8444-444444444444');
+        final other = as('55555555-5555-4555-8555-555555555555');
+        final allowance = LlmBudget.userDailyCapUsd(heavy);
+        expect(await LlmBudget.allow(heavy, background: false), isTrue);
+        await LlmBudget.record(heavy, {
+          'input_tokens': 0,
+          'output_tokens': (allowance * 1.1 / 5 * 1000000).ceil(),
+        });
+        expect(
+          await LlmBudget.spentTodayByUsd(
+            heavy,
+            UuidValue.fromString('44444444-4444-4444-8444-444444444444'),
+          ),
+          greaterThan(allowance),
+        );
+        expect(await LlmBudget.allow(heavy, background: false), isFalse);
+        expect(await LlmBudget.allow(other, background: false), isTrue);
+      },
+    );
   });
 }

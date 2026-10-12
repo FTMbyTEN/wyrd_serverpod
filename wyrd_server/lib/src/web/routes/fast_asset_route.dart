@@ -9,8 +9,11 @@ import 'package:serverpod/serverpod.dart';
 /// compresses text -- so every visit re-downloaded it before anything could draw. Here it is
 /// gzipped once at startup (~3 MB) and browsers keep it for [maxAge].
 class CompressedAssetRoute extends Route {
-  CompressedAssetRoute(this.file, {required this.mimeType, this.maxAge = const Duration(days: 7)})
-      : super(methods: {Method.get, Method.head});
+  CompressedAssetRoute(
+    this.file, {
+    required this.mimeType,
+    this.maxAge = const Duration(days: 7),
+  }) : super(methods: {Method.get, Method.head});
 
   final File file;
   final MimeType mimeType;
@@ -27,7 +30,8 @@ class CompressedAssetRoute extends Route {
     if (_raw != null) return;
     _raw = file.readAsBytesSync();
     _gzip = Uint8List.fromList(GZipCodec(level: 9).encode(_raw!));
-    _etag = '"${file.statSync().modified.millisecondsSinceEpoch.toRadixString(16)}-${_raw!.length.toRadixString(16)}"';
+    _etag =
+        '"${file.statSync().modified.millisecondsSinceEpoch.toRadixString(16)}-${_raw!.length.toRadixString(16)}"';
   }
 
   @override
@@ -35,9 +39,12 @@ class CompressedAssetRoute extends Route {
     _load();
     // The edge proxy doesn't pass the browser's Accept-Encoding on, and every browser that can run
     // WebAssembly accepts gzip -- so send gzip unless a client explicitly asks for identity only.
-    final accept = (request.headers['accept-encoding'] ?? const <String>[]).join(',');
-    final acceptsGzip = accept.isEmpty || accept.contains('gzip') || accept.contains('*');
-    final ifNoneMatch = (request.headers['if-none-match'] ?? const <String>[]).join(',');
+    final accept = (request.headers['accept-encoding'] ?? const <String>[])
+        .join(',');
+    final acceptsGzip =
+        accept.isEmpty || accept.contains('gzip') || accept.contains('*');
+    final ifNoneMatch = (request.headers['if-none-match'] ?? const <String>[])
+        .join(',');
     final headers = <String, Iterable<String>>{
       'cache-control': ['public, max-age=${maxAge.inSeconds}'],
       'etag': [_etag!],
@@ -48,7 +55,10 @@ class CompressedAssetRoute extends Route {
     }
     final bytes = acceptsGzip ? _gzip! : _raw!;
     if (acceptsGzip) headers['content-encoding'] = ['gzip'];
-    return Response.ok(body: Body.fromData(bytes, mimeType: mimeType), headers: Headers.fromMap(headers));
+    return Response.ok(
+      body: Body.fromData(bytes, mimeType: mimeType),
+      headers: Headers.fromMap(headers),
+    );
   }
 }
 
@@ -57,15 +67,29 @@ class CompressedAssetRoute extends Route {
 /// for a year; everything else (index.html) is revalidated each time so updates show at once.
 CacheControlHeader? appCacheControl(Request request, dynamic fileInfo) {
   final path = request.url.path;
-  final hashed = path.contains('/_expo/static/') || RegExp(r'\.[0-9a-f]{16,}\.[a-z0-9]+$').hasMatch(path);
-  if (hashed) return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 365).inSeconds, immutable: true);
+  final hashed =
+      path.contains('/_expo/static/') ||
+      RegExp(r'\.[0-9a-f]{16,}\.[a-z0-9]+$').hasMatch(path);
+  if (hashed)
+    return CacheControlHeader(
+      publicCache: true,
+      maxAge: const Duration(days: 365).inSeconds,
+      immutable: true,
+    );
   // the game's map data and pictures asked for with the build's version (?v=..., see the app's world2d/asset.ts):
   // that exact file never changes, so browsers keep it -- a returning player's map loads from their own disk
   if (request.url.queryParameters.containsKey('v')) {
-    return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 30).inSeconds, immutable: true);
+    return CacheControlHeader(
+      publicCache: true,
+      maxAge: const Duration(days: 30).inSeconds,
+      immutable: true,
+    );
   }
   if (RegExp(r'\.(ico|webmanifest)$').hasMatch(path)) {
-    return CacheControlHeader(publicCache: true, maxAge: const Duration(days: 1).inSeconds);
+    return CacheControlHeader(
+      publicCache: true,
+      maxAge: const Duration(days: 1).inSeconds,
+    );
   }
   // everything else -- the page, the game's map data (json) and pictures -- is checked with the server on
   // each load (an unchanged file costs only a "not modified" reply), so a deploy shows at once

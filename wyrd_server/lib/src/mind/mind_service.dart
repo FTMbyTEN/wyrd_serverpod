@@ -22,10 +22,14 @@ class MindService {
   ];
 
   static String _goalDeepen(String t) => 'deepen the thread around "$t"';
-  static String _goalContradictions(String t) => 'look for contradictions near "$t"';
-  static String _goalConnect(String t) => 'connect "$t" to something older in memory';
-  static String _goalStressTest(String t) => 'stress-test the last inference about "$t"';
-  static String _goalWiden(String t) => 'pull in fresh data and widen the topic graph';
+  static String _goalContradictions(String t) =>
+      'look for contradictions near "$t"';
+  static String _goalConnect(String t) =>
+      'connect "$t" to something older in memory';
+  static String _goalStressTest(String t) =>
+      'stress-test the last inference about "$t"';
+  static String _goalWiden(String t) =>
+      'pull in fresh data and widen the topic graph';
 
   static Future<Mind> load(Session session) async {
     final existing = await Mind.db.findById(session, 1);
@@ -73,9 +77,16 @@ class MindService {
 
   /// Adds [seen] to the permanent topic set and marks [resolved] as resolved (inserting any
   /// that weren't seen yet). One statement each, in Postgres, instead of rewriting the full sets.
-  static Future<void> _recordTopics(Session session, List<String> seen, List<String> resolved) async {
+  static Future<void> _recordTopics(
+    Session session,
+    List<String> seen,
+    List<String> resolved,
+  ) async {
     final seenOnly = seen.toSet().difference(resolved.toSet());
-    for (final (topics, isResolved) in [(seenOnly, false), (resolved.toSet(), true)]) {
+    for (final (topics, isResolved) in [
+      (seenOnly, false),
+      (resolved.toSet(), true),
+    ]) {
       if (topics.isEmpty) continue;
       final params = <String, Object>{};
       final values = <String>[];
@@ -100,7 +111,9 @@ class MindService {
     final total = counts.first[0] as int;
     final answered = counts.first[1] as int;
     final backlog = max(0, total - answered);
-    final percent = total > 0 ? (answered / total * 100).round().toDouble() : 0.0;
+    final percent = total > 0
+        ? (answered / total * 100).round().toDouble()
+        : 0.0;
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final timestamps = mind.selfAnswerTimestamps
@@ -121,7 +134,9 @@ class MindService {
     }
 
     final etaAt = etaMinutes != null
-        ? DateTime.now().toUtc().add(Duration(seconds: (etaMinutes * 60).round()))
+        ? DateTime.now().toUtc().add(
+            Duration(seconds: (etaMinutes * 60).round()),
+          )
         : null;
 
     return DigestInfo(
@@ -156,20 +171,28 @@ class MindService {
     for (final t in recentTopics) {
       freq[t] = (freq[t] ?? 0) + 1;
     }
-    final ranked = freq.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final ranked = freq.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     // the focus is shown publicly, so a private event (a chat, a photo) never sets it
-    final focusTopic = ranked.isNotEmpty && !private ? ranked.first.key : mind.focusTopic;
+    final focusTopic = ranked.isNotEmpty && !private
+        ? ranked.first.key
+        : mind.focusTopic;
 
     final uniqueTopics = recentTopics.toSet().length;
     final curiosityRaw = min(1.0, uniqueTopics / 20);
-    final curiosity = ((mind.curiosity * 0.5 + curiosityRaw * 0.5) * 100).round() / 100;
+    final curiosity =
+        ((mind.curiosity * 0.5 + curiosityRaw * 0.5) * 100).round() / 100;
 
     var confidence = mind.confidence;
     if (scoreGap != null) {
       final confidenceSignal = max(0.0, min(1.0, scoreGap / 10));
       final pull = eventType == 'self' ? 0.3 : 0.4;
       final cap = eventType == 'self' ? 0.98 : 0.9;
-      confidence = min(cap, ((confidence * (1 - pull) + confidenceSignal * pull) * 100).round() / 100);
+      confidence = min(
+        cap,
+        ((confidence * (1 - pull) + confidenceSignal * pull) * 100).round() /
+            100,
+      );
     }
 
     var explorationCount = mind.explorationCount;
@@ -179,19 +202,28 @@ class MindService {
       final now = DateTime.now().toUtc().millisecondsSinceEpoch;
       selfAnswerTimestamps = [...selfAnswerTimestamps, now];
       if (selfAnswerTimestamps.length > 20) {
-        selfAnswerTimestamps = selfAnswerTimestamps.sublist(selfAnswerTimestamps.length - 20);
+        selfAnswerTimestamps = selfAnswerTimestamps.sublist(
+          selfAnswerTimestamps.length - 20,
+        );
       }
     }
 
-    final mood = pickMood(curiosity: curiosity, confidence: confidence, recentErrors: eventType == 'error');
+    final mood = pickMood(
+      curiosity: curiosity,
+      confidence: confidence,
+      recentErrors: eventType == 'error',
+    );
 
     // its goal is the question it set itself, not a template picked at random each event; a
     // template only stands in until its own thinking has produced one
     final rand = Random();
-    final activeGoal = goal ??
+    final activeGoal =
+        goal ??
         (mind.activeGoal != null && mind.activeGoal!.startsWith('find out')
             ? mind.activeGoal
-            : _goalTemplates[rand.nextInt(_goalTemplates.length)](focusTopic ?? 'the unknown'));
+            : _goalTemplates[rand.nextInt(_goalTemplates.length)](
+                focusTopic ?? 'the unknown',
+              ));
 
     await _recordTopics(session, newSeenTopics, newResolvedTopics);
 

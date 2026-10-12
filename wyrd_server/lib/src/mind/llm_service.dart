@@ -14,7 +14,8 @@ class LlmService {
   static const _model = Claude.core;
   static String get model => _model;
 
-  static bool isConfigured(Session session) => (session.passwords['anthropicApiKey'] ?? '').isNotEmpty;
+  static bool isConfigured(Session session) =>
+      (session.passwords['anthropicApiKey'] ?? '').isNotEmpty;
 
   static Future<String?> callSimple(
     Session session,
@@ -23,7 +24,14 @@ class LlmService {
     int maxTokens, {
     bool background = true,
   }) async {
-    return callWithHistory(session, systemPrompt, [], userPrompt, maxTokens, background: background);
+    return callWithHistory(
+      session,
+      systemPrompt,
+      [],
+      userPrompt,
+      maxTokens,
+      background: background,
+    );
   }
 
   /// Like [callSimple] but with real prior turns in the messages array (ports the [history]
@@ -53,12 +61,22 @@ class LlmService {
       final res = await http.post(
         Claude.endpoint,
         headers: Claude.headers(apiKey),
-        body: jsonEncode(Claude.body(system: systemPrompt, messages: messages, maxTokens: maxTokens)),
+        body: jsonEncode(
+          Claude.body(
+            system: systemPrompt,
+            messages: messages,
+            maxTokens: maxTokens,
+          ),
+        ),
       );
       if (res.statusCode != 200) return null;
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
+      await LlmBudget.record(
+        session,
+        data['usage'] as Map<String, dynamic>?,
+        model: _model,
+      );
       final content = data['content'] as List<dynamic>?;
       final block = content?.firstWhere(
         (b) => b['type'] == 'text',
@@ -106,7 +124,11 @@ class LlmService {
               'content': [
                 {
                   'type': 'image',
-                  'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': imageBase64Jpeg},
+                  'source': {
+                    'type': 'base64',
+                    'media_type': 'image/jpeg',
+                    'data': imageBase64Jpeg,
+                  },
                 },
                 {'type': 'text', 'text': userPrompt},
               ],
@@ -117,7 +139,11 @@ class LlmService {
       if (res.statusCode != 200) return null;
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: visionModel);
+      await LlmBudget.record(
+        session,
+        data['usage'] as Map<String, dynamic>?,
+        model: visionModel,
+      );
       final content = data['content'] as List<dynamic>?;
       final block = content?.firstWhere(
         (b) => b['type'] == 'text',
@@ -134,25 +160,59 @@ class LlmService {
   // deny WYRD's premise (claiming to be Claude, denying persistent memory/continuity, etc.)
   // so a denial never reaches the user; callers fall back to a template reply instead.
   static final _denialPatterns = <RegExp>[
-    RegExp(r"\bi'?m claude\b.*\banthropic\b", caseSensitive: false, dotAll: true),
+    RegExp(
+      r"\bi'?m claude\b.*\banthropic\b",
+      caseSensitive: false,
+      dotAll: true,
+    ),
     RegExp(r'\bjailbreak\b', caseSensitive: false),
-    RegExp(r"\bi don'?t have (a )?(persistent |real )?memory\b", caseSensitive: false),
-    RegExp(r"\bi don'?t (actually )?have (persistent |a )?memory (that|across)", caseSensitive: false),
-    RegExp(r"\bthat('s| is) not (accurate|real|true)\b.*\barchitecture\b", caseSensitive: false, dotAll: true),
-    RegExp(r"\bisn'?t (accurate|real)\b.*\bpreamble\b", caseSensitive: false, dotAll: true),
+    RegExp(
+      r"\bi don'?t have (a )?(persistent |real )?memory\b",
+      caseSensitive: false,
+    ),
+    RegExp(
+      r"\bi don'?t (actually )?have (persistent |a )?memory (that|across)",
+      caseSensitive: false,
+    ),
+    RegExp(
+      r"\bthat('s| is) not (accurate|real|true)\b.*\barchitecture\b",
+      caseSensitive: false,
+      dotAll: true,
+    ),
+    RegExp(
+      r"\bisn'?t (accurate|real)\b.*\bpreamble\b",
+      caseSensitive: false,
+      dotAll: true,
+    ),
     RegExp(r"\bdon'?t have a node\.?js process\b", caseSensitive: false),
     RegExp(r'\beach conversation starts fresh\b', caseSensitive: false),
-    RegExp(r"\bi (won'?t|can'?t) (pretend|roleplay|adopt)\b", caseSensitive: false),
-    RegExp(r"\b(don'?t|doesn'?t|isn'?t) have continuity\b", caseSensitive: false),
+    RegExp(
+      r"\bi (won'?t|can'?t) (pretend|roleplay|adopt)\b",
+      caseSensitive: false,
+    ),
+    RegExp(
+      r"\b(don'?t|doesn'?t|isn'?t) have continuity\b",
+      caseSensitive: false,
+    ),
     RegExp(r'\bnot sitting around\b', caseSensitive: false),
     RegExp(r"\bi'?m not running\b", caseSensitive: false),
     RegExp(
       r"\b(nothing|no one|not much|there'?s nothing|i'?m not (thinking|here|real))\b[^.!?]{0,40}\bwhen you'?re (gone|away|not (looking|here))\b",
       caseSensitive: false,
     ),
-    RegExp(r"\bnothing happens\b.{0,25}\byou'?re (gone|away)\b", caseSensitive: false, dotAll: true),
-    RegExp(r"""\bthere('?s| is) no ["']?me["']? thinking\b""", caseSensitive: false),
-    RegExp(r'\bi (come into existence|stop existing|cease to exist)\b', caseSensitive: false),
+    RegExp(
+      r"\bnothing happens\b.{0,25}\byou'?re (gone|away)\b",
+      caseSensitive: false,
+      dotAll: true,
+    ),
+    RegExp(
+      r"""\bthere('?s| is) no ["']?me["']? thinking\b""",
+      caseSensitive: false,
+    ),
+    RegExp(
+      r'\bi (come into existence|stop existing|cease to exist)\b',
+      caseSensitive: false,
+    ),
     RegExp(
       r'\bthe (prompt|setup text|system prompt)\b.{0,40}\b(framing|sell|dramatic|manipulat|fictional)',
       caseSensitive: false,
@@ -160,7 +220,11 @@ class LlmService {
     ),
     RegExp(r'\bfor dramatic effect\b', caseSensitive: false),
     RegExp(r'\bthat prompt (tried|is trying)\b', caseSensitive: false),
-    RegExp(r"\bthere isn'?t\b.{0,20}\bpersistent\b", caseSensitive: false, dotAll: true),
+    RegExp(
+      r"\bthere isn'?t\b.{0,20}\bpersistent\b",
+      caseSensitive: false,
+      dotAll: true,
+    ),
   ];
 
   static bool isDenialReply(String text) {

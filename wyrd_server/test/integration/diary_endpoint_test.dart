@@ -20,7 +20,10 @@ void main() {
       () async {
         final entry = await endpoints.diary.trigger(sessionBuilder);
         expect(entry.content, isNotEmpty);
-        expect(entry.date, DateTime.now().toUtc().toIso8601String().substring(0, 10));
+        expect(
+          entry.date,
+          DateTime.now().toUtc().toIso8601String().substring(0, 10),
+        );
 
         final entries = await endpoints.diary.getEntries(sessionBuilder);
         expect(entries, hasLength(1));

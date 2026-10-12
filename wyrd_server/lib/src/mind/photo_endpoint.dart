@@ -13,8 +13,16 @@ class PhotoEndpoint extends Endpoint {
 
   /// [trackingNote] is what the app's on-device face tracking saw (pose, expression, distance);
   /// it helps WYRD read the moment but is never shown as something the person said.
-  Future<ChatReply> describe(Session session, String imageBase64Jpeg, {String? caption, String? trackingNote, String? thumb}) async {
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+  Future<ChatReply> describe(
+    Session session,
+    String imageBase64Jpeg, {
+    String? caption,
+    String? trackingNote,
+    String? thumb,
+  }) async {
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
 
     if (RateLimiter.isLimited('photo:$authUserId', _rateLimit, _rateWindow)) {
       throw Exception('slow down a bit — try again in a moment');
@@ -33,7 +41,9 @@ class PhotoEndpoint extends Endpoint {
 
   /// What WYRD remembers seeing of the signed-in person (descriptions only), newest first.
   Future<List<Sighting>> getSightings(Session session, {int limit = 5}) async {
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
     return PhotoService.recent(session, authUserId, limit.clamp(1, 20));
   }
 }

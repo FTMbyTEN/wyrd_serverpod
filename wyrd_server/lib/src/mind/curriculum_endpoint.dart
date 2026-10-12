@@ -8,8 +8,12 @@ class CurriculumEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
 
-  Future<CurriculumStatus> getStatus(Session session) =>
-      PublicCache.get(session, 'curriculum.getStatus', const Duration(seconds: 60), () => _getStatus(session));
+  Future<CurriculumStatus> getStatus(Session session) => PublicCache.get(
+    session,
+    'curriculum.getStatus',
+    const Duration(seconds: 60),
+    () => _getStatus(session),
+  );
 
   Future<CurriculumStatus> _getStatus(Session session) async {
     return await CurriculumService.status(session);

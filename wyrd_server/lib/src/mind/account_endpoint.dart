@@ -17,8 +17,13 @@ class AccountEndpoint extends Endpoint {
   bool get requireLogin => true;
 
   Future<AccountExport> exportData(Session session) async {
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
-    final profile = await UserFactService.loadOrCreateProfile(session, authUserId);
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
+    final profile = await UserFactService.loadOrCreateProfile(
+      session,
+      authUserId,
+    );
     final email = await EmailAccount.db.findFirstRow(
       session,
       where: (t) => t.authUserId.equals(authUserId),
@@ -29,12 +34,35 @@ class AccountEndpoint extends Endpoint {
       orderBy: (t) => t.id.asc(),
     );
 
-    final sightings = await Sighting.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
-    final learned = await LearnedAnswer.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
-    final memories = await MemoryBlock.db.find(session, where: (t) => t.ownerId.equals(authUserId), orderBy: (t) => t.id);
-    final thread = await ChatThread.db.findFirstRow(session, where: (t) => t.authUserId.equals(authUserId));
-    final documents = await UserDocument.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
-    final reading = await ReadingItem.db.find(session, where: (t) => t.authUserId.equals(authUserId), orderBy: (t) => t.id);
+    final sightings = await Sighting.db.find(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.id,
+    );
+    final learned = await LearnedAnswer.db.find(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.id,
+    );
+    final memories = await MemoryBlock.db.find(
+      session,
+      where: (t) => t.ownerId.equals(authUserId),
+      orderBy: (t) => t.id,
+    );
+    final thread = await ChatThread.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    final documents = await UserDocument.db.find(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.id,
+    );
+    final reading = await ReadingItem.db.find(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+      orderBy: (t) => t.id,
+    );
 
     return AccountExport(
       email: email?.email,
@@ -53,22 +81,54 @@ class AccountEndpoint extends Endpoint {
   }
 
   Future<void> deleteMyData(Session session) async {
-    final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
 
-    final profile = await UserFactService.loadOrCreateProfile(session, authUserId);
+    final profile = await UserFactService.loadOrCreateProfile(
+      session,
+      authUserId,
+    );
     await UserProfile.db.deleteRow(session, profile);
 
     // everything that came from them: chats, photos, what WYRD learned or remembered from those,
     // and where their conversation had got to. (Their thumbs' past effect on shared scores is
     // aggregate and anonymous, so it stays.)
-    await ConversationTurn.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await Sighting.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await LearnedAnswer.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await MemoryBlock.db.deleteWhere(session, where: (t) => t.ownerId.equals(authUserId));
-    await ChatThread.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await Chat.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await ReadingItem.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await UserDocument.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
-    await QuizAttempt.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await ConversationTurn.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await Sighting.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await LearnedAnswer.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await MemoryBlock.db.deleteWhere(
+      session,
+      where: (t) => t.ownerId.equals(authUserId),
+    );
+    await ChatThread.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await Chat.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await ReadingItem.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await UserDocument.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+    await QuizAttempt.db.deleteWhere(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
   }
 }

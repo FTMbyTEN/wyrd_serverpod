@@ -13,7 +13,8 @@ class WorldStats {
   static const _window = Duration(seconds: 90);
 
   /// The game says "still here".
-  static void pulse(UuidValue user) => _seen[user.uuid] = DateTime.now().toUtc();
+  static void pulse(UuidValue user) =>
+      _seen[user.uuid] = DateTime.now().toUtc();
 
   static int online() {
     final cutoff = DateTime.now().toUtc().subtract(_window);
@@ -28,17 +29,30 @@ class WorldStats {
     final now = DateTime.now().toUtc();
     final dayAgo = now.subtract(const Duration(hours: 24));
     final joined = await PlayerCharacter.db.count(session);
-    final joinedToday = await PlayerCharacter.db.count(session, where: (t) => t.createdAt > dayAgo);
+    final joinedToday = await PlayerCharacter.db.count(
+      session,
+      where: (t) => t.createdAt > dayAgo,
+    );
     final citizens = await WorldCitizen.db.find(session, limit: 2000)
       ..sort((a, b) => b.standing.compareTo(a.standing));
     final missions = citizens.fold<int>(0, (a, c) => a + c.missionsDone);
-    final talksToday = await GameExchange.db.count(session, where: (t) => t.createdAt > dayAgo);
-    final ama = await PlayerCharacter.db.count(session, where: (t) => t.base.equals('ama'));
+    final talksToday = await GameExchange.db.count(
+      session,
+      where: (t) => t.createdAt > dayAgo,
+    );
+    final ama = await PlayerCharacter.db.count(
+      session,
+      where: (t) => t.base.equals('ama'),
+    );
     // the leading citizens, by the names they chose in the city
     final top = citizens.take(5).toList();
     final chars = top.isEmpty
         ? <PlayerCharacter>[]
-        : await PlayerCharacter.db.find(session, where: (t) => t.authUserId.inSet(top.map((c) => c.authUserId).toSet()));
+        : await PlayerCharacter.db.find(
+            session,
+            where: (t) =>
+                t.authUserId.inSet(top.map((c) => c.authUserId).toSet()),
+          );
     final nameOf = {for (final c in chars) c.authUserId.uuid: c.name};
     return jsonEncode({
       'online': online(),
@@ -50,7 +64,12 @@ class WorldStats {
       if (owner) 'bodies': {'ten': joined - ama, 'ama': ama},
       'owner': owner,
       'leaders': [
-        for (final c in top) {'name': nameOf[c.authUserId.uuid] ?? 'A citizen', 'standing': c.standing, 'missions': c.missionsDone},
+        for (final c in top)
+          {
+            'name': nameOf[c.authUserId.uuid] ?? 'A citizen',
+            'standing': c.standing,
+            'missions': c.missionsDone,
+          },
       ],
       'at': now.toIso8601String(),
     });

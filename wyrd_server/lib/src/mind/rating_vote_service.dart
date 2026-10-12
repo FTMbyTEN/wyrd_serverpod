@@ -11,9 +11,14 @@ class RatingVoteService {
 
   /// How much a person's say is worth: half for a brand-new account.
   static Future<double> weightFor(Session session, UuidValue authUserId) async {
-    final profile = await UserProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(authUserId));
+    final profile = await UserProfile.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
     if (profile == null) return 0.5;
-    return DateTime.now().toUtc().difference(profile.firstSeen) < _newAccount ? 0.5 : 1.0;
+    return DateTime.now().toUtc().difference(profile.firstSeen) < _newAccount
+        ? 0.5
+        : 1.0;
   }
 
   /// Moves [authUserId]'s vote on ([kind], [key]) by [delta], clamped to [-limit, limit], and
@@ -29,13 +34,19 @@ class RatingVoteService {
     if (delta == 0 || key.isEmpty) return 0;
     final existing = await RatingVote.db.findFirstRow(
       session,
-      where: (t) => t.authUserId.equals(authUserId) & t.kind.equals(kind) & t.key.equals(key),
+      where: (t) =>
+          t.authUserId.equals(authUserId) &
+          t.kind.equals(kind) &
+          t.key.equals(key),
     );
     final old = existing?.value ?? 0.0;
     final next = max(-limit, min(limit, old + delta));
     if (next == old) return 0;
     if (existing == null) {
-      await RatingVote.db.insertRow(session, RatingVote(authUserId: authUserId, kind: kind, key: key, value: next));
+      await RatingVote.db.insertRow(
+        session,
+        RatingVote(authUserId: authUserId, kind: kind, key: key, value: next),
+      );
     } else {
       await RatingVote.db.updateRow(session, existing.copyWith(value: next));
     }

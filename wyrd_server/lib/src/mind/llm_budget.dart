@@ -27,14 +27,18 @@ class LlmBudget {
   static const _defaultUserDailyUsd = 0.03;
 
   static double userDailyCapUsd(Session session) =>
-      double.tryParse(session.passwords['llmUserDailyUsd'] ?? '') ?? _defaultUserDailyUsd;
+      double.tryParse(session.passwords['llmUserDailyUsd'] ?? '') ??
+      _defaultUserDailyUsd;
 
   static UuidValue? _person(Session session) {
     final id = session.authenticated?.userIdentifier;
     return id == null ? null : UuidValue.fromString(id);
   }
 
-  static Future<double> spentTodayByUsd(Session session, UuidValue authUserId) async {
+  static Future<double> spentTodayByUsd(
+    Session session,
+    UuidValue authUserId,
+  ) async {
     final row = await LlmUsageUser.db.findFirstRow(
       session,
       where: (t) => t.day.equals(_today()) & t.authUserId.equals(authUserId),
@@ -43,9 +47,13 @@ class LlmBudget {
   }
 
   /// True when the person making this request has used their allowance for today.
-  static Future<bool> personOverAllowance(Session session, {double estimateUsd = 0}) async {
+  static Future<bool> personOverAllowance(
+    Session session, {
+    double estimateUsd = 0,
+  }) async {
     final person = _person(session);
-    if (person == null || await DroneService.isOperator(session, person)) return false;
+    if (person == null || await DroneService.isOperator(session, person))
+      return false;
     final spent = await spentTodayByUsd(session, person);
     return spent + estimateUsd > userDailyCapUsd(session);
   }
@@ -90,7 +98,12 @@ class LlmBudget {
   /// Rough cost of a call before it's made: [inputChars] of prompt text (~3.5 chars a token, a
   /// third fewer on the newer tokenizer), [images] attached, up to [maxOutputTokens] back (sized
   /// for the old tokenizer, like Claude.room).
-  static double estimateUsd({required String model, required int inputChars, int images = 0, required int maxOutputTokens}) {
+  static double estimateUsd({
+    required String model,
+    required int inputChars,
+    int images = 0,
+    required int maxOutputTokens,
+  }) {
     final (inPerM, outPerM) = _priceFor(model);
     final scale = _newTokenizer(model) ? 1.3 : 1.0;
     final inputTokens = inputChars / 3.5 * scale + images * 1600;
@@ -99,16 +112,26 @@ class LlmBudget {
 
   /// [estimateUsd], when given, must also fit under the cap: one big call (a long page, several
   /// book slices) can't push the day past it.
-  static Future<bool> allow(Session session, {required bool background, double estimateUsd = 0}) async {
+  static Future<bool> allow(
+    Session session, {
+    required bool background,
+    double estimateUsd = 0,
+  }) async {
     if (LlmMode.off(session)) return false; // running on WYRD's own brain alone
     // Background thinking is paced across the day: by hour h it may have used (h+1)/24 of its
     // share. Unpaced, the 30-second ticks spent the whole share in the first hour of each day and
     // WYRD thought on templates for the other 23.
     final now = DateTime.now().toUtc();
     final dayFraction = min(1.0, (now.hour + now.minute / 60 + 1) / 24);
-    final cap = dailyCapUsd(session) * (background ? _backgroundShare * dayFraction : 1);
-    if (!background && await personOverAllowance(session, estimateUsd: estimateUsd)) {
-      session.log('[llm-budget] interactive call skipped: this person has used their daily allowance', level: LogLevel.info);
+    final cap =
+        dailyCapUsd(session) *
+        (background ? _backgroundShare * dayFraction : 1);
+    if (!background &&
+        await personOverAllowance(session, estimateUsd: estimateUsd)) {
+      session.log(
+        '[llm-budget] interactive call skipped: this person has used their daily allowance',
+        level: LogLevel.info,
+      );
       return false;
     }
     final spent = await spentTodayUsd(session);
@@ -134,7 +157,8 @@ class LlmBudget {
       inPerM *= 5;
       outPerM *= 5;
     }
-    return ((plain + written * 1.25 + read * 0.1) * inPerM + output * outPerM).ceil(); // per-million prices -> micro-USD
+    return ((plain + written * 1.25 + read * 0.1) * inPerM + output * outPerM)
+        .ceil(); // per-million prices -> micro-USD
   }
 
   /// [usage] is the `usage` object from an Anthropic Messages API response; [model] the model
@@ -157,7 +181,11 @@ class LlmBudget {
       await session.db.unsafeExecute(
         'INSERT INTO "llm_usage_user" ("day", "authUserId", "costMicroUsd") VALUES (@day, @user::uuid, @micro) '
         'ON CONFLICT ("day", "authUserId") DO UPDATE SET "costMicroUsd" = "llm_usage_user"."costMicroUsd" + @micro',
-        parameters: QueryParameters.named({'day': _today(), 'user': person.uuid, 'micro': micro}),
+        parameters: QueryParameters.named({
+          'day': _today(),
+          'user': person.uuid,
+          'micro': micro,
+        }),
       );
     }
   }

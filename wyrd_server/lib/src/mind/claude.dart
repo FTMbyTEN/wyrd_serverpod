@@ -17,10 +17,10 @@ class Claude {
   static final endpoint = Uri.parse('https://api.anthropic.com/v1/messages');
 
   static Map<String, String> headers(String apiKey) => {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      };
+    'Content-Type': 'application/json',
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01',
+  };
 
   /// [maxTokens] as it was sized for Haiku 4.5's tokenizer.
   static int room(int maxTokens) => (maxTokens * 1.3).ceil();
@@ -38,22 +38,27 @@ class Claude {
     required int maxTokens,
     List<Map<String, dynamic>>? tools,
     bool think = false,
-  }) =>
-      {
-        'model': model,
-        'max_tokens': room(maxTokens) + (think ? thinkingRoom : 0),
-        if (cachedSystem == null)
-          'system': system
-        else
-          'system': [
-            {'type': 'text', 'text': cachedSystem, 'cache_control': {'type': 'ephemeral'}},
-            if (system.isNotEmpty) {'type': 'text', 'text': system},
-          ],
-        'messages': messages,
-        if (tools != null) 'tools': tools,
-        'thinking': think ? {'type': 'adaptive', 'display': 'summarized'} : {'type': 'disabled'},
-        if (think) 'output_config': {'effort': 'low'},
-      };
+  }) => {
+    'model': model,
+    'max_tokens': room(maxTokens) + (think ? thinkingRoom : 0),
+    if (cachedSystem == null)
+      'system': system
+    else
+      'system': [
+        {
+          'type': 'text',
+          'text': cachedSystem,
+          'cache_control': {'type': 'ephemeral'},
+        },
+        if (system.isNotEmpty) {'type': 'text', 'text': system},
+      ],
+    'messages': messages,
+    if (tools != null) 'tools': tools,
+    'thinking': think
+        ? {'type': 'adaptive', 'display': 'summarized'}
+        : {'type': 'disabled'},
+    if (think) 'output_config': {'effort': 'low'},
+  };
 
   /// Room for thinking on top of the reply's own (it counts toward max_tokens).
   static const thinkingRoom = 2048;
@@ -62,7 +67,9 @@ class Claude {
   static String? thinkingOf(List<Map<String, dynamic>> content) {
     final parts = [
       for (final b in content)
-        if (b['type'] == 'thinking' && (b['thinking'] as String? ?? '').trim().isNotEmpty) (b['thinking'] as String).trim(),
+        if (b['type'] == 'thinking' &&
+            (b['thinking'] as String? ?? '').trim().isNotEmpty)
+          (b['thinking'] as String).trim(),
     ];
     return parts.isEmpty ? null : parts.join('\n\n');
   }

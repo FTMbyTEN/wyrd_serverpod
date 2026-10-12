@@ -13,8 +13,12 @@ class SelfConfigEndpoint extends Endpoint {
 
   static const _maxCopLogEntries = 100;
 
-  Future<SelfConfig> getConfig(Session session) =>
-      PublicCache.get(session, 'self_config.getConfig', const Duration(seconds: 30), () => _getConfig(session));
+  Future<SelfConfig> getConfig(Session session) => PublicCache.get(
+    session,
+    'self_config.getConfig',
+    const Duration(seconds: 30),
+    () => _getConfig(session),
+  );
 
   Future<SelfConfig> _getConfig(Session session) async {
     return await SelfConfigService.getConfig(session);
@@ -23,7 +27,12 @@ class SelfConfigEndpoint extends Endpoint {
   /// COP's reviews of WYRD's self-changes: for WYRD's owner (the operator accounts) only.
   Future<List<CopLogEntry>> getCopLog(Session session, {int? limit}) async {
     await OwnerGuard.check(session, 'COP');
-    return PublicCache.get(session, 'self_config.getCopLog:$limit', const Duration(seconds: 30), () => _getCopLog(session, limit: limit));
+    return PublicCache.get(
+      session,
+      'self_config.getCopLog:$limit',
+      const Duration(seconds: 30),
+      () => _getCopLog(session, limit: limit),
+    );
   }
 
   Future<List<CopLogEntry>> _getCopLog(Session session, {int? limit}) async {
@@ -40,7 +49,11 @@ class SelfConfigEndpoint extends Endpoint {
     // starting WYRD's work by hand is the owner's: strangers can't spend its budget or block its runs
     await OwnerGuard.check(session, 'that');
     // public and AI-backed: a few per 10 minutes, so nobody can spend WYRD's budget on demand
-    if (RateLimiter.isLimited('trigger:self_config', 3, const Duration(minutes: 10))) {
+    if (RateLimiter.isLimited(
+      'trigger:self_config',
+      3,
+      const Duration(minutes: 10),
+    )) {
       throw Exception('slow down — try again in a few minutes');
     }
     PublicCache.clear(); // only once a run really goes ahead

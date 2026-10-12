@@ -4,14 +4,14 @@ import 'package:wyrd_server/src/generated/protocol.dart';
 import 'package:wyrd_server/src/mind/document_service.dart';
 
 UserDocument _doc(String name, String kind, String text) => UserDocument(
-      authUserId: UuidValue.fromString('81818181-8181-4818-8818-818181818181'),
-      name: name,
-      kind: kind,
-      text: text,
-      chars: text.length,
-      words: DocumentService.words(text),
-      createdAt: DateTime.now(),
-    );
+  authUserId: UuidValue.fromString('81818181-8181-4818-8818-818181818181'),
+  name: name,
+  kind: kind,
+  text: text,
+  chars: text.length,
+  words: DocumentService.words(text),
+  createdAt: DateTime.now(),
+);
 
 const _report = '''
 ## Annual Water Report 2025
@@ -45,17 +45,29 @@ What did it teach you? That gentleness can be a habit rather than a nature. I st
 
 void main() {
   test('a report: its kind, sections, figures and gist', () {
-    final o = DocumentService.overview(_doc('water-report-2025.pdf', 'pdf', _report));
+    final o = DocumentService.overview(
+      _doc('water-report-2025.pdf', 'pdf', _report),
+    );
     expect(o, contains('a report'));
-    expect(o, contains('Sections: Annual Water Report 2025 · Quality · Costs · Outlook'));
+    expect(
+      o,
+      contains(
+        'Sections: Annual Water Report 2025 · Quality · Costs · Outlook',
+      ),
+    );
     expect(o, contains('Key figures'));
   });
 
-  test('a personal account told as answers: its people, the questions, and how it runs', () {
-    final o = DocumentService.overview(_doc('story-answers.md', 'text', _account));
-    expect(o, contains('personal account'));
-    expect(o, contains('Daniel'));
-    expect(o, contains('questions like'));
-    expect(o, isNot(contains('september')));
-  });
+  test(
+    'a personal account told as answers: its people, the questions, and how it runs',
+    () {
+      final o = DocumentService.overview(
+        _doc('story-answers.md', 'text', _account),
+      );
+      expect(o, contains('personal account'));
+      expect(o, contains('Daniel'));
+      expect(o, contains('questions like'));
+      expect(o, isNot(contains('september')));
+    },
+  );
 }

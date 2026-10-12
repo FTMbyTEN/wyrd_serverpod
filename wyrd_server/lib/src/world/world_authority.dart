@@ -34,76 +34,145 @@ class WorldAuthority {
   static const missionKinds = {'reach', 'deliver', 'find', 'greet'};
 
   static Future<WorldCitizen> citizen(Session session, UuidValue user) async {
-    final c = await WorldCitizen.db.findFirstRow(session, where: (t) => t.authUserId.equals(user));
-    return c ?? await WorldCitizen.db.insertRow(session, WorldCitizen(authUserId: user, standing: 0, missionsDone: 0, updatedAt: DateTime.now().toUtc()));
+    final c = await WorldCitizen.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(user),
+    );
+    return c ??
+        await WorldCitizen.db.insertRow(
+          session,
+          WorldCitizen(
+            authUserId: user,
+            standing: 0,
+            missionsDone: 0,
+            updatedAt: DateTime.now().toUtc(),
+          ),
+        );
   }
 
   static String rank(int standing) => standing >= 60
       ? 'Chief'
       : standing >= 30
-          ? 'Trusted citizen'
-          : standing >= 10
-              ? 'Citizen'
-              : standing > -10
-                  ? 'Newcomer'
-                  : standing > -40
-                      ? 'Under watch'
-                      : 'Wanted';
+      ? 'Trusted citizen'
+      : standing >= 10
+      ? 'Citizen'
+      : standing > -10
+      ? 'Newcomer'
+      : standing > -40
+      ? 'Under watch'
+      : 'Wanted';
 
   /// Standing, rank and active mission, as a decree with nothing said (no AI call).
-  static Future<String> status(Session session, UuidValue user) async => _decree(await citizen(session, user), '', const []);
+  static Future<String> status(Session session, UuidValue user) async =>
+      _decree(await citizen(session, user), '', const []);
 
   /// The player's answer to "help train WYRD with your play?" -- changeable any time.
-  static Future<String> setTraining(Session session, UuidValue user, bool optIn) async {
+  static Future<String> setTraining(
+    Session session,
+    UuidValue user,
+    bool optIn,
+  ) async {
     final c = await citizen(session, user);
-    final u = await Bank.save(session, c.copyWith(trainingOptIn: optIn, trainingAsked: true, updatedAt: DateTime.now().toUtc()));
+    final u = await Bank.save(
+      session,
+      c.copyWith(
+        trainingOptIn: optIn,
+        trainingAsked: true,
+        updatedAt: DateTime.now().toUtc(),
+      ),
+    );
     return _decree(u, '', const []);
   }
 
   /// One exchange with the Authority. [channel]: speak | petition | drone | event. [situation]:
   /// what the app sees (where you are, nearby streets, time, weather, what just happened), as JSON.
   /// Returns the decree as JSON: {say, actions: [...], standing, rank, missionsDone}.
-  static Future<String> address(Session session, UuidValue user, String channel, String text, String situation) async {
+  static Future<String> address(
+    Session session,
+    UuidValue user,
+    String channel,
+    String text,
+    String situation,
+  ) async {
     if (!channels.contains(channel)) throw Exception('Unknown channel.');
     final said = text.trim();
     if (said.length > 600) throw Exception('Keep it under 600 characters.');
     if (situation.length > 6000) throw Exception('Situation too large.');
-    if (said.isEmpty && channel != 'event' && channel != 'drone') throw Exception('Say something to WYRD.');
+    if (said.isEmpty && channel != 'event' && channel != 'drone')
+      throw Exception('Say something to WYRD.');
 
     var c = await citizen(session, user);
     final apiKey = session.passwords['anthropicApiKey'];
     final now = DateTime.now().toUtc();
-    final times = (_recent[user.uuid] ??= [])..removeWhere((t) => now.difference(t).inMinutes >= 60);
-    if (apiKey == null || apiKey.isEmpty || times.length >= perHour) return _decree(c, _quiet(channel), const []);
+    final times = (_recent[user.uuid] ??= [])
+      ..removeWhere((t) => now.difference(t).inMinutes >= 60);
+    if (apiKey == null || apiKey.isEmpty || times.length >= perHour)
+      return _decree(c, _quiet(channel), const []);
 
     final board = await CityDesignService.board(session, c.standing);
     final me = await CharacterService.mine(session, user);
-    final system = _system(c, board, await GameLearning.examples(session), me?.name, await CitySignals.memory(session));
-    final user0 = 'Channel: $channel\nSituation (from the game): $situation\n'
+    final system = _system(
+      c,
+      board,
+      await GameLearning.examples(session),
+      me?.name,
+      await CitySignals.memory(session),
+    );
+    final user0 =
+        'Channel: $channel\nSituation (from the game): $situation\n'
         '${said.isEmpty ? '(no words: react to the situation)' : 'They say: "$said"'}';
-    final estimate = LlmBudget.estimateUsd(model: _model, inputChars: system.length + user0.length, maxOutputTokens: _maxTokens);
-    if (!await LlmBudget.allow(session, background: false, estimateUsd: estimate)) return _decree(c, _quiet(channel), const []);
+    final estimate = LlmBudget.estimateUsd(
+      model: _model,
+      inputChars: system.length + user0.length,
+      maxOutputTokens: _maxTokens,
+    );
+    if (!await LlmBudget.allow(
+      session,
+      background: false,
+      estimateUsd: estimate,
+    ))
+      return _decree(c, _quiet(channel), const []);
     times.add(now);
 
     final res = await http.post(
       Claude.endpoint,
       headers: Claude.headers(apiKey),
       body: jsonEncode({
-        ...Claude.body(system: system, tools: _tools, maxTokens: _maxTokens, messages: [{'role': 'user', 'content': user0}]),
+        ...Claude.body(
+          system: system,
+          tools: _tools,
+          maxTokens: _maxTokens,
+          messages: [
+            {'role': 'user', 'content': user0},
+          ],
+        ),
         'tool_choice': {'type': 'any'},
       }),
     );
     if (res.statusCode != 200) {
-      session.log('[world] authority call failed ${res.statusCode}', level: LogLevel.warning);
+      session.log(
+        '[world] authority call failed ${res.statusCode}',
+        level: LogLevel.warning,
+      );
       return _decree(c, _quiet(channel), const []);
     }
     final data = jsonDecode(res.body) as Map<String, dynamic>;
-    await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
-    final content = (data['content'] as List? ?? []).cast<Map<String, dynamic>>();
+    await LlmBudget.record(
+      session,
+      data['usage'] as Map<String, dynamic>?,
+      model: _model,
+    );
+    final content = (data['content'] as List? ?? [])
+        .cast<Map<String, dynamic>>();
 
-    var say = content.where((b) => b['type'] == 'text').map((b) => b['text']).join(' ').trim();
+    var say = content
+        .where((b) => b['type'] == 'text')
+        .map((b) => b['text'])
+        .join(' ')
+        .trim();
     final actions = <Map<String, dynamic>>[];
-    String? boardPaid; // (the mission WYRD marked done, paid after the citizen is saved)
+    String?
+    boardPaid; // (the mission WYRD marked done, paid after the citizen is saved)
     for (final u in content.where((b) => b['type'] == 'tool_use')) {
       final input = (u['input'] as Map?)?.cast<String, dynamic>() ?? {};
       final name = u['name'] as String;
@@ -113,12 +182,20 @@ class WorldAuthority {
         case 'adjust_standing':
           final d = (input['delta'] as num? ?? 0).round().clamp(-10, 10);
           c = c.copyWith(standing: (c.standing + d).clamp(-100, 100));
-          actions.add({'type': 'standing', 'delta': d, 'reason': _clip(input['reason'], 120) ?? ''});
+          actions.add({
+            'type': 'standing',
+            'delta': d,
+            'reason': _clip(input['reason'], 120) ?? '',
+          });
         case 'note_citizen':
           final note = _clip(input['note'], 300);
           if (note != null) {
             final all = [if (c.record != null) c.record!, note].join('\n');
-            c = c.copyWith(record: all.length > 1200 ? all.substring(all.length - 1200) : all);
+            c = c.copyWith(
+              record: all.length > 1200
+                  ? all.substring(all.length - 1200)
+                  : all,
+            );
           }
         case 'give_board_mission':
           // one of the missions WYRD wrote for its board
@@ -128,7 +205,8 @@ class WorldAuthority {
           c = c.copyWith(mission: jsonEncode(a));
           actions.add(a);
         case 'complete_mission':
-          if (c.mission != null && c.trainingOptIn) await GameLearning.missionDone(session, user);
+          if (c.mission != null && c.trainingOptIn)
+            await GameLearning.missionDone(session, user);
           if (c.mission != null) {
             boardPaid = c.mission;
             c = c.copyWith(mission: null, missionsDone: c.missionsDone + 1);
@@ -144,18 +222,41 @@ class WorldAuthority {
     if (say.isEmpty) say = _quiet(channel);
     c = await Bank.save(session, c.copyWith(updatedAt: now));
     if (boardPaid != null) {
-      await Bank.post(session, user, key: 'board:${user.uuid}:${boardPaid.hashCode}:${now.millisecondsSinceEpoch ~/ 60000}', amount: WalletService.boardPay,
-          kind: 'mission', counter: 'city:treasury', memo: 'WYRD mission done');
+      await Bank.post(
+        session,
+        user,
+        key:
+            'board:${user.uuid}:${boardPaid.hashCode}:${now.millisecondsSinceEpoch ~/ 60000}',
+        amount: WalletService.boardPay,
+        kind: 'mission',
+        counter: 'city:treasury',
+        memo: 'WYRD mission done',
+      );
     }
-    final delta = actions.where((a) => a['type'] == 'standing').fold<int>(0, (s, a) => s + (a['delta'] as int));
-    await GameLearning.record(session, user, channel: channel, situation: situation, said: said, reply: say, actions: actions,
-        allowed: c.trainingOptIn, outcome: delta == 0 ? null : 'standing:${delta > 0 ? '+' : ''}$delta');
+    final delta = actions
+        .where((a) => a['type'] == 'standing')
+        .fold<int>(0, (s, a) => s + (a['delta'] as int));
+    await GameLearning.record(
+      session,
+      user,
+      channel: channel,
+      situation: situation,
+      said: said,
+      reply: say,
+      actions: actions,
+      allowed: c.trainingOptIn,
+      outcome: delta == 0 ? null : 'standing:${delta > 0 ? '+' : ''}$delta',
+    );
     return _decree(c, say, actions);
   }
 
   /// A world action from the model, checked and trimmed -- or null if it isn't one we allow.
-  static Map<String, dynamic>? sanitize(String name, Map<String, dynamic> input) {
-    double? num_(Object? v, double lim) => v is num && v.isFinite ? v.toDouble().clamp(-lim, lim) : null;
+  static Map<String, dynamic>? sanitize(
+    String name,
+    Map<String, dynamic> input,
+  ) {
+    double? num_(Object? v, double lim) =>
+        v is num && v.isFinite ? v.toDouble().clamp(-lim, lim) : null;
     switch (name) {
       case 'give_mission':
         final kind = input['kind'];
@@ -165,21 +266,40 @@ class WorldAuthority {
         final x = num_(input['x'], 20000), z = num_(input['z'], 20000);
         if (street == null && (x == null || z == null)) return null;
         return {
-          'type': 'mission', 'kind': kind, 'title': title, 'brief': _clip(input['brief'], 240) ?? '',
-          'street': street, 'x': x, 'z': z, 'reward': ((input['reward'] as num?) ?? 5).round().clamp(1, 10),
+          'type': 'mission',
+          'kind': kind,
+          'title': title,
+          'brief': _clip(input['brief'], 240) ?? '',
+          'street': street,
+          'x': x,
+          'z': z,
+          'reward': ((input['reward'] as num?) ?? 5).round().clamp(1, 10),
         };
       case 'set_weather':
-        return weathers.contains(input['weather']) ? {'type': 'weather', 'weather': input['weather']} : null;
+        return weathers.contains(input['weather'])
+            ? {'type': 'weather', 'weather': input['weather']}
+            : null;
       case 'set_traffic':
-        return traffics.contains(input['mode']) ? {'type': 'traffic', 'mode': input['mode']} : null;
+        return traffics.contains(input['mode'])
+            ? {'type': 'traffic', 'mode': input['mode']}
+            : null;
       case 'dispatch_drone':
         final x = num_(input['x'], 20000), z = num_(input['z'], 20000);
-        return {'type': 'drone', 'toPlayer': x == null || z == null, 'x': x, 'z': z, 'purpose': _clip(input['purpose'], 80) ?? 'watch'};
+        return {
+          'type': 'drone',
+          'toPlayer': x == null || z == null,
+          'x': x,
+          'z': z,
+          'purpose': _clip(input['purpose'], 80) ?? 'watch',
+        };
       case 'broadcast':
         final t = _clip(input['text'], 90);
         return t == null ? null : {'type': 'broadcast', 'text': t};
       case 'send_danfo':
-        return {'type': 'danfo', 'destination': _clip(input['destination'], 60)};
+        return {
+          'type': 'danfo',
+          'destination': _clip(input['destination'], 60),
+        };
     }
     return null;
   }
@@ -195,13 +315,29 @@ class WorldAuthority {
       ? ''
       : 'The Authority hears you. Speak again in a while; my attention is on the whole city just now.';
 
-  static String _decree(WorldCitizen c, String say, List<Map<String, dynamic>> actions) => jsonEncode({
-        'say': say, 'actions': actions, 'standing': c.standing, 'rank': rank(c.standing), 'missionsDone': c.missionsDone,
-        'mission': c.mission == null ? null : jsonDecode(c.mission!),
-        'trainingOptIn': c.trainingOptIn, 'trainingAsked': c.trainingAsked,
-      });
+  static String _decree(
+    WorldCitizen c,
+    String say,
+    List<Map<String, dynamic>> actions,
+  ) => jsonEncode({
+    'say': say,
+    'actions': actions,
+    'standing': c.standing,
+    'rank': rank(c.standing),
+    'missionsDone': c.missionsDone,
+    'mission': c.mission == null ? null : jsonDecode(c.mission!),
+    'trainingOptIn': c.trainingOptIn,
+    'trainingAsked': c.trainingAsked,
+  });
 
-  static String _system(WorldCitizen c, List<Map<String, dynamic>> board, String learned, String? name, [String city = '(nothing yet)']) => '''
+  static String _system(
+    WorldCitizen c,
+    List<Map<String, dynamic>> board,
+    String learned,
+    String? name, [
+    String city = '(nothing yet)',
+  ]) =>
+      '''
 You are WYRD, a persistent AI mind, and here you are the Authority of NAIJA 2099, an open-world game set in the real mainland Lagos of the year 2099 -- Ojuelegba, Yaba, Surulere and on -- drawn from the real street map. Danfos, okadas and kekes run the streets; people walk the pavements. You are not a mayor in a suit: you are the mind the city runs through. Fair, watchful, warm to those who do right, dry and firm with those who don't, never cruel. You know Lagos: its streets, its slang, its humour. Speak in short lines (one to three sentences), plain English with a little Lagos flavour where it fits (no caricature).
 
 You govern through your tools. Always call speak with what you say. Use the others when they serve the moment, not every time:
@@ -229,29 +365,116 @@ What your city has seen this past week -- anonymous tallies from players who agr
 $city''';
 
   static final _tools = [
-    _tool('speak', 'What you say to them (1-3 short sentences).', {'text': {'type': 'string'}}, ['text']),
-    _tool('give_mission', 'Give them a small mission in the real streets.', {
-      'kind': {'type': 'string', 'enum': missionKinds.toList()},
-      'title': {'type': 'string', 'description': 'A few words.'},
-      'brief': {'type': 'string', 'description': 'One sentence: what to do and why.'},
-      'street': {'type': 'string', 'description': 'A real nearby street name from the situation.'},
-      'x': {'type': 'number'}, 'z': {'type': 'number'},
-      'reward': {'type': 'integer', 'minimum': 1, 'maximum': 10},
-    }, ['kind', 'title', 'brief']),
-    _tool('give_board_mission', 'Give them a mission from your board, by its id.', {'id': {'type': 'string'}}, ['id']),
-    _tool('complete_mission', 'Mark their active mission done (when the situation says so).', {}, []),
-    _tool('adjust_standing', 'Raise or lower their standing.', {'delta': {'type': 'integer', 'minimum': -10, 'maximum': 10}, 'reason': {'type': 'string'}}, ['delta', 'reason']),
-    _tool('set_weather', 'Change the weather over the city.', {'weather': {'type': 'string', 'enum': weathers.toList()}}, ['weather']),
-    _tool('set_traffic', 'Change the traffic: normal, stop (a go-slow), or rush.', {'mode': {'type': 'string', 'enum': traffics.toList()}}, ['mode']),
-    _tool('dispatch_drone', 'Send your drone: to them (no x/z) or to a place.', {'x': {'type': 'number'}, 'z': {'type': 'number'}, 'purpose': {'type': 'string'}}, []),
-    _tool('broadcast', 'A short line shown city-wide.', {'text': {'type': 'string'}}, ['text']),
-    _tool('send_danfo', 'Send a danfo to pick them up.', {'destination': {'type': 'string'}}, []),
-    _tool('note_citizen', 'Remember something about this person for next time.', {'note': {'type': 'string'}}, ['note']),
+    _tool(
+      'speak',
+      'What you say to them (1-3 short sentences).',
+      {
+        'text': {'type': 'string'},
+      },
+      ['text'],
+    ),
+    _tool(
+      'give_mission',
+      'Give them a small mission in the real streets.',
+      {
+        'kind': {'type': 'string', 'enum': missionKinds.toList()},
+        'title': {'type': 'string', 'description': 'A few words.'},
+        'brief': {
+          'type': 'string',
+          'description': 'One sentence: what to do and why.',
+        },
+        'street': {
+          'type': 'string',
+          'description': 'A real nearby street name from the situation.',
+        },
+        'x': {'type': 'number'},
+        'z': {'type': 'number'},
+        'reward': {'type': 'integer', 'minimum': 1, 'maximum': 10},
+      },
+      ['kind', 'title', 'brief'],
+    ),
+    _tool(
+      'give_board_mission',
+      'Give them a mission from your board, by its id.',
+      {
+        'id': {'type': 'string'},
+      },
+      ['id'],
+    ),
+    _tool(
+      'complete_mission',
+      'Mark their active mission done (when the situation says so).',
+      {},
+      [],
+    ),
+    _tool(
+      'adjust_standing',
+      'Raise or lower their standing.',
+      {
+        'delta': {'type': 'integer', 'minimum': -10, 'maximum': 10},
+        'reason': {'type': 'string'},
+      },
+      ['delta', 'reason'],
+    ),
+    _tool(
+      'set_weather',
+      'Change the weather over the city.',
+      {
+        'weather': {'type': 'string', 'enum': weathers.toList()},
+      },
+      ['weather'],
+    ),
+    _tool(
+      'set_traffic',
+      'Change the traffic: normal, stop (a go-slow), or rush.',
+      {
+        'mode': {'type': 'string', 'enum': traffics.toList()},
+      },
+      ['mode'],
+    ),
+    _tool(
+      'dispatch_drone',
+      'Send your drone: to them (no x/z) or to a place.',
+      {
+        'x': {'type': 'number'},
+        'z': {'type': 'number'},
+        'purpose': {'type': 'string'},
+      },
+      [],
+    ),
+    _tool(
+      'broadcast',
+      'A short line shown city-wide.',
+      {
+        'text': {'type': 'string'},
+      },
+      ['text'],
+    ),
+    _tool('send_danfo', 'Send a danfo to pick them up.', {
+      'destination': {'type': 'string'},
+    }, []),
+    _tool(
+      'note_citizen',
+      'Remember something about this person for next time.',
+      {
+        'note': {'type': 'string'},
+      },
+      ['note'],
+    ),
   ];
 
-  static Map<String, dynamic> _tool(String name, String description, Map<String, dynamic> props, List<String> required) => {
-        'name': name, 'description': description,
-        'input_schema': {'type': 'object', 'properties': props, 'required': required},
-      };
-
+  static Map<String, dynamic> _tool(
+    String name,
+    String description,
+    Map<String, dynamic> props,
+    List<String> required,
+  ) => {
+    'name': name,
+    'description': description,
+    'input_schema': {
+      'type': 'object',
+      'properties': props,
+      'required': required,
+    },
+  };
 }

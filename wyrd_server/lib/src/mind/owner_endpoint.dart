@@ -24,7 +24,8 @@ class OwnerEndpoint extends Endpoint {
   /// Rows per table (null where a table doesn't exist), plus the newest sign-ups, as JSON.
   Future<String> userStats(Session session) async {
     final who = session.authenticated?.userIdentifier;
-    if (who == null || !await DroneService.isOperator(session, UuidValue.fromString(who))) {
+    if (who == null ||
+        !await DroneService.isOperator(session, UuidValue.fromString(who))) {
       throw Exception('Only the owner can see this.');
     }
     final counts = <String, int?>{};
@@ -54,14 +55,20 @@ class OwnerEndpoint extends Endpoint {
     final daily = [
       for (var i = 13; i >= 0; i--)
         () {
-          final d = today.subtract(Duration(days: i)).toIso8601String().substring(0, 10);
+          final d = today
+              .subtract(Duration(days: i))
+              .toIso8601String()
+              .substring(0, 10);
           return {'day': d, 'n': byDay[d] ?? 0};
         }(),
     ];
     return jsonEncode({
       'daily': daily,
       'counts': counts,
-      'recent': [for (final r in recent) {'name': r[0], 'at': (r[1] as DateTime).toIso8601String()}],
+      'recent': [
+        for (final r in recent)
+          {'name': r[0], 'at': (r[1] as DateTime).toIso8601String()},
+      ],
     });
   }
 }

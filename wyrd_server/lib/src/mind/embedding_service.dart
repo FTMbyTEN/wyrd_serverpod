@@ -42,7 +42,8 @@ class EmbeddingService {
   }
 
   static bool enabled(Session session) =>
-      (session.passwords['voyageApiKey'] ?? '').isNotEmpty && !LlmMode.off(session); // off: topic recall only
+      (session.passwords['voyageApiKey'] ?? '').isNotEmpty &&
+      !LlmMode.off(session); // off: topic recall only
 
   /// Text that stands for a memory when it's embedded: its title and gist, never chat text.
   static String? textOf(MemoryBlock b) {
@@ -81,14 +82,23 @@ class EmbeddingService {
 
     final out = <Vector>[];
     for (var i = 0; i < texts.length; i += _batch) {
-      final chunk = texts.sublist(i, i + _batch > texts.length ? texts.length : i + _batch);
+      final chunk = texts.sublist(
+        i,
+        i + _batch > texts.length ? texts.length : i + _batch,
+      );
       try {
         final res = await http
             .post(
               Uri.parse('https://api.voyageai.com/v1/embeddings'),
-              headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $key'},
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $key',
+              },
               body: jsonEncode({
-                'input': [for (final t in chunk) t.length > _maxChars ? t.substring(0, _maxChars) : t],
+                'input': [
+                  for (final t in chunk)
+                    t.length > _maxChars ? t.substring(0, _maxChars) : t,
+                ],
                 'model': model,
                 'input_type': query ? 'query' : 'document',
                 'output_dimension': dims,
@@ -96,17 +106,34 @@ class EmbeddingService {
             )
             .timeout(const Duration(seconds: 30));
         if (res.statusCode != 200) {
-          lastError = 'Voyage answered HTTP ${res.statusCode}: '
+          lastError =
+              'Voyage answered HTTP ${res.statusCode}: '
               '${res.body.length > 160 ? res.body.substring(0, 160) : res.body}';
-          session.log('[embed] voyage http ${res.statusCode}: ${res.body.length > 200 ? res.body.substring(0, 200) : res.body}',
-              level: LogLevel.warning);
+          session.log(
+            '[embed] voyage http ${res.statusCode}: ${res.body.length > 200 ? res.body.substring(0, 200) : res.body}',
+            level: LogLevel.warning,
+          );
           return null;
         }
         final data = jsonDecode(res.body) as Map<String, dynamic>;
-        final rows = (data['data'] as List).cast<Map<String, dynamic>>()..sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
-        out.addAll(rows.map((r) => Vector((r['embedding'] as List).map((x) => (x as num).toDouble()).toList())));
-        final tokens = (data['usage'] as Map<String, dynamic>?)?['total_tokens'] as num? ?? 0;
-        await LlmBudget.record(session, {'input_tokens': tokens, 'output_tokens': 0}, model: model);
+        final rows = (data['data'] as List).cast<Map<String, dynamic>>()
+          ..sort((a, b) => (a['index'] as int).compareTo(b['index'] as int));
+        out.addAll(
+          rows.map(
+            (r) => Vector(
+              (r['embedding'] as List)
+                  .map((x) => (x as num).toDouble())
+                  .toList(),
+            ),
+          ),
+        );
+        final tokens =
+            (data['usage'] as Map<String, dynamic>?)?['total_tokens'] as num? ??
+            0;
+        await LlmBudget.record(session, {
+          'input_tokens': tokens,
+          'output_tokens': 0,
+        }, model: model);
         lastError = null;
       } catch (e) {
         lastError = 'Voyage call failed: $e';
@@ -117,21 +144,53 @@ class EmbeddingService {
     return out;
   }
 
-  static const _sharedSources = {'net', 'self', 'synthesis', 'feed', 'ingest', 'curriculum', 'library'};
+  static const _sharedSources = {
+    'net',
+    'self',
+    'synthesis',
+    'feed',
+    'ingest',
+    'curriculum',
+    'library',
+  };
 
   /// Embeds up to [limit] shared memories that don't have a fingerprint yet, newest first.
   /// Returns how many were embedded (0 when off or out of budget).
-  static Future<int> backfillMemories(Session session, {int limit = 512}) async {
+  static Future<int> backfillMemories(
+    Session session, {
+    int limit = 512,
+  }) async {
     if (!enabled(session)) return 0;
-    final ids = await _idsWithoutEmbedding(session, 'memory_block', limit,
-        extra: 'AND "source" = ANY(@sources::text[])', params: {'sources': _sharedSources.toList()});
-    final blocks = await MemoryBlock.db.find(session, where: (t) => t.id.inSet(ids), orderBy: (t) => t.id.desc());
-    final withText = [for (final b in blocks) if (textOf(b) != null) b];
+    final ids = await _idsWithoutEmbedding(
+      session,
+      'memory_block',
+      limit,
+      extra: 'AND "source" = ANY(@sources::text[])',
+      params: {'sources': _sharedSources.toList()},
+    );
+    final blocks = await MemoryBlock.db.find(
+      session,
+      where: (t) => t.id.inSet(ids),
+      orderBy: (t) => t.id.desc(),
+    );
+    final withText = [
+      for (final b in blocks)
+        if (textOf(b) != null) b,
+    ];
     if (withText.isEmpty) return 0;
-    final vectors = await embed(session, [for (final b in withText) textOf(b)!], query: false, background: true);
+    final vectors = await embed(
+      session,
+      [for (final b in withText) textOf(b)!],
+      query: false,
+      background: true,
+    );
     if (vectors == null) return 0;
     for (var i = 0; i < withText.length; i++) {
-      await MemoryBlock.db.updateRow(session, withText[i].copyWith(embedding: vectors[i]), columns: (t) => [t.embedding]);
+      await MemoryBlock.db.updateRow(
+        session,
+        withText[i].copyWith(embedding: vectors[i]),
+        columns: (t) => [t.embedding],
+      );
     }
     return withText.length;
   }
@@ -140,18 +199,35 @@ class EmbeddingService {
   static Future<int> backfillAnswers(Session session, {int limit = 256}) async {
     if (!enabled(session)) return 0;
     final ids = await _idsWithoutEmbedding(session, 'learned_answer', limit);
-    final rows = await LearnedAnswer.db.find(session, where: (t) => t.id.inSet(ids));
+    final rows = await LearnedAnswer.db.find(
+      session,
+      where: (t) => t.id.inSet(ids),
+    );
     if (rows.isEmpty) return 0;
-    final vectors = await embed(session, [for (final a in rows) a.question], query: true, background: true);
+    final vectors = await embed(
+      session,
+      [for (final a in rows) a.question],
+      query: true,
+      background: true,
+    );
     if (vectors == null) return 0;
     for (var i = 0; i < rows.length; i++) {
-      await LearnedAnswer.db.updateRow(session, rows[i].copyWith(embedding: vectors[i]), columns: (t) => [t.embedding]);
+      await LearnedAnswer.db.updateRow(
+        session,
+        rows[i].copyWith(embedding: vectors[i]),
+        columns: (t) => [t.embedding],
+      );
     }
     return rows.length;
   }
 
-  static Future<Set<int>> _idsWithoutEmbedding(Session session, String table, int limit,
-      {String extra = '', Map<String, Object?> params = const {}}) async {
+  static Future<Set<int>> _idsWithoutEmbedding(
+    Session session,
+    String table,
+    int limit, {
+    String extra = '',
+    Map<String, Object?> params = const {},
+  }) async {
     final rows = await session.db.unsafeQuery(
       'SELECT "id" FROM "$table" WHERE "embedding" IS NULL $extra ORDER BY "id" DESC LIMIT @limit',
       parameters: QueryParameters.named({...params, 'limit': limit}),

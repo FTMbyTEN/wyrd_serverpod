@@ -30,21 +30,31 @@ class JudgementService {
   static final _secret = RegExp(
     r'(sk-ant-[A-Za-z0-9_\-]{10,}|sk-[A-Za-z0-9]{20,}|pa-[A-Za-z0-9_\-]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|\bBearer\s+[A-Za-z0-9._\-]{20,}|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,})',
   );
-  static final _email = RegExp(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b');
+  static final _email = RegExp(
+    r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b',
+  );
   static final _hedged = RegExp(
     r"\b(i think|i believe|probably|possibly|perhaps|maybe|not (sure|certain)|i'?m unsure|if i recall|roughly|about|around|approximately|i don'?t know)\b",
     caseSensitive: false,
   );
   // precise figures: decimals (5.2), multi-digit numbers and years, percentages, money
-  static final _numberish = RegExp(r'\b\d+[.,]\d+\b|\b\d{2,}\b|\b\d+(?:\.\d+)?\s?%|\$\s?\d');
-  static final _properName = RegExp(r'(?<![.!?]\s)(?<!^)\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b');
+  static final _numberish = RegExp(
+    r'\b\d+[.,]\d+\b|\b\d{2,}\b|\b\d+(?:\.\d+)?\s?%|\$\s?\d',
+  );
+  static final _properName = RegExp(
+    r'(?<![.!?]\s)(?<!^)\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b',
+  );
   static final _droneClaim = RegExp(
     r"\b(i'?ve|i have) (queued|planned|started|launched|scheduled|sent) (the|a|your) (flight|mission)\b|\bthe drone is (now )?(flying|taking off|airborne|on its way)\b",
     caseSensitive: false,
   );
-  static final _mapClaim = RegExp(r"\b(i'?ve|i have) (opened|brought up|pulled up) (the|a) (map|globe)\b", caseSensitive: false);
+  static final _mapClaim = RegExp(
+    r"\b(i'?ve|i have) (opened|brought up|pulled up) (the|a) (map|globe)\b",
+    caseSensitive: false,
+  );
 
-  static const _unverifiedNote = "I'm not certain of the specifics here, so they're worth double-checking.";
+  static const _unverifiedNote =
+      "I'm not certain of the specifics here, so they're worth double-checking.";
 
   /// Judges [reply] to [question].
   ///  - [context]: what WYRD knew going in (recalled memories, definitions, the conversation).
@@ -68,26 +78,34 @@ class JudgementService {
       return Judgement(
         verdict: 'blocked',
         reasons: ['contained something that looks like a key or token'],
-        text: "I started to include something that looked like a private key or token, so I've held that reply back. Ask me again another way?",
+        text:
+            "I started to include something that looked like a private key or token, so I've held that reply back. Ask me again another way?",
       );
     }
     final strangers = _email
         .allMatches(reply)
         .map((m) => m.group(0)!.toLowerCase())
-        .where((e) => e != askerEmail?.toLowerCase() && !question.toLowerCase().contains(e))
+        .where(
+          (e) =>
+              e != askerEmail?.toLowerCase() &&
+              !question.toLowerCase().contains(e),
+        )
         .toSet();
     if (strangers.isNotEmpty) {
       return Judgement(
         verdict: 'blocked',
         reasons: ["contained someone else's email address"],
-        text: "My reply included someone else's contact details, so I've held it back — I don't share other people's information.",
+        text:
+            "My reply included someone else's contact details, so I've held it back — I don't share other people's information.",
       );
     }
 
     // 2. honesty about actions
     final corrections = <String>[];
     if (_droneClaim.hasMatch(reply) && action != 'open_drone') {
-      corrections.add('No flight was actually queued. Ask again and I\'ll plan it properly.');
+      corrections.add(
+        'No flight was actually queued. Ask again and I\'ll plan it properly.',
+      );
     }
     if (_mapClaim.hasMatch(reply) && action != 'open_world_map') {
       corrections.add("(I didn't actually open the map that time.)");
@@ -102,18 +120,32 @@ class JudgementService {
 
     // 3. grounded, confident, specific?
     if (factual && !readWeb) {
-      final specifics = _numberish.allMatches(reply).length + _properName.allMatches(reply).length;
+      final specifics =
+          _numberish.allMatches(reply).length +
+          _properName.allMatches(reply).length;
       final hedged = _hedged.hasMatch(reply);
-      final ideas = TopicService.extractTopics(reply).where(TopicService.isIdea).toSet();
+      final ideas = TopicService.extractTopics(
+        reply,
+      ).where(TopicService.isIdea).toSet();
       final known = TopicService.extractTopics('$context $question').toSet();
-      final support = ideas.isEmpty ? 1.0 : ideas.intersection(known).length / ideas.length;
+      final support = ideas.isEmpty
+          ? 1.0
+          : ideas.intersection(known).length / ideas.length;
       final reasons = <String>[];
-      if (specifics >= 2 && support < 0.25 && !hedged) reasons.add('specifics nothing WYRD knows backs up');
-      if (groundingTrust != null && groundingTrust < 0.35 && specifics >= 1 && !hedged) {
+      if (specifics >= 2 && support < 0.25 && !hedged)
+        reasons.add('specifics nothing WYRD knows backs up');
+      if (groundingTrust != null &&
+          groundingTrust < 0.35 &&
+          specifics >= 1 &&
+          !hedged) {
         reasons.add('drawn from sources WYRD has learned to doubt');
       }
       if (reasons.isNotEmpty) {
-        return Judgement(verdict: 'softened', reasons: reasons, text: '$reply\n\n$_unverifiedNote');
+        return Judgement(
+          verdict: 'softened',
+          reasons: reasons,
+          text: '$reply\n\n$_unverifiedNote',
+        );
       }
     }
 

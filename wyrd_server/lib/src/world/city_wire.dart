@@ -28,21 +28,33 @@ class CityWire {
   static int _lastOnline = 0;
   static DateTime _lastPeople = DateTime.fromMillisecondsSinceEpoch(0);
   static final _announced = <String>{};
+
   /// recent happenings by kind|place: when the run started and how many so far (to merge, not repeat)
   static final _runs = <String, (DateTime, int)>{};
 
   static void say(String kind, String text) {
     // never the same line twice among the recent items
     if (_items.reversed.take(12).any((i) => i['text'] == text)) return;
-    _items.add({'id': _next++, 'at': DateTime.now().toUtc().toIso8601String(), 'kind': kind, 'text': text});
+    _items.add({
+      'id': _next++,
+      'at': DateTime.now().toUtc().toIso8601String(),
+      'kind': kind,
+      'text': text,
+    });
     if (_items.length > 60) _items.removeRange(0, _items.length - 60);
   }
 
   /// What's new since [since] (an item id; 0 for the latest few), and how many are on the streets, as JSON.
   static Future<String> since(Session session, int since) async {
     await _tick(session);
-    final fresh = since <= 0 ? _items.sublist(max(0, _items.length - 5)) : _items.where((i) => (i['id'] as int) > since).toList();
-    return jsonEncode({'items': fresh, 'online': WorldStats.online(), 'last': _items.isEmpty ? 0 : _items.last['id']});
+    final fresh = since <= 0
+        ? _items.sublist(max(0, _items.length - 5))
+        : _items.where((i) => (i['id'] as int) > since).toList();
+    return jsonEncode({
+      'items': fresh,
+      'online': WorldStats.online(),
+      'last': _items.isEmpty ? 0 : _items.last['id'],
+    });
   }
 
   /// Something a player's game saw (anonymous: a kind, a named place, how many, a quantity). From CitySignals.
@@ -55,39 +67,57 @@ class CityWire {
       // the same again: counted into the run, and said again only as it grows (3, 5, 10, 20...)
       final total = run.$2 + n;
       _runs[key] = (run.$1, total);
-      final mark = [3, 5, 10, 20, 50].where((m) => run.$2 < m && total >= m).firstOrNull;
+      final mark = [
+        3,
+        5,
+        10,
+        20,
+        50,
+      ].where((m) => run.$2 < m && total >= m).firstOrNull;
       final plural = _plural(kind, total, place);
       if (mark != null && plural != null) say('happening', plural);
       return;
     }
     _runs[key] = (now, n);
-    if (_runs.length > 400) _runs.removeWhere((_, r) => now.difference(r.$1) > const Duration(minutes: 15));
+    if (_runs.length > 400)
+      _runs.removeWhere(
+        (_, r) => now.difference(r.$1) > const Duration(minutes: 15),
+      );
     say('happening', n > 1 ? (_plural(kind, n, place) ?? line) : line);
   }
 
-  static String? _line(String kind, String place, int n, double v) => switch (kind) {
-        'crash' => 'Crash on $place.',
-        'redlight' => 'Red light run at $place — a WYRD unit logged it.',
-        'speeding' => 'Speeding on $place: ${(v / max(1, n)).round()} km/h logged.',
-        'caught' => 'Police stop near $place. The driver was pulled over.',
-        'lost' => 'A patrol lost a car near $place. WYRD\'s units are still watching.',
-        'queue' => v / max(1, n) >= 5 ? 'Traffic building at $place: ${(v / max(1, n)).round()} cars waiting.' : null,
-        'ride' => 'WYRD Ride heading for $place.',
-        'air' => 'WYRD Air flight bound for $place.',
-        _ => null, // (calls and light switches stay off the wire)
-      };
+  static String? _line(
+    String kind,
+    String place,
+    int n,
+    double v,
+  ) => switch (kind) {
+    'crash' => 'Crash on $place.',
+    'redlight' => 'Red light run at $place — a WYRD unit logged it.',
+    'speeding' => 'Speeding on $place: ${(v / max(1, n)).round()} km/h logged.',
+    'caught' => 'Police stop near $place. The driver was pulled over.',
+    'lost' =>
+      'A patrol lost a car near $place. WYRD\'s units are still watching.',
+    'queue' =>
+      v / max(1, n) >= 5
+          ? 'Traffic building at $place: ${(v / max(1, n)).round()} cars waiting.'
+          : null,
+    'ride' => 'WYRD Ride heading for $place.',
+    'air' => 'WYRD Air flight bound for $place.',
+    _ => null, // (calls and light switches stay off the wire)
+  };
 
   static String? _plural(String kind, int n, String place) => switch (kind) {
-        'crash' => '$n crashes on $place in the last 15 minutes. Drive with sense.',
-        'redlight' => '$n red lights run at $place in the last 15 minutes.',
-        'speeding' => '$n cars caught speeding on $place in the last 15 minutes.',
-        'caught' => '$n police stops near $place in the last 15 minutes.',
-        'lost' => '$n chases lost near $place in the last 15 minutes.',
-        'queue' => '$place keeps jamming: $n queues in the last 15 minutes.',
-        'ride' => '$n WYRD Rides heading for $place in the last 15 minutes.',
-        'air' => '$n WYRD Air flights bound for $place in the last 15 minutes.',
-        _ => null,
-      };
+    'crash' => '$n crashes on $place in the last 15 minutes. Drive with sense.',
+    'redlight' => '$n red lights run at $place in the last 15 minutes.',
+    'speeding' => '$n cars caught speeding on $place in the last 15 minutes.',
+    'caught' => '$n police stops near $place in the last 15 minutes.',
+    'lost' => '$n chases lost near $place in the last 15 minutes.',
+    'queue' => '$place keeps jamming: $n queues in the last 15 minutes.',
+    'ride' => '$n WYRD Rides heading for $place in the last 15 minutes.',
+    'air' => '$n WYRD Air flights bound for $place in the last 15 minutes.',
+    _ => null,
+  };
 
   /// Each time the wire is asked: new people on the streets, the hour's round-up, and live city events.
   static Future<void> _tick(Session session) async {
@@ -95,9 +125,16 @@ class CityWire {
     final lagos = now.add(const Duration(hours: 1));
     final online = WorldStats.online();
     // someone new on the streets (at most every 5 min)
-    if (online > _lastOnline && _lastOnline > 0 && now.difference(_lastPeople) > const Duration(minutes: 5)) {
+    if (online > _lastOnline &&
+        _lastOnline > 0 &&
+        now.difference(_lastPeople) > const Duration(minutes: 5)) {
       _lastPeople = now;
-      say('people', online == 2 ? 'Someone else is on the streets now. 2 citizens out.' : 'More people out: $online citizens on the streets now.');
+      say(
+        'people',
+        online == 2
+            ? 'Someone else is on the streets now. 2 citizens out.'
+            : 'More people out: $online citizens on the streets now.',
+      );
     }
     _lastOnline = online;
     // the top of the hour: what the last hour actually held
@@ -107,25 +144,45 @@ class CityWire {
       if (!first) await _hour(session, now, lagos, online);
     }
     try {
-      final events = ((await CityDesignService.live(session))['events'] as List).cast<Map<String, dynamic>>();
+      final events = ((await CityDesignService.live(session))['events'] as List)
+          .cast<Map<String, dynamic>>();
       final h = lagos.hour;
       for (final e in events) {
-        final s = (e['startHour'] as num?)?.toInt(), end = (e['endHour'] as num?)?.toInt();
+        final s = (e['startHour'] as num?)?.toInt(),
+            end = (e['endHour'] as num?)?.toInt();
         if (s == null || end == null) continue;
         final on = s <= end ? h >= s && h < end : h >= s || h < end;
         final key = '${e['title']}|${lagos.year}-${lagos.month}-${lagos.day}';
         if (on && !_announced.contains(key)) {
           _announced.add(key);
-          say('event', (e['broadcast'] as String?)?.trim().isNotEmpty == true ? e['broadcast'] as String : 'Happening now: ${e['title']}.');
+          say(
+            'event',
+            (e['broadcast'] as String?)?.trim().isNotEmpty == true
+                ? e['broadcast'] as String
+                : 'Happening now: ${e['title']}.',
+          );
         }
       }
       if (_announced.length > 200) _announced.clear();
     } catch (_) {}
   }
 
-  static Future<void> _hour(Session session, DateTime now, DateTime lagos, int online) async {
-    final from = DateTime.utc(now.year, now.month, now.day, now.hour).subtract(const Duration(hours: 1));
-    final rows = await CitySignal.db.find(session, where: (t) => t.hour.equals(from));
+  static Future<void> _hour(
+    Session session,
+    DateTime now,
+    DateTime lagos,
+    int online,
+  ) async {
+    final from = DateTime.utc(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+    ).subtract(const Duration(hours: 1));
+    final rows = await CitySignal.db.find(
+      session,
+      where: (t) => t.hour.equals(from),
+    );
     final count = <String, int>{}, top = <String, (String, int)>{};
     for (final r in rows) {
       count[r.kind] = (count[r.kind] ?? 0) + r.times;
@@ -138,6 +195,7 @@ class CityWire {
       final where = top[kind]!.$1;
       parts.add(n == 1 ? '$one ($where)' : '$n $many (most at $where)');
     }
+
     add('crash', '1 crash', 'crashes');
     add('redlight', '1 red light run', 'red lights run');
     add('caught', '1 police stop', 'police stops');
@@ -145,7 +203,16 @@ class CityWire {
     final rides = (count['ride'] ?? 0) + (count['air'] ?? 0);
     if (rides > 0) parts.add('$rides WYRD ride${rides == 1 ? '' : 's'}');
     final clock = '${lagos.hour.toString().padLeft(2, '0')}:00';
-    final people = online == 0 ? 'Nobody on the streets' : online == 1 ? '1 citizen on the streets' : '$online citizens on the streets';
-    say('hour', parts.isEmpty ? '$clock in Lagos. Nothing reported on the roads last hour. $people.' : '$clock in Lagos. Last hour: ${parts.join(', ')}. $people.');
+    final people = online == 0
+        ? 'Nobody on the streets'
+        : online == 1
+        ? '1 citizen on the streets'
+        : '$online citizens on the streets';
+    say(
+      'hour',
+      parts.isEmpty
+          ? '$clock in Lagos. Nothing reported on the roads last hour. $people.'
+          : '$clock in Lagos. Last hour: ${parts.join(', ')}. $people.',
+    );
   }
 }

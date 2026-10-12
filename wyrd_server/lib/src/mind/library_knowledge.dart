@@ -12,11 +12,15 @@ class LibraryKnowledge {
   static const _chunkChars = 900;
   static const sources = {'gutenberg', 'openstax', 'wikisource'};
 
-  static String _clean(String t) => t.replaceAll(RegExp(r'\s*\|.*$'), '').trim();
+  static String _clean(String t) =>
+      t.replaceAll(RegExp(r'\s*\|.*$'), '').trim();
 
   /// Paragraph-sized pieces of [text], each under about [_chunkChars].
   static List<String> chunks(String text) {
-    final paras = text.split(RegExp(r'\n\s*\n|\n')).map((p) => p.trim()).where((p) => p.length > 1);
+    final paras = text
+        .split(RegExp(r'\n\s*\n|\n'))
+        .map((p) => p.trim())
+        .where((p) => p.length > 1);
     final out = <String>[];
     var buf = StringBuffer();
     for (final p in paras) {
@@ -25,7 +29,9 @@ class LibraryKnowledge {
         buf = StringBuffer();
       }
       if (buf.length > 0) buf.write('\n');
-      buf.write(p.length > _chunkChars * 2 ? p.substring(0, _chunkChars * 2) : p);
+      buf.write(
+        p.length > _chunkChars * 2 ? p.substring(0, _chunkChars * 2) : p,
+      );
     }
     if (buf.length > 0) out.add(buf.toString());
     // pieces too short to mean anything on their own (headings, page numbers) aren't worth keeping
@@ -33,11 +39,21 @@ class LibraryKnowledge {
   }
 
   /// Keeps [slice] of [item] as knowledge. Returns how many new pieces were stored.
-  static Future<int> absorb(Session session, ReadingItem item, PageSlice slice) async {
+  static Future<int> absorb(
+    Session session,
+    ReadingItem item,
+    PageSlice slice,
+  ) async {
     final source = item.source;
-    if (source == null || !sources.contains(source) || slice.text.trim().isEmpty) return 0;
+    if (source == null ||
+        !sources.contains(source) ||
+        slice.text.trim().isEmpty)
+      return 0;
     final key = 'lib:${slice.url}#${slice.offset}';
-    final seen = await MemoryBlock.db.findFirstRow(session, where: (t) => t.legacyId.equals('$key/0'));
+    final seen = await MemoryBlock.db.findFirstRow(
+      session,
+      where: (t) => t.legacyId.equals('$key/0'),
+    );
     if (seen != null) return 0;
     final title = item.partTitle != null && item.partTitle != item.title
         ? '${_clean(item.title)} — ${item.partTitle}'
@@ -46,20 +62,24 @@ class LibraryKnowledge {
     final pieces = chunks(slice.text);
     final rows = <MemoryBlock>[];
     for (var i = 0; i < pieces.length; i++) {
-      final topics = TopicService.extractTopics(pieces[i]).where(TopicService.isIdea).take(12).toList();
+      final topics = TopicService.extractTopics(
+        pieces[i],
+      ).where(TopicService.isIdea).take(12).toList();
       if (topics.isEmpty) continue;
-      rows.add(MemoryBlock(
-        legacyId: '$key/$i',
-        timestamp: now,
-        source: 'library',
-        feedSource: source,
-        title: title,
-        extract: pieces[i],
-        url: slice.url,
-        topics: topics,
-        quality: 0.9, // edited, published texts
-        category: source == 'openstax' ? 'textbook' : 'literature',
-      ));
+      rows.add(
+        MemoryBlock(
+          legacyId: '$key/$i',
+          timestamp: now,
+          source: 'library',
+          feedSource: source,
+          title: title,
+          extract: pieces[i],
+          url: slice.url,
+          topics: topics,
+          quality: 0.9, // edited, published texts
+          category: source == 'openstax' ? 'textbook' : 'literature',
+        ),
+      );
     }
     if (rows.isEmpty) return 0;
     await MemoryBlock.db.insert(session, rows);
@@ -70,18 +90,25 @@ class LibraryKnowledge {
   static List<String> sentences(String text) => text
       .replaceAll(RegExp(r'\s+'), ' ')
       // after . ! ? (and a closing quote or bracket), but not after "Mr." / "Mrs." / "Dr." / "St."
-      .split(RegExp(r'(?<![A-Z][a-z]\.)(?<![A-Z][a-z][a-z]\.)(?<!\b[A-Z]\.)(?<=[.!?。！？]["”’)\]]?)\s+'))
+      .split(
+        RegExp(
+          r'(?<![A-Z][a-z]\.)(?<![A-Z][a-z][a-z]\.)(?<!\b[A-Z]\.)(?<=[.!?。！？]["”’)\]]?)\s+',
+        ),
+      )
       .map((s) => s.trim())
       .where((s) => s.length > 20)
       .toList();
 
-  static final _stop = RegExp(r'^(the|and|that|this|with|from|have|what|which|when|where|there|their|about|would|could|should|into|them|they|were|been|does|mean|explain|passage|chapter|book|tell|please)$');
+  static final _stop = RegExp(
+    r'^(the|and|that|this|with|from|have|what|which|when|where|there|their|about|would|could|should|into|them|they|were|been|does|mean|explain|passage|chapter|book|tell|please)$',
+  );
 
-  static Set<String> _words(String s) => RegExp(r"[\p{L}\p{N}']{3,}", unicode: true)
-      .allMatches(s.toLowerCase())
-      .map((m) => m.group(0)!)
-      .where((w) => !_stop.hasMatch(w))
-      .toSet();
+  static Set<String> _words(String s) =>
+      RegExp(r"[\p{L}\p{N}']{3,}", unicode: true)
+          .allMatches(s.toLowerCase())
+          .map((m) => m.group(0)!)
+          .where((w) => !_stop.hasMatch(w))
+          .toSet();
 
   /// The sentences of [text] that best answer [question] (most words in common), in their
   /// original order. Empty when nothing matches.
@@ -114,7 +141,9 @@ class LibraryKnowledge {
     for (var i = 0; i < all.length; i++) {
       final w = _words(all[i]);
       if (w.isEmpty) continue;
-      final score = w.fold<int>(0, (n, x) => n + (freq[x] ?? 0)) / (w.length + 3) + (i == 0 ? 0.5 : 0);
+      final score =
+          w.fold<int>(0, (n, x) => n + (freq[x] ?? 0)) / (w.length + 3) +
+          (i == 0 ? 0.5 : 0);
       scored.add((i, score));
     }
     scored.sort((a, b) => b.$2.compareTo(a.$2));

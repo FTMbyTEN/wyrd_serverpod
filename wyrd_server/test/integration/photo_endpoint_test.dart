@@ -19,8 +19,14 @@ void main() {
       'when no LLM is configured then it falls back to the honest "could not take a proper look" reply, '
       'still storing a photo memory block and updating Mind',
       () async {
-        final fakeJpegBase64 = base64Encode(utf8.encode('not a real jpeg, just test bytes'));
-        final result = await endpoints.photo.describe(authed, fakeJpegBase64, caption: 'check my outfit');
+        final fakeJpegBase64 = base64Encode(
+          utf8.encode('not a real jpeg, just test bytes'),
+        );
+        final result = await endpoints.photo.describe(
+          authed,
+          fakeJpegBase64,
+          caption: 'check my outfit',
+        );
 
         expect(result.reply, contains("couldn't take a proper look"));
         expect(result.mind.lastEvent, 'sight');

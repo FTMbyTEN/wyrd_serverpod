@@ -3,7 +3,10 @@ import 'package:test/test.dart';
 import 'test_tools/serverpod_test_tools.dart';
 
 void main() {
-  withServerpod('Given Chat endpoint rate limiting', (sessionBuilder, endpoints) {
+  withServerpod('Given Chat endpoint rate limiting', (
+    sessionBuilder,
+    endpoints,
+  ) {
     final authed = sessionBuilder.copyWith(
       authentication: AuthenticationOverride.authenticationInfo(
         '44444444-4444-4444-8444-444444444444',

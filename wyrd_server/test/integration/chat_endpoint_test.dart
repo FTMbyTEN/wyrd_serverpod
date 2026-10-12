@@ -27,7 +27,10 @@ void main() {
       'when sending a message without an LLM configured then it falls back to a template reply, '
       'persists a memory block, and updates Mind',
       () async {
-        final reply = await endpoints.chat.sendMessage(authed, 'I love hiking in the mountains');
+        final reply = await endpoints.chat.sendMessage(
+          authed,
+          'I love hiking in the mountains',
+        );
         expect(reply.reply, isNotEmpty);
         expect(reply.mind.lastEvent, 'chat');
 

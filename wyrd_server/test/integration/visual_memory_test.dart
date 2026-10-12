@@ -14,25 +14,46 @@ void main() {
       authentication: AuthenticationOverride.authenticationInfo(meId, {}),
     );
 
-    test('a person only ever gets their own sightings, newest first, and chat knows the last one', () async {
-      final session = sessionBuilder.build();
-      final now = DateTime.now().toUtc();
-      await Sighting.db.insert(session, [
-        Sighting(authUserId: me, timestamp: now.subtract(const Duration(hours: 3)), description: 'You in a green hoodie at a desk.'),
-        Sighting(authUserId: me, timestamp: now.subtract(const Duration(minutes: 20)), description: 'You in a red shirt, smiling.'),
-        Sighting(authUserId: other, timestamp: now, description: 'Someone else entirely.'),
-      ]);
+    test(
+      'a person only ever gets their own sightings, newest first, and chat knows the last one',
+      () async {
+        final session = sessionBuilder.build();
+        final now = DateTime.now().toUtc();
+        await Sighting.db.insert(session, [
+          Sighting(
+            authUserId: me,
+            timestamp: now.subtract(const Duration(hours: 3)),
+            description: 'You in a green hoodie at a desk.',
+          ),
+          Sighting(
+            authUserId: me,
+            timestamp: now.subtract(const Duration(minutes: 20)),
+            description: 'You in a red shirt, smiling.',
+          ),
+          Sighting(
+            authUserId: other,
+            timestamp: now,
+            description: 'Someone else entirely.',
+          ),
+        ]);
 
-      final mine = await endpoints.photo.getSightings(authed, limit: 5);
-      expect(mine.map((s) => s.description), ['You in a red shirt, smiling.', 'You in a green hoodie at a desk.']);
+        final mine = await endpoints.photo.getSightings(authed, limit: 5);
+        expect(mine.map((s) => s.description), [
+          'You in a red shirt, smiling.',
+          'You in a green hoodie at a desk.',
+        ]);
 
-      final line = await PhotoService.sightAwareness(session, me);
-      expect(line, contains('red shirt'));
-      expect(line, contains('20 min ago'));
-      expect(line, isNot(contains('Someone else')));
+        final line = await PhotoService.sightAwareness(session, me);
+        expect(line, contains('red shirt'));
+        expect(line, contains('20 min ago'));
+        expect(line, isNot(contains('Someone else')));
 
-      final never = await PhotoService.sightAwareness(session, UuidValue.fromString('88888888-8888-4888-8888-888888888888'));
-      expect(never, contains("haven't seen them yet"));
-    });
+        final never = await PhotoService.sightAwareness(
+          session,
+          UuidValue.fromString('88888888-8888-4888-8888-888888888888'),
+        );
+        expect(never, contains("haven't seen them yet"));
+      },
+    );
   });
 }

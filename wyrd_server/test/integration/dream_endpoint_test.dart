@@ -32,7 +32,12 @@ void main() {
         );
         await MemoryBlock.db.insertRow(
           session,
-          MemoryBlock(timestamp: DateTime.now().toUtc(), source: 'net', title: 'Comets', topics: ['comets']),
+          MemoryBlock(
+            timestamp: DateTime.now().toUtc(),
+            source: 'net',
+            title: 'Comets',
+            topics: ['comets'],
+          ),
         );
         await MemoryBlock.db.insertRow(
           session,

@@ -9,10 +9,13 @@ import 'package:serverpod/serverpod.dart';
 /// multiple server instances.
 class DreamFutureCall extends FutureCall {
   static const _idleThreshold = Duration(minutes: 10);
-  static const _minGap = Duration(hours: 4); // each dream is an LLM call; see LlmBudget
+  static const _minGap = Duration(
+    hours: 4,
+  ); // each dream is an LLM call; see LlmBudget
 
   Future<void> checkIdle(Session session) async {
-    if (!TickSchedule.claim('dreamIdleCheck', TickSchedule.dreamIdleCheck)) return;
+    if (!TickSchedule.claim('dreamIdleCheck', TickSchedule.dreamIdleCheck))
+      return;
     final now = DateTime.now().toUtc();
 
     final lastChat = await ConversationTurn.db.findFirstRow(

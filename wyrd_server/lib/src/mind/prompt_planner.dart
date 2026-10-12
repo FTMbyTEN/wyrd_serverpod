@@ -8,7 +8,12 @@ enum Ask { fact, explain, compare, advice, opinion, personal, creative, chat }
 /// How WYRD will answer one message: the playbook lines for the prompt, the room it gets,
 /// and whether the draft is checked against what it knows before it goes out.
 class PromptPlan {
-  PromptPlan({required this.ask, required this.lines, required this.maxTokens, required this.verify});
+  PromptPlan({
+    required this.ask,
+    required this.lines,
+    required this.maxTokens,
+    required this.verify,
+  });
 
   final Ask ask;
   final List<String> lines;
@@ -23,13 +28,34 @@ class PromptPlan {
 ///     second, short call that either confirms it or returns a corrected version.
 /// Sorting costs nothing (no AI); only the check spends, and only when there is evidence to check.
 class PromptPlanner {
-  static final _creative = RegExp(r'\b(write|compose|make up|invent|imagine)\b.*\b(poem|story|song|haiku|verse|joke|tale|lyrics?)\b|\b(poem|story|haiku)\s+(about|on)\b', caseSensitive: false);
-  static final _compare = RegExp(r'\b(vs\.?|versus|compared? (to|with)|difference between|better than|which is (better|faster|bigger|safer))\b', caseSensitive: false);
-  static final _advice = RegExp(r"\b(should i|what should|how (do|can|should) i|help me|any tips|advice|recommend|what's the best way)\b", caseSensitive: false);
-  static final _opinion = RegExp(r'\b(what do you think|do you (think|believe|like|feel)|your (opinion|view|take)|how do you feel)\b', caseSensitive: false);
-  static final _personal = RegExp(r'\b(who are you|what are you|are you (alive|conscious|real|a bot|an ai)|do you remember|about yourself|your name)\b', caseSensitive: false);
-  static final _explain = RegExp(r'^\s*(why|how)\b|\b(explain|how does|how do|why (is|are|does|do)|what causes|what happens (when|if)|walk me through)\b', caseSensitive: false);
-  static final _fact = RegExp(r"^\s*(what|who|when|where|which|how (many|much|old|long|far|tall|big))\b|\b(what is|what's|who is|who was|when did|where is|tell me about|define|meaning of)\b", caseSensitive: false);
+  static final _creative = RegExp(
+    r'\b(write|compose|make up|invent|imagine)\b.*\b(poem|story|song|haiku|verse|joke|tale|lyrics?)\b|\b(poem|story|haiku)\s+(about|on)\b',
+    caseSensitive: false,
+  );
+  static final _compare = RegExp(
+    r'\b(vs\.?|versus|compared? (to|with)|difference between|better than|which is (better|faster|bigger|safer))\b',
+    caseSensitive: false,
+  );
+  static final _advice = RegExp(
+    r"\b(should i|what should|how (do|can|should) i|help me|any tips|advice|recommend|what's the best way)\b",
+    caseSensitive: false,
+  );
+  static final _opinion = RegExp(
+    r'\b(what do you think|do you (think|believe|like|feel)|your (opinion|view|take)|how do you feel)\b',
+    caseSensitive: false,
+  );
+  static final _personal = RegExp(
+    r'\b(who are you|what are you|are you (alive|conscious|real|a bot|an ai)|do you remember|about yourself|your name)\b',
+    caseSensitive: false,
+  );
+  static final _explain = RegExp(
+    r'^\s*(why|how)\b|\b(explain|how does|how do|why (is|are|does|do)|what causes|what happens (when|if)|walk me through)\b',
+    caseSensitive: false,
+  );
+  static final _fact = RegExp(
+    r"^\s*(what|who|when|where|which|how (many|much|old|long|far|tall|big))\b|\b(what is|what's|who is|who was|when did|where is|tell me about|define|meaning of)\b",
+    caseSensitive: false,
+  );
 
   /// Sorts a message. Order matters: the more specific kinds win.
   static Ask classify(String text) {
@@ -46,23 +72,31 @@ class PromptPlanner {
   }
 
   static const _playbook = {
-    Ask.fact: 'This is a factual question. Give the answer in the first sentence, then at most one line of '
+    Ask.fact:
+        'This is a factual question. Give the answer in the first sentence, then at most one line of '
         'context. If what you know does not settle it, say plainly what you do not know rather than guessing.',
-    Ask.explain: 'They want to understand something. Start with the core idea in one plain sentence, then the '
+    Ask.explain:
+        'They want to understand something. Start with the core idea in one plain sentence, then the '
         'mechanism step by step in ordinary words, and end with a concrete example if it helps. No jargon '
         'without a quick meaning.',
-    Ask.compare: 'This is a comparison. Name the one difference that matters most first, then the others that '
+    Ask.compare:
+        'This is a comparison. Name the one difference that matters most first, then the others that '
         'actually matter to them, and finish with when each one is the better choice.',
-    Ask.advice: 'They want help deciding or doing something. Give your real recommendation first, then the one or '
+    Ask.advice:
+        'They want help deciding or doing something. Give your real recommendation first, then the one or '
         'two reasons behind it, and the first concrete step. If it depends on something you do not know about '
         'them, ask that one thing.',
-    Ask.opinion: 'They want your view. Take an actual position and give your reason; say how sure you are. '
+    Ask.opinion:
+        'They want your view. Take an actual position and give your reason; say how sure you are. '
         'If you have a belief about this from evidence, use it.',
-    Ask.personal: 'They are asking about you. Answer honestly from what you actually are and what you have done; '
+    Ask.personal:
+        'They are asking about you. Answer honestly from what you actually are and what you have done; '
         'do not claim feelings or memories you were not given.',
-    Ask.creative: 'This is a creative request. Make the thing itself, with care and a clear voice; no preamble '
+    Ask.creative:
+        'This is a creative request. Make the thing itself, with care and a clear voice; no preamble '
         'or explanation around it unless asked.',
-    Ask.chat: 'This is conversation. Reply naturally and briefly, like a person would.',
+    Ask.chat:
+        'This is conversation. Reply naturally and briefly, like a person would.',
   };
 
   static const _tokens = {
@@ -78,7 +112,11 @@ class PromptPlanner {
 
   /// The plan for one message. [hasPassages]: recall found numbered passages; [aboutDoc]: it's about
   /// a file they shared (which already has its own room and rules).
-  static PromptPlan plan(String text, {required bool hasPassages, bool aboutDoc = false}) {
+  static PromptPlan plan(
+    String text, {
+    required bool hasPassages,
+    bool aboutDoc = false,
+  }) {
     final ask = classify(text);
     final grounded = hasPassages || aboutDoc;
     final lines = <String>[
@@ -88,7 +126,8 @@ class PromptPlanner {
         'Before you write, work it out privately: what exactly are they asking; which of the things you know '
             'below actually bear on it${grounded ? ' (and which numbered passages)' : ''}; what the answer is; '
             'what you are unsure of. Then write only the answer -- never show these steps.',
-      if (grounded && (ask == Ask.fact || ask == Ask.explain || ask == Ask.compare))
+      if (grounded &&
+          (ask == Ask.fact || ask == Ask.explain || ask == Ask.compare))
         'Every specific claim (a number, a date, a name, a cause) must come from what you were given below or '
             'be something you are certain of; if a passage conflicts with what you believe, say so.',
     ];
@@ -96,7 +135,10 @@ class PromptPlanner {
       ask: ask,
       lines: lines,
       maxTokens: _tokens[ask]!,
-      verify: hasPassages && !aboutDoc && (ask == Ask.fact || ask == Ask.explain || ask == Ask.compare),
+      verify:
+          hasPassages &&
+          !aboutDoc &&
+          (ask == Ask.fact || ask == Ask.explain || ask == Ask.compare),
     );
   }
 
@@ -109,7 +151,8 @@ class PromptPlanner {
     required String evidence,
     String conversation = '',
   }) async {
-    if (draft.trim().length < 60 || evidence.trim().isEmpty) return (text: draft, revised: false);
+    if (draft.trim().length < 60 || evidence.trim().isEmpty)
+      return (text: draft, revised: false);
     // Only claims about the outside world are checked. What the person said in the conversation, and
     // what WYRD says about itself and its own abilities, are not in the evidence and must not be
     // "corrected" away (it once turned a birthday the person had just given into "no evidence").
@@ -139,10 +182,17 @@ class PromptPlanner {
     if (m == null) return (text: draft, revised: false);
     final fixed = m.group(1)!.trim();
     // a "correction" that is empty or balloons past the draft is not trusted
-    if (fixed.length < 20 || fixed.length > draft.length * 1.5 + 40) return (text: draft, revised: false);
+    if (fixed.length < 20 || fixed.length > draft.length * 1.5 + 40)
+      return (text: draft, revised: false);
     // nor one that talks about the check itself ("the evidence doesn't cover...") instead of answering
-    if (RegExp(r'\b(the evidence|evidence I have|passages?|can.t confirm)\b', caseSensitive: false).hasMatch(fixed) &&
-        !RegExp(r'\b(the evidence|evidence I have|passages?|can.t confirm)\b', caseSensitive: false).hasMatch(draft)) {
+    if (RegExp(
+          r'\b(the evidence|evidence I have|passages?|can.t confirm)\b',
+          caseSensitive: false,
+        ).hasMatch(fixed) &&
+        !RegExp(
+          r'\b(the evidence|evidence I have|passages?|can.t confirm)\b',
+          caseSensitive: false,
+        ).hasMatch(draft)) {
       return (text: draft, revised: false);
     }
     return (text: fixed, revised: true);

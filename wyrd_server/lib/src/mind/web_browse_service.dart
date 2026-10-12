@@ -7,7 +7,12 @@ class WebSnapshot {
   final String text;
   final String? screenshotBase64;
 
-  WebSnapshot({required this.url, required this.title, required this.text, this.screenshotBase64});
+  WebSnapshot({
+    required this.url,
+    required this.title,
+    required this.text,
+    this.screenshotBase64,
+  });
 }
 
 class WebSession {
@@ -29,10 +34,12 @@ class WebBrowseService {
 
   static Future<pptr.Browser> _getSharedBrowser() {
     if (_browser != null) return Future.value(_browser);
-    _browserLaunch ??= pptr.puppeteer.launch(headless: true, noSandboxFlag: true).then((b) {
-      _browser = b;
-      return b;
-    });
+    _browserLaunch ??= pptr.puppeteer
+        .launch(headless: true, noSandboxFlag: true)
+        .then((b) {
+          _browser = b;
+          return b;
+        });
     return _browserLaunch!;
   }
 
@@ -48,12 +55,15 @@ class WebBrowseService {
     page.onRequest.listen((req) async {
       try {
         final u = Uri.parse(req.url);
-        if (u.scheme == 'data' || u.scheme == 'blob' || u.scheme == 'about') return await req.continueRequest();
+        if (u.scheme == 'data' || u.scheme == 'blob' || u.scheme == 'about')
+          return await req.continueRequest();
         if (u.scheme != 'http' && u.scheme != 'https') return await req.abort();
         await BrowserSafety.resolvePublic(u.host);
         await req.continueRequest();
       } catch (_) {
-        try { await req.abort(); } catch (_) {}
+        try {
+          await req.abort();
+        } catch (_) {}
       }
     });
     return WebSession(context, page);
@@ -81,7 +91,10 @@ class WebBrowseService {
       );
     } catch (_) {}
     try {
-      screenshot = await page.screenshotBase64(format: pptr.ScreenshotFormat.jpeg, quality: 65);
+      screenshot = await page.screenshotBase64(
+        format: pptr.ScreenshotFormat.jpeg,
+        quality: 65,
+      );
     } catch (_) {}
 
     return WebSnapshot(
@@ -94,14 +107,22 @@ class WebBrowseService {
 
   static Future<WebSnapshot> open(WebSession session, String rawUrl) async {
     final uri = await BrowserSafety.assertSafePublicUrl(rawUrl);
-    await session.page.goto(uri.toString(), wait: pptr.Until.domContentLoaded, timeout: actionTimeout);
+    await session.page.goto(
+      uri.toString(),
+      wait: pptr.Until.domContentLoaded,
+      timeout: actionTimeout,
+    );
     return _snapshot(session.page);
   }
 
   // No CSS selectors from the model -- it only gets a plain-English hint ("search box", "Sign
   // in"). Matching happens by real page attributes (placeholder/aria-label/name/type), far
   // more robust than asking an LLM to guess DOM selectors it's never seen.
-  static Future<WebSnapshot> type(WebSession session, String hint, String text) async {
+  static Future<WebSnapshot> type(
+    WebSession session,
+    String hint,
+    String text,
+  ) async {
     final found = await session.page.evaluate<bool>(
       '''
       function(hint) {
@@ -132,7 +153,11 @@ class WebBrowseService {
     if (!found) throw Exception('no matching input field found for "$hint"');
 
     await session.page.click('[data-wyrd-target="1"]', clickCount: 3);
-    await session.page.type('[data-wyrd-target="1"]', text, delay: const Duration(milliseconds: 15));
+    await session.page.type(
+      '[data-wyrd-target="1"]',
+      text,
+      delay: const Duration(milliseconds: 15),
+    );
     await session.page.evaluate<void>(
       "function() { const el = document.querySelector('[data-wyrd-target=\"1\"]'); if (el) el.removeAttribute('data-wyrd-target'); }",
     );
@@ -160,7 +185,8 @@ class WebBrowseService {
       ''',
       args: [hint],
     );
-    if (!found) throw Exception('no matching clickable element found for "$hint"');
+    if (!found)
+      throw Exception('no matching clickable element found for "$hint"');
 
     try {
       await session.page.clickAndWaitForNavigation(

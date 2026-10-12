@@ -13,7 +13,8 @@ class TrainingEndpoint extends Endpoint {
 
   Future<void> _owner(Session session) async {
     final who = session.authenticated?.userIdentifier;
-    if (who == null || !await DroneService.isOperator(session, UuidValue.fromString(who))) {
+    if (who == null ||
+        !await DroneService.isOperator(session, UuidValue.fromString(who))) {
       throw Exception('Only the owner can export training data.');
     }
   }

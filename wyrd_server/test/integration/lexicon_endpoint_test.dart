@@ -13,7 +13,10 @@ void main() {
         expect(stats.attempted, 0);
         expect(stats.recentWords, isEmpty);
 
-        final word = await endpoints.lexicon.getWord(sessionBuilder, 'ephemeral');
+        final word = await endpoints.lexicon.getWord(
+          sessionBuilder,
+          'ephemeral',
+        );
         expect(word, isNull);
       },
     );
@@ -46,7 +49,10 @@ void main() {
         expect(stats.attempted, 2);
         expect(stats.recentWords.single.word, 'ephemeral');
 
-        final word = await endpoints.lexicon.getWord(sessionBuilder, 'EPHEMERAL');
+        final word = await endpoints.lexicon.getWord(
+          sessionBuilder,
+          'EPHEMERAL',
+        );
         expect(word, isNotNull);
         expect(word!.definition, 'lasting for a very short time');
       },

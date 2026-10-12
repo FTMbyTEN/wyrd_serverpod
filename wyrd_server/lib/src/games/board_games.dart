@@ -22,11 +22,17 @@ abstract class BoardGame {
   /// WYRD's move at [level] (1 gentle .. 6 full strength).
   String aiMove(Map<String, dynamic> s, int level, Random r);
 
-  static final all = <String, BoardGame>{'tictactoe': TicTacToe(), 'connect4': ConnectFour(), 'reversi': Reversi()};
+  static final all = <String, BoardGame>{
+    'tictactoe': TicTacToe(),
+    'connect4': ConnectFour(),
+    'reversi': Reversi(),
+  };
 
-  static Map<String, dynamic> decode(String state) => jsonDecode(state) as Map<String, dynamic>;
+  static Map<String, dynamic> decode(String state) =>
+      jsonDecode(state) as Map<String, dynamic>;
   static String encode(Map<String, dynamic> s) => jsonEncode(s);
-  static List<int> board(Map<String, dynamic> s) => (s['b'] as List).cast<int>();
+  static List<int> board(Map<String, dynamic> s) =>
+      (s['b'] as List).cast<int>();
   static int turn(Map<String, dynamic> s) => s['t'] as int;
 }
 
@@ -34,10 +40,19 @@ abstract class BoardGame {
 /// near-best one, so the gentle levels make human mistakes.
 String _choose(List<(String, double)> scored, int level, Random r) {
   scored.sort((a, b) => b.$2.compareTo(a.$2));
-  const slack = [0.9, 0.6, 0.4, 0.22, 0.1, 0.0]; // how far below the best a move may be (0..1 of the spread)
+  const slack = [
+    0.9,
+    0.6,
+    0.4,
+    0.22,
+    0.1,
+    0.0,
+  ]; // how far below the best a move may be (0..1 of the spread)
   final best = scored.first.$2, worst = scored.last.$2;
   final spread = max(1e-9, best - worst);
-  final ok = scored.where((m) => best - m.$2 <= slack[level.clamp(1, 6) - 1] * spread).toList();
+  final ok = scored
+      .where((m) => best - m.$2 <= slack[level.clamp(1, 6) - 1] * spread)
+      .toList();
   return ok[r.nextInt(ok.length)].$1;
 }
 
@@ -46,7 +61,16 @@ String _choose(List<(String, double)> scored, int level, Random r) {
 class TicTacToe extends BoardGame {
   @override
   String get name => 'tictactoe';
-  static const _lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  static const _lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
 
   @override
   Map<String, dynamic> initial() => {'b': List.filled(9, -1), 't': 0};
@@ -55,7 +79,10 @@ class TicTacToe extends BoardGame {
   List<String> legal(Map<String, dynamic> s) {
     if (outcome(s) != null) return [];
     final b = BoardGame.board(s);
-    return [for (var i = 0; i < 9; i++) if (b[i] == -1) '$i'];
+    return [
+      for (var i = 0; i < 9; i++)
+        if (b[i] == -1) '$i',
+    ];
   }
 
   @override
@@ -71,7 +98,8 @@ class TicTacToe extends BoardGame {
   int? outcome(Map<String, dynamic> s) {
     final b = BoardGame.board(s);
     for (final l in _lines) {
-      if (b[l[0]] != -1 && b[l[0]] == b[l[1]] && b[l[1]] == b[l[2]]) return b[l[0]];
+      if (b[l[0]] != -1 && b[l[0]] == b[l[1]] && b[l[1]] == b[l[2]])
+        return b[l[0]];
     }
     return b.contains(-1) ? null : 2;
   }
@@ -92,7 +120,11 @@ class TicTacToe extends BoardGame {
   @override
   String aiMove(Map<String, dynamic> s, int level, Random r) {
     final me = BoardGame.turn(s);
-    return _choose([for (final m in legal(s)) (m, _score(apply(s, m), me))], level, r);
+    return _choose(
+      [for (final m in legal(s)) (m, _score(apply(s, m), me))],
+      level,
+      r,
+    );
   }
 }
 
@@ -110,7 +142,10 @@ class ConnectFour extends BoardGame {
   List<String> legal(Map<String, dynamic> s) {
     if (outcome(s) != null) return [];
     final b = BoardGame.board(s);
-    return [for (var c = 0; c < cols; c++) if (b[c] == -1) '$c']; // the top cell of the column is free
+    return [
+      for (var c = 0; c < cols; c++)
+        if (b[c] == -1) '$c',
+    ]; // the top cell of the column is free
   }
 
   @override
@@ -139,7 +174,12 @@ class ConnectFour extends BoardGame {
           var n = 1;
           while (n < 4) {
             final rr = r + dr * n, cc = c + dc * n;
-            if (rr < 0 || rr >= rows || cc < 0 || cc >= cols || b[rr * cols + cc] != p) break;
+            if (rr < 0 ||
+                rr >= rows ||
+                cc < 0 ||
+                cc >= cols ||
+                b[rr * cols + cc] != p)
+              break;
             n++;
           }
           if (n == 4) return p;
@@ -153,7 +193,8 @@ class ConnectFour extends BoardGame {
   double _eval(List<int> b, int me) {
     var score = 0.0;
     for (var r = 0; r < rows; r++) {
-      if (b[r * cols + 3] == me) score += 3; // the centre column is worth having
+      if (b[r * cols + 3] == me)
+        score += 3; // the centre column is worth having
       for (var c = 0; c < cols; c++) {
         for (final (dr, dc) in const [(0, 1), (1, 0), (1, 1), (1, -1)]) {
           final er = r + dr * 3, ec = c + dc * 3;
@@ -161,8 +202,10 @@ class ConnectFour extends BoardGame {
           var mine = 0, theirs = 0;
           for (var k = 0; k < 4; k++) {
             final v = b[(r + dr * k) * cols + c + dc * k];
-            if (v == me) mine++;
-            else if (v == 1 - me) theirs++;
+            if (v == me)
+              mine++;
+            else if (v == 1 - me)
+              theirs++;
           }
           if (theirs == 0) score += const [0, 1, 4, 20, 1000][mine];
           if (mine == 0) score -= const [0, 1, 5, 25, 1000][theirs];
@@ -172,16 +215,28 @@ class ConnectFour extends BoardGame {
     return score;
   }
 
-  double _search(Map<String, dynamic> s, int depth, double a, double b, int me) {
+  double _search(
+    Map<String, dynamic> s,
+    int depth,
+    double a,
+    double b,
+    int me,
+  ) {
     final o = outcome(s);
-    if (o != null) return o == 2 ? 0 : (o == me ? 100000.0 + depth : -100000.0 - depth);
+    if (o != null)
+      return o == 2 ? 0 : (o == me ? 100000.0 + depth : -100000.0 - depth);
     if (depth == 0) return _eval(BoardGame.board(s), me);
     final mine = BoardGame.turn(s) == me;
     // centre columns first: better moves earlier make the search cut far more
-    final moves = legal(s)..sort((x, y) => (int.parse(x) - 3).abs() - (int.parse(y) - 3).abs());
+    final moves = legal(s)
+      ..sort((x, y) => (int.parse(x) - 3).abs() - (int.parse(y) - 3).abs());
     for (final m in moves) {
       final v = _search(apply(s, m), depth - 1, a, b, me);
-      if (mine) { a = max(a, v); } else { b = min(b, v); }
+      if (mine) {
+        a = max(a, v);
+      } else {
+        b = min(b, v);
+      }
       if (a >= b) break;
     }
     return mine ? a : b;
@@ -192,7 +247,14 @@ class ConnectFour extends BoardGame {
     final me = BoardGame.turn(s);
     const depth = [1, 2, 3, 4, 5, 6];
     final d = depth[level.clamp(1, 6) - 1];
-    return _choose([for (final m in legal(s)) (m, _search(apply(s, m), d - 1, -1e12, 1e12, me))], level, r);
+    return _choose(
+      [
+        for (final m in legal(s))
+          (m, _search(apply(s, m), d - 1, -1e12, 1e12, me)),
+      ],
+      level,
+      r,
+    );
   }
 }
 
@@ -201,17 +263,91 @@ class ConnectFour extends BoardGame {
 class Reversi extends BoardGame {
   @override
   String get name => 'reversi';
-  static const _dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)];
+  static const _dirs = [
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, -1),
+    (0, 1),
+    (1, -1),
+    (1, 0),
+    (1, 1),
+  ];
   // corners are gold, the squares next to them are traps
   static const _weight = [
-    100, -20, 10, 5, 5, 10, -20, 100, -20, -50, -2, -2, -2, -2, -50, -20, 10, -2, -1, -1, -1, -1, -2, 10, 5, -2, -1, -1, -1, -1, -2, 5,
-    5, -2, -1, -1, -1, -1, -2, 5, 10, -2, -1, -1, -1, -1, -2, 10, -20, -50, -2, -2, -2, -2, -50, -20, 100, -20, 10, 5, 5, 10, -20, 100,
+    100,
+    -20,
+    10,
+    5,
+    5,
+    10,
+    -20,
+    100,
+    -20,
+    -50,
+    -2,
+    -2,
+    -2,
+    -2,
+    -50,
+    -20,
+    10,
+    -2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -2,
+    10,
+    5,
+    -2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -2,
+    5,
+    5,
+    -2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -2,
+    5,
+    10,
+    -2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -2,
+    10,
+    -20,
+    -50,
+    -2,
+    -2,
+    -2,
+    -2,
+    -50,
+    -20,
+    100,
+    -20,
+    10,
+    5,
+    5,
+    10,
+    -20,
+    100,
   ];
 
   @override
   Map<String, dynamic> initial() {
     final b = List.filled(64, -1);
-    b[27] = 1; b[36] = 1; b[28] = 0; b[35] = 0; // the four in the middle (first player is dark)
+    b[27] = 1;
+    b[36] = 1;
+    b[28] = 0;
+    b[35] = 0; // the four in the middle (first player is dark)
     return {'b': b, 't': 0};
   }
 
@@ -224,14 +360,24 @@ class Reversi extends BoardGame {
       var r = r0 + dr, c = c0 + dc;
       while (r >= 0 && r < 8 && c >= 0 && c < 8 && b[r * 8 + c] == 1 - t) {
         run.add(r * 8 + c);
-        r += dr; c += dc;
+        r += dr;
+        c += dc;
       }
-      if (run.isNotEmpty && r >= 0 && r < 8 && c >= 0 && c < 8 && b[r * 8 + c] == t) out.addAll(run);
+      if (run.isNotEmpty &&
+          r >= 0 &&
+          r < 8 &&
+          c >= 0 &&
+          c < 8 &&
+          b[r * 8 + c] == t)
+        out.addAll(run);
     }
     return out;
   }
 
-  List<String> _placements(List<int> b, int t) => [for (var i = 0; i < 64; i++) if (_flips(b, i, t).isNotEmpty) '$i'];
+  List<String> _placements(List<int> b, int t) => [
+    for (var i = 0; i < 64; i++)
+      if (_flips(b, i, t).isNotEmpty) '$i',
+  ];
 
   @override
   List<String> legal(Map<String, dynamic> s) {
@@ -242,7 +388,8 @@ class Reversi extends BoardGame {
 
   @override
   Map<String, dynamic> apply(Map<String, dynamic> s, String move) {
-    if (!legal(s).contains(move)) throw Exception("That move doesn't flip anything.");
+    if (!legal(s).contains(move))
+      throw Exception("That move doesn't flip anything.");
     final b = [...BoardGame.board(s)];
     final t = BoardGame.turn(s);
     if (move != 'pass') {
@@ -258,25 +405,39 @@ class Reversi extends BoardGame {
   @override
   int? outcome(Map<String, dynamic> s) {
     final b = BoardGame.board(s);
-    if (_placements(b, 0).isNotEmpty || _placements(b, 1).isNotEmpty) return null;
-    final dark = b.where((v) => v == 0).length, light = b.where((v) => v == 1).length;
+    if (_placements(b, 0).isNotEmpty || _placements(b, 1).isNotEmpty)
+      return null;
+    final dark = b.where((v) => v == 0).length,
+        light = b.where((v) => v == 1).length;
     return dark == light ? 2 : (dark > light ? 0 : 1);
   }
 
   double _eval(List<int> b, int me) {
     var s = 0.0;
     for (var i = 0; i < 64; i++) {
-      if (b[i] == me) s += _weight[i];
-      else if (b[i] == 1 - me) s -= _weight[i];
+      if (b[i] == me)
+        s += _weight[i];
+      else if (b[i] == 1 - me)
+        s -= _weight[i];
     }
-    return s + 3.0 * (_placements(b, me).length - _placements(b, 1 - me).length); // room to move matters
+    return s +
+        3.0 *
+            (_placements(b, me).length -
+                _placements(b, 1 - me).length); // room to move matters
   }
 
-  double _search(Map<String, dynamic> s, int depth, double a, double b, int me) {
+  double _search(
+    Map<String, dynamic> s,
+    int depth,
+    double a,
+    double b,
+    int me,
+  ) {
     final o = outcome(s);
     if (o != null) {
       final bd = BoardGame.board(s);
-      final diff = bd.where((v) => v == me).length - bd.where((v) => v == 1 - me).length;
+      final diff =
+          bd.where((v) => v == me).length - bd.where((v) => v == 1 - me).length;
       // a finished game: winning beats any position, and by more discs is better still
       return o == 2 ? 0 : (o == me ? 10000.0 : -10000.0) + diff * 10;
     }
@@ -284,7 +445,11 @@ class Reversi extends BoardGame {
     final mine = BoardGame.turn(s) == me;
     for (final m in legal(s)) {
       final v = _search(apply(s, m), depth - 1, a, b, me);
-      if (mine) { a = max(a, v); } else { b = min(b, v); }
+      if (mine) {
+        a = max(a, v);
+      } else {
+        b = min(b, v);
+      }
       if (a >= b) break;
     }
     return mine ? a : b;
@@ -295,6 +460,13 @@ class Reversi extends BoardGame {
     final me = BoardGame.turn(s);
     const depth = [1, 1, 2, 3, 3, 4];
     final d = depth[level.clamp(1, 6) - 1];
-    return _choose([for (final m in legal(s)) (m, _search(apply(s, m), d - 1, -1e12, 1e12, me))], level, r);
+    return _choose(
+      [
+        for (final m in legal(s))
+          (m, _search(apply(s, m), d - 1, -1e12, 1e12, me)),
+      ],
+      level,
+      r,
+    );
   }
 }

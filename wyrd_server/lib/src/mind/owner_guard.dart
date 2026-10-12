@@ -11,7 +11,8 @@ class OwnerGuard {
   static Future<void> check(Session session, [String what = 'this']) async {
     if (openForTesting) return;
     final who = session.authenticated?.userIdentifier;
-    if (who == null || !await DroneService.isOperator(session, UuidValue.fromString(who))) {
+    if (who == null ||
+        !await DroneService.isOperator(session, UuidValue.fromString(who))) {
       throw Exception('Only the owner can see $what.');
     }
   }

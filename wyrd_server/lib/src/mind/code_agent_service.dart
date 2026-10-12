@@ -91,7 +91,8 @@ class CodeAgentService {
 
   static const _openSavedAppTool = {
     'name': 'open_saved_app',
-    'description': 'Open again, live in their interface, the app you built earlier in this chat (it is saved), '
+    'description':
+        'Open again, live in their interface, the app you built earlier in this chat (it is saved), '
         'exactly as it was. Use it when they only ask to open, load, show or run it again; to change it, '
         'build the new version with preview_app.',
     'input_schema': {'type': 'object', 'properties': <String, dynamic>{}},
@@ -125,7 +126,8 @@ class CodeAgentService {
     required UuidValue authUserId,
     required List<({String userText, String botText})> history,
     required String userText,
-    String? savedApp, // the latest app built in this chat: open_saved_app reopens it without rewriting it
+    String?
+    savedApp, // the latest app built in this chat: open_saved_app reopens it without rewriting it
   }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
@@ -148,7 +150,18 @@ class CodeAgentService {
             .post(
               Claude.endpoint,
               headers: Claude.headers(apiKey),
-              body: jsonEncode(Claude.body(system: _systemPrompt, messages: messages, tools: [_previewAppTool, if (savedApp != null) _openSavedAppTool], maxTokens: _maxTokens, think: true)),
+              body: jsonEncode(
+                Claude.body(
+                  system: _systemPrompt,
+                  messages: messages,
+                  tools: [
+                    _previewAppTool,
+                    if (savedApp != null) _openSavedAppTool,
+                  ],
+                  maxTokens: _maxTokens,
+                  think: true,
+                ),
+              ),
             )
             .timeout(const Duration(seconds: 90));
       } catch (e) {
@@ -164,7 +177,11 @@ class CodeAgentService {
       }
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
+      await LlmBudget.record(
+        session,
+        data['usage'] as Map<String, dynamic>?,
+        model: _model,
+      );
       final content = (data['content'] as List<dynamic>? ?? [])
           .cast<Map<String, dynamic>>();
       final thought = Claude.thinkingOf(content);
@@ -175,7 +192,12 @@ class CodeAgentService {
         for (final block in content.where((b) => b['type'] == 'tool_use')) {
           if (block['name'] == 'open_saved_app' && savedApp != null) {
             pendingAction = ChatAction(type: 'preview_app', html: savedApp);
-            toolResults.add({'type': 'tool_result', 'tool_use_id': block['id'], 'content': 'The saved app is open again, live in their interface.'});
+            toolResults.add({
+              'type': 'tool_result',
+              'tool_use_id': block['id'],
+              'content':
+                  'The saved app is open again, live in their interface.',
+            });
             continue;
           }
           if (block['name'] != 'preview_app') continue;
@@ -214,7 +236,11 @@ class CodeAgentService {
       if (LlmService.isDenialReply(text)) return null;
 
       _recentCodeReplyAt[authUserId.toString()] = DateTime.now();
-      return (text: text, action: pendingAction, thinking: thoughts.isEmpty ? null : thoughts.join('\n\n'));
+      return (
+        text: text,
+        action: pendingAction,
+        thinking: thoughts.isEmpty ? null : thoughts.join('\n\n'),
+      );
     }
     return null;
   }

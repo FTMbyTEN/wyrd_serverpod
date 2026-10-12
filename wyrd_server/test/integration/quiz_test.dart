@@ -36,7 +36,11 @@ void main() {
       expect(qs.length, greaterThanOrEqualTo(3));
       for (final q in qs) {
         expect(q.answer, inInclusiveRange(0, q.options.length - 1));
-        expect(q.options.toSet().length, q.options.length, reason: 'no repeated options: ${q.options}');
+        expect(
+          q.options.toSet().length,
+          q.options.length,
+          reason: 'no repeated options: ${q.options}',
+        );
         if (q.kind == 'cloze') {
           expect(q.prompt, contains('_____'));
           expect(q.options, hasLength(4));
@@ -53,26 +57,48 @@ void main() {
       final austen = await QuizService.make(s, _austen, seed: 2);
       for (final q in [...physics, ...austen]) {
         // ignore: avoid_print
-        print('[${q.kind}] ${q.prompt}\n    ${q.options}  -> ${q.options[q.answer]}');
+        print(
+          '[${q.kind}] ${q.prompt}\n    ${q.options}  -> ${q.options[q.answer]}',
+        );
       }
       check(physics);
       check(austen);
       expect(physics.every((q) => !q.prompt.contains('##')), isTrue);
     });
 
-    test('words missed last round come back first, and rounds add up', () async {
-      final authed = sessionBuilder.copyWith(authentication: AuthenticationOverride.authenticationInfo(meId, {}));
-      final s = sessionBuilder.build();
-      final now = DateTime.now().toUtc();
-      final item = await ReadingItem.db.insertRow(s, ReadingItem(
-        authUserId: me, url: 'openstax:x', title: 'College Physics', kind: 'textbook', source: 'openstax', total: 1, startedAt: now, updatedAt: now,
-      ));
-      final stats = await endpoints.library.quizDone(authed, item.id!, 3, 5, ['uncertainty']);
-      expect(stats.rounds, 1);
-      expect(stats.correct, 3);
-      final qs = await endpoints.library.quiz(authed, item.id!, _physics);
-      expect(qs.map((q) => q.keyword.toLowerCase()), contains('uncertainty'));
-      expect(() => endpoints.library.quizDone(authed, item.id!, 9, 5, const []), throwsA(anything));
-    });
+    test(
+      'words missed last round come back first, and rounds add up',
+      () async {
+        final authed = sessionBuilder.copyWith(
+          authentication: AuthenticationOverride.authenticationInfo(meId, {}),
+        );
+        final s = sessionBuilder.build();
+        final now = DateTime.now().toUtc();
+        final item = await ReadingItem.db.insertRow(
+          s,
+          ReadingItem(
+            authUserId: me,
+            url: 'openstax:x',
+            title: 'College Physics',
+            kind: 'textbook',
+            source: 'openstax',
+            total: 1,
+            startedAt: now,
+            updatedAt: now,
+          ),
+        );
+        final stats = await endpoints.library.quizDone(authed, item.id!, 3, 5, [
+          'uncertainty',
+        ]);
+        expect(stats.rounds, 1);
+        expect(stats.correct, 3);
+        final qs = await endpoints.library.quiz(authed, item.id!, _physics);
+        expect(qs.map((q) => q.keyword.toLowerCase()), contains('uncertainty'));
+        expect(
+          () => endpoints.library.quizDone(authed, item.id!, 9, 5, const []),
+          throwsA(anything),
+        );
+      },
+    );
   });
 }

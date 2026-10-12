@@ -22,12 +22,23 @@ class BrowserSafety {
     if (address.type == InternetAddressType.IPv6) {
       final raw = address.rawAddress;
       // IPv4-mapped (::ffff:a.b.c.d): judge the IPv4 address inside
-      final mapped = raw.length == 16 && raw.sublist(0, 10).every((b) => b == 0) && raw[10] == 0xff && raw[11] == 0xff;
-      if (mapped) return isPrivateIp(InternetAddress.fromRawAddress(raw.sublist(12), type: InternetAddressType.IPv4));
+      final mapped =
+          raw.length == 16 &&
+          raw.sublist(0, 10).every((b) => b == 0) &&
+          raw[10] == 0xff &&
+          raw[11] == 0xff;
+      if (mapped)
+        return isPrivateIp(
+          InternetAddress.fromRawAddress(
+            raw.sublist(12),
+            type: InternetAddressType.IPv4,
+          ),
+        );
     }
     if (address.type == InternetAddressType.IPv4) {
       final parts = address.rawAddress;
-      if (parts[0] == 100 && parts[1] >= 64 && parts[1] <= 127) return true; // carrier-grade NAT
+      if (parts[0] == 100 && parts[1] >= 64 && parts[1] <= 127)
+        return true; // carrier-grade NAT
       if (parts[0] >= 224) return true; // multicast, reserved, broadcast
       if (parts[0] == 10) return true;
       if (parts[0] == 127) return true;
@@ -58,7 +69,9 @@ class BrowserSafety {
       throw Exception('could not resolve ${uri.host}');
     }
     if (addresses.any(isPrivateIp)) {
-      throw Exception('that address resolves to a private/internal network, not allowed');
+      throw Exception(
+        'that address resolves to a private/internal network, not allowed',
+      );
     }
     return uri;
   }
@@ -73,7 +86,9 @@ class BrowserSafety {
       throw Exception('could not resolve $host');
     }
     if (addresses.isEmpty || addresses.any(isPrivateIp)) {
-      throw Exception('that address resolves to a private/internal network, not allowed');
+      throw Exception(
+        'that address resolves to a private/internal network, not allowed',
+      );
     }
     return addresses.first;
   }
@@ -86,16 +101,19 @@ class BrowserSafety {
     final client = HttpClient()
       ..findProxy = ((_) => 'DIRECT')
       ..connectionTimeout = const Duration(seconds: 15);
-    client.connectionFactory = (Uri uri, String? proxyHost, int? proxyPort) async {
-      final address = await resolvePublic(uri.host);
-      final port = uri.hasPort ? uri.port : (uri.scheme == 'https' ? 443 : 80);
-      final task = await Socket.startConnect(address, port);
-      if (uri.scheme != 'https') return task;
-      return ConnectionTask.fromSocket(
-        task.socket.then((s) => SecureSocket.secure(s, host: uri.host)),
-        task.cancel,
-      );
-    };
+    client.connectionFactory =
+        (Uri uri, String? proxyHost, int? proxyPort) async {
+          final address = await resolvePublic(uri.host);
+          final port = uri.hasPort
+              ? uri.port
+              : (uri.scheme == 'https' ? 443 : 80);
+          final task = await Socket.startConnect(address, port);
+          if (uri.scheme != 'https') return task;
+          return ConnectionTask.fromSocket(
+            task.socket.then((s) => SecureSocket.secure(s, host: uri.host)),
+            task.cancel,
+          );
+        };
     return client;
   }
 }

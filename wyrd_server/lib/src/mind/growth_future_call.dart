@@ -6,7 +6,8 @@ import 'package:serverpod/serverpod.dart';
 /// once at server startup in server.dart via pod.futureCalls.growth.takeSnapshot.callRecurring().
 class GrowthFutureCall extends FutureCall {
   Future<void> takeSnapshot(Session session) async {
-    if (!TickSchedule.claim('growthSnapshot', TickSchedule.growthSnapshot)) return;
+    if (!TickSchedule.claim('growthSnapshot', TickSchedule.growthSnapshot))
+      return;
     await GrowthService.takeSnapshot(session);
   }
 }
