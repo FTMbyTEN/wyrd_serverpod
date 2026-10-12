@@ -190,6 +190,13 @@ class ChatService {
                   '${t.appHtml == null ? '' : '\n\nThe app\'s code:\n```html\n${t.appHtml!.length > 24000 ? '${t.appHtml!.substring(0, 24000)}\n<!-- (cut) -->' : t.appHtml}\n```'}',
             ))
         .toList();
+    // the latest app WYRD built in this chat, so asking to open it again can (open_saved_app)
+    final savedApp = (await ConversationTurn.db.findFirstRow(
+      session,
+      where: (t) => t.chatId.equals(chat.id) & t.appHtml.notEquals(null),
+      orderBy: (t) => t.id.desc(),
+    ))
+        ?.appHtml;
     // the last _historyTurns exchanges, oldest first
     final history = recentTurns.reversed.map((t) => (userText: t.userText, botText: '${t.botText}${appNote(t)}')).toList();
 
@@ -227,6 +234,7 @@ class ChatService {
             authUserId: authUserId,
             history: codeHistory,
             userText: text,
+            savedApp: savedApp,
           )
         : null;
 
@@ -276,6 +284,7 @@ class ChatService {
               // teaching a file takes room; a summary of one needs less
               maxTokens: aboutDoc ? (DocumentService.wantsSummary(text) ? 700 : 1400) : plan.maxTokens,
               droneOperator: droneOperator,
+              savedApp: savedApp,
               readUrls: readUrls,
               reads: reads,
             );

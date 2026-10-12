@@ -28,11 +28,11 @@ class CodeAgentService {
   // answer; a false negative leaves a code request stuck in the short conversational path.
   static final _codePatterns = <RegExp>[
     RegExp(
-      r'\b(write|generate|create|build|refactor|debug|fix|optimi[sz]e|program|code)\b[^.!?]{0,40}\b(code|program|script|function|class|method|algorithm|snippet|regex|query|component|endpoint|calculator|app|website|tool|bot|game)\b',
+      r'\b(write|generate|create|build|refactor|debug|fix|optimi[sz]e|program|code|reprogram|rewrite|redo|remake|rebuild|recode|improve|update|modify|extend)\b[^.!?]{0,40}\b(code|program|script|function|class|method|algorithm|snippet|regex|query|component|endpoint|calculator|app|website|tool|bot|game)\b',
       caseSensitive: false,
     ),
     RegExp(
-      r'\b(write|build|make|program|code|create)\s+(me\s+|us\s+)?(a|an|the)?\s*(calculator|app|website|game|bot|script|program|tool)\b',
+      r'\b(write|build|make|program|code|create|reprogram|rewrite|redo|remake|rebuild)\s+(me\s+|us\s+)?(a|an|the)?\s*(calculator|app|website|game|bot|script|program|tool)\b',
       caseSensitive: false,
     ),
     RegExp(
@@ -89,6 +89,14 @@ class CodeAgentService {
     },
   };
 
+  static const _openSavedAppTool = {
+    'name': 'open_saved_app',
+    'description': 'Open again, live in their interface, the app you built earlier in this chat (it is saved), '
+        'exactly as it was. Use it when they only ask to open, load, show or run it again; to change it, '
+        'build the new version with preview_app.',
+    'input_schema': {'type': 'object', 'properties': <String, dynamic>{}},
+  };
+
   static const _systemPrompt =
       'You are WYRD, and for this message you are operating as a genuinely excellent software '
       'engineer — precise, idiomatic, no hand-waving. Write real, complete, working code, not '
@@ -111,6 +119,7 @@ class CodeAgentService {
     required UuidValue authUserId,
     required List<({String userText, String botText})> history,
     required String userText,
+    String? savedApp, // the latest app built in this chat: open_saved_app reopens it without rewriting it
   }) async {
     final apiKey = session.passwords['anthropicApiKey'];
     if (apiKey == null || apiKey.isEmpty) return null;
@@ -133,7 +142,7 @@ class CodeAgentService {
             .post(
               Claude.endpoint,
               headers: Claude.headers(apiKey),
-              body: jsonEncode(Claude.body(system: _systemPrompt, messages: messages, tools: [_previewAppTool], maxTokens: _maxTokens, think: true)),
+              body: jsonEncode(Claude.body(system: _systemPrompt, messages: messages, tools: [_previewAppTool, if (savedApp != null) _openSavedAppTool], maxTokens: _maxTokens, think: true)),
             )
             .timeout(const Duration(seconds: 90));
       } catch (e) {
@@ -158,6 +167,11 @@ class CodeAgentService {
       if (data['stop_reason'] == 'tool_use' && round < _maxToolRounds) {
         final toolResults = <Map<String, dynamic>>[];
         for (final block in content.where((b) => b['type'] == 'tool_use')) {
+          if (block['name'] == 'open_saved_app' && savedApp != null) {
+            pendingAction = ChatAction(type: 'preview_app', html: savedApp);
+            toolResults.add({'type': 'tool_result', 'tool_use_id': block['id'], 'content': 'The saved app is open again, live in their interface.'});
+            continue;
+          }
           if (block['name'] != 'preview_app') continue;
           final input = block['input'] as Map<String, dynamic>? ?? {};
           pendingAction = ChatAction(

@@ -199,6 +199,13 @@ class ChatToolService {
       'required': ['instruction'],
     },
   };
+  // offered only when this chat has an app WYRD built (ConversationTurn.appHtml)
+  static const _openSavedAppTool = {
+    'name': 'open_saved_app',
+    'description': 'Open again, live in their interface, the app you built earlier in this chat (it is saved). Use '
+        'it whenever they ask to open, load, show, run or pull it up again. Then say it is open.',
+    'input_schema': {'type': 'object', 'properties': <String, dynamic>{}},
+  };
   static const _abortDroneTool = {
     'name': 'abort_drone_flight',
     'description': 'Immediately cancel whatever the drone is doing and bring it home. Use whenever they ask to stop, abort, cancel, or bring the drone back.',
@@ -215,6 +222,7 @@ class ChatToolService {
     required String userText,
     required int maxTokens,
     bool droneOperator = false,
+    String? savedApp, // the latest app WYRD built in this chat, if any: open_saved_app reopens it
     List<String>? readUrls, // filled with the pages and books read while answering
     List<PageSlice>? reads, // ...and the slices themselves, so a later "continue" knows where it stopped
   }) async {
@@ -241,7 +249,7 @@ class ChatToolService {
 
     try {
       for (var round = 0; round <= _maxToolRounds; round++) {
-        final tools = [..._tools, if (droneOperator) ...[_planDroneTool, _abortDroneTool]];
+        final tools = [..._tools, if (savedApp != null) _openSavedAppTool, if (droneOperator) ...[_planDroneTool, _abortDroneTool]];
         final (chars, images) = _size(systemPrompt, messages, tools);
         final estimate = LlmBudget.estimateUsd(model: _model, inputChars: chars, images: images, maxOutputTokens: maxTokens);
         if (!await LlmBudget.allow(session, background: false, estimateUsd: estimate)) {
@@ -277,6 +285,15 @@ class ChatToolService {
             final toolUseId = block['id'] as String;
 
             try {
+              if (name == 'open_saved_app' && savedApp != null) {
+                pendingAction = ChatAction(type: 'preview_app', html: savedApp);
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': 'The app is open again, live in their interface (and its card under your earlier reply lets them download it).',
+                });
+                continue;
+              }
               if (name == 'open_world_map') {
                 final country = (input['focus_country'] as String? ?? '').trim();
                 pendingAction = ChatAction(type: 'open_world_map', country: country.isEmpty ? null : country);

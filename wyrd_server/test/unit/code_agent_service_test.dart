@@ -12,6 +12,9 @@ void main() {
       'sort this list in python',
       'here is my code ```js\nconsole.log(1)\n```',
       'make a game',
+      'Reprogram the calculator',
+      'rewrite the calculator so the root key works',
+      'improve the app with a dark mode',
     ]) {
       test('treats "$text" as a code request', () {
         expect(CodeAgentService.isCodeRequest(text), isTrue);
@@ -22,6 +25,7 @@ void main() {
       'how are you today?',
       'tell me about the moon',
       "what's the weather in Lagos",
+      'update me on the news',
     ]) {
       test('treats "$text" as ordinary chat', () {
         expect(CodeAgentService.isCodeRequest(text), isFalse);
