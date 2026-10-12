@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../mind/claude.dart';
 import '../mind/llm_budget.dart';
 import 'city_charter_service.dart';
 import 'game_learning.dart';
@@ -21,7 +22,7 @@ import 'world_authority.dart';
 ///
 /// Studio access is for operators only. Everything WYRD proposes is checked before it is stored.
 class CityDesignService {
-  static const _model = 'claude-haiku-4-5-20251001';
+  static const _model = Claude.core;
   static const kinds = {'idea', 'rule', 'mission', 'npc_lines', 'tuning', 'event'};
   static const liveKinds = {'mission', 'npc_lines', 'tuning', 'event'};
 
@@ -145,10 +146,10 @@ ${log.isEmpty ? '(empty: this is the first session)' : log}''';
       return jsonEncode({'reply': 'I am out of thinking budget for today. Your note is in the log; let us continue tomorrow.', 'proposals': []});
     }
     final res = await http.post(
-      Uri.parse('https://api.anthropic.com/v1/messages'),
-      headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01'},
+      Claude.endpoint,
+      headers: Claude.headers(apiKey),
       body: jsonEncode({
-        'model': _model, 'max_tokens': 1600, 'system': system,
+        'model': _model, 'max_tokens': Claude.room(1600), 'thinking': {'type': 'disabled'}, 'system': system,
         'messages': [{'role': 'user', 'content': said}],
         'tools': [{
           'name': 'propose', 'description': 'Write a design proposal into the log for the owner to approve or reject.',

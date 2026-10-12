@@ -61,6 +61,7 @@ import 'mind/brain_firing.dart' as _i8r73c9y;
 import 'mind/brain_map.dart' as _ipeloevp;
 import 'mind/brain_neuron.dart' as _i8yuvbha;
 import 'mind/brain_synapse.dart' as _iqzn8nb5;
+import 'mind/chat.dart' as _ibisfjf2;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/chat_thread.dart' as _ildoeobn;
@@ -79,6 +80,7 @@ import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
 import 'mind/document_upload.dart' as _il5hhvzk;
 import 'mind/dream_entry.dart' as _izf9406n;
+import 'mind/eval_run.dart' as _iamh3di1;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
 import 'mind/filter_report.dart' as _idq6t4e8;
 import 'mind/gate_shape.dart' as _i00qabwy;
@@ -153,6 +155,7 @@ export 'mind/brain_firing.dart';
 export 'mind/brain_map.dart';
 export 'mind/brain_neuron.dart';
 export 'mind/brain_synapse.dart';
+export 'mind/chat.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
 export 'mind/chat_thread.dart';
@@ -171,6 +174,7 @@ export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
 export 'mind/document_upload.dart';
 export 'mind/dream_entry.dart';
+export 'mind/eval_run.dart';
 export 'mind/feed_ingest.dart';
 export 'mind/filter_report.dart';
 export 'mind/gate_shape.dart';
@@ -600,6 +604,66 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'chat',
+      dartName: 'Chat',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'chat_user_updated_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'updatedAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'chat_thread',
       dartName: 'ChatThread',
       schema: 'public',
@@ -1014,6 +1078,12 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'List<int>?',
         ),
         _isp.ColumnDefinition(
+          name: 'chatId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
           name: 'image',
           columnType: _isp.ColumnType.text,
           isNullable: true,
@@ -1029,6 +1099,19 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'conversation_turn_chat_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'chatId',
             ),
           ],
           type: 'btree',
@@ -1473,6 +1556,80 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'eval_run',
+      dartName: 'EvalRun',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'startedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'model',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'passed',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'total',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'costMicroUsd',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ms',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'results',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'eval_run_started_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'startedAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -4933,6 +5090,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iqzn8nb5.BrainSynapse) {
       return _iqzn8nb5.BrainSynapse.fromJson(data) as T;
     }
+    if (t == _ibisfjf2.Chat) {
+      return _ibisfjf2.Chat.fromJson(data) as T;
+    }
     if (t == _iagdrx9v.ChatAction) {
       return _iagdrx9v.ChatAction.fromJson(data) as T;
     }
@@ -4986,6 +5146,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _izf9406n.DreamEntry) {
       return _izf9406n.DreamEntry.fromJson(data) as T;
+    }
+    if (t == _iamh3di1.EvalRun) {
+      return _iamh3di1.EvalRun.fromJson(data) as T;
     }
     if (t == _ig20dqq5.FeedIngest) {
       return _ig20dqq5.FeedIngest.fromJson(data) as T;
@@ -5211,6 +5374,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_iqzn8nb5.BrainSynapse?>()) {
       return (data != null ? _iqzn8nb5.BrainSynapse.fromJson(data) : null) as T;
     }
+    if (t == _is.getType<_ibisfjf2.Chat?>()) {
+      return (data != null ? _ibisfjf2.Chat.fromJson(data) : null) as T;
+    }
     if (t == _is.getType<_iagdrx9v.ChatAction?>()) {
       return (data != null ? _iagdrx9v.ChatAction.fromJson(data) : null) as T;
     }
@@ -5272,6 +5438,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_izf9406n.DreamEntry?>()) {
       return (data != null ? _izf9406n.DreamEntry.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_iamh3di1.EvalRun?>()) {
+      return (data != null ? _iamh3di1.EvalRun.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ig20dqq5.FeedIngest?>()) {
       return (data != null ? _ig20dqq5.FeedIngest.fromJson(data) : null) as T;
@@ -5811,6 +5980,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ipeloevp.BrainMap => 'BrainMap',
       _i8yuvbha.BrainNeuron => 'BrainNeuron',
       _iqzn8nb5.BrainSynapse => 'BrainSynapse',
+      _ibisfjf2.Chat => 'Chat',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
       _ildoeobn.ChatThread => 'ChatThread',
@@ -5829,6 +5999,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i9vbq77t.DigestInfo => 'DigestInfo',
       _il5hhvzk.DocumentUpload => 'DocumentUpload',
       _izf9406n.DreamEntry => 'DreamEntry',
+      _iamh3di1.EvalRun => 'EvalRun',
       _ig20dqq5.FeedIngest => 'FeedIngest',
       _idq6t4e8.FilterReport => 'FilterReport',
       _i00qabwy.GateShape => 'GateShape',
@@ -5932,6 +6103,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'BrainNeuron';
       case _iqzn8nb5.BrainSynapse():
         return 'BrainSynapse';
+      case _ibisfjf2.Chat():
+        return 'Chat';
       case _iagdrx9v.ChatAction():
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
@@ -5968,6 +6141,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'DocumentUpload';
       case _izf9406n.DreamEntry():
         return 'DreamEntry';
+      case _iamh3di1.EvalRun():
+        return 'EvalRun';
       case _ig20dqq5.FeedIngest():
         return 'FeedIngest';
       case _idq6t4e8.FilterReport():
@@ -6157,6 +6332,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'BrainSynapse') {
       return deserialize<_iqzn8nb5.BrainSynapse>(data['data']);
     }
+    if (dataClassName == 'Chat') {
+      return deserialize<_ibisfjf2.Chat>(data['data']);
+    }
     if (dataClassName == 'ChatAction') {
       return deserialize<_iagdrx9v.ChatAction>(data['data']);
     }
@@ -6210,6 +6388,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'DreamEntry') {
       return deserialize<_izf9406n.DreamEntry>(data['data']);
+    }
+    if (dataClassName == 'EvalRun') {
+      return deserialize<_iamh3di1.EvalRun>(data['data']);
     }
     if (dataClassName == 'FeedIngest') {
       return deserialize<_ig20dqq5.FeedIngest>(data['data']);
@@ -6443,6 +6624,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ihg2pt9t.PlayerRating.t;
       case _ijbewlez.Belief:
         return _ijbewlez.Belief.t;
+      case _ibisfjf2.Chat:
+        return _ibisfjf2.Chat.t;
       case _ildoeobn.ChatThread:
         return _ildoeobn.ChatThread.t;
       case _i8fl0sel.ConversationTurn:
@@ -6455,6 +6638,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i0u3uu6s.DiaryEntry.t;
       case _izf9406n.DreamEntry:
         return _izf9406n.DreamEntry.t;
+      case _iamh3di1.EvalRun:
+        return _iamh3di1.EvalRun.t;
       case _iyj2s79k.GrowthSnapshot:
         return _iyj2s79k.GrowthSnapshot.t;
       case _i6r7yxin.IngestDay:

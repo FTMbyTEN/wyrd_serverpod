@@ -52,15 +52,17 @@ class LlmBudget {
 
   // List prices per million tokens (input, output). Unknown models are priced like the most
   // expensive listed one, so an estimate never undercounts.
+  // (Matched in order: haiku-5 before haiku.)
   static const _prices = <String, (double, double)>{
     'voyage': (0.02, 0.0),
+    'haiku-5': (0.10, 0.50),
     'haiku': (1.0, 5.0),
     'sonnet': (3.0, 15.0),
     'opus': (15.0, 75.0),
   };
 
   static (double, double) _priceFor(String? model) {
-    final m = (model ?? 'haiku').toLowerCase();
+    final m = (model ?? 'haiku-4').toLowerCase();
     for (final e in _prices.entries) {
       if (m.contains(e.key)) return e.value;
     }
@@ -82,12 +84,17 @@ class LlmBudget {
     return (row?.costMicroUsd ?? 0) / 1000000;
   }
 
-  /// Rough cost of a call before it's made: [inputChars] of prompt text (~3.5 chars a token),
-  /// [images] attached, up to [maxOutputTokens] back.
+  /// Haiku 5.5's tokenizer counts the same text as about 30% more tokens.
+  static bool _newTokenizer(String? model) => (model ?? '').contains('haiku-5');
+
+  /// Rough cost of a call before it's made: [inputChars] of prompt text (~3.5 chars a token, a
+  /// third fewer on the newer tokenizer), [images] attached, up to [maxOutputTokens] back (sized
+  /// for the old tokenizer, like Claude.room).
   static double estimateUsd({required String model, required int inputChars, int images = 0, required int maxOutputTokens}) {
     final (inPerM, outPerM) = _priceFor(model);
-    final inputTokens = inputChars / 3.5 + images * 1600;
-    return (inputTokens * inPerM + maxOutputTokens * outPerM) / 1000000;
+    final scale = _newTokenizer(model) ? 1.3 : 1.0;
+    final inputTokens = inputChars / 3.5 * scale + images * 1600;
+    return (inputTokens * inPerM + maxOutputTokens * scale * outPerM) / 1000000;
   }
 
   /// [estimateUsd], when given, must also fit under the cap: one big call (a long page, several
@@ -114,20 +121,31 @@ class LlmBudget {
     return false;
   }
 
-  /// [usage] is the `usage` object from an Anthropic Messages API response.
+  /// What a call cost, in micro-USD, from the `usage` object of its response. Cache reads cost a
+  /// tenth of the input price, cache writes a quarter more; Haiku 5.5 prompts over 100K tokens are
+  /// charged five times its usual rates.
+  static int costMicroUsd(Map<String, dynamic> usage, {String? model}) {
+    final plain = usage['input_tokens'] as num? ?? 0;
+    final written = usage['cache_creation_input_tokens'] as num? ?? 0;
+    final read = usage['cache_read_input_tokens'] as num? ?? 0;
+    final output = usage['output_tokens'] as num? ?? 0;
+    var (inPerM, outPerM) = _priceFor(model);
+    if (_newTokenizer(model) && plain + written + read > 100000) {
+      inPerM *= 5;
+      outPerM *= 5;
+    }
+    return ((plain + written * 1.25 + read * 0.1) * inPerM + output * outPerM).ceil(); // per-million prices -> micro-USD
+  }
+
+  /// [usage] is the `usage` object from an Anthropic Messages API response; [model] the model
+  /// that answered (priced as Haiku 4.5 when not given).
   static Future<void> record(
     Session session,
     Map<String, dynamic>? usage, {
     String? model,
   }) async {
     if (usage == null) return;
-    final input =
-        (usage['input_tokens'] as num? ?? 0) +
-        (usage['cache_creation_input_tokens'] as num? ?? 0) +
-        (usage['cache_read_input_tokens'] as num? ?? 0);
-    final output = usage['output_tokens'] as num? ?? 0;
-    final (inPerM, outPerM) = _priceFor(model);
-    final micro = (input * inPerM + output * outPerM).ceil(); // per-million prices -> micro-USD
+    final micro = costMicroUsd(usage, model: model);
     await session.db.unsafeExecute(
       'INSERT INTO "llm_usage_day" ("day", "costMicroUsd", "calls") VALUES (@day, @micro, 1) '
       'ON CONFLICT ("day") DO UPDATE SET "costMicroUsd" = "llm_usage_day"."costMicroUsd" + @micro, '

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 
+import 'claude.dart';
 import 'llm_budget.dart';
 
 /// Ports server.js's callLLMSimple + isDenialReply. Reads the API key from
@@ -10,7 +11,7 @@ import 'llm_budget.dart';
 /// same secret, same never-committed file, just Serverpod's idiom for it. Every call goes through
 /// LlmBudget's daily spending cap; [callSimple] defaults to the (smaller) background share.
 class LlmService {
-  static const _model = 'claude-haiku-4-5-20251001';
+  static const _model = Claude.core;
   static String get model => _model;
 
   static bool isConfigured(Session session) => (session.passwords['anthropicApiKey'] ?? '').isNotEmpty;
@@ -50,23 +51,14 @@ class LlmService {
 
     try {
       final res = await http.post(
-        Uri.parse('https://api.anthropic.com/v1/messages'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: jsonEncode({
-          'model': _model,
-          'max_tokens': maxTokens,
-          'system': systemPrompt,
-          'messages': messages,
-        }),
+        Claude.endpoint,
+        headers: Claude.headers(apiKey),
+        body: jsonEncode(Claude.body(system: systemPrompt, messages: messages, maxTokens: maxTokens)),
       );
       if (res.statusCode != 200) return null;
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
+      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
       final content = data['content'] as List<dynamic>?;
       final block = content?.firstWhere(
         (b) => b['type'] == 'text',

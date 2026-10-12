@@ -1,0 +1,17 @@
+# One conversation in Dialogue Link. A person's turns belong to one chat each; WYRD's replies see
+# only the current chat's history (their most recently used one), so "New chat" starts fresh while
+# everything WYRD has learned about them stays. Turns from before chats existed are gathered into
+# one "Earlier conversation" the first time it's needed (see ChatList).
+class: Chat
+table: chat
+
+fields:
+  authUserId: UuidValue
+  ### from the first message, once there is one
+  title: String?
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  chat_user_updated_idx:
+    fields: authUserId, updatedAt

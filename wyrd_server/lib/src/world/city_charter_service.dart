@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../mind/claude.dart';
 import '../mind/llm_budget.dart';
 import 'world_authority.dart';
 
@@ -12,7 +13,7 @@ import 'world_authority.dart';
 /// board; the Authority gives missions from it. WYRD rewrites it about once a week (a background
 /// call, against the background budget); until it first writes one, a starting board stands in.
 class CityCharterService {
-  static const _model = 'claude-haiku-4-5-20251001';
+  static const _model = Claude.core;
   static const rewriteAfter = Duration(days: 7);
   static Future<CityCharter>? _writing;
 
@@ -55,10 +56,10 @@ Call write_charter once.''';
     final estimate = LlmBudget.estimateUsd(model: _model, inputChars: system.length + user.length, maxOutputTokens: 2500);
     if (!await LlmBudget.allow(session, background: true, estimateUsd: estimate)) return prev ?? seed();
     final res = await http.post(
-      Uri.parse('https://api.anthropic.com/v1/messages'),
-      headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01'},
+      Claude.endpoint,
+      headers: Claude.headers(apiKey),
       body: jsonEncode({
-        'model': _model, 'max_tokens': 2500, 'system': system,
+        'model': _model, 'max_tokens': Claude.room(2500), 'thinking': {'type': 'disabled'}, 'system': system,
         'messages': [{'role': 'user', 'content': user}],
         'tools': [{
           'name': 'write_charter', 'description': 'Your charter and mission board.',

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import '../generated/protocol.dart';
+import 'chat_list.dart';
 import 'chat_service.dart';
 import 'rating_vote_service.dart';
 import 'learned_answer_service.dart';
@@ -45,16 +48,32 @@ class ChatEndpoint extends Endpoint {
     return ChatReply(reply: result.reply, mind: result.mind, action: result.action, fromMemory: result.fromMemory, turnId: result.turn.id, judgement: result.judgement);
   }
 
+  /// The current chat's turns, oldest first (the last [limit]).
   Future<List<ConversationTurn>> getHistory(Session session, {int? limit}) async {
     final authUserId = UuidValue.fromString(session.authenticated!.userIdentifier);
     final take = (limit ?? 50).clamp(1, 2000);
+    final chat = await ChatList.current(session, authUserId);
     final turns = await ConversationTurn.db.find(
       session,
-      where: (t) => t.authUserId.equals(authUserId),
+      where: (t) => t.chatId.equals(chat.id),
       orderBy: (t) => t.id.desc(),
       limit: take,
     );
     return turns.reversed.toList();
+  }
+
+  /// Your chats, most recent first: [{id, title, updatedAt, turns, current}] as JSON.
+  Future<String> chats(Session session) async =>
+      jsonEncode(await ChatList.list(session, UuidValue.fromString(session.authenticated!.userIdentifier)));
+
+  /// Start a new chat (it becomes current; WYRD keeps what it knows about you, not the conversation).
+  Future<void> newChat(Session session) async {
+    await ChatList.start(session, UuidValue.fromString(session.authenticated!.userIdentifier));
+  }
+
+  /// Go back to one of your chats (it becomes current); then getHistory shows it.
+  Future<void> openChat(Session session, int chatId) async {
+    await ChatList.open(session, UuidValue.fromString(session.authenticated!.userIdentifier), chatId);
   }
 
   /// 👍 (1), 👎 (-1) or clear (0) one of your own conversation turns. Trains the learned answer

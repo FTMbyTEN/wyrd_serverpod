@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
+import 'claude.dart';
 import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'package:serverpod/serverpod.dart';
@@ -16,7 +17,7 @@ import 'package:serverpod/serverpod.dart';
 /// ported: it executed JavaScript with a local Node binary, which the Serverpod Cloud container
 /// doesn't have.
 class CodeAgentService {
-  static const _model = 'claude-haiku-4-5-20251001';
+  static const _model = Claude.core;
   static const _maxToolRounds = 2;
 
   /// A self-contained HTML/CSS/JS app (preview_app's input) easily needs several thousand tokens
@@ -129,19 +130,9 @@ class CodeAgentService {
       try {
         res = await http
             .post(
-              Uri.parse('https://api.anthropic.com/v1/messages'),
-              headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-              },
-              body: jsonEncode({
-                'model': _model,
-                'max_tokens': _maxTokens,
-                'system': _systemPrompt,
-                'messages': messages,
-                'tools': [_previewAppTool],
-              }),
+              Claude.endpoint,
+              headers: Claude.headers(apiKey),
+              body: jsonEncode(Claude.body(system: _systemPrompt, messages: messages, tools: [_previewAppTool], maxTokens: _maxTokens)),
             )
             .timeout(const Duration(seconds: 90));
       } catch (e) {
@@ -157,7 +148,7 @@ class CodeAgentService {
       }
 
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
+      await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
       final content = (data['content'] as List<dynamic>? ?? [])
           .cast<Map<String, dynamic>>();
 

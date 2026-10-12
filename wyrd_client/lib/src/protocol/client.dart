@@ -767,12 +767,34 @@ class EndpointChat extends _isc.EndpointRef {
     },
   );
 
+  /// The current chat's turns, oldest first (the last [limit]).
   _ida.Future<List<_ie2belbc.ConversationTurn>> getHistory({int? limit}) =>
       caller.callServerEndpoint<List<_ie2belbc.ConversationTurn>>(
         'chat',
         'getHistory',
         {'limit': limit},
       );
+
+  /// Your chats, most recent first: [{id, title, updatedAt, turns, current}] as JSON.
+  _ida.Future<String> chats() => caller.callServerEndpoint<String>(
+    'chat',
+    'chats',
+    {},
+  );
+
+  /// Start a new chat (it becomes current; WYRD keeps what it knows about you, not the conversation).
+  _ida.Future<void> newChat() => caller.callServerEndpoint<void>(
+    'chat',
+    'newChat',
+    {},
+  );
+
+  /// Go back to one of your chats (it becomes current); then getHistory shows it.
+  _ida.Future<void> openChat(int chatId) => caller.callServerEndpoint<void>(
+    'chat',
+    'openChat',
+    {'chatId': chatId},
+  );
 
   /// 👍 (1), 👎 (-1) or clear (0) one of your own conversation turns. Trains the learned answer
   /// behind it, and is kept on the turn as a record of what helped.
@@ -803,6 +825,39 @@ class EndpointCurriculum extends _isc.EndpointRef {
         'getStatus',
         {},
       );
+}
+
+/// The owner's dashboard (#dashboard in the app): how WYRD is doing in one place -- what the AI
+/// cost today and lately, how it scored on its test questions, what's waiting on the owner, and
+/// the health of the city (the players, the books, the queues). Owner only. (Sign-up numbers are
+/// OwnerEndpoint.userStats.)
+/// {@category Endpoint}
+class EndpointDashboard extends _isc.EndpointRef {
+  EndpointDashboard(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'dashboard';
+
+  /// Everything on the dashboard, as JSON.
+  _ida.Future<String> get() => caller.callServerEndpoint<String>(
+    'dashboard',
+    'get',
+    {},
+  );
+
+  /// Run WYRD's test questions now (a fraction of a cent) and return the run, answers included.
+  _ida.Future<String> runEval() => caller.callServerEndpoint<String>(
+    'dashboard',
+    'runEval',
+    {},
+  );
+
+  /// One earlier run, answers included.
+  _ida.Future<String> evalRun(int id) => caller.callServerEndpoint<String>(
+    'dashboard',
+    'evalRun',
+    {'id': id},
+  );
 }
 
 /// Ports /api/diary and /api/diary/trigger from server.js. Public/unauthenticated, matching
@@ -2010,6 +2065,7 @@ class Client extends _isc.ServerpodClientShared {
     brain = EndpointBrain(this);
     chat = EndpointChat(this);
     curriculum = EndpointCurriculum(this);
+    dashboard = EndpointDashboard(this);
     diary = EndpointDiary(this);
     document = EndpointDocument(this);
     dream = EndpointDream(this);
@@ -2061,6 +2117,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointChat chat;
 
   late final EndpointCurriculum curriculum;
+
+  late final EndpointDashboard dashboard;
 
   late final EndpointDiary diary;
 
@@ -2125,6 +2183,7 @@ class Client extends _isc.ServerpodClientShared {
     'brain': brain,
     'chat': chat,
     'curriculum': curriculum,
+    'dashboard': dashboard,
     'diary': diary,
     'document': document,
     'dream': dream,

@@ -30,6 +30,7 @@ import '../mind/alerts_endpoint.dart' as _impqu952;
 import '../mind/brain_endpoint.dart' as _iskgx6uk;
 import '../mind/chat_endpoint.dart' as _i2b8uve4;
 import '../mind/curriculum_endpoint.dart' as _i7sq3i85;
+import '../mind/dashboard_endpoint.dart' as _iqbis52t;
 import '../mind/diary_endpoint.dart' as _i71dg2tj;
 import '../mind/document_endpoint.dart' as _i7txdnsa;
 import '../mind/dream_endpoint.dart' as _inxbi04j;
@@ -135,6 +136,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'curriculum',
+          null,
+        ),
+      'dashboard': _iqbis52t.DashboardEndpoint()
+        ..initialize(
+          server,
+          'dashboard',
           null,
         ),
       'diary': _i71dg2tj.DiaryEndpoint()
@@ -1282,6 +1289,45 @@ class Endpoints extends _is.EndpointDispatch {
                     limit: params['limit'],
                   ),
         ),
+        'chats': _is.MethodConnector(
+          name: 'chats',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['chat'] as _i2b8uve4.ChatEndpoint).chats(session),
+        ),
+        'newChat': _is.MethodConnector(
+          name: 'newChat',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['chat'] as _i2b8uve4.ChatEndpoint).newChat(
+                session,
+              ),
+        ),
+        'openChat': _is.MethodConnector(
+          name: 'openChat',
+          params: {
+            'chatId': _is.ParameterDescription(
+              name: 'chatId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['chat'] as _i2b8uve4.ChatEndpoint).openChat(
+                session,
+                params['chatId'],
+              ),
+        ),
         'rate': _is.MethodConnector(
           name: 'rate',
           params: {
@@ -1322,6 +1368,51 @@ class Endpoints extends _is.EndpointDispatch {
               ) async =>
                   (endpoints['curriculum'] as _i7sq3i85.CurriculumEndpoint)
                       .getStatus(session),
+        ),
+      },
+    );
+    connectors['dashboard'] = _is.EndpointConnector(
+      name: 'dashboard',
+      endpoint: endpoints['dashboard']!,
+      methodConnectors: {
+        'get': _is.MethodConnector(
+          name: 'get',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['dashboard'] as _iqbis52t.DashboardEndpoint)
+                  .get(session),
+        ),
+        'runEval': _is.MethodConnector(
+          name: 'runEval',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['dashboard'] as _iqbis52t.DashboardEndpoint)
+                  .runEval(session),
+        ),
+        'evalRun': _is.MethodConnector(
+          name: 'evalRun',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['dashboard'] as _iqbis52t.DashboardEndpoint)
+                  .evalRun(
+                    session,
+                    params['id'],
+                  ),
         ),
       },
     );

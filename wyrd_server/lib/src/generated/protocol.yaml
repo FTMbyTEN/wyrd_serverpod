@@ -58,9 +58,16 @@ brain:
 chat:
   - sendMessage:
   - getHistory:
+  - chats:
+  - newChat:
+  - openChat:
   - rate:
 curriculum:
   - getStatus:
+dashboard:
+  - get:
+  - runEval:
+  - evalRun:
 diary:
   - getEntries:
   - trigger:

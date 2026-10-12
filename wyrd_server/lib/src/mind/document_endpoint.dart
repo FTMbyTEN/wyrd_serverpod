@@ -1,4 +1,5 @@
 import '../generated/protocol.dart';
+import 'chat_list.dart';
 import 'document_service.dart';
 import 'rate_limiter.dart';
 import 'thread_service.dart';
@@ -42,10 +43,12 @@ class DocumentEndpoint extends Endpoint {
     if (staged) {
       return DocumentUpload(id: doc.id!, name: doc.name, kind: doc.kind, words: doc.words, pages: doc.pages, reply: reply, turnId: null);
     }
+    final chat = await ChatList.current(session, me);
     final turn = await ConversationTurn.db.insertRow(
       session,
-      ConversationTurn(authUserId: me, userText: '📎 ${doc.name}', botText: reply, timestamp: now),
+      ConversationTurn(authUserId: me, userText: '📎 ${doc.name}', botText: reply, timestamp: now, chatId: chat.id),
     );
+    await ChatList.used(session, chat, '📎 ${doc.name}');
     return DocumentUpload(id: doc.id!, name: doc.name, kind: doc.kind, words: doc.words, pages: doc.pages, reply: reply, turnId: turn.id);
   }
 

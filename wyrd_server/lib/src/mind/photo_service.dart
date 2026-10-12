@@ -1,4 +1,5 @@
 import '../generated/protocol.dart';
+import 'chat_list.dart';
 import 'llm_service.dart';
 import 'mind_service.dart';
 import 'topic_service.dart';
@@ -93,6 +94,7 @@ class PhotoService {
       ),
     );
 
+    final chat = await ChatList.current(session, authUserId);
     await ConversationTurn.db.insertRow(
       session,
       ConversationTurn(
@@ -101,8 +103,10 @@ class PhotoService {
         botText: reply,
         timestamp: DateTime.now().toUtc(),
         image: keep,
+        chatId: chat.id,
       ),
     );
+    await ChatList.used(session, chat, displayCaption);
 
     final mind = await MindService.recordEvent(
       session,

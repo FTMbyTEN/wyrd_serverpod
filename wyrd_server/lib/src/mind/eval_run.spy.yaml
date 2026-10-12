@@ -1,0 +1,18 @@
+# One run of WYRD's test questions (see EvalService): how many passed, on which model, what it
+# cost, and each question's answer and verdict (JSON), so a change of model or prompt can be
+# compared against the runs before it.
+class: EvalRun
+table: eval_run
+
+fields:
+  startedAt: DateTime
+  model: String
+  passed: int
+  total: int
+  costMicroUsd: int
+  ms: int
+  results: String
+
+indexes:
+  eval_run_started_idx:
+    fields: startedAt

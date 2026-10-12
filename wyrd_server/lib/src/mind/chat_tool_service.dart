@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
 import '../agent/agent_service.dart';
 import '../drone/drone_service.dart';
+import 'claude.dart';
 import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'rate_limiter.dart';
@@ -19,7 +20,7 @@ import 'package:serverpod/serverpod.dart';
 /// Chrome) are intentionally not ported -- they assume the server and that Chrome instance
 /// share a local network, which doesn't hold once this is deployed to Serverpod Cloud.
 class ChatToolService {
-  static const _model = 'claude-haiku-4-5-20251001';
+  static const _model = Claude.core;
   static const _maxToolRounds = 4;
 
   static const _worldMapTool = {
@@ -276,19 +277,9 @@ class ChatToolService {
         final http.Response res;
         try {
           res = await http.post(
-            Uri.parse('https://api.anthropic.com/v1/messages'),
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey,
-              'anthropic-version': '2023-06-01',
-            },
-            body: jsonEncode({
-              'model': _model,
-              'max_tokens': maxTokens,
-              'system': systemPrompt,
-              'messages': messages,
-              'tools': tools,
-            }),
+            Claude.endpoint,
+            headers: Claude.headers(apiKey),
+            body: jsonEncode(Claude.body(system: systemPrompt, messages: messages, tools: tools, maxTokens: maxTokens)),
           );
         } catch (_) {
           return null;
@@ -296,7 +287,7 @@ class ChatToolService {
         if (res.statusCode != 200) return null;
 
         final data = jsonDecode(res.body) as Map<String, dynamic>;
-        await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?);
+        await LlmBudget.record(session, data['usage'] as Map<String, dynamic>?, model: _model);
         final content = (data['content'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
 
         if (data['stop_reason'] == 'tool_use' && round < _maxToolRounds) {

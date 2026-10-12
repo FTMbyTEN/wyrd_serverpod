@@ -25,6 +25,7 @@ abstract class ConversationTurn
     this.rating,
     this.judgement,
     this.groundingIds,
+    this.chatId,
     this.image,
   });
 
@@ -38,6 +39,7 @@ abstract class ConversationTurn
     int? rating,
     String? judgement,
     List<int>? groundingIds,
+    int? chatId,
     String? image,
   }) = _ConversationTurnImpl;
 
@@ -60,6 +62,7 @@ abstract class ConversationTurn
           : _i2pladzn.Protocol().deserialize<List<int>>(
               jsonSerialization['groundingIds'],
             ),
+      chatId: jsonSerialization['chatId'] as int?,
       image: jsonSerialization['image'] as String?,
     );
   }
@@ -85,6 +88,8 @@ abstract class ConversationTurn
 
   List<int>? groundingIds;
 
+  int? chatId;
+
   String? image;
 
   /// Returns a shallow copy of this [ConversationTurn]
@@ -100,6 +105,7 @@ abstract class ConversationTurn
     int? rating,
     String? judgement,
     List<int>? groundingIds,
+    int? chatId,
     String? image,
   });
   @override
@@ -115,6 +121,7 @@ abstract class ConversationTurn
       if (rating != null) 'rating': rating,
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
+      if (chatId != null) 'chatId': chatId,
       if (image != null) 'image': image,
     };
   }
@@ -132,6 +139,7 @@ abstract class ConversationTurn
       if (rating != null) 'rating': rating,
       if (judgement != null) 'judgement': judgement,
       if (groundingIds != null) 'groundingIds': groundingIds?.toJson(),
+      if (chatId != null) 'chatId': chatId,
       if (image != null) 'image': image,
     };
   }
@@ -155,6 +163,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     int? rating,
     String? judgement,
     List<int>? groundingIds,
+    int? chatId,
     String? image,
   }) : super._(
          id: id,
@@ -166,6 +175,7 @@ class _ConversationTurnImpl extends ConversationTurn {
          rating: rating,
          judgement: judgement,
          groundingIds: groundingIds,
+         chatId: chatId,
          image: image,
        );
 
@@ -183,6 +193,7 @@ class _ConversationTurnImpl extends ConversationTurn {
     Object? rating = _Undefined,
     Object? judgement = _Undefined,
     Object? groundingIds = _Undefined,
+    Object? chatId = _Undefined,
     Object? image = _Undefined,
   }) {
     return ConversationTurn(
@@ -199,6 +210,7 @@ class _ConversationTurnImpl extends ConversationTurn {
       groundingIds: groundingIds is List<int>?
           ? groundingIds
           : this.groundingIds?.map((e0) => e0).toList(),
+      chatId: chatId is int? ? chatId : this.chatId,
       image: image is String? ? image : this.image,
     );
   }

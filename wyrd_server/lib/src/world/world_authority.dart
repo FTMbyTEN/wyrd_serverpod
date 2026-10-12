@@ -6,6 +6,7 @@ import 'bank.dart';
 
 import '../generated/protocol.dart';
 import 'wallet_service.dart';
+import '../mind/claude.dart';
 import '../mind/llm_budget.dart';
 import 'city_design_service.dart';
 import 'character_service.dart';
@@ -22,7 +23,7 @@ import 'city_signals.dart';
 /// kinds) before the app sees them, standing moves at most 10 a time, and every call counts
 /// against the person's and WYRD's daily AI budget.
 class WorldAuthority {
-  static const _model = 'claude-haiku-4-5-20251001';
+  static const _model = Claude.core;
   static const _maxTokens = 700;
   static const perHour = 40;
   static final _recent = <String, List<DateTime>>{};
@@ -85,12 +86,11 @@ class WorldAuthority {
     times.add(now);
 
     final res = await http.post(
-      Uri.parse('https://api.anthropic.com/v1/messages'),
-      headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01'},
+      Claude.endpoint,
+      headers: Claude.headers(apiKey),
       body: jsonEncode({
-        'model': _model, 'max_tokens': _maxTokens, 'system': system, 'tools': _tools,
+        ...Claude.body(system: system, tools: _tools, maxTokens: _maxTokens, messages: [{'role': 'user', 'content': user0}]),
         'tool_choice': {'type': 'any'},
-        'messages': [{'role': 'user', 'content': user0}],
       }),
     );
     if (res.statusCode != 200) {

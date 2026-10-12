@@ -56,6 +56,7 @@ import 'mind/brain_firing.dart' as _i8r73c9y;
 import 'mind/brain_map.dart' as _ipeloevp;
 import 'mind/brain_neuron.dart' as _i8yuvbha;
 import 'mind/brain_synapse.dart' as _iqzn8nb5;
+import 'mind/chat.dart' as _ibisfjf2;
 import 'mind/chat_action.dart' as _iagdrx9v;
 import 'mind/chat_reply.dart' as _iav0lzqw;
 import 'mind/chat_thread.dart' as _ildoeobn;
@@ -74,6 +75,7 @@ import 'mind/diary_entry.dart' as _i0u3uu6s;
 import 'mind/digest_info.dart' as _i9vbq77t;
 import 'mind/document_upload.dart' as _il5hhvzk;
 import 'mind/dream_entry.dart' as _izf9406n;
+import 'mind/eval_run.dart' as _iamh3di1;
 import 'mind/feed_ingest.dart' as _ig20dqq5;
 import 'mind/filter_report.dart' as _idq6t4e8;
 import 'mind/gate_shape.dart' as _i00qabwy;
@@ -148,6 +150,7 @@ export 'mind/brain_firing.dart';
 export 'mind/brain_map.dart';
 export 'mind/brain_neuron.dart';
 export 'mind/brain_synapse.dart';
+export 'mind/chat.dart';
 export 'mind/chat_action.dart';
 export 'mind/chat_reply.dart';
 export 'mind/chat_thread.dart';
@@ -166,6 +169,7 @@ export 'mind/diary_entry.dart';
 export 'mind/digest_info.dart';
 export 'mind/document_upload.dart';
 export 'mind/dream_entry.dart';
+export 'mind/eval_run.dart';
 export 'mind/feed_ingest.dart';
 export 'mind/filter_report.dart';
 export 'mind/gate_shape.dart';
@@ -306,6 +310,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iqzn8nb5.BrainSynapse) {
       return _iqzn8nb5.BrainSynapse.fromJson(data) as T;
     }
+    if (t == _ibisfjf2.Chat) {
+      return _ibisfjf2.Chat.fromJson(data) as T;
+    }
     if (t == _iagdrx9v.ChatAction) {
       return _iagdrx9v.ChatAction.fromJson(data) as T;
     }
@@ -359,6 +366,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _izf9406n.DreamEntry) {
       return _izf9406n.DreamEntry.fromJson(data) as T;
+    }
+    if (t == _iamh3di1.EvalRun) {
+      return _iamh3di1.EvalRun.fromJson(data) as T;
     }
     if (t == _ig20dqq5.FeedIngest) {
       return _ig20dqq5.FeedIngest.fromJson(data) as T;
@@ -584,6 +594,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iqzn8nb5.BrainSynapse?>()) {
       return (data != null ? _iqzn8nb5.BrainSynapse.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ibisfjf2.Chat?>()) {
+      return (data != null ? _ibisfjf2.Chat.fromJson(data) : null) as T;
+    }
     if (t == _isc.getType<_iagdrx9v.ChatAction?>()) {
       return (data != null ? _iagdrx9v.ChatAction.fromJson(data) : null) as T;
     }
@@ -645,6 +658,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_izf9406n.DreamEntry?>()) {
       return (data != null ? _izf9406n.DreamEntry.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iamh3di1.EvalRun?>()) {
+      return (data != null ? _iamh3di1.EvalRun.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ig20dqq5.FeedIngest?>()) {
       return (data != null ? _ig20dqq5.FeedIngest.fromJson(data) : null) as T;
@@ -1181,6 +1197,7 @@ class Protocol extends _isc.SerializationManager {
       _ipeloevp.BrainMap => 'BrainMap',
       _i8yuvbha.BrainNeuron => 'BrainNeuron',
       _iqzn8nb5.BrainSynapse => 'BrainSynapse',
+      _ibisfjf2.Chat => 'Chat',
       _iagdrx9v.ChatAction => 'ChatAction',
       _iav0lzqw.ChatReply => 'ChatReply',
       _ildoeobn.ChatThread => 'ChatThread',
@@ -1199,6 +1216,7 @@ class Protocol extends _isc.SerializationManager {
       _i9vbq77t.DigestInfo => 'DigestInfo',
       _il5hhvzk.DocumentUpload => 'DocumentUpload',
       _izf9406n.DreamEntry => 'DreamEntry',
+      _iamh3di1.EvalRun => 'EvalRun',
       _ig20dqq5.FeedIngest => 'FeedIngest',
       _idq6t4e8.FilterReport => 'FilterReport',
       _i00qabwy.GateShape => 'GateShape',
@@ -1302,6 +1320,8 @@ class Protocol extends _isc.SerializationManager {
         return 'BrainNeuron';
       case _iqzn8nb5.BrainSynapse():
         return 'BrainSynapse';
+      case _ibisfjf2.Chat():
+        return 'Chat';
       case _iagdrx9v.ChatAction():
         return 'ChatAction';
       case _iav0lzqw.ChatReply():
@@ -1338,6 +1358,8 @@ class Protocol extends _isc.SerializationManager {
         return 'DocumentUpload';
       case _izf9406n.DreamEntry():
         return 'DreamEntry';
+      case _iamh3di1.EvalRun():
+        return 'EvalRun';
       case _ig20dqq5.FeedIngest():
         return 'FeedIngest';
       case _idq6t4e8.FilterReport():
@@ -1523,6 +1545,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'BrainSynapse') {
       return deserialize<_iqzn8nb5.BrainSynapse>(data['data']);
     }
+    if (dataClassName == 'Chat') {
+      return deserialize<_ibisfjf2.Chat>(data['data']);
+    }
     if (dataClassName == 'ChatAction') {
       return deserialize<_iagdrx9v.ChatAction>(data['data']);
     }
@@ -1576,6 +1601,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DreamEntry') {
       return deserialize<_izf9406n.DreamEntry>(data['data']);
+    }
+    if (dataClassName == 'EvalRun') {
+      return deserialize<_iamh3di1.EvalRun>(data['data']);
     }
     if (dataClassName == 'FeedIngest') {
       return deserialize<_ig20dqq5.FeedIngest>(data['data']);

@@ -66,6 +66,7 @@ class AccountEndpoint extends Endpoint {
     await LearnedAnswer.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await MemoryBlock.db.deleteWhere(session, where: (t) => t.ownerId.equals(authUserId));
     await ChatThread.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
+    await Chat.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await ReadingItem.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await UserDocument.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
     await QuizAttempt.db.deleteWhere(session, where: (t) => t.authUserId.equals(authUserId));
