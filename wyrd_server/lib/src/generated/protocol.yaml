@@ -33,6 +33,7 @@ games:
   - start:
   - move:
   - resign:
+  - wyrdChallenge:
   - startChess:
   - moveChess:
   - challenge:

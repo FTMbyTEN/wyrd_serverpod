@@ -51,6 +51,11 @@ class GamesEndpoint extends Endpoint {
     await GameService.resign(session, _user(session), matchId),
   );
 
+  /// WYRD's open challenge from the home screen: chess at full strength (or the game against WYRD
+  /// already in progress).
+  Future<GameMatch> wyrdChallenge(Session session) async =>
+      _view(session, await GameService.wyrdChallenge(session, _user(session)));
+
   // kept for the app version that only knew chess
   Future<GameMatch> startChess(Session session, String side) =>
       start(session, 'chess', side);

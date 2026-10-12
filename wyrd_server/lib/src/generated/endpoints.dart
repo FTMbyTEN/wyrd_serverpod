@@ -887,6 +887,16 @@ class Endpoints extends _is.EndpointDispatch {
                 params['matchId'],
               ),
         ),
+        'wyrdChallenge': _is.MethodConnector(
+          name: 'wyrdChallenge',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint)
+                  .wyrdChallenge(session),
+        ),
         'startChess': _is.MethodConnector(
           name: 'startChess',
           params: {

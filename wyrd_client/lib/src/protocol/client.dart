@@ -528,6 +528,15 @@ class EndpointGames extends _isc.EndpointRef {
         {'matchId': matchId},
       );
 
+  /// WYRD's open challenge from the home screen: chess at full strength (or the game against WYRD
+  /// already in progress).
+  _ida.Future<_io9n6mg3.GameMatch> wyrdChallenge() =>
+      caller.callServerEndpoint<_io9n6mg3.GameMatch>(
+        'games',
+        'wyrdChallenge',
+        {},
+      );
+
   _ida.Future<_io9n6mg3.GameMatch> startChess(String side) =>
       caller.callServerEndpoint<_io9n6mg3.GameMatch>(
         'games',

@@ -187,8 +187,11 @@ class GameService {
     Session session,
     UuidValue user,
     String game,
-    String side,
-  ) async {
+    String side, {
+    int?
+    level, // WYRD's strength, 1..6; otherwise matched to the player's rating
+    String? opening, // what WYRD says first
+  }) async {
     if (!games.contains(game)) throw Exception('No such game.');
     final open = await _openWithWyrd(session, user, game);
     if (open != null)
@@ -209,16 +212,42 @@ class GameService {
       moves: [],
       playerSide: playerSide,
       status: 'active',
-      wyrdLevel: ChessEngine.levelFor(r.rating),
+      wyrdLevel: level?.clamp(1, 6) ?? ChessEngine.levelFor(r.rating),
       ratingBefore: r.rating,
       mode: 'wyrd',
-      remark: playerSide == 'w' ? 'Your move. I am listening.' : 'I will open.',
+      remark:
+          opening ??
+          (playerSide == 'w' ? 'Your move. I am listening.' : 'I will open.'),
       version: 0,
       createdAt: now,
       updatedAt: now,
     );
     if (playerSide == 'b') m = _wyrdReplies(m);
     return GameMatch.db.insertRow(session, m);
+  }
+
+  /// WYRD's open challenge on the home screen: chess at full strength, no easy mode. A game against
+  /// WYRD already on the board is carried on, never thrown away (starting over would count as a
+  /// resignation).
+  static Future<GameMatch> wyrdChallenge(
+    Session session,
+    UuidValue user,
+  ) async {
+    final open = await active(session, user, 'chess');
+    if (open != null) return open;
+    return start(
+      session,
+      user,
+      'chess',
+      'random',
+      level: 6,
+      opening: _one([
+        'Full strength. No easy mode. Show me what you have.',
+        'You came. Good. I will not go gently.',
+        'Every move I make is my best one. Make yours count.',
+        'I have been waiting. Let us see who blinks first.',
+      ]),
+    );
   }
 
   /// WYRD plays its move (and any passes that follow).
