@@ -12,6 +12,7 @@ import '../mind/memory_recall_service.dart';
 import '../mind/page_reader_service.dart';
 import '../mind/web_browse_service.dart';
 import '../mind/web_search_service.dart';
+import '../mind/shared_memory.dart';
 import '../mind/wyrd_charter.dart';
 
 /// WYRD as an agent. A task is a goal it works at on its own, in the background: it plans, takes a
@@ -283,10 +284,12 @@ class AgentService {
             {'role': 'user', 'content': 'Begin work on the task now.'},
           ];
     WebSession? browser;
+    // what WYRD knows of the person it works for, from every part of it (mind/shared_memory.dart)
+    final person = await SharedMemory.about(session, t.authUserId);
 
     try {
       while (t.stepsUsed < t.maxSteps) {
-        final (steady, system) = _system(t, operator);
+        final (steady, system) = _system(t, operator, person);
         final tools = _tools(operator);
         final estimate = LlmBudget.estimateUsd(
           model: _model,
@@ -464,7 +467,11 @@ class AgentService {
 
   /// The system prompt in two parts: what stays the same for the whole run (cached, with the tools,
   /// so each step after the first reads it at a tenth of the price) and what changes each step.
-  static (String, String) _system(AgentTask t, bool operator) => (
+  static (String, String) _system(
+    AgentTask t,
+    bool operator, [
+    PersonMemory? person,
+  ]) => (
     [
       // WYRD's principles as an agent (mind/wyrd_charter.dart): understand, plan, use tools deliberately,
       // ground and label claims, verify, stay safe and in scope, report failures honestly
@@ -472,6 +479,9 @@ class AgentService {
       'You are working on this task by yourself, in the background, for the person who asked. When it is done, '
           'call finish with a detailed report written for them (see finish).',
       'THE TASK: ${t.goal}',
+      if (person != null && !person.isEmpty)
+        'WHO YOU ARE WORKING FOR -- what you know of them (private; use it where it makes the work fit them, '
+            'never put it in a search or on a website):\n${person.lines()}',
       if (t.everyHours != null)
         'This is a recurring task: it runs every ${t.everyHours} hour(s). '
             '${t.result != null ? 'Your previous result was:\n"""\n${t.result}\n"""\nLead with what has CHANGED since then (or say nothing has).' : 'This is its first run.'}',
@@ -832,6 +842,16 @@ class AgentService {
       detail: 'Finished this run',
       output: _short(result, 4000),
     );
+    // chat and the city know it too: the task, and the gist of what came of it (a recurring task's
+    // latest run replaces the one before)
+    final key = 'Task "${_short(t.goal, 80)}"';
+    await SharedMemory.remember(
+      session,
+      t.authUserId,
+      '$key: ${_gist(result)}',
+      category: SharedMemory.task,
+      key: key,
+    );
     final now = DateTime.now().toUtc();
     await AgentTask.db.updateRow(
       session,
@@ -873,6 +893,18 @@ class AgentService {
 
   static String _short(String s, int n) =>
       s.length <= n ? s : '${s.substring(0, n)}…';
+
+  /// The first real sentence of a report (not a heading or a bare label), for the shared memory.
+  static String _gist(String report) {
+    for (final raw in report.split('\n')) {
+      final l = raw
+          .replaceAll(RegExp(r'^[\s#>*\-•\d.)]+'), '')
+          .replaceAll(RegExp(r'[*_`]'), '')
+          .trim();
+      if (l.length >= 25 && !l.endsWith(':')) return _short(l, 150);
+    }
+    return _short(report.trim(), 150);
+  }
 
   /// Older tool results are cut down so each step doesn't re-send everything read so far.
   static List<Map<String, dynamic>> _compact(

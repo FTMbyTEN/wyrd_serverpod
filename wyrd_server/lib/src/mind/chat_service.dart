@@ -19,6 +19,7 @@ import 'arsenal.dart';
 import '../drone/drone_service.dart';
 import 'mind_service.dart';
 import 'chat_list.dart';
+import 'shared_memory.dart';
 import 'visual_tools.dart';
 import 'wyrd_charter.dart';
 import 'topic_service.dart';
@@ -176,14 +177,9 @@ class ChatService {
       authUserId,
     );
     final facts = profile.facts;
-    final userFacts = UserFactService.mostRelevantFacts(
-      facts,
-      15,
-    ).map((f) => f.text).toList();
-    // the name they chose at sign-up (or on their profile) comes first: WYRD calls them by it
-    final callMe = profile.username?.trim();
-    if (callMe != null && callMe.isNotEmpty)
-      userFacts.insert(0, 'They want to be called "$callMe".');
+    // one memory of them, shared with the task agent and the city (shared_memory.dart): what they
+    // told WYRD anywhere, what it did for them, the tasks it's on, how they stand in NAIJA 2099
+    final memory = await SharedMemory.about(session, authUserId);
 
     String curiosityHint;
     if (facts.isEmpty) {
@@ -335,8 +331,12 @@ class ChatService {
       if (!recall.isEmpty)
         'Use what you already know where it genuinely fits, in your own words -- never invent a memory '
             "you weren't given above.",
-      if (userFacts.isNotEmpty)
-        'What you personally know about THIS specific person, learned from things they\'ve told you across your conversations: ${userFacts.join(' | ')}',
+      if (!memory.isEmpty)
+        'What you know about THIS specific person -- one memory, shared by every chat, your tasks and the city, '
+            'private to them:\n${memory.lines()}',
+      'When they ask you to remember something about them, call remember: it is then kept across every chat, '
+          'your tasks and the city, so say plainly that you will remember it. When they ask you to forget something, '
+          'call forget.',
       curiosityHint,
     ].join('\n');
 

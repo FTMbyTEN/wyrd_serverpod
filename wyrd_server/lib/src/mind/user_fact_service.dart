@@ -276,7 +276,11 @@ class UserFactService {
       added.add(f);
     }
 
-    if (added.isEmpty) return [];
+    // nothing new is still worth saving when something known was mentioned again (it stays fresh)
+    if (added.isEmpty) {
+      await UserProfile.db.updateRow(session, profile.copyWith(facts: facts));
+      return [];
+    }
 
     final trimmed = facts.length > _maxProfileFacts
         ? facts.sublist(facts.length - _maxProfileFacts)

@@ -39,6 +39,24 @@ class ProfileEndpoint extends Endpoint {
     return await UserProfile.db.updateRow(session, updated);
   }
 
+  /// Removes one thing WYRD remembers about them (the You tab's ✕): gone from chat, tasks and the
+  /// city at once, since they share the one memory (shared_memory.dart).
+  Future<UserProfile> forgetFact(Session session, String text) async {
+    final authUserId = UuidValue.fromString(
+      session.authenticated!.userIdentifier,
+    );
+    final profile = await UserFactService.loadOrCreateProfile(
+      session,
+      authUserId,
+    );
+    return await UserProfile.db.updateRow(
+      session,
+      profile.copyWith(
+        facts: profile.facts.where((f) => f.text != text).toList(),
+      ),
+    );
+  }
+
   Future<UserProfile> setUsername(Session session, String username) async {
     final authUserId = UuidValue.fromString(
       session.authenticated!.userIdentifier,

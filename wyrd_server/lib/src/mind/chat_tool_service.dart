@@ -9,6 +9,7 @@ import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'rate_limiter.dart';
 import 'web_browse_service.dart';
+import 'shared_memory.dart';
 import 'visual_tools.dart';
 import 'web_search_service.dart';
 import 'library_search.dart';
@@ -269,6 +270,8 @@ class ChatToolService {
   };
 
   static final _tools = [
+    MemoryTools.rememberTool,
+    MemoryTools.forgetTool,
     _worldMapTool,
     VisualTools.showVisual,
     VisualTools.runPython,
@@ -426,6 +429,20 @@ class ChatToolService {
             final toolUseId = block['id'] as String;
 
             try {
+              // keep or drop something in the memory every part of WYRD shares (shared_memory.dart)
+              if (MemoryTools.names.contains(name)) {
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': await MemoryTools.use(
+                    session,
+                    authUserId,
+                    name,
+                    input,
+                  ),
+                });
+                continue;
+              }
               // a chart or diagram inside the reply, or Python run in their browser's sandbox
               if (VisualTools.names.contains(name)) {
                 final (a, told) = VisualTools.use(name, input);

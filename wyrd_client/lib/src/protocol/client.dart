@@ -1405,6 +1405,15 @@ class EndpointProfile extends _isc.EndpointRef {
         {},
       );
 
+  /// Removes one thing WYRD remembers about them (the You tab's ✕): gone from chat, tasks and the
+  /// city at once, since they share the one memory (shared_memory.dart).
+  _ida.Future<_ig38dtlp.UserProfile> forgetFact(String text) =>
+      caller.callServerEndpoint<_ig38dtlp.UserProfile>(
+        'profile',
+        'forgetFact',
+        {'text': text},
+      );
+
   _ida.Future<_ig38dtlp.UserProfile> setUsername(String username) =>
       caller.callServerEndpoint<_ig38dtlp.UserProfile>(
         'profile',

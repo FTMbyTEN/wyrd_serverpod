@@ -126,6 +126,7 @@ photo:
 profile:
   - getProfile:
   - touchVisit:
+  - forgetFact:
   - setUsername:
   - setAvatar:
 reasoning:

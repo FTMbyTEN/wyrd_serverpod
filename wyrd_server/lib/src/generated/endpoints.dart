@@ -2230,6 +2230,25 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['profile'] as _in0jvng1.ProfileEndpoint)
                   .touchVisit(session),
         ),
+        'forgetFact': _is.MethodConnector(
+          name: 'forgetFact',
+          params: {
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['profile'] as _in0jvng1.ProfileEndpoint)
+                  .forgetFact(
+                    session,
+                    params['text'],
+                  ),
+        ),
         'setUsername': _is.MethodConnector(
           name: 'setUsername',
           params: {

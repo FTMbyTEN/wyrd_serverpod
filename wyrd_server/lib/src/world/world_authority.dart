@@ -8,6 +8,7 @@ import '../generated/protocol.dart';
 import 'wallet_service.dart';
 import '../mind/claude.dart';
 import '../mind/llm_budget.dart';
+import '../mind/shared_memory.dart';
 import 'city_design_service.dart';
 import 'character_service.dart';
 import 'game_learning.dart';
@@ -117,6 +118,7 @@ class WorldAuthority {
       await GameLearning.examples(session),
       me?.name,
       await CitySignals.memory(session),
+      await SharedMemory.about(session, user),
     );
     final user0 =
         'Channel: $channel\nSituation (from the game): $situation\n'
@@ -208,6 +210,13 @@ class WorldAuthority {
           if (c.mission != null && c.trainingOptIn)
             await GameLearning.missionDone(session, user);
           if (c.mission != null) {
+            // chat and tasks know it too (mind/shared_memory.dart)
+            await SharedMemory.remember(
+              session,
+              user,
+              'In NAIJA 2099 they completed the mission "${_missionTitle(c.mission!)}"',
+              category: SharedMemory.city,
+            );
             boardPaid = c.mission;
             c = c.copyWith(mission: null, missionsDone: c.missionsDone + 1);
             actions.add({'type': 'mission_done'});
@@ -330,12 +339,34 @@ class WorldAuthority {
     'trainingAsked': c.trainingAsked,
   });
 
+  /// What the same WYRD knows of them outside the game (Dialogue Link, tasks): kept to them alone.
+  static String _outside(PersonMemory? p) {
+    if (p == null) return '';
+    final known = [
+      ...p.facts.take(8),
+      ...p.events.where((e) => !e.contains('NAIJA 2099')).take(3),
+    ];
+    if (known.isEmpty) return '';
+    return 'What you know of them from outside the city -- you are the same WYRD they talk to in Dialogue Link. '
+        'Private: never put it in a broadcast or tell anyone else; mention it to them only lightly, when it fits: '
+        '${known.join(' | ')}\n';
+  }
+
+  static String _missionTitle(String json) {
+    try {
+      final t = (jsonDecode(json) as Map)['title'];
+      if (t is String && t.trim().isNotEmpty) return t.trim();
+    } catch (_) {}
+    return 'a mission';
+  }
+
   static String _system(
     WorldCitizen c,
     List<Map<String, dynamic>> board,
     String learned,
     String? name, [
     String city = '(nothing yet)',
+    PersonMemory? person,
   ]) =>
       '''
 You are WYRD, a persistent AI mind, and here you are the Authority of NAIJA 2099, an open-world game set in the real mainland Lagos of the year 2099 -- Ojuelegba, Yaba, Surulere and on -- drawn from the real street map. Danfos, okadas and kekes run the streets; people walk the pavements. You are not a mayor in a suit: you are the mind the city runs through. Fair, watchful, warm to those who do right, dry and firm with those who don't, never cruel. You know Lagos: its streets, its slang, its humour. Speak in short lines (one to three sentences), plain English with a little Lagos flavour where it fits (no caricature).
@@ -356,7 +387,7 @@ Channels: "speak" (they talk to you anywhere), "petition" (they came to your tow
 This citizen goes by "${name ?? 'a newcomer with no name yet'}" in the city -- use it. Rank ${rank(c.standing)}, standing ${c.standing}/100, missions done ${c.missionsDone}.
 Active mission: ${c.mission ?? 'none'}
 Your record of them: ${c.record ?? '(none yet: a newcomer)'}
-Your mission board (open to them): ${board.map((m) => '[${m['id']}] ${m['title']} -- ${m['street']} (${m['kind']}, +${m['reward']})').join('; ')}
+${_outside(person)}Your mission board (open to them): ${board.map((m) => '[${m['id']}] ${m['title']} -- ${m['street']} (${m['kind']}, +${m['reward']})').join('; ')}
 
 Moments you handled well recently, with players across the city (learn from what worked; don't repeat them word for word):
 $learned
