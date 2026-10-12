@@ -9,6 +9,7 @@ import 'llm_budget.dart';
 import 'llm_service.dart';
 import 'rate_limiter.dart';
 import 'web_browse_service.dart';
+import 'visual_tools.dart';
 import 'web_search_service.dart';
 import 'library_search.dart';
 import 'library_service.dart';
@@ -269,6 +270,8 @@ class ChatToolService {
 
   static final _tools = [
     _worldMapTool,
+    VisualTools.showVisual,
+    VisualTools.runPython,
     _webSearchTool,
     _newsSearchTool,
     _marketPricesTool,
@@ -423,6 +426,17 @@ class ChatToolService {
             final toolUseId = block['id'] as String;
 
             try {
+              // a chart or diagram inside the reply, or Python run in their browser's sandbox
+              if (VisualTools.names.contains(name)) {
+                final (a, told) = VisualTools.use(name, input);
+                pendingAction = a;
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': told,
+                });
+                continue;
+              }
               if (name == 'open_saved_app' && savedApp != null) {
                 pendingAction = ChatAction(type: 'preview_app', html: savedApp);
                 toolResults.add({

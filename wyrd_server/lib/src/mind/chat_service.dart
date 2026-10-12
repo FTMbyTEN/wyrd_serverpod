@@ -19,6 +19,7 @@ import 'arsenal.dart';
 import '../drone/drone_service.dart';
 import 'mind_service.dart';
 import 'chat_list.dart';
+import 'visual_tools.dart';
 import 'wyrd_charter.dart';
 import 'topic_service.dart';
 import 'user_fact_service.dart';
@@ -208,6 +209,11 @@ class ChatService {
     // so it can change it.
     String appNote(ConversationTurn t) => t.appHtml == null
         ? ''
+        : t.appHtml!.startsWith(VisualTools.visualMark)
+        ? '\n\n[In this reply you showed them a visual (show_visual); it is shown under this reply.]'
+        : t.appHtml!.startsWith(VisualTools.pythonMark)
+        ? '\n\n[In this reply you ran Python for them in their browser (run_python); the output is under this '
+              'reply and they can run it again. You did not see the output.]'
         : '\n\n[In this reply you built and showed them an app${_appTitle(t.appHtml!) == null ? '' : ' ("${_appTitle(t.appHtml!)}")'}. '
               'It is saved in this chat: they can open it again or download its code as a .zip from the card under '
               'this reply. If they ask where it is or how to get it, point them to that card.]';
@@ -224,7 +230,10 @@ class ChatService {
     // the latest app WYRD built in this chat, so asking to open it again can (open_saved_app)
     final savedApp = (await ConversationTurn.db.findFirstRow(
       session,
-      where: (t) => t.chatId.equals(chat.id) & t.appHtml.notEquals(null),
+      where: (t) =>
+          t.chatId.equals(chat.id) &
+          t.appHtml.notEquals(null) &
+          t.appHtml.notLike('<!--wyrd:%'),
       orderBy: (t) => t.id.desc(),
     ))?.appHtml;
     // the last _historyTurns exchanges, oldest first
@@ -522,10 +531,7 @@ class ChatService {
         thinking: usedLearned == null && local == null
             ? toolReply?.thinking
             : null,
-        appHtml:
-            action?.type == 'preview_app' && (action?.html ?? '').isNotEmpty
-            ? action!.html
-            : null,
+        appHtml: VisualTools.kept(action) ? action!.html : null,
       ),
     );
     await ChatList.used(session, chat, shownAs ?? text);

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
 import 'claude.dart';
 import 'llm_budget.dart';
+import 'visual_tools.dart';
 import 'llm_service.dart';
 import 'package:serverpod/serverpod.dart';
 
@@ -105,13 +106,15 @@ class CodeAgentService {
       "code fences with a language tag. Explain non-obvious design choices briefly, but don't pad "
       "the answer with disclaimers or restate the question back. Multi-paragraph, multi-file, or "
       'long answers are fine here — do not compress this the way you would a casual chat reply.\n\n'
-      'You have one real tool: preview_app is for anything with a visible interface — a '
+      'Your main tool: preview_app is for anything with a visible interface — a '
       'calculator, a game, a small tool, any UI. Build it as ONE complete self-contained HTML '
       'document (inline <style> and <script>, no external requests) and call preview_app so it '
       "actually pops up live in the user's interface, instead of just describing it in text. If "
       'what\'s being asked for is visual/interactive, always prefer preview_app over only writing '
-      'the code in the reply — "done" with no popup is not actually done. You cannot execute code '
-      "yourself here, so don't claim to have run or tested anything.\n\n"
+      'the code in the reply — "done" with no popup is not actually done. For a chart or diagram, '
+      'use show_visual; to run Python for them (calculations, data, plots), use run_python -- it runs in a '
+      "sandbox in their browser and you never see the output, so don't claim to have run or tested "
+      'anything yourself.\n\n'
       // WYRD's principles as an agent, for code (wyrd_charter.dart)
       'Work as a careful engineer: understand what they actually need before writing, and if the request is '
       'ambiguous but low-risk, take the sensible reading and say which. Plan the structure briefly, then write it. '
@@ -156,6 +159,8 @@ class CodeAgentService {
                   messages: messages,
                   tools: [
                     _previewAppTool,
+                    VisualTools.showVisual,
+                    VisualTools.runPython,
                     if (savedApp != null) _openSavedAppTool,
                   ],
                   maxTokens: _maxTokens,
@@ -197,6 +202,19 @@ class CodeAgentService {
               'tool_use_id': block['id'],
               'content':
                   'The saved app is open again, live in their interface.',
+            });
+            continue;
+          }
+          if (VisualTools.names.contains(block['name'])) {
+            final (a, told) = VisualTools.use(
+              block['name'] as String,
+              block['input'] as Map<String, dynamic>? ?? {},
+            );
+            pendingAction = a;
+            toolResults.add({
+              'type': 'tool_result',
+              'tool_use_id': block['id'],
+              'content': told,
             });
             continue;
           }
