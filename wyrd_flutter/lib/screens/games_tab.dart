@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:chess/chess.dart' as ch;
 import 'package:flutter/material.dart';
@@ -315,7 +317,9 @@ class _GamesTabState extends State<GamesTab> {
   }
 }
 
-/// One game against WYRD: the board, whose move it is, WYRD's line, and the controls.
+/// One game, as in the main app: VS WYRD (WYRD plays and talks about your moves) or VS PLAYER
+/// (post a challenge, accept one, or carry on a game under way). The board on the left, and beside
+/// it WYRD's line, the game's tags, the result and -- for chess -- the moves.
 class GameRoom extends StatefulWidget {
   final String game;
   final String name;
@@ -325,11 +329,22 @@ class GameRoom extends StatefulWidget {
   State<GameRoom> createState() => _GameRoomState();
 }
 
+const _result = {
+  'won': 'YOU WON',
+  'lost': 'YOU LOST',
+  'draw': 'DRAW',
+  'resigned': 'RESIGNED',
+};
+
 class _GameRoomState extends State<GameRoom> {
+  String _mode = 'wyrd';
   GameMatch? _match;
+  List<GameMatch> _open = [];
+  List<GameMatch> _mine = [];
   bool _loading = true;
   bool _busy = false;
   String? _error;
+  Timer? _poll;
 
   @override
   void initState() {
@@ -337,22 +352,64 @@ class _GameRoomState extends State<GameRoom> {
     _load();
   }
 
-  Future<void> _load() async {
-    try {
-      final m = await client.games.active(widget.game);
-      if (mounted) setState(() => _match = m);
-    } catch (_) {
-      if (mounted) {
-        setState(
-          () => _error = "Couldn't reach WYRD just now. Try again in a moment.",
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
   }
 
-  Future<void> _run(Future<GameMatch> Function() call) async {
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      if (_mode == 'wyrd') {
+        _match = await client.games.active(widget.game);
+      } else {
+        _match = null;
+        await _loadLobby();
+      }
+    } catch (_) {
+      _error = "Couldn't reach WYRD just now. Try again in a moment.";
+    }
+    if (mounted) setState(() => _loading = false);
+    _watch();
+  }
+
+  Future<void> _loadLobby() async {
+    final r = await Future.wait([
+      client.games.openChallenges(widget.game),
+      client.games.myPvp(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _open = r[0];
+      _mine = r[1].where((m) => m.game == widget.game).toList();
+      _match ??= _mine.where((m) => m.status == 'waiting').firstOrNull;
+    });
+  }
+
+  /// Against a person: look for their move (or for someone accepting) every few seconds.
+  void _watch() {
+    _poll?.cancel();
+    final m = _match;
+    if (_mode != 'pvp' || m == null || m.status == 'over') return;
+    if (m.status == 'active' && _myTurn) return;
+    _poll = Timer.periodic(const Duration(milliseconds: 2500), (_) async {
+      final cur = _match;
+      if (cur == null) return;
+      try {
+        final next = await client.games.poll(cur.id!, cur.version);
+        if (next != null && mounted) {
+          setState(() => _match = next);
+          _watch();
+        }
+      } catch (_) {}
+    });
+  }
+
+  Future<void> _run(Future<GameMatch?> Function() call) async {
     if (_busy) return;
     setState(() {
       _busy = true;
@@ -375,356 +432,764 @@ class _GameRoomState extends State<GameRoom> {
       }
     } finally {
       if (mounted) setState(() => _busy = false);
+      _watch();
     }
   }
 
   String get _side => _match?.viewerSide ?? _match?.playerSide ?? 'w';
 
-  bool get _myTurn {
-    final m = _match;
-    if (m == null || m.status != 'active') return false;
-    if (m.game == 'chess') {
-      final turn = ch.Chess.fromFEN(m.state).turn == ch.Color.WHITE ? 'w' : 'b';
-      return turn == _side;
-    }
+  String _turnOf(GameMatch m) {
+    if (m.game == 'chess')
+      return ch.Chess.fromFEN(m.state).turn == ch.Color.WHITE ? 'w' : 'b';
     final s = jsonDecode(m.state) as Map<String, dynamic>;
-    return ((s['t'] as num?)?.toInt() ?? 0) == (_side == 'w' ? 0 : 1);
+    return ((s['t'] as num?)?.toInt() ?? 0) == 0 ? 'w' : 'b';
   }
 
-  String get _status {
-    final m = _match!;
-    return switch (m.status) {
-      'won' => 'YOU WON',
-      'lost' => 'WYRD WON',
-      'draw' => 'A DRAW',
-      'resigned' => 'YOU RESIGNED',
-      _ =>
-        _busy
-            ? 'WYRD IS THINKING…'
-            : _myTurn
-            ? 'YOUR MOVE'
-            : 'WYRD TO MOVE',
+  bool get _myTurn =>
+      _match != null && _match!.status == 'active' && _turnOf(_match!) == _side;
+
+  String _sideName(String side) {
+    final first = side != 'b';
+    return switch (widget.game) {
+      'chess' => first ? 'WHITE' : 'BLACK',
+      'reversi' => first ? 'DARK' : 'LIGHT',
+      'tictactoe' => first ? 'X' : 'O',
+      _ => first ? 'COBALT' : 'INK',
     };
+  }
+
+  String? get _resultText {
+    final m = _match;
+    if (m == null) return null;
+    if (m.mode == 'pvp') {
+      if (m.status != 'over') return null;
+      final r = m.result ?? '';
+      if (r.startsWith('draw')) return 'DRAW';
+      final starterWon = r.startsWith('starter');
+      final iAmStarter = _side == m.playerSide;
+      return starterWon == iAmStarter ? 'YOU WON' : 'YOU LOST';
+    }
+    return _result[m.status];
   }
 
   @override
   Widget build(BuildContext context) {
-    final m = _match;
     return Scaffold(
       backgroundColor: WyrdColors.bg,
-      appBar: AppBar(
-        backgroundColor: WyrdColors.barBg,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: WyrdColors.mint,
-        title: Text(widget.name, style: WyrdText.display(fontSize: 28)),
-      ),
-      body: _loading
-          ? Center(child: CircularProgressIndicator(color: WyrdColors.signal))
-          : LayoutBuilder(
-              builder: (context, box) {
-                final boardSize = (box.maxWidth - 32).clamp(200.0, 520.0);
-                return ListView(
-                  padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, box) {
+            final wide = box.maxWidth >= 860;
+            final boardSize = wide
+                ? min(520.0, box.maxWidth - 32 - 320)
+                : (box.maxWidth - 32).clamp(200.0, 520.0);
+            final board = _boardArea(boardSize);
+            final side = _sidePanel();
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Text(
+                    '‹ ARCADE',
+                    style: WyrdText.mono(
+                      fontSize: 11,
+                      color: WyrdColors.signal,
+                    ).copyWith(letterSpacing: 1.6),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(widget.name, style: WyrdText.display(fontSize: 38)),
+                const SizedBox(height: 8),
+                Row(
                   children: [
-                    if (m == null || m.status != 'active') _startPanel(m),
-                    if (m != null) ...[
-                      _remark(m),
-                      const SizedBox(height: 12),
-                      Center(
-                        child: SizedBox(
-                          width: boardSize,
-                          child: _board(m, boardSize),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (m.status == 'active')
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 160,
-                              child: HoloButton(
-                                label: 'RESIGN',
-                                tone: 'danger',
-                                onPressed: () =>
-                                    _run(() => client.games.resign(m.id!)),
-                              ),
+                    for (final (m, label) in const [
+                      ('wyrd', 'VS WYRD'),
+                      ('pvp', 'VS PLAYER'),
+                    ])
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (_mode == m) return;
+                          setState(() => _mode = m);
+                          _load();
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _mode == m
+                                ? WyrdColors.signal
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: _mode == m
+                                  ? WyrdColors.signal
+                                  : WyrdColors.greenBorder,
                             ),
-                          ],
-                        ),
-                    ],
-                    if (_error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Text(
-                          _error!,
-                          textAlign: TextAlign.center,
-                          style: WyrdText.mono(
-                            fontSize: 12,
-                            color: WyrdColors.danger,
+                          ),
+                          child: Text(
+                            label,
+                            style: WyrdText.mono(
+                              fontSize: 10.5,
+                              color: _mode == m
+                                  ? WyrdColors.onSignal
+                                  : WyrdColors.greenDim,
+                            ).copyWith(letterSpacing: 1.2),
                           ),
                         ),
                       ),
                   ],
-                );
-              },
-            ),
-    );
-  }
-
-  /// A new game: your side, and for chess WYRD's open challenge at full strength.
-  Widget _startPanel(GameMatch? last) {
-    Widget side(String label, String s, {bool filled = false}) => Expanded(
-      child: HoloButton(
-        label: label,
-        filled: filled,
-        onPressed: () => _run(() => client.games.start(widget.game, s)),
-      ),
-    );
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: wyrdCard(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            last == null ? 'NEW GAME' : 'PLAY AGAIN',
-            style: WyrdText.mono(
-              fontSize: 9.5,
-              color: WyrdColors.greenDim,
-            ).copyWith(letterSpacing: 1.6),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              side('GO FIRST', 'w'),
-              const SizedBox(width: 8),
-              side('RANDOM', 'random', filled: true),
-              const SizedBox(width: 8),
-              side('GO SECOND', 'b'),
-            ],
-          ),
-          if (widget.game == 'chess') ...[
-            const SizedBox(height: 12),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(18),
-                onTap: () => _run(() => client.games.wyrdChallenge()),
-                child: Ink(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: WyrdColors.dark
-                        ? const Color(0xFF221B2E)
-                        : const Color(0xFF2A1F17),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Row(
+                ),
+                const SizedBox(height: 16),
+                if (_loading)
+                  Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: WyrdColors.signal,
+                      ),
+                    ),
+                  )
+                else if (wide)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '♚',
-                        style: TextStyle(
-                          fontSize: 26,
-                          color: Color(0xFFFFF6EA),
-                        ),
+                      SizedBox(width: boardSize, child: board),
+                      const SizedBox(width: 24),
+                      Expanded(child: side),
+                    ],
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: SizedBox(width: boardSize, child: board),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'OPEN CHALLENGE · FROM WYRD',
-                              style: WyrdText.mono(
-                                fontSize: 8.5,
-                                color: const Color(0xFFE8A88A),
-                              ).copyWith(letterSpacing: 1.6),
-                            ),
-                            Text(
-                              'Full strength. No easy mode.',
-                              style: WyrdText.display(
-                                fontSize: 22,
-                                color: const Color(0xFFFFF6EA),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        'ACCEPT',
-                        style: WyrdText.mono(
-                          fontSize: 11,
-                          color: WyrdColors.signal,
-                        ),
-                      ),
+                      const SizedBox(height: 16),
+                      side,
                     ],
                   ),
-                ),
-              ),
-            ),
-          ],
-        ],
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  /// WYRD's last line, how strong it's playing, and whose move it is.
-  Widget _remark(GameMatch m) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: wyrdCard(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'WYRD · ${_levels[m.wyrdLevel.clamp(1, 6)]}',
-                style: WyrdText.mono(
-                  fontSize: 9.5,
-                  color: WyrdColors.signal,
-                ).copyWith(letterSpacing: 1.4),
-              ),
-              const Spacer(),
-              Text(
-                _status,
-                style: WyrdText.mono(
-                  fontSize: 9.5,
-                  color: WyrdColors.greenDim,
-                ).copyWith(letterSpacing: 1.4),
-              ),
+  Widget _boardArea(double size) {
+    final m = _match;
+    if (m == null || m.status == 'waiting') {
+      return Container(
+        height: widget.game == 'connect4' ? size * 6 / 7 : size,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: WyrdColors.card,
+          border: Border.all(color: WyrdColors.greenBorderDim),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.name.toUpperCase(),
+              style: WyrdText.display(fontSize: 36),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              m?.status == 'waiting'
+                  ? 'Your challenge is posted. The board opens when someone accepts.'
+                  : _mode == 'wyrd'
+                  ? 'Choose your side to begin.'
+                  : 'Post a challenge, or accept one.',
+              textAlign: TextAlign.center,
+              style: WyrdText.mono(fontSize: 12, color: WyrdColors.greenDim),
+            ),
+            if (m?.status == 'waiting') ...[
+              const SizedBox(height: 12),
+              CircularProgressIndicator(color: WyrdColors.signal),
             ],
-          ),
-          if ((m.remark ?? '').isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              '"${m.remark}"',
-              style: WyrdText.mono(fontSize: 13.5).copyWith(height: 1.5),
-            ),
           ],
-          if (m.status != 'active' && m.ratingAfter != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              'Rating ${m.ratingBefore.round()} → ${m.ratingAfter!.round()}',
-              style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.greenDim),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _board(GameMatch m, double size) {
+        ),
+      );
+    }
     final play = _myTurn && !_busy;
     void send(String move) => _run(() => client.games.move(m.id!, move));
+    final last = m.moves.isEmpty ? null : m.moves.last;
+    final me = _side == 'w' ? 0 : 1;
     return switch (m.game) {
       'chess' => ChessBoardView(
         fen: m.state,
         side: _side,
         enabled: play,
         onMove: send,
+        moves: m.moves,
       ),
-      'connect4' => _GridBoard(
+      'connect4' => GridBoard(
         state: m.state,
         cols: 7,
         rows: 6,
-        side: _side,
+        me: me,
         enabled: play,
-        discs: true,
+        kind: 'c4',
+        last: last,
         onTap: (i) => send('${i % 7}'),
       ),
-      'reversi' => _GridBoard(
+      'reversi' => GridBoard(
         state: m.state,
         cols: 8,
         rows: 8,
-        side: _side,
+        me: me,
         enabled: play,
-        discs: true,
+        kind: 'rev',
+        last: last,
         onTap: (i) => send('$i'),
       ),
-      _ => _GridBoard(
+      _ => GridBoard(
         state: m.state,
         cols: 3,
         rows: 3,
-        side: _side,
+        me: me,
         enabled: play,
-        discs: false,
+        kind: 'ttt',
+        last: last,
         onTap: (i) => send('$i'),
       ),
     };
   }
+
+  Widget _tag(String text, {bool on = false}) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: on ? WyrdColors.signal : Colors.transparent,
+      border: Border.all(
+        color: on ? WyrdColors.signal : WyrdColors.greenBorder,
+      ),
+    ),
+    child: Text(
+      text,
+      style: WyrdText.mono(
+        fontSize: 9.5,
+        color: on ? WyrdColors.onSignal : WyrdColors.greenDim,
+      ).copyWith(letterSpacing: 1.2),
+    ),
+  );
+
+  Widget _btn(
+    String label,
+    VoidCallback onTap, {
+    bool primary = false,
+    bool danger = false,
+  }) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: _busy ? null : onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 12),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: primary ? WyrdColors.signal : Colors.transparent,
+        border: Border.all(
+          color: danger
+              ? WyrdColors.danger
+              : primary
+              ? WyrdColors.signal
+              : WyrdColors.greenBorder,
+        ),
+      ),
+      child: Text(
+        label,
+        style: WyrdText.mono(
+          fontSize: 10.5,
+          color: primary
+              ? WyrdColors.onSignal
+              : danger
+              ? WyrdColors.danger
+              : WyrdColors.mint,
+        ).copyWith(letterSpacing: 1.2),
+      ),
+    ),
+  );
+
+  Widget _sidePanel() {
+    final m = _match;
+    final result = _resultText;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (m != null) ...[
+          Container(
+            padding: const EdgeInsets.only(left: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: WyrdColors.signal, width: 2),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 5, right: 8),
+                  decoration: BoxDecoration(
+                    color: _busy ? WyrdColors.ochre : WyrdColors.signal,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _busy && m.mode == 'wyrd'
+                        ? 'WYRD is thinking…'
+                        : (m.remark ?? ''),
+                    style: WyrdText.mono(fontSize: 13).copyWith(height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              if (m.mode == 'wyrd')
+                _tag('WYRD · ${_levels[m.wyrdLevel.clamp(1, 6)]}')
+              else
+                _tag(
+                  '${(m.playerName ?? '?').toUpperCase()} vs ${(m.opponentName ?? '…').toUpperCase()}',
+                ),
+              _tag('YOU PLAY ${_sideName(_side)}'),
+              if (m.status == 'active')
+                _tag(_myTurn ? 'YOUR MOVE' : 'THEIR MOVE', on: _myTurn),
+              if (m.game == 'reversi' && m.status != 'waiting')
+                _tag(_reversiCount(m.state)),
+            ],
+          ),
+          if (result != null) ...[
+            const SizedBox(height: 12),
+            Text(result, style: WyrdText.display(fontSize: 32)),
+            if (m.mode == 'wyrd' && m.ratingAfter != null)
+              Text(
+                'Rating ${m.ratingAfter!.round()} (${m.ratingAfter! >= m.ratingBefore ? '+' : ''}${(m.ratingAfter! - m.ratingBefore).round()})',
+                style: WyrdText.mono(fontSize: 12, color: WyrdColors.greenDim),
+              ),
+          ],
+          if (m.game == 'chess' && m.moves.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 180),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                border: Border.all(color: WyrdColors.greenBorderDim),
+              ),
+              child: SingleChildScrollView(
+                reverse: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var i = 0; i < m.moves.length; i += 2)
+                      Text(
+                        '${i ~/ 2 + 1}. ${m.moves[i]}${i + 1 < m.moves.length ? '  ${m.moves[i + 1]}' : ''}',
+                        style: WyrdText.mono(fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+        ],
+        if (_mode == 'wyrd') ...[
+          if (m == null || m.status != 'active') ...[
+            Text(
+              'NEW GAME',
+              style: WyrdText.mono(
+                fontSize: 9.5,
+                color: WyrdColors.greenDim,
+              ).copyWith(letterSpacing: 1.6),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _btn(
+                    'GO FIRST',
+                    () => _run(() => client.games.start(widget.game, 'w')),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _btn(
+                    'RANDOM',
+                    () => _run(() => client.games.start(widget.game, 'random')),
+                    primary: true,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _btn(
+                    'GO SECOND',
+                    () => _run(() => client.games.start(widget.game, 'b')),
+                  ),
+                ),
+              ],
+            ),
+            if (widget.game == 'chess') ...[
+              const SizedBox(height: 10),
+              _btn(
+                'ACCEPT WYRD’S CHALLENGE · FULL STRENGTH',
+                () => _run(() => client.games.wyrdChallenge()),
+              ),
+            ],
+          ],
+        ] else
+          _lobby(),
+        if (m != null && m.status == 'active') ...[
+          const SizedBox(height: 10),
+          _btn(
+            'RESIGN',
+            () => _run(() => client.games.resign(m.id!)),
+            danger: true,
+          ),
+        ],
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              _error!,
+              style: WyrdText.mono(fontSize: 12, color: WyrdColors.danger),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Against a person: post a challenge, accept one, or pick up a game under way.
+  Widget _lobby() {
+    final waiting = _match?.status == 'waiting'
+        ? _match
+        : _mine.where((m) => m.status == 'waiting').firstOrNull;
+    final ongoing = _mine
+        .where((m) => m.status == 'active' && m.id != _match?.id)
+        .toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (waiting != null)
+          Row(
+            children: [
+              Expanded(flex: 2, child: _btn('CHALLENGE POSTED', () {})),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _btn('CANCEL', () async {
+                  await _run(() async {
+                    await client.games.cancel(waiting.id!);
+                    return null;
+                  });
+                  await _loadLobby();
+                }),
+              ),
+            ],
+          )
+        else
+          _btn(
+            'POST A CHALLENGE',
+            () => _run(() => client.games.challenge(widget.game)),
+            primary: true,
+          ),
+        if (ongoing.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            'YOUR GAMES',
+            style: WyrdText.mono(
+              fontSize: 9.5,
+              color: WyrdColors.greenDim,
+            ).copyWith(letterSpacing: 1.6),
+          ),
+          for (final g in ongoing)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                setState(() => _match = g);
+                _watch();
+              },
+              child: Container(
+                margin: const EdgeInsets.only(top: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(color: WyrdColors.greenBorder),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'vs ${g.viewerSide == g.playerSide ? g.opponentName : g.playerName}',
+                        style: WyrdText.mono(fontSize: 12),
+                      ),
+                    ),
+                    _tag(
+                      _turnOf(g) == g.viewerSide ? 'YOUR MOVE' : 'WAITING',
+                      on: _turnOf(g) == g.viewerSide,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'OPEN CHALLENGES · ${widget.name.toUpperCase()}',
+                style: WyrdText.mono(
+                  fontSize: 9.5,
+                  color: WyrdColors.greenDim,
+                ).copyWith(letterSpacing: 1.6),
+              ),
+            ),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _loadLobby,
+              child: Text(
+                'REFRESH',
+                style: WyrdText.mono(fontSize: 10, color: WyrdColors.signal),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        if (_open.isEmpty)
+          Text(
+            'No open challenges right now. Post one and someone can take you on.',
+            style: WyrdText.mono(
+              fontSize: 11.5,
+              color: WyrdColors.greenDim,
+            ).copyWith(height: 1.5),
+          ),
+        for (final o in _open)
+          Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: WyrdColors.greenBorder),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${o.playerName ?? 'player'} · ${o.ratingBefore.round()}',
+                    style: WyrdText.mono(fontSize: 12),
+                  ),
+                ),
+                SizedBox(
+                  width: 90,
+                  child: _btn(
+                    'ACCEPT',
+                    () => _run(() => client.games.accept(o.id!)),
+                    primary: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  static String _reversiCount(String state) {
+    final b = ((jsonDecode(state) as Map<String, dynamic>)['b'] as List).map(
+      (e) => (e as num).toInt(),
+    );
+    return '${b.where((v) => v == 0).length} : ${b.where((v) => v == 1).length}';
+  }
 }
 
-/// Connect Four, Reversi and Tic-tac-toe: a grid of cells, -1 empty, 0 the first player, 1 the
-/// second. Your pieces are terracotta, WYRD's indigo.
-class _GridBoard extends StatelessWidget {
+/// Connect Four, Reversi and Tic-tac-toe, as the main app draws them (Boards.tsx): the first player
+/// terracotta (or dark, in Reversi), the second indigo (or light); the last move marked; in
+/// Reversi, dots on the squares you can play.
+class GridBoard extends StatelessWidget {
   final String state;
   final int cols, rows;
-  final String side;
+  final int me; // 0: you play first
   final bool enabled;
-  final bool discs;
+  final String kind; // c4, rev, ttt
+  final String? last;
   final void Function(int index) onTap;
 
-  const _GridBoard({
+  const GridBoard({
     required this.state,
     required this.cols,
     required this.rows,
-    required this.side,
+    required this.me,
     required this.enabled,
-    required this.discs,
+    required this.kind,
+    required this.last,
     required this.onTap,
   });
 
+  static const _dirs = [
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, -1),
+    (0, 1),
+    (1, -1),
+    (1, 0),
+    (1, 1),
+  ];
+
+  static Set<int> _reversiMoves(List<int> b, int t) {
+    final out = <int>{};
+    for (var i = 0; i < 64; i++) {
+      if (b[i] != -1) continue;
+      final r0 = i ~/ 8, c0 = i % 8;
+      for (final (dr, dc) in _dirs) {
+        var r = r0 + dr, c = c0 + dc, n = 0;
+        while (r >= 0 && r < 8 && c >= 0 && c < 8 && b[r * 8 + c] == 1 - t) {
+          r += dr;
+          c += dc;
+          n++;
+        }
+        if (n > 0 && r >= 0 && r < 8 && c >= 0 && c < 8 && b[r * 8 + c] == t) {
+          out.add(i);
+          break;
+        }
+      }
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final b = ((jsonDecode(state) as Map<String, dynamic>)['b'] as List)
-        .map((e) => (e as num).toInt())
-        .toList();
-    final me = side == 'w' ? 0 : 1;
+    final s = jsonDecode(state) as Map<String, dynamic>;
+    final b = (s['b'] as List).map((e) => (e as num).toInt()).toList();
+    final hints = kind == 'rev' && enabled
+        ? _reversiMoves(b, me)
+        : const <int>{};
+    // the last move as a square (Connect Four records a column: mark its top disc)
+    int? lastSq = int.tryParse(last ?? '');
+    if (kind == 'c4' && lastSq != null) {
+      final col = lastSq;
+      lastSq = null;
+      for (var r = 0; r < rows; r++) {
+        if (b[r * cols + col] != -1) {
+          lastSq = r * cols + col;
+          break;
+        }
+      }
+    }
+    final boardBg = WyrdColors.dark
+        ? const Color(0xFF28211C)
+        : (kind == 'ttt' ? Colors.white : const Color(0xFFEEF0F5));
     return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: wyrdCard(
-        radius: 18,
-        color: discs ? WyrdColors.sand : WyrdColors.card,
+      decoration: BoxDecoration(
+        color: boardBg,
+        border: Border.all(color: WyrdColors.mint),
       ),
       child: AspectRatio(
         aspectRatio: cols / rows,
         child: GridView.count(
           crossAxisCount: cols,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 6,
-          crossAxisSpacing: 6,
+          padding: EdgeInsets.zero,
           children: [
             for (var i = 0; i < cols * rows; i++)
-              InkWell(
-                borderRadius: BorderRadius.circular(discs ? 999 : 12),
-                onTap: enabled ? () => onTap(i) : null,
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: !enabled || (kind == 'rev' && !hints.contains(i))
+                    ? null
+                    : () => onTap(i),
                 child: Container(
-                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: discs
-                        ? (b[i] == -1
-                              ? WyrdColors.bg
-                              : b[i] == me
-                              ? WyrdColors.signal
-                              : WyrdColors.indigo)
-                        : WyrdColors.bg,
-                    shape: discs ? BoxShape.circle : BoxShape.rectangle,
-                    borderRadius: discs ? null : BorderRadius.circular(12),
-                    border: Border.all(color: WyrdColors.greenBorder),
+                    color: lastSq == i
+                        ? WyrdColors.signalSoft
+                        : Colors.transparent,
+                    border: kind == 'c4'
+                        ? null
+                        : Border.all(
+                            color: WyrdColors.greenBorder.withValues(
+                              alpha: 0.6,
+                            ),
+                            width: 0.5,
+                          ),
                   ),
-                  child: discs || b[i] == -1
-                      ? null
-                      : Text(
-                          b[i] == 0 ? '✕' : '○',
-                          style: TextStyle(
-                            fontSize: 40,
-                            color: b[i] == me
-                                ? WyrdColors.signal
-                                : WyrdColors.indigo,
+                  alignment: Alignment.center,
+                  child: switch (kind) {
+                    'ttt' =>
+                      b[i] == -1
+                          ? null
+                          : FittedBox(
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Text(
+                                  b[i] == 0 ? 'X' : 'O',
+                                  style: WyrdText.mono(
+                                    fontSize: 48,
+                                    color: b[i] == 0
+                                        ? WyrdColors.signal
+                                        : WyrdColors.indigo,
+                                  ),
+                                ),
+                              ),
+                            ),
+                    'c4' => FractionallySizedBox(
+                      widthFactor: 0.78,
+                      heightFactor: 0.78,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: b[i] == 0
+                              ? WyrdColors.signal
+                              : b[i] == 1
+                              ? WyrdColors.indigo
+                              : (WyrdColors.dark
+                                    ? WyrdColors.bg
+                                    : Colors.white),
+                          border: Border.all(
+                            color: b[i] == -1
+                                ? WyrdColors.greenBorderDim
+                                : Colors.transparent,
                           ),
                         ),
+                      ),
+                    ),
+                    _ =>
+                      b[i] != -1
+                          ? FractionallySizedBox(
+                              widthFactor: 0.8,
+                              heightFactor: 0.8,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: b[i] == 0
+                                      ? WyrdColors.indigo
+                                      : Colors.white,
+                                  border: Border.all(color: WyrdColors.indigo),
+                                ),
+                              ),
+                            )
+                          : hints.contains(i)
+                          ? FractionallySizedBox(
+                              widthFactor: 0.22,
+                              heightFactor: 0.22,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: WyrdColors.signal.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : null,
+                  },
                 ),
               ),
           ],
@@ -741,6 +1206,7 @@ class ChessBoardView extends StatefulWidget {
   final String side;
   final bool enabled;
   final void Function(String move) onMove;
+  final List<String> moves; // the game so far (SAN), to mark the last move
 
   const ChessBoardView({
     super.key,
@@ -748,6 +1214,7 @@ class ChessBoardView extends StatefulWidget {
     required this.side,
     required this.enabled,
     required this.onMove,
+    this.moves = const [],
   });
 
   @override
@@ -788,15 +1255,29 @@ class _ChessBoardViewState extends State<ChessBoardView> {
     final ranks = widget.side == 'w'
         ? [8, 7, 6, 5, 4, 3, 2, 1]
         : [1, 2, 3, 4, 5, 6, 7, 8];
-    final light = WyrdColors.dark
-        ? const Color(0xFF3D332B)
-        : const Color(0xFFFFFAF2);
+    // the main app's board: white and cool grey by day, walnut at night
+    final light = WyrdColors.dark ? const Color(0xFF3D332B) : Colors.white;
     final darkSq = WyrdColors.dark
         ? const Color(0xFF28211C)
-        : const Color(0xFFE6D3B5);
+        : const Color(0xFFE9EBF1);
+    // the last move: replay the game to find where it went from and to
+    final lastSqs = <String>{};
+    if (widget.moves.isNotEmpty) {
+      try {
+        final replay = ch.Chess();
+        ch.Move? lastMove;
+        for (final san in widget.moves) {
+          final legal = replay.generate_moves();
+          lastMove = legal.firstWhere((m) => replay.move_to_san(m) == san);
+          replay.make_move(lastMove);
+        }
+        if (lastMove != null)
+          lastSqs.addAll([lastMove.fromAlgebraic, lastMove.toAlgebraic]);
+      } catch (_) {}
+    }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+    return Container(
+      decoration: BoxDecoration(border: Border.all(color: WyrdColors.mint)),
       child: AspectRatio(
         aspectRatio: 1,
         child: Column(
@@ -832,6 +1313,11 @@ class _ChessBoardViewState extends State<ChessBoardView> {
                               child: Container(
                                 color: picked
                                     ? WyrdColors.signal
+                                    : lastSqs.contains(sq)
+                                    ? Color.alphaBlend(
+                                        const Color(0x292A46FF),
+                                        isDark ? darkSq : light,
+                                      )
                                     : (isDark ? darkSq : light),
                                 alignment: Alignment.center,
                                 child: Stack(

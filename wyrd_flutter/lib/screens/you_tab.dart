@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart'
@@ -7,6 +8,7 @@ import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
 import '../theme.dart';
+import 'cop_tab.dart';
 
 /// YOU, as in the main app (YouTab.tsx): who you are to WYRD -- your name, how long you've been
 /// together and how WYRD feels today -- six numbers, when you talk, what WYRD knows about you (the
@@ -23,6 +25,8 @@ class _YouTabState extends State<YouTab> {
   UserProfile? _profile;
   Mind? _mind;
   List<ConversationTurn> _turns = [];
+  List<ReadingItem> _reading = [];
+  QuizStats? _quiz;
   bool _loading = true;
   bool _error = false;
 
@@ -39,11 +43,21 @@ class _YouTabState extends State<YouTab> {
         client.mind.getMind(),
         client.chat.getHistory(limit: 200),
       ]);
+      // your desk and your quiz score: extras, the page shows without them
+      final reading = await client.library.list().catchError(
+        (_) => <ReadingItem>[],
+      );
+      QuizStats? quiz;
+      try {
+        quiz = await client.library.quizStats();
+      } catch (_) {}
       if (!mounted) return;
       setState(() {
         _profile = r[0] as UserProfile;
         _mind = r[1] as Mind;
         _turns = r[2] as List<ConversationTurn>;
+        _reading = reading;
+        _quiz = quiz;
         _error = false;
       });
     } catch (_) {
@@ -178,17 +192,26 @@ class _YouTabState extends State<YouTab> {
       ('${p.facts.length}', 'THINGS IT KNOWS', WyrdColors.indigo),
       ('$days', 'DAYS TOGETHER', WyrdColors.signal),
       ('${p.visitCount}', 'VISITS', WyrdColors.palm),
+      ('${_reading.length}', 'ON YOUR DESK', WyrdColors.indigo),
       (
-        '${p.facts.where((f) => f.category == 'task').length}',
-        'TASKS IT REMEMBERS',
-        WyrdColors.indigo,
-      ),
-      (
-        '${p.facts.where((f) => f.category == 'city').length}',
-        'CITY MOMENTS',
+        _quiz == null || _quiz!.total == 0
+            ? '—'
+            : '${(_quiz!.correct * 100 / _quiz!.total).round()}%',
+        'QUIZ SCORE',
         WyrdColors.signal,
       ),
     ];
+    // your picture, as in the main app (a small square image, kept as a data URL)
+    Widget? picture;
+    final av = p.avatar;
+    if (av != null && av.contains(',')) {
+      try {
+        picture = Image.memory(
+          base64Decode(av.split(',').last),
+          fit: BoxFit.cover,
+        );
+      } catch (_) {}
+    }
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -208,13 +231,16 @@ class _YouTabState extends State<YouTab> {
                   color: WyrdColors.sand,
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  name.isEmpty ? '?' : name[0].toUpperCase(),
-                  style: WyrdText.display(
-                    fontSize: 44,
-                    color: WyrdColors.signal,
-                  ),
-                ),
+                clipBehavior: Clip.antiAlias,
+                child:
+                    picture ??
+                    Text(
+                      name.isEmpty ? '?' : name[0].toUpperCase(),
+                      style: WyrdText.display(
+                        fontSize: 44,
+                        color: WyrdColors.signal,
+                      ),
+                    ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -328,15 +354,142 @@ class _YouTabState extends State<YouTab> {
               runSpacing: 10,
               children: [for (final f in p.facts) _factCard(f, wide)],
             ),
+          if (_reading.isNotEmpty) ...[
+            _section('YOUR READING', null),
+            for (final i in _reading.take(8))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        i.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: WyrdText.serif(fontSize: 14.5),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 90,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: _progress(i),
+                          minHeight: 4,
+                          backgroundColor: WyrdColors.greenBorderDim,
+                          valueColor: AlwaysStoppedAnimation(
+                            WyrdColors.signal,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 44,
+                      child: Text(
+                        '${(_progress(i) * 100).round()}%',
+                        textAlign: TextAlign.right,
+                        style: WyrdText.mono(
+                          fontSize: 11,
+                          color: WyrdColors.greenDim,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
           _section('SETTINGS', null),
-          _setting(
-            WyrdColors.dark
-                ? Icons.dark_mode_outlined
-                : Icons.light_mode_outlined,
-            'Appearance',
-            WyrdColors.dark ? 'Night — tap for day' : 'Day — tap for night',
-            () => WyrdColors.night.value = !WyrdColors.dark,
+          Container(
+            padding: const EdgeInsets.all(14),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: wyrdCard(radius: 16),
+            child: Row(
+              children: [
+                Icon(
+                  WyrdColors.dark
+                      ? Icons.dark_mode_outlined
+                      : Icons.light_mode_outlined,
+                  color: WyrdColors.signal,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Appearance', style: WyrdText.mono(fontSize: 13.5)),
+                      Text(
+                        'Light, dark, or the same as your device',
+                        style: WyrdText.mono(
+                          fontSize: 11,
+                          color: WyrdColors.greenDim,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Auto / Light / Dark, as in the main app
+                for (final (label, mode) in const [
+                  ('AUTO', null),
+                  ('LIGHT', false),
+                  ('DARK', true),
+                ])
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => WyrdColors.night.value =
+                        mode ??
+                        (WidgetsBinding
+                                .instance
+                                .platformDispatcher
+                                .platformBrightness ==
+                            Brightness.dark),
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: mode == WyrdColors.dark
+                            ? WyrdColors.signal
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: WyrdColors.greenBorder),
+                      ),
+                      child: Text(
+                        label,
+                        style: WyrdText.mono(
+                          fontSize: 9.5,
+                          color: mode == WyrdColors.dark
+                              ? WyrdColors.onSignal
+                              : WyrdColors.greenDim,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
+          if (ownerAccess.value)
+            _setting(
+              Icons.shield_outlined,
+              'COP oversight',
+              'Every change WYRD made to itself, independently reviewed',
+              () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => Scaffold(
+                    backgroundColor: WyrdColors.bg,
+                    appBar: AppBar(
+                      backgroundColor: WyrdColors.barBg,
+                      surfaceTintColor: Colors.transparent,
+                      foregroundColor: WyrdColors.mint,
+                      title: Text('COP', style: WyrdText.display(fontSize: 26)),
+                    ),
+                    body: const CopTab(),
+                  ),
+                ),
+              ),
+            ),
           _section('YOUR DATA', null),
           _setting(
             Icons.inventory_2_outlined,
@@ -414,27 +567,75 @@ class _YouTabState extends State<YouTab> {
       hours[t.timestamp.toLocal().hour]++;
     }
     final peak = hours.reduce((a, b) => a > b ? a : b).clamp(1, 1 << 30);
-    return SizedBox(
-      height: 64,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          for (var h = 0; h < 24; h++)
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                height: 4 + 56 * hours[h] / peak,
-                decoration: BoxDecoration(
-                  color: hours[h] == 0
-                      ? WyrdColors.greenBorderDim
-                      : WyrdColors.signal,
-                  borderRadius: BorderRadius.circular(3),
+    final peakHour = hours.indexOf(hours.reduce((a, b) => a > b ? a : b));
+    // how many days running you've talked, counting back from today (or yesterday)
+    final days = {
+      for (final t in _turns) DateUtils.dateOnly(t.timestamp.toLocal()),
+    };
+    var d = DateUtils.dateOnly(DateTime.now());
+    if (!days.contains(d)) d = d.subtract(const Duration(days: 1));
+    var streak = 0;
+    while (days.contains(d)) {
+      streak++;
+      d = d.subtract(const Duration(days: 1));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: 64,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (var h = 0; h < 24; h++)
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                    height: 4 + 56 * hours[h] / peak,
+                    decoration: BoxDecoration(
+                      color: hours[h] == 0
+                          ? WyrdColors.greenBorderDim
+                          : WyrdColors.signal,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
                 ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (final l in ['00', '06', '12', '18', '24'])
+              Text(
+                l,
+                style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'You talk most around ${peakHour.toString().padLeft(2, '0')}:00'
+          '${streak > 1 ? ', and you’ve talked $streak days running' : ''}.',
+          style: WyrdText.serif(fontSize: 15),
+        ),
+      ],
     );
+  }
+
+  /// How far into a reading you are (books in parts count each part), as in the main app.
+  static double _progress(ReadingItem i) {
+    final within = i.total == 0
+        ? 1.0
+        : ((i.nextOffset ?? i.total) / i.total).clamp(0.0, 1.0);
+    final parts = i.source == 'openstax' || i.source == 'wikisource';
+    return parts
+        ? (((i.partIndex ?? 0) + within) / max(1, i.partCount ?? 1)).clamp(
+            0.0,
+            1.0,
+          )
+        : within;
   }
 
   Widget _factCard(UserFact f, bool wide) {
