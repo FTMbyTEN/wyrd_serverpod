@@ -47,7 +47,8 @@ reaches a client.
 
 ## How it uses Flutter
 
-`wyrd_flutter/` is WYRD's Flutter client: sign-in, Dialogue Link chat, WYRD's mind and brain, its
+`wyrd_flutter/` is WYRD's Flutter client: sign-in, Dialogue Link chat, WYRD's mind and brain, games
+against WYRD (chess, Connect Four, Reversi, Tic-tac-toe -- rated, every move checked by the server), its
 diary and dreams, the feed and your profile — all through the same generated Serverpod client and
 the same backend as the web app. It runs on the web (served by the Serverpod web server at
 `/flutter`), Android, iOS, Windows, macOS and Linux.

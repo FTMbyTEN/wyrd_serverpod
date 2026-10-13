@@ -17,7 +17,7 @@ people in Lagos (it answers in Pidgin and Yoruba too).
 background life on a schedule, so it keeps thinking with no one connected. Sign-in is Serverpod
 Auth, and Serverpod's web server hosts both apps.
 
-**Flutter:** WYRD's Flutter client (sign-in, chat, WYRD's mind and brain, its diary and dreams)
+**Flutter:** WYRD's Flutter client (sign-in, chat, WYRD's mind and brain, games against WYRD, its diary and dreams)
 talks to the same server through Serverpod's generated client, and runs on the web at
 wyrd00.serverpod.space/flutter. The main web app is React Native; both share the one Serverpod
 backend.
