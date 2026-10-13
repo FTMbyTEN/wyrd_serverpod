@@ -11,7 +11,8 @@ import '../theme.dart';
 /// daily or weekly -- and follow what it's doing; open a task for its full report, and answer it
 /// when it asks before acting. The server runs every task (agent/agent_service.dart).
 class TasksScreen extends StatefulWidget {
-  const TasksScreen({super.key});
+  final bool embedded; // inside a glass panel: no page header
+  const TasksScreen({super.key, this.embedded = false});
 
   @override
   State<TasksScreen> createState() => _TasksScreenState();
@@ -117,6 +118,8 @@ class _TasksScreenState extends State<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     final working = _tasks.where(_working).length;
+    final body = _body();
+    if (widget.embedded) return body;
     return Scaffold(
       backgroundColor: WyrdColors.bg,
       appBar: AppBar(
@@ -132,106 +135,111 @@ class _TasksScreenState extends State<TasksScreen> {
           ],
         ),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 820),
-          child: _open != null
-              ? _TaskDetail(
-                  task: _open!,
-                  onBack: () => setState(() => _open = null),
-                  onChanged: _load,
-                )
-              : _loading
-              ? Center(
-                  child: CircularProgressIndicator(color: WyrdColors.signal),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(18),
-                  children: [
-                    Row(
-                      children: [
-                        Text('TASKS', style: WyrdText.display(fontSize: 30)),
-                        const Spacer(),
-                        if (working > 0)
-                          _badge('$working WORKING', WyrdColors.signal),
-                      ],
+      body: body,
+    );
+  }
+
+  Widget _body() {
+    final working = _tasks.where(_working).length;
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 820),
+        child: _open != null
+            ? _TaskDetail(
+                task: _open!,
+                onBack: () => setState(() => _open = null),
+                onChanged: _load,
+              )
+            : _loading
+            ? Center(
+                child: CircularProgressIndicator(color: WyrdColors.signal),
+              )
+            : ListView(
+                padding: const EdgeInsets.all(18),
+                children: [
+                  Row(
+                    children: [
+                      Text('TASKS', style: WyrdText.display(fontSize: 30)),
+                      const Spacer(),
+                      if (working > 0)
+                        _badge('$working WORKING', WyrdColors.signal),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _composer(),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        _error!,
+                        style: WyrdText.mono(
+                          fontSize: 12,
+                          color: WyrdColors.danger,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    _composer(),
-                    if (_error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                  const SizedBox(height: 12),
+                  for (final e in _examples)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: GestureDetector(
+                        onTap: () => setState(() => _goal.text = e),
                         child: Text(
-                          _error!,
+                          '↳ $e',
                           style: WyrdText.mono(
-                            fontSize: 12,
-                            color: WyrdColors.danger,
+                            fontSize: 11.5,
+                            color: WyrdColors.signal,
                           ),
                         ),
                       ),
-                    const SizedBox(height: 12),
-                    for (final e in _examples)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _goal.text = e),
-                          child: Text(
-                            '↳ $e',
-                            style: WyrdText.mono(
-                              fontSize: 11.5,
-                              color: WyrdColors.signal,
+                    ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      for (final f in [
+                        'ALL',
+                        'NEEDS YOU',
+                        'ROUTINES',
+                        'DONE',
+                      ])
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _filter = f),
+                            child: Text(
+                              '$f ${switch (f) {
+                                'NEEDS YOU' => _tasks.where(_needsYou).length,
+                                'ROUTINES' => _tasks.where((t) => t.everyHours != null).length,
+                                'DONE' => _tasks.where((t) => t.status == 'done').length,
+                                _ => _tasks.length,
+                              }}',
+                              style: WyrdText.mono(
+                                fontSize: 10.5,
+                                color: _filter == f
+                                    ? WyrdColors.signal
+                                    : WyrdColors.greenDim,
+                              ).copyWith(letterSpacing: 1.2),
                             ),
                           ),
                         ),
-                      ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        for (final f in [
-                          'ALL',
-                          'NEEDS YOU',
-                          'ROUTINES',
-                          'DONE',
-                        ])
-                          Padding(
-                            padding: const EdgeInsets.only(right: 16),
-                            child: GestureDetector(
-                              onTap: () => setState(() => _filter = f),
-                              child: Text(
-                                '$f ${switch (f) {
-                                  'NEEDS YOU' => _tasks.where(_needsYou).length,
-                                  'ROUTINES' => _tasks.where((t) => t.everyHours != null).length,
-                                  'DONE' => _tasks.where((t) => t.status == 'done').length,
-                                  _ => _tasks.length,
-                                }}',
-                                style: WyrdText.mono(
-                                  fontSize: 10.5,
-                                  color: _filter == f
-                                      ? WyrdColors.signal
-                                      : WyrdColors.greenDim,
-                                ).copyWith(letterSpacing: 1.2),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (_shown.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          'Nothing here yet. Give WYRD something to work on above.',
-                          textAlign: TextAlign.center,
-                          style: WyrdText.mono(
-                            fontSize: 12,
-                            color: WyrdColors.greenDim,
-                          ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (_shown.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Nothing here yet. Give WYRD something to work on above.',
+                        textAlign: TextAlign.center,
+                        style: WyrdText.mono(
+                          fontSize: 12,
+                          color: WyrdColors.greenDim,
                         ),
                       ),
-                    for (final t in _shown) _card(t),
-                  ],
-                ),
-        ),
+                    ),
+                  for (final t in _shown) _card(t),
+                ],
+              ),
       ),
     );
   }

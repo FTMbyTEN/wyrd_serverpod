@@ -9,7 +9,8 @@ import 'wyrd_shell.dart' show FaceMark;
 /// mark, and the message bar along the bottom.
 class DialogueScreen extends StatefulWidget {
   final String? prompt;
-  const DialogueScreen({super.key, this.prompt});
+  final bool embedded; // inside a glass panel: no page header
+  const DialogueScreen({super.key, this.prompt, this.embedded = false});
 
   @override
   State<DialogueScreen> createState() => _DialogueScreenState();
@@ -90,6 +91,24 @@ class _DialogueScreenState extends State<DialogueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final body = _body();
+    if (widget.embedded) {
+      return Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _newChat,
+              child: Text(
+                '+ NEW CHAT',
+                style: WyrdText.mono(fontSize: 11, color: WyrdColors.signal),
+              ),
+            ),
+          ),
+          Expanded(child: body),
+        ],
+      );
+    }
     return Scaffold(
       backgroundColor: WyrdColors.bg,
       appBar: AppBar(
@@ -115,51 +134,55 @@ class _DialogueScreenState extends State<DialogueScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: Column(
-            children: [
-              Expanded(
-                child: _loading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: WyrdColors.signal,
-                        ),
-                      )
-                    : _lines.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Say something.',
-                              style: WyrdText.display(fontSize: 34),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'A private thread, just you and WYRD.\nIt remembers what you tell it.',
-                              textAlign: TextAlign.center,
-                              style: WyrdText.mono(
-                                fontSize: 12,
-                                color: WyrdColors.greenDim,
-                              ).copyWith(height: 1.6),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView(
-                        reverse: true,
-                        padding: const EdgeInsets.all(14),
+      body: body,
+    );
+  }
+
+  Widget _body() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760),
+        child: Column(
+          children: [
+            Expanded(
+              child: _loading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: WyrdColors.signal,
+                      ),
+                    )
+                  : _lines.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (_sending) _thinking(),
-                          for (final l in _lines.reversed) _bubble(l),
+                          Text(
+                            'Say something.',
+                            style: WyrdText.display(fontSize: 34),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'A private thread, just you and WYRD.\nIt remembers what you tell it.',
+                            textAlign: TextAlign.center,
+                            style: WyrdText.mono(
+                              fontSize: 12,
+                              color: WyrdColors.greenDim,
+                            ).copyWith(height: 1.6),
+                          ),
                         ],
                       ),
-              ),
-              _bar(),
-            ],
-          ),
+                    )
+                  : ListView(
+                      reverse: true,
+                      padding: const EdgeInsets.all(14),
+                      children: [
+                        if (_sending) _thinking(),
+                        for (final l in _lines.reversed) _bubble(l),
+                      ],
+                    ),
+            ),
+            _bar(),
+          ],
         ),
       ),
     );

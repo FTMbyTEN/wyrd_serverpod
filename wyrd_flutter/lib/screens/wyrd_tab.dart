@@ -8,6 +8,7 @@ import '../client.dart';
 import '../theme.dart';
 import '../widgets/brain_canvas.dart';
 import '../widgets/holo.dart';
+import '../widgets/glass_panel.dart';
 import 'dialogue_screen.dart';
 import 'games_tab.dart';
 
@@ -69,8 +70,14 @@ class _WyrdTabState extends State<WyrdTab> {
   }
 
   Future<void> _openDialogue([String? prompt]) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => DialogueScreen(prompt: prompt)),
+    // Dialogue Link: glass, sliding in from the right (a pop-up on phones), as in the main app
+    await openGlassPanel(
+      context,
+      title: 'DIALOGUE_LINK',
+      icon: Icons.forum_outlined,
+      side: GlassSide.right,
+      maxWidth: 760,
+      child: DialogueScreen(prompt: prompt, embedded: true),
     );
     _loadMind();
   }

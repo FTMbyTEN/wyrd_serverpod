@@ -8,6 +8,7 @@ import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
 import '../theme.dart';
+import '../widgets/glass_panel.dart';
 import 'cop_tab.dart';
 
 /// YOU, as in the main app (YouTab.tsx): who you are to WYRD -- your name, how long you've been
@@ -475,19 +476,12 @@ class _YouTabState extends State<YouTab> {
               Icons.shield_outlined,
               'COP oversight',
               'Every change WYRD made to itself, independently reviewed',
-              () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    backgroundColor: WyrdColors.bg,
-                    appBar: AppBar(
-                      backgroundColor: WyrdColors.barBg,
-                      surfaceTintColor: Colors.transparent,
-                      foregroundColor: WyrdColors.mint,
-                      title: Text('COP', style: WyrdText.display(fontSize: 26)),
-                    ),
-                    body: const CopTab(),
-                  ),
-                ),
+              () => openGlassPanel(
+                context,
+                title: 'COP',
+                icon: Icons.shield_outlined,
+                maxWidth: 720,
+                child: const CopTab(),
               ),
             ),
           _section('YOUR DATA', null),

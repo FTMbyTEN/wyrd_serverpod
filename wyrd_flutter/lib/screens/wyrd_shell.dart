@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../client.dart';
 import '../theme.dart';
+import '../widgets/glass_panel.dart';
+import 'alerts_panel.dart';
 import 'cop_tab.dart';
 import 'journal_tab.dart';
 import 'games_tab.dart';
@@ -331,8 +333,12 @@ class _Header extends StatelessWidget {
           // TASKS: what WYRD is working on for you, as the main app's header pill
           InkWell(
             borderRadius: BorderRadius.circular(999),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TasksScreen()),
+            onTap: () => openGlassPanel(
+              context,
+              title: 'TASKS',
+              icon: Icons.auto_awesome_outlined,
+              side: GlassSide.left,
+              child: const TasksScreen(embedded: true),
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -364,19 +370,12 @@ class _Header extends StatelessWidget {
           if (owner) ...[
             InkWell(
               borderRadius: BorderRadius.circular(999),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    backgroundColor: WyrdColors.bg,
-                    appBar: AppBar(
-                      backgroundColor: WyrdColors.barBg,
-                      surfaceTintColor: Colors.transparent,
-                      foregroundColor: WyrdColors.mint,
-                      title: Text('COP', style: WyrdText.display(fontSize: 26)),
-                    ),
-                    body: const CopTab(),
-                  ),
-                ),
+              onTap: () => openGlassPanel(
+                context,
+                title: 'COP',
+                icon: Icons.shield_outlined,
+                maxWidth: 720,
+                child: const CopTab(),
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -408,6 +407,19 @@ class _Header extends StatelessWidget {
             ),
             const SizedBox(width: 8),
           ],
+          // ALERTS: the bell, as in the main app -- a glass pop-up of what WYRD wants you to know
+          _RoundButton(
+            icon: Icons.notifications_none_rounded,
+            label: 'Alerts',
+            onTap: () => openGlassPanel(
+              context,
+              title: 'ALERTS',
+              icon: Icons.notifications_none_rounded,
+              maxWidth: 520,
+              child: const AlertsPanel(),
+            ),
+          ),
+          const SizedBox(width: 8),
           // day / night, as the main app's header button
           _RoundButton(
             icon: WyrdColors.dark
