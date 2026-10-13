@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
+import '../games/custom_games.dart';
 import '../agent/agent_service.dart';
 import '../drone/drone_service.dart';
 import 'claude.dart';
@@ -276,6 +277,7 @@ class ChatToolService {
     VisualTools.showVisual,
     VisualTools.drawPicture,
     VisualTools.runPython,
+    CustomGames.buildGameTool,
     _webSearchTool,
     _newsSearchTool,
     _marketPricesTool,
@@ -452,6 +454,19 @@ class ChatToolService {
                   'type': 'tool_result',
                   'tool_use_id': toolUseId,
                   'content': told,
+                });
+                continue;
+              }
+              // a game they asked for, programmed into their Games tab in the background
+              if (name == 'build_game') {
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': await CustomGames.startBuild(
+                    session,
+                    authUserId,
+                    input,
+                  ),
                 });
                 continue;
               }
