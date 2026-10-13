@@ -162,8 +162,9 @@ class CustomGames {
                   messages: [
                     {'role': 'user', 'content': ask},
                   ],
-                  maxTokens: 16000,
-                  think: true,
+                  // no thinking: with it on, a game could spend the whole allowance thinking and never be written
+                  maxTokens: 20000,
+                  think: false,
                 ),
               ),
             )
