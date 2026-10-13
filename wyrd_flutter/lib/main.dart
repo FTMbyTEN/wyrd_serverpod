@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'client.dart';
+import 'screens/auth_panel.dart';
 import 'screens/wyrd_shell.dart';
 import 'theme.dart';
 
@@ -49,40 +50,10 @@ class AuthGate extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 440),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'WYRD',
-                          textAlign: TextAlign.center,
-                          style: WyrdText.display(fontSize: 64),
-                        ),
-                        Text(
-                          'A mind that keeps thinking, and remembers you.',
-                          textAlign: TextAlign.center,
-                          style: WyrdText.mono(
-                            fontSize: 12.5,
-                            color: WyrdColors.greenDim,
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: wyrdCard(radius: 24),
-                          child: EmailSignInWidget(
-                            client: client,
-                            onAuthenticated: () {
-                              // fire-and-forget: mirrors server.js's touchProfileVisit on
-                              // register/login, which has no direct hook in the built-in IDP flow.
-                              client.profile.touchVisit();
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                  // the main app's sign-in card (screens/auth_panel.dart)
+                  child: const SingleChildScrollView(
+                    padding: EdgeInsets.all(20),
+                    child: AuthPanel(),
                   ),
                 ),
               ),
