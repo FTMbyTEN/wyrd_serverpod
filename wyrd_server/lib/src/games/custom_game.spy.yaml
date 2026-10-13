@@ -1,0 +1,16 @@
+### A game WYRD programmed for someone at their request (save_game): one self-contained HTML
+### document, played full screen in a sandboxed frame from their Games tab.
+class: CustomGame
+table: custom_game
+
+fields:
+  authUserId: UuidValue
+  title: String
+  blurb: String # a line on its tile: what it is and how to play
+  html: String
+  createdAt: DateTime
+  updatedAt: DateTime
+
+indexes:
+  custom_game_user_idx:
+    fields: authUserId, updatedAt

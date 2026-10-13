@@ -8,7 +8,7 @@ import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
 import '../theme.dart';
-import '../widgets/holo.dart';
+import 'your_games.dart';
 
 /// Games against WYRD: chess, Connect Four, Reversi and Tic-tac-toe, rated, with WYRD's line on
 /// every move. The server holds every position and checks every move (games_endpoint.dart); this
@@ -128,6 +128,8 @@ class _GamesTabState extends State<GamesTab> {
             childAspectRatio: cols == 1 ? 3.2 : 3.0,
             children: [for (final g in _games) _card(g)],
           ),
+          const SizedBox(height: 22),
+          YourGames(columns: cols),
           const SizedBox(height: 22),
           Container(
             padding: const EdgeInsets.only(bottom: 6),

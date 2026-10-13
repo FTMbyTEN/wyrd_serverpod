@@ -30,8 +30,13 @@ late final Client client;
 final ownerAccess = ValueNotifier<bool>(false);
 
 Future<void> initializeClient() async {
-  client = Client(await serverUrl)
-    ..connectivityMonitor = FlutterConnectivityMonitor()
-    ..authSessionManager = FlutterAuthSessionManager();
+  client =
+      Client(
+          await serverUrl,
+          // a game or app WYRD writes for them can take a couple of minutes to come back
+          connectionTimeout: const Duration(minutes: 4),
+        )
+        ..connectivityMonitor = FlutterConnectivityMonitor()
+        ..authSessionManager = FlutterAuthSessionManager();
   unawaited(client.auth.initialize());
 }

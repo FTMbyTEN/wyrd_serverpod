@@ -1,6 +1,7 @@
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import 'custom_games.dart';
 import 'game_service.dart';
 
 /// Games: against WYRD (chess, Connect Four, Reversi, Tic-tac-toe) and between players, with
@@ -20,6 +21,13 @@ class GamesEndpoint extends Endpoint {
   static List<GameMatch> _all(Session session, List<GameMatch> ms) => [
     for (final m in ms) _view(session, m),
   ];
+
+  /// The games WYRD programmed for them (save_game), newest first.
+  Future<List<CustomGame>> myGames(Session session) =>
+      CustomGames.mine(session, _user(session));
+
+  Future<void> deleteGame(Session session, int id) =>
+      CustomGames.delete(session, _user(session), id);
 
   Future<List<PlayerRating>> myRatings(Session session) =>
       GameService.myRatings(session, _user(session));

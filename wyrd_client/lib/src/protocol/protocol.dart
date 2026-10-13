@@ -19,6 +19,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:wyrd_client/src/protocol/agent/agent_step.dart' as _i6j2kf10;
 import 'package:wyrd_client/src/protocol/agent/agent_task.dart' as _i2gts05o;
 import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
+import 'package:wyrd_client/src/protocol/games/custom_game.dart' as _ipkxxgte;
 import 'package:wyrd_client/src/protocol/games/game_match.dart' as _io9n6mg3;
 import 'package:wyrd_client/src/protocol/games/player_rating.dart' as _ibpm8r25;
 import 'package:wyrd_client/src/protocol/mind/alert_note.dart' as _i4c7ehki;
@@ -46,6 +47,7 @@ import 'agent/agent_task.dart' as _i8fei7z1;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
 import 'drone/drone_state.dart' as _it73791y;
+import 'games/custom_game.dart' as _ixx1i67o;
 import 'games/game_match.dart' as _iucyrm0h;
 import 'games/player_rating.dart' as _ihg2pt9t;
 import 'greetings/greeting.dart' as _izw8z7ou;
@@ -140,6 +142,7 @@ export 'agent/agent_task.dart';
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
 export 'drone/drone_state.dart';
+export 'games/custom_game.dart';
 export 'games/game_match.dart';
 export 'games/player_rating.dart';
 export 'greetings/greeting.dart';
@@ -279,6 +282,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _it73791y.DroneState) {
       return _it73791y.DroneState.fromJson(data) as T;
+    }
+    if (t == _ixx1i67o.CustomGame) {
+      return _ixx1i67o.CustomGame.fromJson(data) as T;
     }
     if (t == _iucyrm0h.GameMatch) {
       return _iucyrm0h.GameMatch.fromJson(data) as T;
@@ -562,6 +568,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_it73791y.DroneState?>()) {
       return (data != null ? _it73791y.DroneState.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ixx1i67o.CustomGame?>()) {
+      return (data != null ? _ixx1i67o.CustomGame.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iucyrm0h.GameMatch?>()) {
       return (data != null ? _iucyrm0h.GameMatch.fromJson(data) : null) as T;
@@ -1048,6 +1057,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ipkxxgte.CustomGame>) {
+      return (data as List)
+              .map((e) => deserialize<_ipkxxgte.CustomGame>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ibpm8r25.PlayerRating>) {
       return (data as List)
               .map((e) => deserialize<_ibpm8r25.PlayerRating>(e))
@@ -1187,6 +1202,7 @@ class Protocol extends _isc.SerializationManager {
       _idcsjt5k.DroneMission => 'DroneMission',
       _i1bw7vkv.DronePlanResult => 'DronePlanResult',
       _it73791y.DroneState => 'DroneState',
+      _ixx1i67o.CustomGame => 'CustomGame',
       _iucyrm0h.GameMatch => 'GameMatch',
       _ihg2pt9t.PlayerRating => 'PlayerRating',
       _izw8z7ou.Greeting => 'Greeting',
@@ -1300,6 +1316,8 @@ class Protocol extends _isc.SerializationManager {
         return 'DronePlanResult';
       case _it73791y.DroneState():
         return 'DroneState';
+      case _ixx1i67o.CustomGame():
+        return 'CustomGame';
       case _iucyrm0h.GameMatch():
         return 'GameMatch';
       case _ihg2pt9t.PlayerRating():
@@ -1514,6 +1532,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DroneState') {
       return deserialize<_it73791y.DroneState>(data['data']);
+    }
+    if (dataClassName == 'CustomGame') {
+      return deserialize<_ixx1i67o.CustomGame>(data['data']);
     }
     if (dataClassName == 'GameMatch') {
       return deserialize<_iucyrm0h.GameMatch>(data['data']);

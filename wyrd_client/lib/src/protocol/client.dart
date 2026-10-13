@@ -23,6 +23,7 @@ import 'package:wyrd_client/src/protocol/drone/drone_mission.dart' as _ik7hqtb1;
 import 'package:wyrd_client/src/protocol/drone/drone_plan_result.dart'
     as _ibjo0dmj;
 import 'package:wyrd_client/src/protocol/drone/drone_state.dart' as _i9y70wfa;
+import 'package:wyrd_client/src/protocol/games/custom_game.dart' as _ipkxxgte;
 import 'package:wyrd_client/src/protocol/games/game_match.dart' as _io9n6mg3;
 import 'package:wyrd_client/src/protocol/games/player_rating.dart' as _ibpm8r25;
 import 'package:wyrd_client/src/protocol/greetings/greeting.dart' as _i06jqtw9;
@@ -471,6 +472,20 @@ class EndpointGames extends _isc.EndpointRef {
 
   @override
   String get name => 'games';
+
+  /// The games WYRD programmed for them (save_game), newest first.
+  _ida.Future<List<_ipkxxgte.CustomGame>> myGames() =>
+      caller.callServerEndpoint<List<_ipkxxgte.CustomGame>>(
+        'games',
+        'myGames',
+        {},
+      );
+
+  _ida.Future<void> deleteGame(int id) => caller.callServerEndpoint<void>(
+    'games',
+    'deleteGame',
+    {'id': id},
+  );
 
   _ida.Future<List<_ibpm8r25.PlayerRating>> myRatings() =>
       caller.callServerEndpoint<List<_ibpm8r25.PlayerRating>>(

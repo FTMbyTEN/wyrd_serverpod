@@ -21,6 +21,7 @@ import 'package:wyrd_server/src/generated/agent/agent_step.dart' as _i15ocs7v;
 import 'package:wyrd_server/src/generated/agent/agent_task.dart' as _iimdo2yj;
 import 'package:wyrd_server/src/generated/drone/drone_mission.dart'
     as _iu8lemuv;
+import 'package:wyrd_server/src/generated/games/custom_game.dart' as _ii38qo08;
 import 'package:wyrd_server/src/generated/games/game_match.dart' as _iocic9iq;
 import 'package:wyrd_server/src/generated/games/player_rating.dart'
     as _ii8ozmxa;
@@ -51,6 +52,7 @@ import 'agent/agent_task.dart' as _i8fei7z1;
 import 'drone/drone_mission.dart' as _idcsjt5k;
 import 'drone/drone_plan_result.dart' as _i1bw7vkv;
 import 'drone/drone_state.dart' as _it73791y;
+import 'games/custom_game.dart' as _ixx1i67o;
 import 'games/game_match.dart' as _iucyrm0h;
 import 'games/player_rating.dart' as _ihg2pt9t;
 import 'greetings/greeting.dart' as _izw8z7ou;
@@ -145,6 +147,7 @@ export 'agent/agent_task.dart';
 export 'drone/drone_mission.dart';
 export 'drone/drone_plan_result.dart';
 export 'drone/drone_state.dart';
+export 'games/custom_game.dart';
 export 'games/game_match.dart';
 export 'games/player_rating.dart';
 export 'greetings/greeting.dart';
@@ -1235,6 +1238,78 @@ class Protocol extends _is.DatabaseSerializationManager {
       ],
       foreignKeys: [],
       indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'custom_game',
+      dartName: 'CustomGame',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'blurb',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'html',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'custom_game_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'updatedAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
       managed: true,
     ),
     _isp.TableDefinition(
@@ -5072,6 +5147,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _it73791y.DroneState) {
       return _it73791y.DroneState.fromJson(data) as T;
     }
+    if (t == _ixx1i67o.CustomGame) {
+      return _ixx1i67o.CustomGame.fromJson(data) as T;
+    }
     if (t == _iucyrm0h.GameMatch) {
       return _iucyrm0h.GameMatch.fromJson(data) as T;
     }
@@ -5354,6 +5432,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_it73791y.DroneState?>()) {
       return (data != null ? _it73791y.DroneState.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ixx1i67o.CustomGame?>()) {
+      return (data != null ? _ixx1i67o.CustomGame.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_iucyrm0h.GameMatch?>()) {
       return (data != null ? _iucyrm0h.GameMatch.fromJson(data) : null) as T;
@@ -5840,6 +5921,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ii38qo08.CustomGame>) {
+      return (data as List)
+              .map((e) => deserialize<_ii38qo08.CustomGame>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ii8ozmxa.PlayerRating>) {
       return (data as List)
               .map((e) => deserialize<_ii8ozmxa.PlayerRating>(e))
@@ -5982,6 +6069,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _idcsjt5k.DroneMission => 'DroneMission',
       _i1bw7vkv.DronePlanResult => 'DronePlanResult',
       _it73791y.DroneState => 'DroneState',
+      _ixx1i67o.CustomGame => 'CustomGame',
       _iucyrm0h.GameMatch => 'GameMatch',
       _ihg2pt9t.PlayerRating => 'PlayerRating',
       _izw8z7ou.Greeting => 'Greeting',
@@ -6095,6 +6183,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'DronePlanResult';
       case _it73791y.DroneState():
         return 'DroneState';
+      case _ixx1i67o.CustomGame():
+        return 'CustomGame';
       case _iucyrm0h.GameMatch():
         return 'GameMatch';
       case _ihg2pt9t.PlayerRating():
@@ -6313,6 +6403,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'DroneState') {
       return deserialize<_it73791y.DroneState>(data['data']);
+    }
+    if (dataClassName == 'CustomGame') {
+      return deserialize<_ixx1i67o.CustomGame>(data['data']);
     }
     if (dataClassName == 'GameMatch') {
       return deserialize<_iucyrm0h.GameMatch>(data['data']);
@@ -6630,6 +6723,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _idcsjt5k.DroneMission.t;
       case _it73791y.DroneState:
         return _it73791y.DroneState.t;
+      case _ixx1i67o.CustomGame:
+        return _ixx1i67o.CustomGame.t;
       case _iucyrm0h.GameMatch:
         return _iucyrm0h.GameMatch.t;
       case _ihg2pt9t.PlayerRating:

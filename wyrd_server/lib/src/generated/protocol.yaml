@@ -27,6 +27,8 @@ drone:
   - plan:
   - abort:
 games:
+  - myGames:
+  - deleteGame:
   - myRatings:
   - leaderboard:
   - active:

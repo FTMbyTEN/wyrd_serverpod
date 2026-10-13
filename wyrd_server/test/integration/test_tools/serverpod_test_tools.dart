@@ -25,6 +25,7 @@ import 'package:wyrd_server/src/generated/drone/drone_plan_result.dart'
     as _i7r2m91f;
 import 'package:wyrd_server/src/generated/drone/drone_state.dart' as _ivnf8vdp;
 import 'package:wyrd_server/src/generated/future_calls.dart' as _ix7un2io;
+import 'package:wyrd_server/src/generated/games/custom_game.dart' as _ii38qo08;
 import 'package:wyrd_server/src/generated/games/game_match.dart' as _iocic9iq;
 import 'package:wyrd_server/src/generated/games/player_rating.dart'
     as _ii8ozmxa;
@@ -1279,6 +1280,67 @@ class _GamesEndpoint {
   final _is.EndpointDispatch _endpointDispatch;
 
   final _is.SerializationManager _serializationManager;
+
+  _ida.Future<List<_ii38qo08.CustomGame>> myGames(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'myGames',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'myGames',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<List<_ii38qo08.CustomGame>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<void> deleteGame(
+    _ist.TestSessionBuilder sessionBuilder,
+    int id,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'deleteGame',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'deleteGame',
+          parameters: _ist.testObjectToJson({'id': id}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<void>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 
   _ida.Future<List<_ii8ozmxa.PlayerRating>> myRatings(
     _ist.TestSessionBuilder sessionBuilder,

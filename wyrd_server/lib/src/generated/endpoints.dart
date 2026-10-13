@@ -774,6 +774,35 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'games',
       endpoint: endpoints['games']!,
       methodConnectors: {
+        'myGames': _is.MethodConnector(
+          name: 'myGames',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['games'] as _ittu6d2n.GamesEndpoint)
+                  .myGames(session),
+        ),
+        'deleteGame': _is.MethodConnector(
+          name: 'deleteGame',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).deleteGame(
+                    session,
+                    params['id'],
+                  ),
+        ),
         'myRatings': _is.MethodConnector(
           name: 'myRatings',
           params: {},
