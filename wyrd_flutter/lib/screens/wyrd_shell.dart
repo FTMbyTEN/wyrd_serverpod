@@ -6,6 +6,7 @@ import 'wyrd_tab.dart';
 import 'diary_tab.dart';
 import 'cop_tab.dart';
 import 'feed_tab.dart';
+import 'games_tab.dart';
 import 'you_tab.dart';
 
 /// The app's 5-tab navigation shell, mirroring the React Native app's IA
@@ -50,6 +51,14 @@ class _WyrdShellState extends State<WyrdShell> {
           icon: Icon(Icons.menu_book_outlined),
           selectedIcon: Icon(Icons.menu_book),
           label: 'DIARY',
+        ),
+      ),
+      (
+        const GamesTab(),
+        const NavigationDestination(
+          icon: Icon(Icons.sports_esports_outlined),
+          selectedIcon: Icon(Icons.sports_esports),
+          label: 'GAMES',
         ),
       ),
       if (owner)

@@ -189,7 +189,7 @@ class _YouTabState extends State<YouTab> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'YOUR ACCOUNT · ${days} DAYS WITH WYRD',
+                          'YOUR ACCOUNT · $days DAYS WITH WYRD',
                           style: WyrdText.mono(
                             fontSize: 10,
                             color: WyrdColors.greenDim,

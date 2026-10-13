@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
   google_fonts: ^8.1.0
+  chess: ^0.8.1
   wyrd_client:
     path: ../wyrd_client
   serverpod_flutter: 4.0.0
