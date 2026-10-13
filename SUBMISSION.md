@@ -19,7 +19,7 @@ Auth, and Serverpod's web server hosts both apps.
 
 **Flutter:** WYRD's Flutter client (sign-in, chat, WYRD's mind and brain, games against WYRD, its diary and dreams)
 talks to the same server through Serverpod's generated client, and runs on the web at
-wyrd00.serverpod.space/flutter. The main web app is React Native; both share the one Serverpod
+wryd00.serverpod.space/flutter. The main web app is React Native; both share the one Serverpod
 backend.
 
 ## Links
@@ -39,7 +39,7 @@ backend.
 | 0:35–0:55 | Say: "Remember that my exam is on Friday." New chat → "What do you remember about me?" | "It remembers me across chats — one memory, shared by everything it does." |
 | 0:55–1:10 | ENTER 3D | "This is its mind: words it understands, what it's digesting, what it learned today — all live from the server." |
 | 1:10–1:25 | The chess card → Accept → one move | "And it'll play you at chess, full strength." |
-| 1:25–1:45 | Open wyrd00.serverpod.space/flutter, sign in, send a message | "This is the Flutter client — the same WYRD, the same Serverpod backend, through the generated client." |
+| 1:25–1:45 | Open wryd00.serverpod.space/flutter, sign in, send a message | "This is the Flutter client — the same WYRD, the same Serverpod backend, through the generated client." |
 | 1:45–2:00 | The GitHub repo README | "One Serverpod server: 35 endpoints, 55 tables, and future calls that keep WYRD alive between conversations. It's live now at wryd00.serverpod.space." |
 
 ## Last-mile checks (from the organisers)
