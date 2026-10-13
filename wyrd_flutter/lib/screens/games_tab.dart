@@ -57,7 +57,9 @@ const _levels = [
 ];
 
 class _GamesTabState extends State<GamesTab> {
-  Map<String, int> _ratings = {};
+  Map<String, PlayerRating> _mine = {};
+  List<PlayerRating> _board = [];
+  String _boardGame = 'chess';
 
   @override
   void initState() {
@@ -68,16 +70,32 @@ class _GamesTabState extends State<GamesTab> {
   Future<void> _loadRatings() async {
     try {
       final rs = await client.games.myRatings();
+      final b = await client.games.leaderboard(_boardGame);
       if (mounted) {
-        setState(
-          () => _ratings = {for (final r in rs) r.game: r.rating.round()},
-        );
+        setState(() {
+          _mine = {for (final r in rs) r.game: r};
+          _board = b;
+        });
       }
+    } catch (_) {}
+  }
+
+  Future<void> _showBoard(String game) async {
+    setState(() => _boardGame = game);
+    try {
+      final b = await client.games.leaderboard(game);
+      if (mounted) setState(() => _board = b);
     } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final cols = w >= 1100
+        ? 3
+        : w >= 640
+        ? 2
+        : 1;
     return Container(
       color: WyrdColors.bg,
       child: ListView(
@@ -92,93 +110,206 @@ class _GamesTabState extends State<GamesTab> {
           ),
           Text('Play WYRD', style: WyrdText.display(fontSize: 40)),
           Text(
-            'Every game is rated. WYRD plays at your level, and says what it thinks of your moves.',
+            'Every game is rated. Play WYRD at your level, or challenge another person while WYRD keeps score.',
             style: WyrdText.mono(
               fontSize: 12,
               color: WyrdColors.greenDim,
             ).copyWith(height: 1.5),
           ),
           const SizedBox(height: 16),
-          for (final g in _games)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => GameRoom(game: g.key, name: g.name),
+          GridView.count(
+            crossAxisCount: cols,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: cols == 1 ? 3.2 : 3.0,
+            children: [for (final g in _games) _card(g)],
+          ),
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.only(bottom: 6),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: WyrdColors.greenBorderDim),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.emoji_events_outlined,
+                  size: 15,
+                  color: WyrdColors.signal,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'LEADERBOARD',
+                  style: WyrdText.mono(
+                    fontSize: 10,
+                    color: WyrdColors.signal,
+                  ).copyWith(letterSpacing: 2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            children: [
+              for (final g in _games)
+                GestureDetector(
+                  onTap: () => _showBoard(g.key),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _boardGame == g.key
+                          ? WyrdColors.signal
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: _boardGame == g.key
+                            ? WyrdColors.signal
+                            : WyrdColors.greenBorder,
                       ),
-                    );
-                    _loadRatings();
-                  },
-                  child: Ink(
-                    padding: const EdgeInsets.all(16),
-                    decoration: wyrdCard(),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: WyrdColors.signalSoft,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            g.glyph,
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: WyrdColors.signal,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                g.name,
-                                style: WyrdText.display(fontSize: 26),
-                              ),
-                              Text(
-                                g.blurb,
-                                style: WyrdText.mono(
-                                  fontSize: 11.5,
-                                  color: WyrdColors.greenDim,
-                                ).copyWith(height: 1.4),
-                              ),
-                              if (_ratings[g.key] != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    'RATING ${_ratings[g.key]}',
-                                    style: WyrdText.mono(
-                                      fontSize: 9.5,
-                                      color: WyrdColors.signal,
-                                    ).copyWith(letterSpacing: 1.4),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          'PLAY →',
-                          style: WyrdText.mono(
-                            fontSize: 11,
-                            color: WyrdColors.signal,
-                          ),
-                        ),
-                      ],
+                    ),
+                    child: Text(
+                      g.name.toUpperCase(),
+                      style: WyrdText.mono(
+                        fontSize: 9.5,
+                        color: _boardGame == g.key
+                            ? WyrdColors.onSignal
+                            : WyrdColors.greenDim,
+                      ).copyWith(letterSpacing: 1.2),
                     ),
                   ),
                 ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_board.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(
+                'No one rated here yet. Be the first.',
+                style: WyrdText.mono(fontSize: 12, color: WyrdColors.greenDim),
+              ),
+            ),
+          for (final (i, r) in _board.take(10).indexed)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                color: i == 0 ? WyrdColors.signalSoft : WyrdColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: WyrdColors.greenBorderDim),
+              ),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '${i + 1}',
+                      style: WyrdText.display(
+                        fontSize: 20,
+                        color: WyrdColors.signal,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(r.name, style: WyrdText.mono(fontSize: 13)),
+                  ),
+                  Text(
+                    '${r.wins}W ${r.losses}L  ',
+                    style: WyrdText.mono(
+                      fontSize: 10.5,
+                      color: WyrdColors.greenDim,
+                    ),
+                  ),
+                  Text(
+                    '${r.rating.round()}',
+                    style: WyrdText.display(fontSize: 22),
+                  ),
+                ],
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _card(({String key, String name, String blurb, String glyph}) g) {
+    final r = _mine[g.key];
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => GameRoom(game: g.key, name: g.name),
+            ),
+          );
+          _loadRatings();
+        },
+        child: Ink(
+          padding: const EdgeInsets.all(14),
+          decoration: wyrdCard(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: WyrdColors.signalSoft,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      g.glyph,
+                      style: TextStyle(fontSize: 20, color: WyrdColors.signal),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(g.name, style: WyrdText.display(fontSize: 24)),
+                  ),
+                  Text(
+                    'PLAY →',
+                    style: WyrdText.mono(
+                      fontSize: 10.5,
+                      color: WyrdColors.signal,
+                    ).copyWith(letterSpacing: 1.2),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Expanded(
+                child: Text(
+                  g.blurb,
+                  style: WyrdText.mono(
+                    fontSize: 11.5,
+                    color: WyrdColors.greenDim,
+                  ).copyWith(height: 1.4),
+                ),
+              ),
+              Text(
+                r == null
+                    ? 'NOT RATED YET'
+                    : 'RATING ${r.rating.round()} · ${r.wins}W ${r.losses}L',
+                style: WyrdText.mono(
+                  fontSize: 9.5,
+                  color: r == null ? WyrdColors.greenDim : WyrdColors.mint,
+                ).copyWith(letterSpacing: 1.2),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

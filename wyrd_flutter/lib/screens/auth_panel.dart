@@ -10,7 +10,9 @@ import 'wyrd_shell.dart' show FaceMark;
 /// and for sign-up and reset three steps (email -> emailed code -> password) with a step indicator.
 /// It uses Serverpod's email sign-in (emailIdp) directly.
 class AuthPanel extends StatefulWidget {
-  const AuthPanel({super.key});
+  final VoidCallback? onClose;
+  final VoidCallback? onActivity; // a step taken: the gate's vortex blooms
+  const AuthPanel({super.key, this.onClose, this.onActivity});
 
   @override
   State<AuthPanel> createState() => _AuthPanelState();
@@ -97,6 +99,7 @@ class _AuthPanelState extends State<AuthPanel> {
 
   Future<void> _submit() async {
     if (_busy) return;
+    widget.onActivity?.call();
     final email = _email.text.trim();
     final idp = client.emailIdp;
     setState(() {
@@ -202,6 +205,19 @@ class _AuthPanelState extends State<AuthPanel> {
                         color: WyrdColors.indigo,
                       ).copyWith(letterSpacing: 5),
                     ),
+                    if (widget.onClose != null) ...[
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: widget.onClose,
+                        child: Text(
+                          '×',
+                          style: WyrdText.mono(
+                            fontSize: 24,
+                            color: WyrdColors.greenDim,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 if (_mode != _Mode.reset) ...[

@@ -66,6 +66,14 @@ class WyrdText {
     ).copyWith(fontFamilyFallback: symbolFallback);
   }
 
+  /// The main app's reading face (Georgia on the web there; Noto Serif here, which the web build
+  /// can load): diary pages, facts, headlines read in the feed.
+  static TextStyle serif({double fontSize = 15, Color? color}) =>
+      GoogleFonts.notoSerif(
+        fontSize: fontSize,
+        color: color ?? WyrdColors.mint,
+      ).copyWith(fontFamilyFallback: symbolFallback);
+
   static TextStyle mono({
     double fontSize = 13,
     Color? color,

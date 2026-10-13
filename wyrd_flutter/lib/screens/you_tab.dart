@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart'
     hide UserProfile;
@@ -5,13 +7,11 @@ import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
 import '../theme.dart';
-import '../widgets/holo.dart';
 
-/// The person's own identity panel, stats grid, capability notes, and account actions. Ports
-/// YouTab.tsx. Node's "owner-only capabilities" gating doesn't exist in this backend (real
-/// browsing and the world-map tool are available to every account here, see
-/// chat_tool_service.dart), so that panel reflects what's actually true instead of copying the
-/// RN app's stale owner-gated text.
+/// YOU, as in the main app (YouTab.tsx): who you are to WYRD -- your name, how long you've been
+/// together and how WYRD feels today -- six numbers, when you talk, what WYRD knows about you (the
+/// one memory it shares across chat, tasks and the city, each with a ✕ to forget it), then settings
+/// and your data.
 class YouTab extends StatefulWidget {
   const YouTab({super.key});
 
@@ -20,24 +20,78 @@ class YouTab extends StatefulWidget {
 }
 
 class _YouTabState extends State<YouTab> {
-  late Future<(UserProfile, Mind, List<ConversationTurn>)> _data;
+  UserProfile? _profile;
+  Mind? _mind;
+  List<ConversationTurn> _turns = [];
+  bool _loading = true;
+  bool _error = false;
 
   @override
   void initState() {
     super.initState();
-    _data = _load();
+    _load();
   }
 
-  Future<(UserProfile, Mind, List<ConversationTurn>)> _load() async {
-    final profile = await client.profile.getProfile();
-    final mind = await client.mind.getMind();
-    final history = await client.chat.getHistory();
-    return (profile, mind, history);
+  Future<void> _load() async {
+    try {
+      final r = await Future.wait([
+        client.profile.getProfile(),
+        client.mind.getMind(),
+        client.chat.getHistory(limit: 200),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _profile = r[0] as UserProfile;
+        _mind = r[1] as Mind;
+        _turns = r[2] as List<ConversationTurn>;
+        _error = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _error = true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
-  Future<void> _refresh() async {
-    setState(() => _data = _load());
-    await _data;
+  Future<void> _editName() async {
+    final c = TextEditingController(text: _profile?.username ?? '');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'What should WYRD call you?',
+          style: WyrdText.display(fontSize: 26),
+        ),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          maxLength: 40,
+          style: WyrdText.mono(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
+    );
+    if (name == null || name.isEmpty) return;
+    try {
+      final p = await client.profile.setUsername(name);
+      if (mounted) setState(() => _profile = p);
+    } catch (_) {}
+  }
+
+  Future<void> _forget(String text) async {
+    try {
+      final p = await client.profile.forgetFact(text);
+      if (mounted) setState(() => _profile = p);
+    } catch (_) {}
   }
 
   Future<void> _export() async {
@@ -46,297 +100,464 @@ class _YouTabState extends State<YouTab> {
       if (!mounted) return;
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: WyrdColors.panelBg,
-          title: Text(
-            'YOUR DATA',
-            style: WyrdText.mono(color: WyrdColors.green, letterSpacing: 1),
-          ),
-          content: SingleChildScrollView(
-            child: Text(
-              'Email: ${export.email ?? '(none)'}\n'
-              'Visits: ${export.visitCount}\n'
-              'Facts known: ${export.facts.length}\n'
-              'Conversation turns: ${export.conversation.length}',
-              style: WyrdText.mono(color: WyrdColors.mint),
+        builder: (ctx) => AlertDialog(
+          title: Text('Your data', style: WyrdText.display(fontSize: 26)),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: SelectableText(
+                const JsonEncoder.withIndent('  ').convert(export.toJson()),
+                style: WyrdText.mono(fontSize: 11),
+              ),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'CLOSE',
-                style: WyrdText.mono(color: WyrdColors.green),
-              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CLOSE'),
             ),
           ],
         ),
       );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
-    }
+    } catch (_) {}
   }
 
-  Future<void> _deleteData() async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _delete() async {
+    final yes = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: WyrdColors.panelBg,
+      builder: (ctx) => AlertDialog(
         title: Text(
-          'DELETE YOUR DATA?',
-          style: WyrdText.mono(color: WyrdColors.danger, letterSpacing: 1),
+          'Delete your data?',
+          style: WyrdText.display(fontSize: 26, color: WyrdColors.danger),
         ),
         content: Text(
-          'This permanently wipes your profile facts and conversation history. Your sign-in itself is not affected.',
-          style: WyrdText.mono(color: WyrdColors.mint),
+          'This permanently deletes your conversations, what WYRD learned about you, your reading and your quizzes. '
+          'It can’t be undone. Your login stays.',
+          style: WyrdText.mono(fontSize: 13).copyWith(height: 1.5),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'CANCEL',
-              style: WyrdText.mono(color: WyrdColors.greenDim),
-            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('CANCEL'),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'DELETE',
-              style: WyrdText.mono(color: WyrdColors.danger),
-            ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: WyrdColors.danger),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('DELETE'),
           ),
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (yes != true) return;
     try {
       await client.account.deleteMyData();
-      await _refresh();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Your data has been deleted.')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
-    }
+      await _load();
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: WyrdColors.bg,
-      child: RefreshIndicator(
-        onRefresh: _refresh,
-        child: FutureBuilder<(UserProfile, Mind, List<ConversationTurn>)>(
-          future: _data,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return Center(
-                child: CircularProgressIndicator(color: WyrdColors.signal),
-              );
-            }
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  "Couldn't load your profile just now. Try again in a moment.",
-                  style: WyrdText.mono(color: WyrdColors.danger),
-                ),
-              );
-            }
-            final (profile, mind, history) = snapshot.data!;
-            final days = DateTime.now()
-                .toUtc()
-                .difference(profile.firstSeen.toUtc())
-                .inDays;
-            final name = (profile.username ?? '—').toUpperCase();
+    if (_loading)
+      return Center(child: CircularProgressIndicator(color: WyrdColors.signal));
+    if (_error || _profile == null) {
+      return Center(
+        child: Text(
+          "Couldn't load your profile just now. Try again in a moment.",
+          style: WyrdText.mono(fontSize: 12.5, color: WyrdColors.greenDim),
+        ),
+      );
+    }
+    final p = _profile!;
+    final days = DateTime.now().difference(p.firstSeen).inDays + 1;
+    final name = (p.username?.trim().isNotEmpty ?? false)
+        ? p.username!.trim()
+        : (p.email ?? '—').split('@').first;
+    final wide = MediaQuery.of(context).size.width >= 700;
+    final stats = [
+      ('${_turns.length}', 'MESSAGES', WyrdColors.palm),
+      ('${p.facts.length}', 'THINGS IT KNOWS', WyrdColors.indigo),
+      ('$days', 'DAYS TOGETHER', WyrdColors.signal),
+      ('${p.visitCount}', 'VISITS', WyrdColors.palm),
+      (
+        '${p.facts.where((f) => f.category == 'task').length}',
+        'TASKS IT REMEMBERS',
+        WyrdColors.indigo,
+      ),
+      (
+        '${p.facts.where((f) => f.category == 'city').length}',
+        'CITY MOMENTS',
+        WyrdColors.signal,
+      ),
+    ];
 
-            return ListView(
-              padding: const EdgeInsets.all(14),
-              children: [
-                HoloFrame(
-                  glow: 0.6,
-                  beam: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: WyrdColors.signal),
-                          ),
-                          child: Icon(
-                            Icons.person_outline,
-                            color: WyrdColors.green,
-                            size: 32,
-                          ),
-                        ),
-                        Text(
-                          name,
-                          style: WyrdText.display(
-                            fontSize: 40,
-                            shadowRadius: 14,
-                          ).copyWith(letterSpacing: 4),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'YOUR ACCOUNT · $days DAYS WITH WYRD',
-                          style: WyrdText.mono(
-                            fontSize: 10,
-                            color: WyrdColors.greenDim,
-                          ).copyWith(letterSpacing: 1),
-                        ),
-                      ],
-                    ),
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // who you are to WYRD
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: WyrdColors.signal, width: 3),
+                  color: WyrdColors.sand,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  name.isEmpty ? '?' : name[0].toUpperCase(),
+                  style: WyrdText.display(
+                    fontSize: 44,
+                    color: WyrdColors.signal,
                   ),
                 ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width:
-                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
-                      child: HoloReadout(
-                        label: 'PRIVATE THREAD',
-                        value: '${history.length} messages',
-                        glow: 0.4,
-                      ),
+                    Text(
+                      'YOU, TO WYRD',
+                      style: WyrdText.mono(
+                        fontSize: 9.5,
+                        color: WyrdColors.signal,
+                      ).copyWith(letterSpacing: 2),
                     ),
-                    SizedBox(
-                      width:
-                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
-                      child: HoloReadout(
-                        label: 'FACTS ABOUT YOU',
-                        value: '${profile.facts.length} retained',
-                        glow: 0.4,
-                      ),
-                    ),
-                    SizedBox(
-                      width:
-                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
-                      child: HoloReadout(
-                        label: 'SHARED MEMORY',
-                        value: '${mind.digest.totalTopics} topics',
-                        glow: 0.4,
-                      ),
-                    ),
-                    SizedBox(
-                      width:
-                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
-                      child: HoloReadout(
-                        label: 'MEMBER SINCE',
-                        value: _dateOnly(profile.firstSeen),
-                        glow: 0.4,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                HoloFrame(
-                  glow: 0.35,
-                  beam: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          'AVAILABLE CAPABILITIES',
-                          style: WyrdText.mono(
-                            fontSize: 9,
-                            color: WyrdColors.greenDim,
-                          ).copyWith(letterSpacing: 1),
+                        Flexible(
+                          child: Text(
+                            name,
+                            style: WyrdText.display(fontSize: 40),
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        _capRow('Real web browsing', 'EVERY ACCOUNT'),
-                        _capRow('World map tool', 'EVERY ACCOUNT'),
-                        _capRow('Camera / vision', 'EVERY ACCOUNT'),
-                        _capRow('Charts and Python in chat', 'IN THE WEB APP'),
-                        Container(
-                          margin: const EdgeInsets.only(top: 9),
-                          padding: const EdgeInsets.only(top: 9),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(color: WyrdColors.greenBorderDim),
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: _editName,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'edit',
+                              style: WyrdText.mono(
+                                fontSize: 11,
+                                color: WyrdColors.greenDim,
+                              ).copyWith(decoration: TextDecoration.underline),
                             ),
                           ),
-                          child: Text(
-                            'Browsing runs in a fresh, anonymous headless-Chrome session each time — never logged in as anyone, never reused between turns.',
-                            style: WyrdText.mono(
-                              fontSize: 9.5,
-                              color: WyrdColors.greenBorderDim,
-                            ).copyWith(height: 1.4),
-                          ),
                         ),
                       ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: HoloButton(
-                        label: 'EXPORT DATA',
-                        onPressed: _export,
+                    if (p.email != null)
+                      Text(
+                        p.email!,
+                        style: WyrdText.mono(
+                          fontSize: 11,
+                          color: WyrdColors.greenDim,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: HoloButton(
-                        label: 'DELETE DATA',
-                        onPressed: _deleteData,
-                        tone: 'danger',
-                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Together since ${_longDate(p.firstSeen)} — WYRD is feeling ${_mind?.mood ?? 'curious'} today.',
+                      style: WyrdText.serif(
+                        fontSize: 15,
+                      ).copyWith(height: 1.45),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                HoloButton(
-                  label: 'LOGOUT',
-                  onPressed: () => client.authSessionManager.signOutDevice(),
-                  tone: 'danger',
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          GridView.count(
+            crossAxisCount: wide ? 3 : 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: wide ? 3.2 : 2.2,
+            children: [
+              for (final (value, label, colour) in stats)
+                Container(
+                  decoration: wyrdCard(radius: 18),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        value,
+                        style: WyrdText.display(fontSize: 30, color: colour),
+                      ),
+                      Text(
+                        label,
+                        style: WyrdText.mono(
+                          fontSize: 9.5,
+                          color: WyrdColors.greenDim,
+                        ).copyWith(letterSpacing: 1.6),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _capRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.mint),
+            ],
           ),
-          Text(
-            value,
-            style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.green),
+          _section(
+            'WHEN YOU TALK',
+            _turns.isEmpty ? null : 'your last ${_turns.length} messages',
           ),
+          _activity(),
+          _section(
+            'WHAT WYRD KNOWS ABOUT YOU',
+            '${p.facts.length} ${p.facts.length == 1 ? 'memory' : 'memories'} · one memory in chat, tasks and the city · private to you',
+          ),
+          if (p.facts.isEmpty)
+            Text(
+              'Nothing yet. Tell WYRD about yourself in Dialogue Link — your name, what you study, what you love — and it will remember, privately.',
+              style: WyrdText.mono(
+                fontSize: 12,
+                color: WyrdColors.greenDim,
+              ).copyWith(height: 1.5),
+            )
+          else
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [for (final f in p.facts) _factCard(f, wide)],
+            ),
+          _section('SETTINGS', null),
+          _setting(
+            WyrdColors.dark
+                ? Icons.dark_mode_outlined
+                : Icons.light_mode_outlined,
+            'Appearance',
+            WyrdColors.dark ? 'Night — tap for day' : 'Day — tap for night',
+            () => WyrdColors.night.value = !WyrdColors.dark,
+          ),
+          _section('YOUR DATA', null),
+          _setting(
+            Icons.inventory_2_outlined,
+            'Export my data',
+            'Conversations, facts, reading and quizzes',
+            _export,
+          ),
+          _setting(
+            Icons.delete_outline,
+            'Delete my data',
+            'Erase everything WYRD kept about you. Your login stays.',
+            _delete,
+            danger: true,
+          ),
+          _setting(
+            Icons.logout,
+            'Sign out',
+            'Leave WYRD on this device',
+            () => client.authSessionManager.signOutDevice(),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Your conversations, facts and reading are private to you. WYRD’s mind, diary and dreams are shared by everyone.',
+            style: WyrdText.mono(
+              fontSize: 11,
+              color: WyrdColors.greenDim,
+            ).copyWith(height: 1.5),
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  String _dateOnly(DateTime dt) {
-    final local = dt.toLocal();
-    return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
+  Widget _section(String title, String? note) => Padding(
+    padding: const EdgeInsets.only(top: 22, bottom: 10),
+    child: Container(
+      padding: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: WyrdColors.greenBorderDim)),
+      ),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: WyrdText.mono(
+              fontSize: 10,
+              color: WyrdColors.signal,
+            ).copyWith(letterSpacing: 2),
+          ),
+          const Spacer(),
+          if (note != null)
+            Flexible(
+              child: Text(
+                note,
+                textAlign: TextAlign.right,
+                style: WyrdText.mono(fontSize: 9.5, color: WyrdColors.greenDim),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+
+  /// When you talk: your messages over the hours of the day, as small bars.
+  Widget _activity() {
+    if (_turns.isEmpty) {
+      return Text(
+        'No conversations yet. Your rhythm with WYRD will show here.',
+        style: WyrdText.mono(fontSize: 12, color: WyrdColors.greenDim),
+      );
+    }
+    final hours = List.filled(24, 0);
+    for (final t in _turns) {
+      hours[t.timestamp.toLocal().hour]++;
+    }
+    final peak = hours.reduce((a, b) => a > b ? a : b).clamp(1, 1 << 30);
+    return SizedBox(
+      height: 64,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var h = 0; h < 24; h++)
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                height: 4 + 56 * hours[h] / peak,
+                decoration: BoxDecoration(
+                  color: hours[h] == 0
+                      ? WyrdColors.greenBorderDim
+                      : WyrdColors.signal,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
+
+  Widget _factCard(UserFact f, bool wide) {
+    final label = switch (f.category) {
+      'task' => 'A TASK FOR YOU',
+      'city' => 'NAIJA 2099',
+      'told' => 'YOU TOLD WYRD',
+      _ => f.category.toUpperCase(),
+    };
+    return SizedBox(
+      width: wide ? 230 : double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: WyrdColors.card,
+          border: Border(
+            top: BorderSide(color: WyrdColors.green, width: 2),
+            left: BorderSide(color: WyrdColors.greenBorderDim),
+            right: BorderSide(color: WyrdColors.greenBorderDim),
+            bottom: BorderSide(color: WyrdColors.greenBorderDim),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: WyrdText.mono(
+                      fontSize: 8.5,
+                      color: WyrdColors.greenDim,
+                    ).copyWith(letterSpacing: 1.6),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _forget(f.text),
+                  child: Text(
+                    '✕',
+                    style: WyrdText.mono(
+                      fontSize: 11,
+                      color: WyrdColors.greenDim,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              f.text,
+              maxLines: 8,
+              overflow: TextOverflow.ellipsis,
+              style: WyrdText.serif(fontSize: 15).copyWith(height: 1.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _setting(
+    IconData icon,
+    String title,
+    String detail,
+    VoidCallback onTap, {
+    bool danger = false,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Ink(
+        padding: const EdgeInsets.all(14),
+        decoration: wyrdCard(radius: 16),
+        child: Row(
+          children: [
+            Icon(icon, color: danger ? WyrdColors.danger : WyrdColors.signal),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: WyrdText.mono(
+                      fontSize: 13.5,
+                      color: danger ? WyrdColors.danger : WyrdColors.mint,
+                    ),
+                  ),
+                  Text(
+                    detail,
+                    style: WyrdText.mono(
+                      fontSize: 11,
+                      color: WyrdColors.greenDim,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: WyrdColors.greenDim),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+String _longDate(DateTime t) {
+  const m = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  final l = t.toLocal();
+  return '${m[l.month - 1]} ${l.day}, ${l.year}';
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'client.dart';
-import 'screens/auth_panel.dart';
+import 'screens/gate_screen.dart';
 import 'screens/wyrd_shell.dart';
 import 'theme.dart';
 
@@ -43,23 +43,8 @@ class AuthGate extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: client.authSessionManager.authInfoListenable,
       builder: (context, authInfo, _) {
-        if (authInfo == null) {
-          return Scaffold(
-            backgroundColor: WyrdColors.bg,
-            body: SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  // the main app's sign-in card (screens/auth_panel.dart)
-                  child: const SingleChildScrollView(
-                    padding: EdgeInsets.all(20),
-                    child: AuthPanel(),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
+        // signed out: the main app's gate -- the dust vortex, then the sign-in card
+        if (authInfo == null) return const GateScreen();
         return const WyrdShell();
       },
     );

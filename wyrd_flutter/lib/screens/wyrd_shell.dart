@@ -1,13 +1,14 @@
 import 'dart:math';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
 import '../client.dart';
 import '../theme.dart';
 import 'cop_tab.dart';
-import 'diary_tab.dart';
-import 'feed_tab.dart';
+import 'journal_tab.dart';
 import 'games_tab.dart';
+import 'tasks_screen.dart';
 import 'wyrd_tab.dart';
 import 'you_tab.dart';
 
@@ -23,7 +24,6 @@ class WyrdShell extends StatefulWidget {
 
 class _WyrdShellState extends State<WyrdShell> {
   int _index = 0;
-  List<String> _labels = const [];
 
   @override
   void initState() {
@@ -36,41 +36,187 @@ class _WyrdShellState extends State<WyrdShell> {
         .catchError((_) {});
   }
 
-  void _go(String label) {
-    final i = _labels.indexOf(label);
-    if (i >= 0) setState(() => _index = i);
+  // pages: 0 WYRD, 1 Journal, 2 Games, 3 You -- the bar shows WYRD · Apps · You, as the main app,
+  // with Journal and Games inside the Apps pop-up
+  static const _wyrd = 0, _journal = 1, _games = 2, _you = 3;
+
+  void _tap(int bar) {
+    if (bar == 1) {
+      _openApps();
+    } else {
+      setState(() => _index = bar == 0 ? _wyrd : _you);
+    }
+  }
+
+  /// APPS: a glass pop-up over the page with the apps as tiles, as in the main app.
+  void _openApps() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Close',
+      barrierColor: Colors.black.withValues(alpha: 0.25),
+      transitionDuration: const Duration(milliseconds: 260),
+      pageBuilder: (ctx, _, _) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                child: Material(
+                  color: WyrdColors.glassBg,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: WyrdColors.glassBorder),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'APPS',
+                              style: WyrdText.mono(
+                                fontSize: 10,
+                                color: WyrdColors.greenDim,
+                              ).copyWith(letterSpacing: 2.4),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              icon: Icon(
+                                Icons.close,
+                                size: 18,
+                                color: WyrdColors.greenDim,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Row(
+                            children: [
+                              for (final (page, icon, name, blurb) in [
+                                (
+                                  _journal,
+                                  Icons.menu_book_outlined,
+                                  'Journal',
+                                  'Diary, dreams, reasoning',
+                                ),
+                                (
+                                  _games,
+                                  Icons.sports_esports_outlined,
+                                  'Games',
+                                  'Chess and three more',
+                                ),
+                              ])
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(18),
+                                      onTap: () {
+                                        Navigator.of(ctx).pop();
+                                        setState(() => _index = page);
+                                      },
+                                      child: Ink(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _index == page
+                                              ? WyrdColors.signalSoft
+                                              : WyrdColors.glassBg,
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                          border: Border.all(
+                                            color: WyrdColors.glassBorder,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              icon,
+                                              size: 28,
+                                              color: WyrdColors.signal,
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              name,
+                                              style: WyrdText.mono(
+                                                fontSize: 13.5,
+                                              ),
+                                            ),
+                                            Text(
+                                              blurb,
+                                              style: WyrdText.mono(
+                                                fontSize: 9.5,
+                                                color: WyrdColors.greenDim,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      transitionBuilder: (_, anim, _, child) => FadeTransition(
+        opacity: anim,
+        child: ScaleTransition(
+          scale: Tween(begin: 0.96, end: 1.0).animate(
+            CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final owner = ownerAccess.value;
-    final sections = <({String label, IconData icon, Widget page})>[
+    final bar = <({String label, IconData icon, Widget page})>[
       (
         label: 'WYRD',
         icon: Icons.psychology_alt_outlined,
-        page: WyrdTab(onPlayChess: () => _go('Games')),
+        page: const SizedBox(),
       ),
-      (
-        label: 'Games',
-        icon: Icons.sports_esports_outlined,
-        page: const GamesTab(),
-      ),
-      (
-        label: 'Journal',
-        icon: Icons.menu_book_outlined,
-        page: const DiaryTab(),
-      ),
-      (label: 'Feed', icon: Icons.rss_feed, page: const FeedTab()),
-      if (owner)
-        (label: 'COP', icon: Icons.shield_outlined, page: const CopTab()),
-      (label: 'You', icon: Icons.person_outline, page: const YouTab()),
+      (label: 'Apps', icon: Icons.apps_rounded, page: const SizedBox()),
+      (label: 'You', icon: Icons.person_outline, page: const SizedBox()),
     ];
-    _labels = [for (final s in sections) s.label];
-    final index = _index.clamp(0, sections.length - 1);
+    final barIndex = _index == _wyrd
+        ? 0
+        : _index == _you
+        ? 2
+        : 1;
     final desktop = MediaQuery.of(context).size.width >= 900;
     final body = IndexedStack(
-      index: index,
-      children: [for (final s in sections) s.page],
+      index: _index,
+      children: [
+        WyrdTab(onPlayChess: () => setState(() => _index = _games)),
+        const JournalTab(),
+        const GamesTab(),
+        const YouTab(),
+      ],
     );
 
     return Scaffold(
@@ -78,28 +224,19 @@ class _WyrdShellState extends State<WyrdShell> {
       body: SafeArea(
         child: Column(
           children: [
-            const _Header(),
+            _Header(owner: owner),
             Expanded(
               child: desktop
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _SideBar(
-                          items: sections,
-                          index: index,
-                          onTap: (i) => setState(() => _index = i),
-                        ),
+                        _SideBar(items: bar, index: barIndex, onTap: _tap),
                         Expanded(child: body),
                       ],
                     )
                   : body,
             ),
-            if (!desktop)
-              _BottomBar(
-                items: sections,
-                index: index,
-                onTap: (i) => setState(() => _index = i),
-              ),
+            if (!desktop) _BottomBar(items: bar, index: barIndex, onTap: _tap),
           ],
         ),
       ),
@@ -158,7 +295,8 @@ class _FacePainter extends CustomPainter {
 }
 
 class _Header extends StatelessWidget {
-  const _Header();
+  final bool owner;
+  const _Header({required this.owner});
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +328,86 @@ class _Header extends StatelessWidget {
               decoration: BoxDecoration(color: c, shape: BoxShape.circle),
             ),
           const Spacer(),
+          // TASKS: what WYRD is working on for you, as the main app's header pill
+          InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TasksScreen()),
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: WyrdColors.glassBg,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: WyrdColors.greenBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.auto_awesome_outlined,
+                    size: 15,
+                    color: WyrdColors.green,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'TASKS',
+                    style: WyrdText.mono(
+                      fontSize: 11,
+                    ).copyWith(letterSpacing: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // COP: WYRD's self-changes, independently reviewed -- the owner's only
+          if (owner) ...[
+            InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => Scaffold(
+                    backgroundColor: WyrdColors.bg,
+                    appBar: AppBar(
+                      backgroundColor: WyrdColors.barBg,
+                      surfaceTintColor: Colors.transparent,
+                      foregroundColor: WyrdColors.mint,
+                      title: Text('COP', style: WyrdText.display(fontSize: 26)),
+                    ),
+                    body: const CopTab(),
+                  ),
+                ),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: WyrdColors.glassBg,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: WyrdColors.greenBorder),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 15,
+                      color: WyrdColors.green,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'COP',
+                      style: WyrdText.mono(
+                        fontSize: 11,
+                      ).copyWith(letterSpacing: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           // day / night, as the main app's header button
           _RoundButton(
             icon: WyrdColors.dark
@@ -259,6 +477,7 @@ class _BottomBar extends StatelessWidget {
             Expanded(
               flex: i == index ? 3 : 2,
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => onTap(i),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
