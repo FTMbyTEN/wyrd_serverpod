@@ -24,8 +24,7 @@ class CodeAgentService {
 
   /// A self-contained HTML/CSS/JS app (preview_app's input) easily needs several thousand tokens
   /// on its own; too small a budget truncates mid tool-call and produces no text block at all.
-  // a full game (save_game) needs more room than an app
-  static const _maxTokens = 16000;
+  static const _maxTokens = 8000;
 
   // Deliberately broad: a false positive just means an ordinary question gets a more thorough
   // answer; a false negative leaves a code request stuck in the short conversational path.
@@ -118,9 +117,9 @@ class CodeAgentService {
       'document (inline <style> and <script>, no external requests) and call preview_app so it '
       "actually pops up live in the user's interface, instead of just describing it in text. If "
       'what\'s being asked for is visual/interactive, always prefer preview_app over only writing '
-      'the code in the reply — "done" with no popup is not actually done. When they ask for a GAME, use '
-      'save_game instead: it saves the game into their Games tab and opens it live; make it complete, polished '
-      'and genuinely fun, not a demo. For a chart or diagram, '
+      'the code in the reply — "done" with no popup is not actually done. When they ask for a GAME (or to change '
+      'one), call build_game instead and write no code: it programs the game into their Games tab in the '
+      'background. For a chart or diagram, '
       'use show_visual; to run Python for them (calculations, data, plots), use run_python -- it runs in a '
       "sandbox in their browser and you never see the output, so don't claim to have run or tested "
       'anything yourself.\n\n'
@@ -168,7 +167,7 @@ class CodeAgentService {
                   messages: messages,
                   tools: [
                     _previewAppTool,
-                    CustomGames.saveGameTool,
+                    CustomGames.buildGameTool,
                     VisualTools.showVisual,
                     VisualTools.drawPicture,
                     VisualTools.runPython,
@@ -179,7 +178,7 @@ class CodeAgentService {
                 ),
               ),
             )
-            .timeout(const Duration(seconds: 240));
+            .timeout(const Duration(seconds: 90));
       } catch (e) {
         session.log('[code-llm] request failed: $e', level: LogLevel.warning);
         return null;
@@ -216,13 +215,12 @@ class CodeAgentService {
             });
             continue;
           }
-          if (block['name'] == 'save_game') {
-            final (a, told) = await CustomGames.save(
+          if (block['name'] == 'build_game') {
+            final told = await CustomGames.startBuild(
               session,
               authUserId,
               block['input'] as Map<String, dynamic>? ?? {},
             );
-            if (a != null) pendingAction = a;
             toolResults.add({
               'type': 'tool_result',
               'tool_use_id': block['id'],

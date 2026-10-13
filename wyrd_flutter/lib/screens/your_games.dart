@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:wyrd_client/wyrd_client.dart';
 
@@ -21,11 +23,21 @@ class YourGames extends StatefulWidget {
 class _YourGamesState extends State<YourGames> {
   List<CustomGame> _games = [];
   int? _confirm;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // WYRD writes a game in the background: look again every few seconds, so a new one appears
+    // (and a building one turns playable) without leaving the page
+    _poll = Timer.periodic(const Duration(seconds: 6), (_) => _load());
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -98,68 +110,138 @@ class _YourGamesState extends State<YourGames> {
         ),
       );
 
-  Widget _card(CustomGame g) => GestureDetector(
-    behavior: HitTestBehavior.opaque,
-    onTap: () => _play(g),
-    child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: wyrdCard(radius: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.auto_awesome, size: 20, color: WyrdColors.signal),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  g.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: WyrdText.display(fontSize: 24),
+  Widget _pending(CustomGame g) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: wyrdCard(radius: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (g.status == 'building')
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: WyrdColors.signal,
+                ),
+              )
+            else
+              Icon(Icons.auto_awesome, size: 20, color: WyrdColors.greenDim),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                g.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: WyrdText.display(
+                  fontSize: 24,
+                  color: WyrdColors.greenDim,
                 ),
               ),
-              Text(
-                'PLAY ›',
-                style: WyrdText.mono(fontSize: 11, color: WyrdColors.signal),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          g.status == 'building'
+              ? 'WYRD IS PROGRAMMING IT… A MINUTE OR TWO'
+              : "COULDN'T FINISH IT. ASK WYRD AGAIN.",
+          style: WyrdText.mono(
+            fontSize: 11,
+            color: g.status == 'building'
+                ? WyrdColors.signal
+                : WyrdColors.greenDim,
+          ),
+        ),
+        const Spacer(),
+        if (g.status == 'failed')
+          Row(
+            children: [
+              _chip(
+                'TRY AGAIN',
+                () => _ask('Make me a game: ${g.title}. ${g.blurb}'),
               ),
+              const SizedBox(width: 8),
+              _chip('✕', () => _delete(g)),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            g.blurb,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: WyrdText.mono(
-              fontSize: 11.5,
-              color: WyrdColors.greenDim,
-            ).copyWith(height: 1.4),
-          ),
-          const Spacer(),
-          Row(
-            children: _confirm == g.id
-                ? [
-                    _chip(
-                      'DELETE IT',
-                      () => _delete(g),
+      ],
+    ),
+  );
+
+  Widget _card(CustomGame g) => g.status != null
+      ? _pending(g)
+      : GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _play(g),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: wyrdCard(radius: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 20,
                       color: WyrdColors.signal,
                     ),
                     const SizedBox(width: 8),
-                    _chip('KEEP', () => setState(() => _confirm = null)),
-                  ]
-                : [
-                    _chip(
-                      'CHANGE IT',
-                      () => _ask('Change my game "${g.title}": '),
+                    Expanded(
+                      child: Text(
+                        g.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: WyrdText.display(fontSize: 24),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    _chip('✕', () => setState(() => _confirm = g.id)),
+                    Text(
+                      'PLAY ›',
+                      style: WyrdText.mono(
+                        fontSize: 11,
+                        color: WyrdColors.signal,
+                      ),
+                    ),
                   ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  g.blurb,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: WyrdText.mono(
+                    fontSize: 11.5,
+                    color: WyrdColors.greenDim,
+                  ).copyWith(height: 1.4),
+                ),
+                const Spacer(),
+                Row(
+                  children: _confirm == g.id
+                      ? [
+                          _chip(
+                            'DELETE IT',
+                            () => _delete(g),
+                            color: WyrdColors.signal,
+                          ),
+                          const SizedBox(width: 8),
+                          _chip('KEEP', () => setState(() => _confirm = null)),
+                        ]
+                      : [
+                          _chip(
+                            'CHANGE IT',
+                            () => _ask('Change my game "${g.title}": '),
+                          ),
+                          const SizedBox(width: 8),
+                          _chip('✕', () => setState(() => _confirm = g.id)),
+                        ],
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-    ),
-  );
+        );
 
   Widget _newGame() => GestureDetector(
     behavior: HitTestBehavior.opaque,

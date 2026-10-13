@@ -1,5 +1,5 @@
-### A game WYRD programmed for someone at their request (save_game): one self-contained HTML
-### document, played full screen in a sandboxed frame from their Games tab.
+### A game WYRD programmed for someone at their request (build_game, written in the background):
+### one self-contained HTML document, played full screen in a sandboxed frame from their Games tab.
 class: CustomGame
 table: custom_game
 
@@ -7,7 +7,8 @@ fields:
   authUserId: UuidValue
   title: String
   blurb: String # a line on its tile: what it is and how to play
-  html: String
+  html: String # empty while WYRD is still writing it
+  status: String? # building, failed, or null when it is ready to play
   createdAt: DateTime
   updatedAt: DateTime
 

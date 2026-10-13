@@ -12,8 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _is;
 
-/// A game WYRD programmed for someone at their request (save_game): one self-contained HTML
-/// document, played full screen in a sandboxed frame from their Games tab.
+/// A game WYRD programmed for someone at their request (build_game, written in the background):
+/// one self-contained HTML document, played full screen in a sandboxed frame from their Games tab.
 abstract class CustomGame
     implements _is.TableRow<int?>, _is.ProtocolSerialization {
   CustomGame._({
@@ -22,6 +22,7 @@ abstract class CustomGame
     required this.title,
     required this.blurb,
     required this.html,
+    this.status,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -32,6 +33,7 @@ abstract class CustomGame
     required String title,
     required String blurb,
     required String html,
+    String? status,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _CustomGameImpl;
@@ -45,6 +47,7 @@ abstract class CustomGame
       title: jsonSerialization['title'] as String,
       blurb: jsonSerialization['blurb'] as String,
       html: jsonSerialization['html'] as String,
+      status: jsonSerialization['status'] as String?,
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -69,6 +72,8 @@ abstract class CustomGame
 
   String html;
 
+  String? status;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -85,6 +90,7 @@ abstract class CustomGame
     String? title,
     String? blurb,
     String? html,
+    String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -97,6 +103,7 @@ abstract class CustomGame
       'title': title,
       'blurb': blurb,
       'html': html,
+      if (status != null) 'status': status,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -111,6 +118,7 @@ abstract class CustomGame
       'title': title,
       'blurb': blurb,
       'html': html,
+      if (status != null) 'status': status,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -153,6 +161,7 @@ class _CustomGameImpl extends CustomGame {
     required String title,
     required String blurb,
     required String html,
+    String? status,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -161,6 +170,7 @@ class _CustomGameImpl extends CustomGame {
          title: title,
          blurb: blurb,
          html: html,
+         status: status,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -175,6 +185,7 @@ class _CustomGameImpl extends CustomGame {
     String? title,
     String? blurb,
     String? html,
+    Object? status = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -184,6 +195,7 @@ class _CustomGameImpl extends CustomGame {
       title: title ?? this.title,
       blurb: blurb ?? this.blurb,
       html: html ?? this.html,
+      status: status is String? ? status : this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -212,6 +224,11 @@ class CustomGameUpdateTable extends _is.UpdateTable<CustomGameTable> {
 
   _is.ColumnValue<String, String> html(String value) => _is.ColumnValue(
     table.html,
+    value,
+  );
+
+  _is.ColumnValue<String, String> status(String? value) => _is.ColumnValue(
+    table.status,
     value,
   );
 
@@ -247,6 +264,10 @@ class CustomGameTable extends _is.Table<int?> {
       'html',
       this,
     );
+    status = _is.ColumnString(
+      'status',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -267,6 +288,8 @@ class CustomGameTable extends _is.Table<int?> {
 
   late final _is.ColumnString html;
 
+  late final _is.ColumnString status;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime updatedAt;
@@ -278,6 +301,7 @@ class CustomGameTable extends _is.Table<int?> {
     title,
     blurb,
     html,
+    status,
     createdAt,
     updatedAt,
   ];

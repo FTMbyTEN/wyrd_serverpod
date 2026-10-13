@@ -1170,9 +1170,15 @@ class GridBoard extends StatelessWidget {
                               child: Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
+                                  // at night the dark disc is near-black ringed in indigo, the
+                                  // light one cream: still dark against light, as in the main app
                                   color: b[i] == 0
-                                      ? WyrdColors.indigo
-                                      : Colors.white,
+                                      ? (WyrdColors.dark
+                                            ? const Color(0xFF0E0B09)
+                                            : WyrdColors.indigo)
+                                      : (WyrdColors.dark
+                                            ? const Color(0xFFFFF6EA)
+                                            : Colors.white),
                                   border: Border.all(color: WyrdColors.indigo),
                                 ),
                               ),
