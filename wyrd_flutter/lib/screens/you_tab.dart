@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart' hide UserProfile;
+import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart'
+    hide UserProfile;
 import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
@@ -47,7 +48,10 @@ class _YouTabState extends State<YouTab> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: WyrdColors.panelBg,
-          title: Text('YOUR DATA', style: WyrdText.mono(color: WyrdColors.green, letterSpacing: 1)),
+          title: Text(
+            'YOUR DATA',
+            style: WyrdText.mono(color: WyrdColors.green, letterSpacing: 1),
+          ),
           content: SingleChildScrollView(
             child: Text(
               'Email: ${export.email ?? '(none)'}\n'
@@ -57,12 +61,22 @@ class _YouTabState extends State<YouTab> {
               style: WyrdText.mono(color: WyrdColors.mint),
             ),
           ),
-          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('CLOSE', style: WyrdText.mono(color: WyrdColors.green)))],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'CLOSE',
+                style: WyrdText.mono(color: WyrdColors.green),
+              ),
+            ),
+          ],
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
   }
 
@@ -71,14 +85,29 @@ class _YouTabState extends State<YouTab> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: WyrdColors.panelBg,
-        title: Text('DELETE YOUR DATA?', style: WyrdText.mono(color: WyrdColors.danger, letterSpacing: 1)),
+        title: Text(
+          'DELETE YOUR DATA?',
+          style: WyrdText.mono(color: WyrdColors.danger, letterSpacing: 1),
+        ),
         content: Text(
           'This permanently wipes your profile facts and conversation history. Your sign-in itself is not affected.',
           style: WyrdText.mono(color: WyrdColors.mint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('CANCEL', style: WyrdText.mono(color: WyrdColors.greenDim))),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text('DELETE', style: WyrdText.mono(color: WyrdColors.danger))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'CANCEL',
+              style: WyrdText.mono(color: WyrdColors.greenDim),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'DELETE',
+              style: WyrdText.mono(color: WyrdColors.danger),
+            ),
+          ),
         ],
       ),
     );
@@ -87,10 +116,14 @@ class _YouTabState extends State<YouTab> {
       await client.account.deleteMyData();
       await _refresh();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Your data has been deleted.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your data has been deleted.')),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
     }
   }
 
@@ -104,13 +137,23 @@ class _YouTabState extends State<YouTab> {
           future: _data,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator(color: WyrdColors.green));
+              return Center(
+                child: CircularProgressIndicator(color: WyrdColors.signal),
+              );
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Could not load profile: ${snapshot.error}', style: WyrdText.mono(color: WyrdColors.danger)));
+              return Center(
+                child: Text(
+                  "Couldn't load your profile just now. Try again in a moment.",
+                  style: WyrdText.mono(color: WyrdColors.danger),
+                ),
+              );
             }
             final (profile, mind, history) = snapshot.data!;
-            final days = DateTime.now().toUtc().difference(profile.firstSeen.toUtc()).inDays;
+            final days = DateTime.now()
+                .toUtc()
+                .difference(profile.firstSeen.toUtc())
+                .inDays;
             final name = (profile.username ?? '—').toUpperCase();
 
             return ListView(
@@ -129,14 +172,29 @@ class _YouTabState extends State<YouTab> {
                           margin: const EdgeInsets.only(bottom: 10),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: WyrdColors.green),
-                            boxShadow: const [BoxShadow(color: WyrdColors.green, blurRadius: 12)],
+                            border: Border.all(color: WyrdColors.signal),
                           ),
-                          child: const Icon(Icons.person_outline, color: WyrdColors.green, size: 32),
+                          child: Icon(
+                            Icons.person_outline,
+                            color: WyrdColors.green,
+                            size: 32,
+                          ),
                         ),
-                        Text(name, style: WyrdText.display(fontSize: 40, shadowRadius: 14).copyWith(letterSpacing: 4)),
+                        Text(
+                          name,
+                          style: WyrdText.display(
+                            fontSize: 40,
+                            shadowRadius: 14,
+                          ).copyWith(letterSpacing: 4),
+                        ),
                         const SizedBox(height: 6),
-                        Text('OWNER NODE · SESSION ${days}d', style: WyrdText.mono(fontSize: 10, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
+                        Text(
+                          'YOUR ACCOUNT · ${days} DAYS WITH WYRD',
+                          style: WyrdText.mono(
+                            fontSize: 10,
+                            color: WyrdColors.greenDim,
+                          ).copyWith(letterSpacing: 1),
+                        ),
                       ],
                     ),
                   ),
@@ -146,10 +204,42 @@ class _YouTabState extends State<YouTab> {
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    SizedBox(width: (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2, child: HoloReadout(label: 'PRIVATE THREAD', value: '${history.length} messages', glow: 0.4)),
-                    SizedBox(width: (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2, child: HoloReadout(label: 'FACTS ABOUT YOU', value: '${profile.facts.length} retained', glow: 0.4)),
-                    SizedBox(width: (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2, child: HoloReadout(label: 'SHARED MEMORY', value: '${mind.digest.totalTopics} topics', glow: 0.4)),
-                    SizedBox(width: (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2, child: HoloReadout(label: 'MEMBER SINCE', value: _dateOnly(profile.firstSeen), glow: 0.4)),
+                    SizedBox(
+                      width:
+                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
+                      child: HoloReadout(
+                        label: 'PRIVATE THREAD',
+                        value: '${history.length} messages',
+                        glow: 0.4,
+                      ),
+                    ),
+                    SizedBox(
+                      width:
+                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
+                      child: HoloReadout(
+                        label: 'FACTS ABOUT YOU',
+                        value: '${profile.facts.length} retained',
+                        glow: 0.4,
+                      ),
+                    ),
+                    SizedBox(
+                      width:
+                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
+                      child: HoloReadout(
+                        label: 'SHARED MEMORY',
+                        value: '${mind.digest.totalTopics} topics',
+                        glow: 0.4,
+                      ),
+                    ),
+                    SizedBox(
+                      width:
+                          (MediaQuery.of(context).size.width - 14 * 2 - 10) / 2,
+                      child: HoloReadout(
+                        label: 'MEMBER SINCE',
+                        value: _dateOnly(profile.firstSeen),
+                        glow: 0.4,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -161,19 +251,32 @@ class _YouTabState extends State<YouTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('AVAILABLE CAPABILITIES', style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
+                        Text(
+                          'AVAILABLE CAPABILITIES',
+                          style: WyrdText.mono(
+                            fontSize: 9,
+                            color: WyrdColors.greenDim,
+                          ).copyWith(letterSpacing: 1),
+                        ),
                         const SizedBox(height: 8),
                         _capRow('Real web browsing', 'EVERY ACCOUNT'),
                         _capRow('World map tool', 'EVERY ACCOUNT'),
                         _capRow('Camera / vision', 'EVERY ACCOUNT'),
-                        _capRow('Code execution', 'NOT BUILT YET'),
+                        _capRow('Charts and Python in chat', 'IN THE WEB APP'),
                         Container(
                           margin: const EdgeInsets.only(top: 9),
                           padding: const EdgeInsets.only(top: 9),
-                          decoration: const BoxDecoration(border: Border(top: BorderSide(color: WyrdColors.greenBorderDim))),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: WyrdColors.greenBorderDim),
+                            ),
+                          ),
                           child: Text(
                             'Browsing runs in a fresh, anonymous headless-Chrome session each time — never logged in as anyone, never reused between turns.',
-                            style: WyrdText.mono(fontSize: 9.5, color: WyrdColors.greenBorderDim).copyWith(height: 1.4),
+                            style: WyrdText.mono(
+                              fontSize: 9.5,
+                              color: WyrdColors.greenBorderDim,
+                            ).copyWith(height: 1.4),
                           ),
                         ),
                       ],
@@ -183,13 +286,28 @@ class _YouTabState extends State<YouTab> {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    Expanded(child: HoloButton(label: 'EXPORT DATA', onPressed: _export)),
+                    Expanded(
+                      child: HoloButton(
+                        label: 'EXPORT DATA',
+                        onPressed: _export,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: HoloButton(label: 'DELETE DATA', onPressed: _deleteData, tone: 'danger')),
+                    Expanded(
+                      child: HoloButton(
+                        label: 'DELETE DATA',
+                        onPressed: _deleteData,
+                        tone: 'danger',
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                HoloButton(label: 'LOGOUT', onPressed: () => client.authSessionManager.signOutDevice(), tone: 'danger'),
+                HoloButton(
+                  label: 'LOGOUT',
+                  onPressed: () => client.authSessionManager.signOutDevice(),
+                  tone: 'danger',
+                ),
               ],
             );
           },
@@ -204,8 +322,14 @@ class _YouTabState extends State<YouTab> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.mint)),
-          Text(value, style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.green)),
+          Text(
+            label,
+            style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.mint),
+          ),
+          Text(
+            value,
+            style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.green),
+          ),
         ],
       ),
     );

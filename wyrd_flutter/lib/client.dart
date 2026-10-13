@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:wyrd_client/wyrd_client.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 
 // When you are running the app on a physical device, you need to set the
@@ -23,6 +24,10 @@ final serverUrl = getServerUrl();
 /// In a larger app, you may want to use the dependency injection of your choice
 /// instead of using a global client object. This is just a simple example.
 late final Client client;
+
+/// Whether the signed-in person is WYRD's owner (asked once after sign-in): COP and starting
+/// WYRD's work by hand are theirs alone, as in the main app. The server checks it on every call.
+final ownerAccess = ValueNotifier<bool>(false);
 
 Future<void> initializeClient() async {
   client = Client(await serverUrl)

@@ -48,7 +48,9 @@ class _DiaryTabState extends State<DiaryTab> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refresh,
-              child: _journal == _Journal.diary ? _buildDiary(context) : _buildDreams(context),
+              child: _journal == _Journal.diary
+                  ? _buildDiary(context)
+                  : _buildDreams(context),
             ),
           ),
         ],
@@ -78,12 +80,17 @@ class _DiaryTabState extends State<DiaryTab> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          border: Border.all(color: active ? WyrdColors.green : WyrdColors.greenBorder),
-          borderRadius: BorderRadius.circular(2),
+          border: Border.all(
+            color: active ? WyrdColors.signal : WyrdColors.greenBorder,
+          ),
+          borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           j == _Journal.diary ? 'DIARY' : 'DREAMS',
-          style: WyrdText.mono(fontSize: 9.5, color: active ? WyrdColors.green : WyrdColors.greenDim).copyWith(letterSpacing: 1),
+          style: WyrdText.mono(
+            fontSize: 9.5,
+            color: active ? WyrdColors.signal : WyrdColors.greenDim,
+          ).copyWith(letterSpacing: 1),
         ),
       ),
     );
@@ -94,7 +101,9 @@ class _DiaryTabState extends State<DiaryTab> {
       future: _dreamEntries,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator(color: WyrdColors.green));
+          return Center(
+            child: CircularProgressIndicator(color: WyrdColors.signal),
+          );
         }
         final dreams = snapshot.data ?? [];
         return ListView(
@@ -103,23 +112,48 @@ class _DiaryTabState extends State<DiaryTab> {
             Text('>_ DREAMS', style: WyrdText.display(fontSize: 20)),
             Text(
               'old memory fragments blending during idle stretches',
-              style: WyrdText.mono(fontSize: 9.5, color: WyrdColors.greenDim).copyWith(letterSpacing: 1),
+              style: WyrdText.mono(
+                fontSize: 9.5,
+                color: WyrdColors.greenDim,
+              ).copyWith(letterSpacing: 1),
             ),
             const SizedBox(height: 16),
             if (dreams.isEmpty)
-              Text('no dreams yet — they only surface after a genuine idle stretch', style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.greenBorderDim)),
+              Text(
+                'no dreams yet — they only surface after a genuine idle stretch',
+                style: WyrdText.mono(
+                  fontSize: 11.5,
+                  color: WyrdColors.greenBorderDim,
+                ),
+              ),
             for (final d in dreams)
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Container(
                   padding: const EdgeInsets.only(left: 12),
-                  decoration: const BoxDecoration(border: Border(left: BorderSide(color: WyrdColors.greenBorder, width: 2))),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(color: WyrdColors.greenBorder, width: 2),
+                    ),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_timeOfDay(d.timestamp), style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
+                      Text(
+                        _timeOfDay(d.timestamp),
+                        style: WyrdText.mono(
+                          fontSize: 9,
+                          color: WyrdColors.greenDim,
+                        ).copyWith(letterSpacing: 1),
+                      ),
                       const SizedBox(height: 4),
-                      Text(d.content, style: WyrdText.mono(fontSize: 13.5, color: WyrdColors.mintBright).copyWith(fontStyle: FontStyle.italic, height: 1.7)),
+                      Text(
+                        d.content,
+                        style: WyrdText.mono(
+                          fontSize: 13.5,
+                          color: WyrdColors.mintBright,
+                        ).copyWith(fontStyle: FontStyle.italic, height: 1.7),
+                      ),
                     ],
                   ),
                 ),
@@ -135,10 +169,14 @@ class _DiaryTabState extends State<DiaryTab> {
       future: _diaryEntries,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator(color: WyrdColors.green));
+          return Center(
+            child: CircularProgressIndicator(color: WyrdColors.signal),
+          );
         }
         final entries = snapshot.data ?? [];
-        final entry = entries.isNotEmpty ? entries[_diaryIndex.clamp(0, entries.length - 1)] : null;
+        final entry = entries.isNotEmpty
+            ? entries[_diaryIndex.clamp(0, entries.length - 1)]
+            : null;
         return Column(
           children: [
             if (entries.isNotEmpty)
@@ -146,9 +184,13 @@ class _DiaryTabState extends State<DiaryTab> {
                 height: 52,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   children: [
-                    for (var i = 0; i < entries.length; i++) _dateChip(entries[i], i),
+                    for (var i = 0; i < entries.length; i++)
+                      _dateChip(entries[i], i),
                   ],
                 ),
               ),
@@ -159,7 +201,10 @@ class _DiaryTabState extends State<DiaryTab> {
                   Text('>_ DIARY', style: WyrdText.display(fontSize: 20)),
                   Text(
                     'one real entry per day, written by WYRD itself',
-                    style: WyrdText.mono(fontSize: 9.5, color: WyrdColors.greenDim).copyWith(letterSpacing: 1),
+                    style: WyrdText.mono(
+                      fontSize: 9.5,
+                      color: WyrdColors.greenDim,
+                    ).copyWith(letterSpacing: 1),
                   ),
                   if (entry != null) ...[
                     const SizedBox(height: 18),
@@ -170,23 +215,41 @@ class _DiaryTabState extends State<DiaryTab> {
                         Text(entry.date, style: WyrdText.display(fontSize: 30)),
                         Text(
                           'WRITTEN ${_timeOfDay(entry.timestamp)} · UNPROMPTED',
-                          style: WyrdText.mono(fontSize: 10, color: WyrdColors.greenDim).copyWith(letterSpacing: 1),
+                          style: WyrdText.mono(
+                            fontSize: 10,
+                            color: WyrdColors.greenDim,
+                          ).copyWith(letterSpacing: 1),
                         ),
                       ],
                     ),
-                    const Divider(color: WyrdColors.greenBorder, height: 20),
-                    Text(entry.content, style: WyrdText.mono(fontSize: 14, color: WyrdColors.mint).copyWith(height: 1.75)),
+                    Divider(color: WyrdColors.greenBorder, height: 20),
+                    Text(
+                      entry.content,
+                      style: WyrdText.mono(
+                        fontSize: 14,
+                        color: WyrdColors.mint,
+                      ).copyWith(height: 1.75),
+                    ),
                     const SizedBox(height: 22),
                     Center(
                       child: Text(
                         'ENTRY ${_diaryIndex + 1} OF ${entries.length} RETAINED',
-                        style: WyrdText.mono(fontSize: 9.5, color: WyrdColors.greenBorderDim).copyWith(letterSpacing: 1),
+                        style: WyrdText.mono(
+                          fontSize: 9.5,
+                          color: WyrdColors.greenBorderDim,
+                        ).copyWith(letterSpacing: 1),
                       ),
                     ),
                   ] else
                     Padding(
                       padding: const EdgeInsets.only(top: 16),
-                      child: Text('no diary entry yet — one gets written once real memory exists', style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.greenBorderDim)),
+                      child: Text(
+                        'no diary entry yet — one gets written once real memory exists',
+                        style: WyrdText.mono(
+                          fontSize: 11.5,
+                          color: WyrdColors.greenBorderDim,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -206,16 +269,30 @@ class _DiaryTabState extends State<DiaryTab> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
           decoration: BoxDecoration(
-            border: Border.all(color: active ? WyrdColors.green : WyrdColors.greenBorder),
-            color: active ? WyrdColors.green.withValues(alpha: 0.08) : const Color(0xFF000F04).withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(2),
+            border: Border.all(
+              color: active ? WyrdColors.signal : WyrdColors.greenBorder,
+            ),
+            color: active ? WyrdColors.signalSoft : WyrdColors.card,
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(i == 0 ? 'TODAY' : entry.date, style: WyrdText.mono(fontSize: 10, color: active ? WyrdColors.green : WyrdColors.greenDim).copyWith(letterSpacing: 1)),
-              Text(entry.date.length > 5 ? entry.date.substring(5) : entry.date, style: WyrdText.mono(fontSize: 9, color: active ? WyrdColors.green : WyrdColors.greenDim)),
+              Text(
+                i == 0 ? 'TODAY' : entry.date,
+                style: WyrdText.mono(
+                  fontSize: 10,
+                  color: active ? WyrdColors.signal : WyrdColors.greenDim,
+                ).copyWith(letterSpacing: 1),
+              ),
+              Text(
+                entry.date.length > 5 ? entry.date.substring(5) : entry.date,
+                style: WyrdText.mono(
+                  fontSize: 9,
+                  color: active ? WyrdColors.signal : WyrdColors.greenDim,
+                ),
+              ),
             ],
           ),
         ),

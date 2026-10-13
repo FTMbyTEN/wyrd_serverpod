@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+import '../theme.dart';
 import 'package:flutter/scheduler.dart';
 
 class _BrainPoint {
@@ -21,7 +23,8 @@ class _Burst {
   _Burst(this.startMs, this.nodeIdx);
 }
 
-const double _gap = 0.16; // longitudinal fissure -- the visible split down the middle of a real brain
+const double _gap =
+    0.16; // longitudinal fissure -- the visible split down the middle of a real brain
 
 /// Deformed twin-hemisphere point cloud with a fake sulci/gyri wrinkle pattern and a small
 /// cerebellum cluster tucked in at the back-bottom. Ports BrainCanvas.tsx's buildBrain.
@@ -32,7 +35,10 @@ List<_BrainPoint> _buildBrain(int nodeCount) {
   final pts = <_BrainPoint>[];
 
   double wrinkle(double theta, double phi) =>
-      1 + 0.07 * sin(theta * 5 + phi * 2) + 0.045 * sin(phi * 7 - theta * 3) + 0.03 * sin(theta * 11 + phi * 9);
+      1 +
+      0.07 * sin(theta * 5 + phi * 2) +
+      0.045 * sin(phi * 7 - theta * 3) +
+      0.03 * sin(theta * 11 + phi * 9);
 
   for (final region in ['left', 'right']) {
     final sign = region == 'left' ? 1.0 : -1.0;
@@ -53,7 +59,16 @@ List<_BrainPoint> _buildBrain(int nodeCount) {
 
       x = sign * (x.abs() + _gap);
 
-      pts.add(_BrainPoint(x, y, z, 0.6 + rand.nextDouble() * 0.8, rand.nextDouble() * 6.28, region));
+      pts.add(
+        _BrainPoint(
+          x,
+          y,
+          z,
+          0.6 + rand.nextDouble() * 0.8,
+          rand.nextDouble() * 6.28,
+          region,
+        ),
+      );
     }
   }
 
@@ -64,7 +79,16 @@ List<_BrainPoint> _buildBrain(int nodeCount) {
     final x = cos(theta) * rad * 0.34;
     final z = sin(theta) * rad * 0.24 - 0.62;
     final y = y0 * 0.22 - 0.42;
-    pts.add(_BrainPoint(x, y, z, 0.45 + rand.nextDouble() * 0.5, rand.nextDouble() * 6.28, 'cerebellum'));
+    pts.add(
+      _BrainPoint(
+        x,
+        y,
+        z,
+        0.45 + rand.nextDouble() * 0.5,
+        rand.nextDouble() * 6.28,
+        'cerebellum',
+      ),
+    );
   }
 
   return pts;
@@ -82,7 +106,9 @@ List<_Edge> _buildEdges(List<_BrainPoint> points) {
     final dists = <(int, double)>[];
     for (var j = 0; j < points.length; j++) {
       if (i == j) continue;
-      final dx = points[i].x - points[j].x, dy = points[i].y - points[j].y, dz = points[i].z - points[j].z;
+      final dx = points[i].x - points[j].x,
+          dy = points[i].y - points[j].y,
+          dz = points[i].z - points[j].z;
       dists.add((j, dx * dx + dy * dy + dz * dz));
     }
     dists.sort((a, b) => a.$2.compareTo(b.$2));
@@ -112,7 +138,8 @@ class BrainCanvas extends StatefulWidget {
   State<BrainCanvas> createState() => _BrainCanvasState();
 }
 
-class _BrainCanvasState extends State<BrainCanvas> with SingleTickerProviderStateMixin {
+class _BrainCanvasState extends State<BrainCanvas>
+    with SingleTickerProviderStateMixin {
   late final List<_BrainPoint> _points;
   late final List<_Edge> _edges;
   final List<_Burst> _bursts = [];
@@ -128,8 +155,7 @@ class _BrainCanvasState extends State<BrainCanvas> with SingleTickerProviderStat
     _stopwatch.start();
     _ticker = createTicker((_) {
       setState(() => _nowMs = _stopwatch.elapsedMilliseconds);
-    })
-      ..start();
+    })..start();
   }
 
   @override
@@ -151,7 +177,12 @@ class _BrainCanvasState extends State<BrainCanvas> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     _bursts.removeWhere((b) => _nowMs - b.startMs > 900);
     return CustomPaint(
-      painter: _BrainPainter(points: _points, edges: _edges, bursts: List.of(_bursts), nowMs: _nowMs),
+      painter: _BrainPainter(
+        points: _points,
+        edges: _edges,
+        bursts: List.of(_bursts),
+        nowMs: _nowMs,
+      ),
       size: Size.infinite,
     );
   }
@@ -168,7 +199,12 @@ class _BrainPainter extends CustomPainter {
   final List<_Burst> bursts;
   final int nowMs;
 
-  _BrainPainter({required this.points, required this.edges, required this.bursts, required this.nowMs});
+  _BrainPainter({
+    required this.points,
+    required this.edges,
+    required this.bursts,
+    required this.nowMs,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -182,7 +218,13 @@ class _BrainPainter extends CustomPainter {
     final proj = points.map((p) {
       final x = p.x * ca - p.z * sa, z = p.x * sa + p.z * ca;
       final sc = 1 / (2.6 - z * 0.6);
-      return _ProjectedPoint(w / 2 + x * r * sc * 1.7, h / 2 - p.y * r * sc * 1.9, sc, p.ph, p.s);
+      return _ProjectedPoint(
+        w / 2 + x * r * sc * 1.7,
+        h / 2 - p.y * r * sc * 1.9,
+        sc,
+        p.ph,
+        p.s,
+      );
     }).toList();
 
     // Base mesh: dim connective tissue between neighbouring nodes.
@@ -190,7 +232,9 @@ class _BrainPainter extends CustomPainter {
     for (final e in edges) {
       final a = proj[e.a], b = proj[e.b];
       final depth = (a.d + b.d) / 2;
-      linePaint.color = const Color(0xFF0A9C2F).withValues(alpha: (0.22 + depth * 0.4).clamp(0, 1));
+      linePaint.color = WyrdColors.indigo.withValues(
+        alpha: (0.12 + depth * 0.3).clamp(0, 1),
+      );
       canvas.drawLine(Offset(a.sx, a.sy), Offset(b.sx, b.sy), linePaint);
     }
 
@@ -201,7 +245,9 @@ class _BrainPainter extends CustomPainter {
       final tt = (nowMs * 0.00035 * e.speed + e.phase) % 1;
       final px = a.sx + (b.sx - a.sx) * tt, py = a.sy + (b.sy - a.sy) * tt;
       final depth = (a.d + b.d) / 2;
-      pulsePaint.color = const Color(0xFFBAFFC9).withValues(alpha: (0.55 + depth * 0.45).clamp(0, 1));
+      pulsePaint.color = WyrdColors.signal.withValues(
+        alpha: (0.45 + depth * 0.45).clamp(0, 1),
+      );
       canvas.drawCircle(Offset(px, py), 1.3 + depth * 1.1, pulsePaint);
     }
 
@@ -209,7 +255,9 @@ class _BrainPainter extends CustomPainter {
     final dotPaint = Paint();
     for (final p in proj) {
       final pulse = 0.55 + 0.45 * sin(nowMs * 0.002 + p.ph);
-      dotPaint.color = const Color(0xFF00FF41).withValues(alpha: (0.25 + p.d * 0.9 * pulse).clamp(0, 1));
+      dotPaint.color = WyrdColors.indigo.withValues(
+        alpha: (0.2 + p.d * 0.75 * pulse).clamp(0, 1),
+      );
       canvas.drawCircle(Offset(p.sx, p.sy), p.s * p.d * 1.5, dotPaint);
     }
 
@@ -220,7 +268,9 @@ class _BrainPainter extends CustomPainter {
       if (age < 0 || age > 1 || b.nodeIdx >= proj.length) continue;
       final p = proj[b.nodeIdx];
       burstPaint.strokeWidth = 1.4 * (1 - age);
-      burstPaint.color = const Color(0xFFBAFFC9).withValues(alpha: (0.8 * (1 - age)).clamp(0, 1));
+      burstPaint.color = WyrdColors.ochre.withValues(
+        alpha: (0.85 * (1 - age)).clamp(0, 1),
+      );
       canvas.drawCircle(Offset(p.sx, p.sy), 3 + age * 22 * p.d, burstPaint);
     }
   }

@@ -38,7 +38,10 @@ class _WyrdTabState extends State<WyrdTab> {
     // No live event stream yet (see WyrdTab.tsx's SSE-driven useMind for the RN equivalent) --
     // poll instead, so background ticks (reasoning/self-question/feed) still visibly show up
     // as brain activity bursts even with nobody actively chatting.
-    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) => _loadMind());
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => _loadMind(),
+    );
   }
 
   @override
@@ -57,7 +60,8 @@ class _WyrdTabState extends State<WyrdTab> {
         // self-question/chat) since the last poll -- bump the brain's activity signal so a
         // burst renders, mirroring the RN app's useBrainActivitySignal (there driven by SSE,
         // here by polling since this app doesn't have a live event stream yet).
-        if (_mind != null && _mind!.updatedAt != mind.updatedAt) _activitySignal++;
+        if (_mind != null && _mind!.updatedAt != mind.updatedAt)
+          _activitySignal++;
         _mind = mind;
       });
     } catch (_) {
@@ -82,7 +86,10 @@ class _WyrdTabState extends State<WyrdTab> {
         _activitySignal++;
       });
     } catch (e) {
-      if (mounted) setState(() => _messages.add(_ChatLine('(failed to reply: $e)', false)));
+      if (mounted)
+        setState(
+          () => _messages.add(_ChatLine('(failed to reply: $e)', false)),
+        );
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -91,109 +98,236 @@ class _WyrdTabState extends State<WyrdTab> {
   @override
   Widget build(BuildContext context) {
     final mind = _mind;
-    final curPct = ((mind?.curiosity ?? 0) * 100);
-    final confPct = ((mind?.confidence ?? 0) * 100);
-    final digestPct = (mind?.digest.percent ?? 0);
-
+    final wide = MediaQuery.of(context).size.width >= 900;
+    final brain = _buildBrain(mind);
+    final side = _buildSide(context, mind);
     return Container(
       color: WyrdColors.bg,
-      child: Column(
-        children: [
-          Expanded(
-            child: Stack(
+      child: wide
+          // desktop: the brain on the left, the greeting and Dialogue Link on the right, as in
+          // the main app
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Positioned.fill(child: BrainCanvas(activitySignal: _activitySignal)),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 26),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF000F04).withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('MOOD', style: WyrdText.mono(fontSize: 10, color: WyrdColors.greenDim).copyWith(letterSpacing: 3)),
-                        Text((mind?.mood ?? '—').toUpperCase(), style: WyrdText.display(fontSize: 56, shadowRadius: 22)),
-                        const SizedBox(height: 6),
-                        Text('focus · ${mind?.focusTopic ?? 'nothing yet'}', style: WyrdText.mono(fontSize: 11, color: WyrdColors.greenDim)),
-                      ],
-                    ),
+                Expanded(child: brain),
+                SizedBox(width: 420, child: side),
+              ],
+            )
+          : Column(
+              children: [
+                SizedBox(height: 300, child: brain),
+                Expanded(child: side),
+              ],
+            ),
+    );
+  }
+
+  /// WYRD's brain, its mood over it, and three vital signs.
+  Widget _buildBrain(Mind? mind) {
+    final curPct = (mind?.curiosity ?? 0) * 100;
+    final confPct = (mind?.confidence ?? 0) * 100;
+    final digestPct = (mind?.digest.percent ?? 0).toDouble();
+    return Stack(
+      children: [
+        Positioned.fill(child: BrainCanvas(activitySignal: _activitySignal)),
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'MOOD',
+                style: WyrdText.mono(
+                  fontSize: 10,
+                  color: WyrdColors.greenDim,
+                ).copyWith(letterSpacing: 3),
+              ),
+              Text(mind?.mood ?? '—', style: WyrdText.display(fontSize: 54)),
+              Text(
+                'focus · ${mind?.focusTopic ?? 'nothing yet'}',
+                style: WyrdText.mono(fontSize: 11, color: WyrdColors.greenDim),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 14,
+          right: 14,
+          bottom: 14,
+          child: IgnorePointer(
+            child: Row(
+              children: [
+                Expanded(
+                  child: HoloReadout(
+                    label: 'CURIOSITY',
+                    value: '${curPct.round()}%',
+                    pct: curPct,
                   ),
                 ),
-                Positioned(
-                  left: 12,
-                  bottom: 90,
-                  child: IgnorePointer(
-                    child: SizedBox(width: 112, child: HoloReadout(label: 'CURIOSITY', value: '${curPct.round()}%', pct: curPct)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: HoloReadout(
+                    label: 'DIGEST',
+                    value: '${digestPct.round()}%',
+                    pct: digestPct,
                   ),
                 ),
-                Positioned(
-                  right: 12,
-                  bottom: 90,
-                  child: IgnorePointer(
-                    child: SizedBox(width: 112, child: HoloReadout(label: 'CONFIDENCE', value: '${confPct.round()}%', pct: confPct)),
-                  ),
-                ),
-                Align(
-                  alignment: const Alignment(0, 0.92),
-                  child: IgnorePointer(
-                    child: SizedBox(width: 128, child: HoloReadout(label: 'DIGEST', value: '${digestPct.round()}%', pct: digestPct, big: true)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: HoloReadout(
+                    label: 'CONFIDENCE',
+                    value: '${confPct.round()}%',
+                    pct: confPct,
                   ),
                 ),
               ],
             ),
           ),
-          _buildDialoguePanel(context, mind),
+        ),
+      ],
+    );
+  }
+
+  String get _greeting {
+    final h = DateTime.now().hour;
+    return h < 12
+        ? 'Good morning'
+        : h < 17
+        ? 'Good afternoon'
+        : 'Good evening';
+  }
+
+  /// The greeting, WYRD's last thought, and Dialogue Link.
+  Widget _buildSide(BuildContext context, Mind? mind) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(_greeting, style: WyrdText.display(fontSize: 34)),
+          Text(
+            'WYRD has been thinking while you were away.',
+            style: WyrdText.mono(fontSize: 12, color: WyrdColors.greenDim),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: wyrdCard(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _eyebrow('LAST THOUGHT'),
+                const SizedBox(height: 6),
+                Text(
+                  mind?.activeGoal ?? 'still forming one.',
+                  style: WyrdText.mono(fontSize: 13.5).copyWith(height: 1.5),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(child: _buildDialogue()),
         ],
       ),
     );
   }
 
-  Widget _buildDialoguePanel(BuildContext context, Mind? mind) {
+  Widget _eyebrow(String text) => Row(
+    children: [
+      Container(
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+          color: WyrdColors.signal,
+          shape: BoxShape.circle,
+        ),
+      ),
+      const SizedBox(width: 6),
+      Text(
+        text,
+        style: WyrdText.mono(
+          fontSize: 9,
+          color: WyrdColors.greenDim,
+        ).copyWith(letterSpacing: 1.6),
+      ),
+    ],
+  );
+
+  /// Dialogue Link: the conversation and the message bar.
+  Widget _buildDialogue() {
+    OutlineInputBorder pill(Color c, [double w = 1]) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(999),
+      borderSide: BorderSide(color: c, width: w),
+    );
     return Container(
-      color: const Color(0xFF000A03).withValues(alpha: 0.92),
-      padding: const EdgeInsets.all(14),
+      decoration: wyrdCard(border: WyrdColors.signal.withValues(alpha: 0.55)),
+      padding: const EdgeInsets.all(12),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('LAST THOUGHT', style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
-          const SizedBox(height: 4),
-          Text(
-            mind?.activeGoal ?? 'still forming one.',
-            style: WyrdText.mono(fontSize: 12.5, color: WyrdColors.mint),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          _eyebrow(
+            _sending
+                ? 'DIALOGUE_LINK · WYRD IS THINKING'
+                : 'DIALOGUE_LINK · WYRD IS LISTENING',
           ),
-          if (_messages.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 160),
-              child: ListView(
-                shrinkWrap: true,
-                reverse: true,
-                children: [for (final line in _messages.reversed) _buildChatBubble(line)],
-              ),
-            ),
-          ],
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          Expanded(
+            child: _messages.isEmpty
+                ? Center(
+                    child: Text(
+                      'Say something.\nIt remembers what you tell it.',
+                      textAlign: TextAlign.center,
+                      style: WyrdText.mono(
+                        fontSize: 12,
+                        color: WyrdColors.greenDim,
+                      ).copyWith(height: 1.6),
+                    ),
+                  )
+                : ListView(
+                    reverse: true,
+                    children: [
+                      for (final line in _messages.reversed)
+                        _buildChatBubble(line),
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _controller,
-                  style: WyrdText.mono(color: WyrdColors.mint),
-                  decoration: const InputDecoration(hintText: 'Talk to WYRD…'),
+                  style: WyrdText.mono(),
+                  decoration: InputDecoration(
+                    hintText: 'Message WYRD',
+                    border: pill(WyrdColors.greenBorder),
+                    enabledBorder: pill(WyrdColors.greenBorder),
+                    focusedBorder: pill(WyrdColors.signal, 1.5),
+                  ),
                   onSubmitted: (_) => _send(),
                 ),
               ),
               const SizedBox(width: 8),
-              SizedBox(
-                width: 44,
-                child: HoloButton(
-                  label: _sending ? '···' : '>',
-                  onPressed: _sending ? () {} : _send,
+              Material(
+                color: WyrdColors.signal,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: _sending ? null : _send,
+                  child: SizedBox(
+                    width: 46,
+                    height: 46,
+                    child: _sending
+                        ? Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: WyrdColors.onSignal,
+                            ),
+                          )
+                        : Icon(Icons.arrow_forward, color: WyrdColors.onSignal),
+                  ),
                 ),
               ),
             ],
@@ -203,18 +337,44 @@ class _WyrdTabState extends State<WyrdTab> {
     );
   }
 
+  /// Yours on terracotta, on the right; WYRD's on sand, on the left, under its name.
   Widget _buildChatBubble(_ChatLine line) {
+    final mine = line.fromUser;
     return Align(
-      alignment: line.fromUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        constraints: const BoxConstraints(maxWidth: 320),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        constraints: const BoxConstraints(maxWidth: 340),
         decoration: BoxDecoration(
-          border: Border.all(color: line.fromUser ? WyrdColors.green : WyrdColors.greenBorder),
-          borderRadius: BorderRadius.circular(4),
+          color: mine ? WyrdColors.signal : WyrdColors.sand,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(mine ? 18 : 4),
+            bottomRight: Radius.circular(mine ? 4 : 18),
+          ),
         ),
-        child: Text(line.text, style: WyrdText.mono(fontSize: 12, color: line.fromUser ? WyrdColors.mintBright : WyrdColors.mint)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!mine)
+              Text(
+                'WYRD',
+                style: WyrdText.mono(
+                  fontSize: 9,
+                  color: WyrdColors.signal,
+                ).copyWith(letterSpacing: 1.6),
+              ),
+            Text(
+              line.text,
+              style: WyrdText.mono(
+                fontSize: 13,
+                color: mine ? WyrdColors.onSignal : WyrdColors.mint,
+              ).copyWith(height: 1.5),
+            ),
+          ],
+        ),
       ),
     );
   }

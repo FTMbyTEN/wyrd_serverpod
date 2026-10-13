@@ -47,10 +47,6 @@ class _FeedTabState extends State<FeedTab> {
     }
   }
 
-  void _notAvailable(String label) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label is not built in this app yet.')));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -61,13 +57,22 @@ class _FeedTabState extends State<FeedTab> {
           future: _data,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator(color: WyrdColors.green));
+              return Center(
+                child: CircularProgressIndicator(color: WyrdColors.signal),
+              );
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Could not load feed: ${snapshot.error}', style: WyrdText.mono(color: WyrdColors.danger)));
+              return Center(
+                child: Text(
+                  "Couldn't reach WYRD just now. Try again in a moment.",
+                  style: WyrdText.mono(color: WyrdColors.danger),
+                ),
+              );
             }
             final (stats, curriculum, feed) = snapshot.data!;
-            final recentWords = stats.recentWords.map((w) => w.word).join(' · ');
+            final recentWords = stats.recentWords
+                .map((w) => w.word)
+                .join(' · ');
             final vocabGlow = (0.35 + stats.learned / 4000).clamp(0.0, 1.0);
 
             return ListView(
@@ -84,11 +89,20 @@ class _FeedTabState extends State<FeedTab> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('VOCABULARY', style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
+                            Text(
+                              'VOCABULARY',
+                              style: WyrdText.mono(
+                                fontSize: 9,
+                                color: WyrdColors.greenDim,
+                              ).copyWith(letterSpacing: 1),
+                            ),
                             Flexible(
                               child: Text(
                                 '${curriculum.subject} · ${curriculum.position}/${curriculum.total}',
-                                style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1),
+                                style: WyrdText.mono(
+                                  fontSize: 9,
+                                  color: WyrdColors.greenDim,
+                                ).copyWith(letterSpacing: 1),
                                 textAlign: TextAlign.right,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -96,23 +110,19 @@ class _FeedTabState extends State<FeedTab> {
                           ],
                         ),
                         const SizedBox(height: 5),
-                        Text('${stats.learned} words understood', style: WyrdText.display(fontSize: 26)),
+                        Text(
+                          '${stats.learned} words understood',
+                          style: WyrdText.display(fontSize: 26),
+                        ),
                         const SizedBox(height: 5),
                         Text(
                           'recent · ${recentWords.isEmpty ? '—' : recentWords}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: WyrdText.mono(fontSize: 10.5, color: WyrdColors.greenDim),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(child: HoloButton(label: 'CONCEPT MAP', onPressed: () => _notAvailable('Concept map'))),
-                            const SizedBox(width: 7),
-                            Expanded(child: HoloButton(label: 'GROWTH', onPressed: () => _notAvailable('Growth chart'))),
-                            const SizedBox(width: 7),
-                            Expanded(child: HoloButton(label: 'WORLD MAP', onPressed: () => _notAvailable('World map'))),
-                          ],
+                          style: WyrdText.mono(
+                            fontSize: 10.5,
+                            color: WyrdColors.greenDim,
+                          ),
                         ),
                       ],
                     ),
@@ -122,10 +132,25 @@ class _FeedTabState extends State<FeedTab> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('LIVE DATA FEED', style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
-                    SizedBox(
-                      width: 110,
-                      child: HoloButton(label: _triggering ? '···' : 'INGEST NOW', onPressed: _triggering ? () {} : _ingestNow),
+                    Text(
+                      'LIVE DATA FEED',
+                      style: WyrdText.mono(
+                        fontSize: 9,
+                        color: WyrdColors.greenDim,
+                      ).copyWith(letterSpacing: 1),
+                    ),
+                    // starting WYRD's reading by hand is its owner's (the server checks too)
+                    ValueListenableBuilder<bool>(
+                      valueListenable: ownerAccess,
+                      builder: (context, owner, _) => owner
+                          ? SizedBox(
+                              width: 120,
+                              child: HoloButton(
+                                label: _triggering ? '···' : 'INGEST NOW',
+                                onPressed: _triggering ? () {} : _ingestNow,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
@@ -133,7 +158,14 @@ class _FeedTabState extends State<FeedTab> {
                 if (feed.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: Text('no ingests yet', textAlign: TextAlign.center, style: WyrdText.mono(fontSize: 11.5, color: WyrdColors.greenBorderDim)),
+                    child: Text(
+                      'no ingests yet',
+                      textAlign: TextAlign.center,
+                      style: WyrdText.mono(
+                        fontSize: 11.5,
+                        color: WyrdColors.greenBorderDim,
+                      ),
+                    ),
                   ),
                 for (final item in feed) _feedItem(item),
               ],
@@ -152,14 +184,18 @@ class _FeedTabState extends State<FeedTab> {
         children: [
           Container(
             width: 3,
-            decoration: const BoxDecoration(color: WyrdColors.green, boxShadow: [BoxShadow(color: WyrdColors.green, blurRadius: 6)]),
+            decoration: BoxDecoration(
+              color: WyrdColors.signal,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF000F04).withValues(alpha: 0.72),
+                color: WyrdColors.card,
                 border: Border.all(color: WyrdColors.greenBorderDim),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,12 +203,30 @@ class _FeedTabState extends State<FeedTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('[${item.feedSource}]', style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
-                      Text(_timeAgo(item.timestamp), style: WyrdText.mono(fontSize: 9, color: WyrdColors.greenDim).copyWith(letterSpacing: 1)),
+                      Text(
+                        '[${item.feedSource}]',
+                        style: WyrdText.mono(
+                          fontSize: 9,
+                          color: WyrdColors.greenDim,
+                        ).copyWith(letterSpacing: 1),
+                      ),
+                      Text(
+                        _timeAgo(item.timestamp),
+                        style: WyrdText.mono(
+                          fontSize: 9,
+                          color: WyrdColors.greenDim,
+                        ).copyWith(letterSpacing: 1),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 5),
-                  Text(item.title, style: WyrdText.mono(fontSize: 12.5, color: WyrdColors.mint).copyWith(height: 1.4)),
+                  Text(
+                    item.title,
+                    style: WyrdText.mono(
+                      fontSize: 12.5,
+                      color: WyrdColors.mint,
+                    ).copyWith(height: 1.4),
+                  ),
                 ],
               ),
             ),

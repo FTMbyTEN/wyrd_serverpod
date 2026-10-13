@@ -16,12 +16,11 @@ class WyrdApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // WYRD's terminal-green aesthetic is always dark -- there is no light variant, same as the
-    // React Native app.
+    // Warm Lagos, as in the main app: day or night from the device, chosen at start-up (theme.dart)
     return MaterialApp(
       title: 'WYRD',
+      debugShowCheckedModeBanner: false,
       theme: buildWyrdTheme(),
-      themeMode: ThemeMode.dark,
       home: const AuthGate(),
     );
   }
@@ -44,16 +43,40 @@ class AuthGate extends StatelessWidget {
             body: SafeArea(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: EmailSignInWidget(
-                      client: client,
-                      onAuthenticated: () {
-                        // fire-and-forget: mirrors server.js's touchProfileVisit on
-                        // register/login, which has no direct hook in the built-in IDP flow.
-                        client.profile.touchVisit();
-                      },
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'WYRD',
+                          textAlign: TextAlign.center,
+                          style: WyrdText.display(fontSize: 64),
+                        ),
+                        Text(
+                          'A mind that keeps thinking, and remembers you.',
+                          textAlign: TextAlign.center,
+                          style: WyrdText.mono(
+                            fontSize: 12.5,
+                            color: WyrdColors.greenDim,
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: wyrdCard(radius: 24),
+                          child: EmailSignInWidget(
+                            client: client,
+                            onAuthenticated: () {
+                              // fire-and-forget: mirrors server.js's touchProfileVisit on
+                              // register/login, which has no direct hook in the built-in IDP flow.
+                              client.profile.touchVisit();
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
