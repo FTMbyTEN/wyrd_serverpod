@@ -136,10 +136,18 @@ class CustomGames {
     String previous,
   ) async {
     final session = await Serverpod.instance.createSession();
+    // printed, not session.log: a background session's log isn't in the server's output
+    void note(String m) => print('[games] game $id: $m');
     try {
       String? html;
-      if (apiKey.isNotEmpty &&
-          await LlmBudget.allow(session, background: false)) {
+      if (apiKey.isEmpty) note('no API key');
+      // two tries: a game that comes back cut off or unreadable gets one more go
+      for (var attempt = 1; attempt <= 2 && html == null; attempt++) {
+        if (apiKey.isEmpty) break;
+        if (!await LlmBudget.allow(session, background: false)) {
+          note('over the daily model budget');
+          break;
+        }
         final ask = previous.isEmpty
             ? 'Build this game:\n$spec'
             : 'Here is the current version of the game:\n\n$previous\n\nChange it as follows, keeping '
@@ -173,16 +181,24 @@ class CustomGames {
               .map((b) => b['text'] as String? ?? '')
               .join();
           html = extractHtml(text);
+          if (html == null) {
+            note(
+              'try $attempt: no complete document (stop ${data['stop_reason']}, '
+              '${text.length} chars, usage ${data['usage']})',
+            );
+          }
         } else {
-          session.log(
-            '[games] build http ${res.statusCode}',
-            level: LogLevel.warning,
+          final body = res.body;
+          note(
+            'try $attempt: http ${res.statusCode} '
+            '${body.length > 300 ? body.substring(0, 300) : body}',
           );
         }
       }
       await _finish(session, id, html);
+      note(html == null ? 'failed' : 'ready (${html.length} chars)');
     } catch (e) {
-      session.log('[games] build failed: $e', level: LogLevel.warning);
+      note('failed: $e');
       try {
         await _finish(session, id, null);
       } catch (_) {}
