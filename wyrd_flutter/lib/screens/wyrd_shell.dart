@@ -119,8 +119,8 @@ class _WyrdShellState extends State<WyrdShell> {
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 4,
                                     ),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(18),
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
                                       onTap: () {
                                         Navigator.of(ctx).pop();
                                         setState(() => _index = page);
@@ -547,8 +547,9 @@ class _SideBar extends StatelessWidget {
           for (var i = 0; i < items.length; i++)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(999),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+
                 onTap: () => onTap(i),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
