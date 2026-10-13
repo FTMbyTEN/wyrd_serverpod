@@ -39,5 +39,48 @@ void main() {
   test('chat no longer tells WYRD it cannot draw or run code', () {
     expect(WyrdCharter.chat, contains('show_visual'));
     expect(WyrdCharter.chat, contains('run_python'));
+    expect(WyrdCharter.chat, contains('draw_picture'));
   });
+
+  test(
+    'a picture WYRD draws is kept, marked, and cleaned of anything that could run or fetch',
+    () {
+      final (pic, told) = VisualTools.use('draw_picture', {
+        'title': 'Lagos sunset',
+        'svg':
+            'Here you go: <svg viewBox="0 0 800 600" onload="alert(1)">'
+            '<script>steal()</script>'
+            '<rect width="800" height="600" fill="url(#sky)"/>'
+            '<image href="https://evil.example/x.png"/>'
+            '<a xlink:href="javascript:alert(1)"><circle r="5"/></a>'
+            '<foreignObject><div>hi</div></foreignObject>'
+            '</svg> enjoy',
+      });
+      expect(pic.type, 'show_visual');
+      expect(pic.html, startsWith(VisualTools.pictureMark));
+      expect(
+        pic.html,
+        contains('<rect width="800" height="600" fill="url(#sky)"/>'),
+      );
+      for (final bad in [
+        '<script',
+        'onload',
+        'https://evil',
+        'javascript:',
+        'foreignObject',
+        'Here you go',
+        'enjoy',
+      ]) {
+        expect(pic.html, isNot(contains(bad)), reason: bad);
+      }
+      expect(VisualTools.kept(pic), isTrue);
+      expect(told, contains('picture'));
+
+      final (none, _) = VisualTools.use('draw_picture', {
+        'title': 'x',
+        'svg': 'no drawing here',
+      });
+      expect(VisualTools.kept(none), isFalse);
+    },
+  );
 }

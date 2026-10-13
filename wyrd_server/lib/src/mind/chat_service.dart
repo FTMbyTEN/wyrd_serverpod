@@ -205,6 +205,8 @@ class ChatService {
     // so it can change it.
     String appNote(ConversationTurn t) => t.appHtml == null
         ? ''
+        : t.appHtml!.startsWith(VisualTools.pictureMark)
+        ? '\n\n[In this reply you drew them a picture (draw_picture); it is shown under this reply and they can download it.]'
         : t.appHtml!.startsWith(VisualTools.visualMark)
         ? '\n\n[In this reply you showed them a visual (show_visual); it is shown under this reply.]'
         : t.appHtml!.startsWith(VisualTools.pythonMark)

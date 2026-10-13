@@ -274,6 +274,7 @@ class ChatToolService {
     MemoryTools.forgetTool,
     _worldMapTool,
     VisualTools.showVisual,
+    VisualTools.drawPicture,
     VisualTools.runPython,
     _webSearchTool,
     _newsSearchTool,

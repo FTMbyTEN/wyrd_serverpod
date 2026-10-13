@@ -52,11 +52,86 @@ class VisualTools {
     },
   };
 
-  static const names = {'show_visual', 'run_python'};
+  /// A picture WYRD drew itself: one SVG, shown in the reply and downloadable (draw_picture).
+  static const pictureMark = '<!--wyrd:picture-->';
+
+  static const drawPicture = {
+    'name': 'draw_picture',
+    'description':
+        'Draw them a picture yourself, as an illustration: a scene, a landscape, a poster, a character, an '
+        'icon, a logo idea, a card. Use it whenever they ask you to draw, paint, illustrate, design or make an '
+        'image or picture -- never say you can\'t make images. Write ONE self-contained <svg> with a viewBox '
+        '(800x600 for scenes, 800x800 for icons and portraits): no scripts, no external images, links or fonts. '
+        'Make it rich and finished: a full background, layered shapes, gradients (linearGradient / '
+        'radialGradient), light and shadow, depth from near to far, and a clear subject; use a harmonious '
+        'palette. Then say in a sentence what you drew -- do not describe it at length.',
+    'input_schema': {
+      'type': 'object',
+      'properties': {
+        'title': {'type': 'string', 'description': 'A few words naming it.'},
+        'svg': {
+          'type': 'string',
+          'description': 'The complete <svg>...</svg>, with a viewBox.',
+        },
+      },
+      'required': ['title', 'svg'],
+    },
+  };
+
+  /// What can't be trusted in a drawing is taken out: scripts, event handlers, foreign content and
+  /// anything fetched from elsewhere. Null when there's no <svg> in it at all.
+  static String? cleanSvg(String raw) {
+    final start = raw.indexOf('<svg');
+    final end = raw.lastIndexOf('</svg>');
+    if (start < 0 || end < start) return null;
+    var s = raw.substring(start, end + 6);
+    s = s.replaceAll(
+      RegExp(r'<script[\s\S]*?</script>', caseSensitive: false),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(r'<foreignObject[\s\S]*?</foreignObject>', caseSensitive: false),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(
+        r'\son\w+\s*=\s*("[^"]*"|'
+        "'[^']*')",
+        caseSensitive: false,
+      ),
+      '',
+    );
+    s = s.replaceAll(
+      RegExp(
+        r'''(href|xlink:href)\s*=\s*("|')\s*(https?:|javascript:|data:text)[^"']*("|')''',
+        caseSensitive: false,
+      ),
+      '',
+    );
+    return s;
+  }
+
+  static const names = {'show_visual', 'run_python', 'draw_picture'};
 
   /// The action for the app, and what the model is told, for one of these tool calls.
   static (ChatAction, String) use(String name, Map<String, dynamic> input) {
     final title = (input['title'] as String? ?? '').trim();
+    if (name == 'draw_picture') {
+      final svg = cleanSvg(input['svg'] as String? ?? '');
+      if (svg == null) {
+        return (
+          ChatAction(type: 'show_visual', html: ''),
+          'That drawing had no <svg> in it, so nothing was shown. Draw it again as one complete <svg>.',
+        );
+      }
+      return (
+        ChatAction(
+          type: 'show_visual',
+          html: '$pictureMark<!--$title-->\n$svg',
+        ),
+        'The picture is shown in your reply, and they can download it. Say in a sentence what you drew.',
+      );
+    }
     if (name == 'run_python') {
       final code = (input['code'] as String? ?? '').trim();
       return (

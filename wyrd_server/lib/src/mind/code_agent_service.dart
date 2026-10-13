@@ -160,6 +160,7 @@ class CodeAgentService {
                   tools: [
                     _previewAppTool,
                     VisualTools.showVisual,
+                    VisualTools.drawPicture,
                     VisualTools.runPython,
                     if (savedApp != null) _openSavedAppTool,
                   ],
