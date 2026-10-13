@@ -67,6 +67,17 @@ void run(List<String> args) async {
   // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.
   pod.webServer.addRoute(PartnerRoute(), '/partner/v1/**');
 
+  // WYRD's Flutter client (wyrd_flutter), built for the web with --base-href /flutter/: the same
+  // Serverpod backend, through the generated Dart client. It's told where the API is the same way.
+  final flutterDir = Directory(Uri(path: 'web/flutter').toFilePath());
+  if (flutterDir.existsSync()) {
+    pod.webServer.addRoute(
+      AppConfigRoute(apiConfig: pod.config.apiServer),
+      '/flutter/assets/assets/config.json',
+    );
+    pod.webServer.addRoute(FlutterRoute(flutterDir), '/flutter');
+  }
+
   // Checks if the flutter web app has been built and serves it if it has.
   final appDir = Directory(Uri(path: 'web/app').toFilePath());
   if (appDir.existsSync()) {
