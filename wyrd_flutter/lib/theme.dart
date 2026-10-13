@@ -9,9 +9,11 @@ import 'package:google_fonts/google_fonts.dart';
 /// does. The token names are kept from the green era, as there: `green*` are the ink levels,
 /// `mint*` headline text, and `signal` the one accent.
 class WyrdColors {
-  /// Night, from the device's light/dark setting (read at start-up).
-  static final bool dark =
-      PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+  /// Night: from the device's setting at start-up, then the header's sun/moon button.
+  static final night = ValueNotifier<bool>(
+    PlatformDispatcher.instance.platformBrightness == Brightness.dark,
+  );
+  static bool get dark => night.value;
 
   static Color _p(int day, int night) => Color(dark ? night : day);
 
@@ -46,6 +48,12 @@ class WyrdColors {
 
 /// The main app's two typefaces: VT323 for big readouts, Share Tech Mono for everything else.
 class WyrdText {
+  /// Chess pieces and other symbols the two typefaces don't have (the web build has no system
+  /// symbol font to fall back on, so they'd show as empty boxes).
+  static List<String> get symbolFallback => [
+    GoogleFonts.notoSansSymbols2().fontFamily!,
+  ];
+
   static TextStyle display({
     double fontSize = 18,
     Color? color,
@@ -55,7 +63,7 @@ class WyrdText {
     return GoogleFonts.vt323(
       fontSize: fontSize,
       color: color ?? WyrdColors.mint,
-    );
+    ).copyWith(fontFamilyFallback: symbolFallback);
   }
 
   static TextStyle mono({
@@ -67,7 +75,7 @@ class WyrdText {
       fontSize: fontSize,
       color: color ?? WyrdColors.mint,
       letterSpacing: letterSpacing,
-    );
+    ).copyWith(fontFamilyFallback: symbolFallback);
   }
 }
 
@@ -111,9 +119,14 @@ ThemeData buildWyrdTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: WyrdColors.bg,
-    textTheme: GoogleFonts.shareTechMonoTextTheme(
-      base.textTheme,
-    ).apply(bodyColor: WyrdColors.mint, displayColor: WyrdColors.mint),
+    textTheme:
+        GoogleFonts.shareTechMonoTextTheme(
+          base.textTheme,
+        ).apply(
+          bodyColor: WyrdColors.mint,
+          displayColor: WyrdColors.mint,
+          fontFamilyFallback: WyrdText.symbolFallback,
+        ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: WyrdColors.barBg,
       surfaceTintColor: Colors.transparent,

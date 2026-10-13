@@ -16,12 +16,17 @@ class WyrdApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Warm Lagos, as in the main app: day or night from the device, chosen at start-up (theme.dart)
-    return MaterialApp(
-      title: 'WYRD',
-      debugShowCheckedModeBanner: false,
-      theme: buildWyrdTheme(),
-      home: const AuthGate(),
+    // Warm Lagos, as in the main app: day or night from the device, switched by the header's
+    // sun/moon button; every screen is redrawn in the new colours (theme.dart)
+    return ValueListenableBuilder<bool>(
+      valueListenable: WyrdColors.night,
+      builder: (context, night, _) => MaterialApp(
+        key: ValueKey(night),
+        title: 'WYRD',
+        debugShowCheckedModeBanner: false,
+        theme: buildWyrdTheme(),
+        home: const AuthGate(),
+      ),
     );
   }
 }
