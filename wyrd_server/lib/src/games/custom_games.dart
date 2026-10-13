@@ -81,7 +81,7 @@ class CustomGames {
       session,
       where: (g) => g.authUserId.equals(user) & g.title.ilike(title),
     );
-    if (game?.status == 'building') {
+    if (game != null && game.status == 'building' && !_isStale(game)) {
       return '"$title" is already being built; it will be in their Games tab shortly.';
     }
     final previous = game?.html ?? '';
@@ -234,12 +234,28 @@ class CustomGames {
     return html.toLowerCase().contains('<script') ? html : null;
   }
 
-  static Future<List<CustomGame>> mine(Session session, UuidValue user) =>
-      CustomGame.db.find(
-        session,
-        where: (g) => g.authUserId.equals(user),
-        orderByList: (g) => [g.updatedAt.desc()],
-      );
+  /// A build that's been "building" this long was cut off (a restart mid-build): it's failed.
+  static const _stale = Duration(minutes: 15);
+  static bool _isStale(CustomGame g) =>
+      g.status == 'building' &&
+      DateTime.now().toUtc().difference(g.updatedAt) > _stale;
+
+  static Future<List<CustomGame>> mine(Session session, UuidValue user) async {
+    final games = await CustomGame.db.find(
+      session,
+      where: (g) => g.authUserId.equals(user),
+      orderByList: (g) => [g.updatedAt.desc()],
+    );
+    return [
+      for (final g in games)
+        _isStale(g)
+            ? await CustomGame.db.updateRow(
+                session,
+                g.copyWith(status: g.html.isEmpty ? 'failed' : null),
+              )
+            : g,
+    ];
+  }
 
   static Future<void> delete(Session session, UuidValue user, int id) async {
     await CustomGame.db.deleteWhere(
