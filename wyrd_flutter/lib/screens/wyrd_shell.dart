@@ -45,8 +45,17 @@ class _WyrdShellState extends State<WyrdShell> {
   void _tap(int bar) {
     if (bar == 1) {
       _openApps();
+    } else if (bar == 2) {
+      // YOU: a glass pop-up over the page, like Apps, Dialogue Link and Tasks
+      openGlassPanel(
+        context,
+        title: 'YOU',
+        icon: Icons.person_outline,
+        maxWidth: 760,
+        child: const YouTab(),
+      );
     } else {
-      setState(() => _index = bar == 0 ? _wyrd : _you);
+      setState(() => _index = _wyrd);
     }
   }
 
