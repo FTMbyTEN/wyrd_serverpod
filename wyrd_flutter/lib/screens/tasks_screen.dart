@@ -30,6 +30,7 @@ class _TasksScreenState extends State<TasksScreen> {
   int? _every; // hours; null = once
   final _goal = TextEditingController();
   bool _starting = false;
+  String? _error;
   AgentTask? _open;
   Timer? _poll;
 
@@ -66,16 +67,36 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Future<void> _start() async {
     final goal = _goal.text.trim();
-    if (goal.isEmpty || _starting) return;
-    setState(() => _starting = true);
+    if (goal.length < 8 || _starting) return;
+    setState(() {
+      _starting = true;
+      _error = null;
+    });
     try {
-      await client.agent.create(goal, _every);
+      final t = await client.agent.create(goal, _every);
       _goal.clear();
+      _every = null;
       await _load();
-    } catch (_) {
+      // straight to the new task, to watch it work, as in the main app
+      if (mounted) setState(() => _open = t);
+    } catch (e) {
+      // the server says why (too short, today's limit, too many routines): show its words
+      final m = e is ServerpodClientException ? e.message : e.toString();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Couldn't start that task just now.")),
+        setState(
+          () => _error =
+              m
+                  .replaceFirst(
+                    RegExp(r'^(Exception|ServerpodClientException):s*'),
+                    '',
+                  )
+                  .trim()
+                  .isEmpty
+              ? "Couldn't start that task just now."
+              : m.replaceFirst(
+                  RegExp(r'^(Exception|ServerpodClientException):s*'),
+                  '',
+                ),
         );
       }
     } finally {
@@ -137,6 +158,17 @@ class _TasksScreenState extends State<TasksScreen> {
                     ),
                     const SizedBox(height: 12),
                     _composer(),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          _error!,
+                          style: WyrdText.mono(
+                            fontSize: 12,
+                            color: WyrdColors.danger,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 12),
                     for (final e in _examples)
                       Padding(
@@ -212,6 +244,8 @@ class _TasksScreenState extends State<TasksScreen> {
       children: [
         TextField(
           controller: _goal,
+          onChanged: (_) => setState(() {}),
+          onSubmitted: (_) => _start(),
           minLines: 2,
           maxLines: 5,
           style: WyrdText.mono(fontSize: 13.5),
@@ -267,6 +301,7 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
             const Spacer(),
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: _start,
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -275,7 +310,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: WyrdColors.signal.withValues(
-                    alpha: _goal.text.trim().isEmpty ? 0.5 : 1,
+                    alpha: _goal.text.trim().length < 8 ? 0.45 : 1,
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
