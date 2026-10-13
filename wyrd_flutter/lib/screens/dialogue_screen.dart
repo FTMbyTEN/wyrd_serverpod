@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../client.dart';
 import '../theme.dart';
+import '../widgets/kept_card.dart';
+import '../widgets/wyrd_markdown.dart';
 import 'wyrd_shell.dart' show FaceMark;
 
 /// DIALOGUE_LINK, as in the main app: your conversation with WYRD (the current chat's history from
@@ -21,16 +22,8 @@ class _Line {
   final String text;
   final bool mine;
   final String?
-  picture; // an SVG WYRD drew (draw_picture), shown under its words
+  picture; // what WYRD made in this reply (an app, visual, picture or program), kept on the turn
   _Line(this.text, this.mine, [this.picture]);
-}
-
-/// The SVG of a picture WYRD drew, from a kept turn or a reply's action; null for anything else.
-const _pictureMark = '<!--wyrd:picture-->';
-String? _pictureOf(String? kept) {
-  if (kept == null || !kept.startsWith(_pictureMark)) return null;
-  final i = kept.indexOf('<svg');
-  return i < 0 ? null : kept.substring(i);
 }
 
 class _DialogueScreenState extends State<DialogueScreen> {
@@ -60,7 +53,7 @@ class _DialogueScreenState extends State<DialogueScreen> {
         for (final t in turns) {
           if (t.userText.isNotEmpty) _lines.add(_Line(t.userText, true));
           if (t.botText.isNotEmpty) {
-            _lines.add(_Line(t.botText, false, _pictureOf(t.appHtml)));
+            _lines.add(_Line(t.botText, false, t.appHtml));
           }
         }
       });
@@ -91,7 +84,7 @@ class _DialogueScreenState extends State<DialogueScreen> {
       if (mounted)
         setState(
           () => _lines.add(
-            _Line(reply.reply, false, _pictureOf(reply.action?.html)),
+            _Line(reply.reply, false, reply.action?.html),
           ),
         );
     } catch (_) {
@@ -281,12 +274,10 @@ class _DialogueScreenState extends State<DialogueScreen> {
                       bottomRight: Radius.circular(18),
                     ),
                   ),
-                  child: SelectableText(
-                    l.text,
-                    style: WyrdText.mono(fontSize: 13.5).copyWith(height: 1.55),
-                  ),
+                  child: WyrdMarkdown(l.text),
                 ),
-                if (l.picture != null) _picture(l.picture!),
+                if (l.picture != null && l.picture!.isNotEmpty)
+                  KeptCard(l.picture!),
               ],
             ),
           ),
@@ -294,35 +285,6 @@ class _DialogueScreenState extends State<DialogueScreen> {
       ),
     );
   }
-
-  /// A picture WYRD drew: the SVG on a card, with its tag, as in the main app.
-  Widget _picture(String svg) => Container(
-    margin: const EdgeInsets.only(top: 8),
-    constraints: const BoxConstraints(maxWidth: 520),
-    decoration: wyrdCard(),
-    clipBehavior: Clip.antiAlias,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 9, 12, 7),
-          child: Text(
-            'A PICTURE · DRAWN BY WYRD',
-            style: WyrdText.mono(
-              fontSize: 9.5,
-              color: WyrdColors.greenDim,
-            ).copyWith(letterSpacing: 1.6),
-          ),
-        ),
-        SvgPicture.string(
-          svg,
-          width: 520,
-          fit: BoxFit.contain,
-          placeholderBuilder: (_) => const SizedBox(height: 200),
-        ),
-      ],
-    ),
-  );
 
   Widget _bar() {
     OutlineInputBorder pill(Color c, [double w = 1]) => OutlineInputBorder(

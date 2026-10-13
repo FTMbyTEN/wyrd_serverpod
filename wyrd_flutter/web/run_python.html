@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Runs a program WYRD wrote (run_python) with Pyodide, in a sandboxed frame of the Flutter client:
+     the code arrives by postMessage; its output and matplotlib figures show here, and the frame's
+     height is told to the page (as in the main app's InlineRun). -->
+<style>body{margin:0;padding:12px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:#FFFAF2;color:#1c1b19}
+pre{margin:0;white-space:pre-wrap;word-break:break-word}.err{color:#b3261e}.st{color:#7a756c}img{max-width:100%;display:block;margin:8px 0}</style></head>
+<body><div class="st" id="st">Starting Python…</div><pre id="out"></pre><div id="figs"></div>
+<script>
+const PYODIDE='https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+const id=location.hash.slice(1);
+const out=document.getElementById('out'),st=document.getElementById('st'),figs=document.getElementById('figs');
+function tell(){try{parent.postMessage({wyrdRunH:document.body.scrollHeight+2,id},'*')}catch(e){}}
+function write(t,cls){const s=document.createElement('span');if(cls)s.className=cls;s.textContent=t+'\n';out.appendChild(s);tell()}
+window.wyrdImg=function(b64){const i=new Image();i.onload=tell;i.src='data:image/png;base64,'+b64;figs.appendChild(i)};
+let started=false;
+window.addEventListener('message',e=>{const code=e.data&&e.data.wyrdCode;if(typeof code!=='string'||started)return;started=true;run(code)});
+function run(code){
+const s=document.createElement('script');s.src=PYODIDE+'pyodide.js';
+s.onerror=()=>{st.textContent='Could not load Python (no connection?).';st.className='err';tell()};
+s.onload=async()=>{try{
+ const py=await loadPyodide({indexURL:PYODIDE});
+ py.setStdout({batched:t=>write(t)});py.setStderr({batched:t=>write(t,'err')});
+ st.textContent='Loading packages…';tell();
+ await py.loadPackagesFromImports(code,{messageCallback:m=>{if(/^Loading /.test(m)){st.textContent=m.slice(0,90)+(/matplotlib/.test(m)?' (about 20 MB the first time, kept after)':'')+'…';tell()}}});
+ if(/matplotlib/.test(code)){await py.runPythonAsync(`
+import io, base64, matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from js import wyrdImg
+def _wyrd_show(*a, **k):
+    for n in plt.get_fignums():
+        b = io.BytesIO(); plt.figure(n).savefig(b, format='png', dpi=110, bbox_inches='tight')
+        wyrdImg(base64.b64encode(b.getvalue()).decode())
+    plt.close('all')
+plt.show = _wyrd_show
+`)}
+ st.textContent='Running…';tell();
+ await py.runPythonAsync(code);
+ if(/matplotlib/.test(code))await py.runPythonAsync('_wyrd_show()');
+ st.textContent=out.childNodes.length||figs.childNodes.length?'Finished.':'Finished (it printed nothing).';
+}catch(e){write(String(e&&e.message||e),'err');st.textContent='It stopped with an error.';st.className='err'}tell()};
+document.head.appendChild(s);tell();}
+</script></body></html>
