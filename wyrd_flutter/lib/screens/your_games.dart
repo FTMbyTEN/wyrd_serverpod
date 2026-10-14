@@ -78,16 +78,16 @@ class _YourGamesState extends State<YourGames> {
   /// WATCH WYRD PLAY: straight in if the game has WYRD's play mode; else it's added (the tile shows
   /// "programming" for a minute, then the same button plays).
   Future<void> _watchWyrd(CustomGame g) async {
-    if (g.html.contains('WYRD_LEARNS')) {
-      _play(g, wyrd: true);
-      return;
-    }
+    // the server says whether WYRD's player is current; an older one is rewritten first (the tile
+    // shows "programming" for a minute)
     try {
       final next = await client.games.readyForWyrd(g.id!);
-      if (next != null && mounted) {
-        setState(
-          () => _games = [for (final c in _games) c.id == next.id ? next : c],
-        );
+      if (next == null || !mounted) return;
+      setState(
+        () => _games = [for (final c in _games) c.id == next.id ? next : c],
+      );
+      if (next.status == null && next.html.contains('WYRD_LEARNS')) {
+        _play(next, wyrd: true);
       }
     } catch (_) {}
   }

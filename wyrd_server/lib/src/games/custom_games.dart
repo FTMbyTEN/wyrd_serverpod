@@ -71,8 +71,13 @@ class CustomGames {
       'params}); when it is set, YOUR computer player plays the game while they watch, and learns. Its strategy '
       'depends on a params object of 3 to 6 numeric knobs with sensible ranges (how far ahead it looks, how '
       'early it reacts, how much risk it takes...); start from WYRD_LEARNS.params when given, else your '
-      'defaults. Start the game once, as a player would, then play: decide at most once every 120 ms and send '
-      'only the key or pointer events the game listens for (or call its own input functions). Never call, '
+      'defaults. Start the game once, as a player would, then play. Smoothness comes first -- the game must '
+      'run at its full frame rate while you play: make every decision inside requestAnimationFrame (NEVER '
+      'setInterval or setTimeout for playing: a browser slows timers in a frame nobody has clicked in, to about '
+      'once a second), act at most once every 120 ms, and keep each decision tiny (well under a millisecond: '
+      'read a few values, compare, send a key -- no simulations, no searches, no long loops, nothing that '
+      'blocks). Never press P, Escape, space-to-pause or any key the game uses for pause or menus. Send only '
+      'the key or pointer events the game listens for (or call its own input functions). Never call, '
       'repeat or speed up the game\'s update or draw loop, never change its timers or frame rate, and never '
       'restart while a round is in progress -- the game must run exactly as it does for a person. When a '
       'round ends (game over or win), send its result to the page that holds the game: '
@@ -96,6 +101,21 @@ class CustomGames {
       'Write the <script> that adds the WYRD LEARNS mode to this game. Your computer player reads the '
       'game\'s real state (its variables, the DOM or the canvas logic it uses). $_learns';
 
+  /// The add-on's version: an older one (WYRD's first player, which stuttered) is replaced by the next tap.
+  static const _addOnVersion = '2';
+
+  /// Whether [html] needs WYRD's play add-on written (again): none yet, or an older one.
+  static bool needsAddOn(String html) =>
+      !html.contains('WYRD_LEARNS') ||
+      (html.contains('data-wyrd-learns') &&
+          !html.contains('data-wyrd-learns="$_addOnVersion"'));
+
+  /// [html] without WYRD's add-on script, so a new one can take its place.
+  static String withoutAddOn(String html) => html.replaceAll(
+    RegExp(r'<script data-wyrd-learns[^>]*>[\s\S]*?</script>\n?'),
+    '',
+  );
+
   /// [game] with WYRD's add-on script spliced in before </body>, or null if [reply] holds no usable script.
   static String? withPlayAddOn(String game, String reply) {
     final lower = reply.toLowerCase();
@@ -104,7 +124,7 @@ class CustomGames {
     if (start < 0 || end < start) return null;
     final script = reply
         .substring(start, end + 9)
-        .replaceFirst('<script', '<script data-wyrd-learns');
+        .replaceFirst('<script', '<script data-wyrd-learns="$_addOnVersion"');
     if (!script.contains('WYRD_LEARNS')) return null;
     final body = game.toLowerCase().lastIndexOf('</body>');
     return body < 0
@@ -383,7 +403,7 @@ class CustomGames {
         '"${game.title}" is not ready to play yet (${game.status ?? 'empty'}).',
       );
     }
-    if (!game.html.contains('WYRD_LEARNS')) {
+    if (needsAddOn(game.html)) {
       // programmed before WYRD could play and learn: add the mode now, as an add-on, in the background
       await CustomGame.db.updateRow(
         session,
@@ -394,7 +414,7 @@ class CustomGames {
           game.id!,
           session.passwords['anthropicApiKey'] ?? '',
           _playSpec,
-          game.html,
+          withoutAddOn(game.html),
         ),
       );
       return (
@@ -423,7 +443,7 @@ class CustomGames {
       where: (g) => g.id.equals(id) & g.authUserId.equals(user),
     );
     if (game == null) return null;
-    if (game.status != null || game.html.contains('WYRD_LEARNS')) return game;
+    if (game.status != null || !needsAddOn(game.html)) return game;
     await play(session, user, {'title': game.title}); // starts the add-on
     return CustomGame.db.findById(session, id);
   }

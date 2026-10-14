@@ -11,7 +11,7 @@ void main() {
     expect(
       out,
       '<html><body><canvas></canvas><script>game()</script>'
-      '<script data-wyrd-learns>if (window.WYRD_LEARNS) { learn(); }</script>\n</body></html>',
+      '<script data-wyrd-learns="2">if (window.WYRD_LEARNS) { learn(); }</script>\n</body></html>',
     );
     expect(CustomGames.withPlayAddOn(game, '<script>nothing()</script>'), isNull);
     expect(CustomGames.withPlayAddOn(game, 'no script at all'), isNull);
