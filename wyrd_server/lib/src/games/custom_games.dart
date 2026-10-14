@@ -68,6 +68,38 @@ class CustomGames {
       'in a corner; when it loses or wins, start again after a few seconds. The moment the person presses a '
       'key or taps, hand the controls to them (the badge goes) and play on normally.';
 
+  /// The spec that means "add the WYRD PLAYS mode to this game", written as an add-on script
+  /// instead of rewriting the whole game (a big game is too long to write out again).
+  static const _playSpec = '__add_wyrd_plays__';
+
+  static const _playWriter =
+      'You are WYRD. You add a WYRD PLAYS mode to a finished game, as ONE <script> that is appended at the '
+      'end of its <body>: it must not change or repeat any of the game. Reply with ONLY that <script>...</script>.';
+
+  static const _playAddOn =
+      'Write the <script> that adds the WYRD PLAYS mode to this game. When window.WYRD_PLAYS is true: start '
+      'the game at once (skip or click through the title screen, the same way a player would start it), then '
+      'play it with a computer player that reads the game\'s real state (its variables, the DOM or the canvas '
+      'logic it uses) and sends the inputs a player would (dispatch the same key or pointer events the game '
+      'listens for, or call its own functions), playing well at a human pace. Show a small fixed badge '
+      '"WYRD IS PLAYING" in a corner. When a round ends, start again after a few seconds. The moment a real '
+      'person presses a key or taps (event.isTrusted), stop playing, remove the badge and leave the controls '
+      'to them. Never throw: wrap everything in try/catch.';
+
+  /// [game] with WYRD's add-on script spliced in before </body>, or null if [reply] holds no usable script.
+  static String? withPlayAddOn(String game, String reply) {
+    final lower = reply.toLowerCase();
+    final start = lower.indexOf('<script');
+    final end = lower.lastIndexOf('</script>');
+    if (start < 0 || end < start) return null;
+    final script = reply.substring(start, end + 9);
+    if (!script.contains('WYRD_PLAYS')) return null;
+    final body = game.toLowerCase().lastIndexOf('</body>');
+    return body < 0
+        ? '$game\n$script'
+        : '${game.substring(0, body)}$script\n${game.substring(body)}';
+  }
+
   /// Starts building (or rebuilding by title) and returns what the model is told.
   static Future<String> startBuild(
     Session session,
@@ -124,7 +156,15 @@ class CustomGames {
       _write(
         game.id!,
         session.passwords['anthropicApiKey'] ?? '',
-        spec,
+        // adding WYRD's play mode to an existing game is an add-on, never a whole rewrite
+        previous.isNotEmpty &&
+                !previous.contains('WYRD_PLAYS') &&
+                RegExp(
+                  r'wyrd.?plays|play.?mode',
+                  caseSensitive: false,
+                ).hasMatch(spec)
+            ? _playSpec
+            : spec,
         previous,
       ),
     );
@@ -153,7 +193,10 @@ class CustomGames {
           note('over the daily model budget');
           break;
         }
-        final ask = previous.isEmpty
+        final addingPlay = spec == _playSpec;
+        final ask = addingPlay
+            ? 'Here is a game:\n\n$previous\n\n$_playAddOn'
+            : previous.isEmpty
             ? 'Build this game:\n$spec'
             : 'Here is the current version of the game:\n\n$previous\n\nChange it as follows, keeping '
                   'everything else working, and reply with the whole new document:\n$spec';
@@ -163,12 +206,14 @@ class CustomGames {
               headers: Claude.headers(apiKey),
               body: jsonEncode(
                 Claude.body(
-                  system: _writer,
+                  system: addingPlay ? _playWriter : _writer,
                   messages: [
                     {'role': 'user', 'content': ask},
                   ],
                   // no thinking: with it on, a game could spend the whole allowance thinking and never be written
-                  maxTokens: 20000,
+                  // a whole game, or a rewrite of a big one, needs a lot of room; the WYRD PLAYS
+                  // add-on is one script
+                  maxTokens: addingPlay ? 9000 : 45000,
                   think: false,
                 ),
               ),
@@ -186,7 +231,7 @@ class CustomGames {
               .where((b) => b['type'] == 'text')
               .map((b) => b['text'] as String? ?? '')
               .join();
-          html = extractHtml(text);
+          html = addingPlay ? withPlayAddOn(previous, text) : extractHtml(text);
           if (html == null) {
             note(
               'try $attempt: no complete document (stop ${data['stop_reason']}, '
@@ -319,11 +364,24 @@ class CustomGames {
       );
     }
     if (!game.html.contains('WYRD_PLAYS')) {
+      // programmed before WYRD could play: add the mode now, as an add-on, in the background
+      await CustomGame.db.updateRow(
+        session,
+        game.copyWith(status: 'building', updatedAt: DateTime.now().toUtc()),
+      );
+      unawaited(
+        _write(
+          game.id!,
+          session.passwords['anthropicApiKey'] ?? '',
+          _playSpec,
+          game.html,
+        ),
+      );
       return (
         null,
-        '"${game.title}" was programmed before you could play your own games, so it has no WYRD PLAYS '
-            'mode. Offer to add it: call build_game with the same title and the spec "add the WYRD PLAYS '
-            'mode" (a minute or two), then they can ask you to play it.',
+        '"${game.title}" had no WYRD PLAYS mode yet, so you are adding it now (about a minute; its tile '
+            'shows "programming" until then). Tell them that, and that when it is ready they can tap WATCH '
+            'WYRD PLAY on its tile or ask you again. Do not claim it is ready.',
       );
     }
     return (
