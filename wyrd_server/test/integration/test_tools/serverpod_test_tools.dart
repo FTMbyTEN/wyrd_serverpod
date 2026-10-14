@@ -2180,6 +2180,7 @@ class _ChatEndpoint {
     _ist.TestSessionBuilder sessionBuilder,
     String text, {
     List<String>? passages,
+    String? screen,
   }) async {
     return _ist.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -2195,6 +2196,7 @@ class _ChatEndpoint {
           parameters: _ist.testObjectToJson({
             'text': text,
             'passages': passages,
+            'screen': screen,
           }),
           serializationManager: _serializationManager,
         );
