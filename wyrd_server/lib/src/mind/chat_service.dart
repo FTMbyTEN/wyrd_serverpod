@@ -309,9 +309,15 @@ class ChatService {
     // the code path fails, fall through to it as a safety net, like Node.
     // the message as the model sees it: with their screen right beside it, where it can't be missed
     // (the conversation keeps only what they typed)
-    final asked = screen == null
+    // "play <one of their games>": launched here, before WYRD answers, so its reply says what really
+    // happened (left to the model, it sometimes said it had started something it never called)
+    final played = await CustomGames.playIfAsked(session, authUserId, text);
+    final asked0 = screen == null
         ? text
         : '$text\n\n[Their screen as they ask this -- you are on this page with them and can read it: $screen]';
+    final asked = played == null
+        ? asked0
+        : '$asked0\n\n[Already done for this message, by the app: ${played.$2} Reply to match that; do not call play_game or build_game for it again.]';
     final codeReply = isCode
         ? await CodeAgentService.reply(
             session,
@@ -433,7 +439,7 @@ class ChatService {
         );
       }
     }
-    final action = local?.action ?? toolReply?.action;
+    final action = played?.$1 ?? local?.action ?? toolReply?.action;
     // everything read goes into the person's library; the local brain has already recorded its own
     ReadingItem? readItem;
     for (final slice in reads) {

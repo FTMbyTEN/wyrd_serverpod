@@ -391,6 +391,34 @@ class CustomGames {
     );
   }
 
+  /// When [text] asks WYRD to play one of their games by name ("play Lagos Dodge", "WYRD, play my
+  /// trivia quiz"), [play] it now and return what happened; null for any other message.
+  static Future<(ChatAction?, String)?> playIfAsked(
+    Session session,
+    UuidValue user,
+    String text,
+  ) async {
+    final m = RegExp(
+      r'\bplay\b\s+(?:the\s+|my\s+)?(.+?)[.!?]*$',
+      caseSensitive: false,
+    ).firstMatch(text.trim());
+    if (m == null) return null;
+    final asked = m
+        .group(1)!
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+game$'), '')
+        .trim();
+    if (asked.isEmpty) return null;
+    final games = await mine(session, user);
+    final hit = games.where((g) {
+      final t = g.title.toLowerCase();
+      return t == asked || t.contains(asked) || asked.contains(t);
+    }).firstOrNull;
+    if (hit == null)
+      return null; // not one of theirs (chess, a song...): left to WYRD
+    return play(session, user, {'title': hit.title});
+  }
+
   static Future<void> delete(Session session, UuidValue user, int id) async {
     await CustomGame.db.deleteWhere(
       session,
