@@ -4,6 +4,8 @@ import 'dart:ui' show PlatformDispatcher, Brightness;
 import 'package:flutter/material.dart';
 
 import 'theme.dart';
+import 'widgets/frame/page_text_stub.dart'
+    if (dart.library.js_interop) 'widgets/frame/page_text_web.dart';
 
 /// A change WYRD made to the app (customize_app), applied as its reply arrives, as in the main
 /// app: day or night, the accent colour, the text size, or a place to open -- the shell listens to
@@ -29,12 +31,23 @@ List<T> inGamesOrder<T>(List<T> items, String Function(T) name) {
   return [for (final e in indexed) e.$2];
 }
 
-void applyCustomize(String json) {
+/// What WYRD changed before, back from this browser at start-up (main.dart).
+void restoreCustomize() {
+  for (final s in ['theme', 'accent', 'text_size', 'games_order']) {
+    final v = loadLocal('wyrd.custom.$s');
+    if (v != null)
+      applyCustomize(jsonEncode({'setting': s, 'value': v}), keep: false);
+  }
+}
+
+void applyCustomize(String json, {bool keep = true}) {
   try {
     final c = jsonDecode(json) as Map<String, dynamic>;
     final setting = c['setting'] as String? ?? '';
     final value = c['value'] as String? ?? '';
     // (games_order keeps the names' case for matching; everything else is lower case)
+    // kept in this browser, so the change is still there next visit (a place to open isn't)
+    if (keep && setting != 'open') saveLocal('wyrd.custom.$setting', value);
     switch (setting) {
       case 'theme':
         WyrdColors.night.value =

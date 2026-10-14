@@ -349,7 +349,11 @@ class ChatService {
           'your tasks and the city, so say plainly that you will remember it. When they ask you to forget something, '
           'call forget.',
       if (screen != null)
-        'Where they are in the app right now: $screen${screen.contains('Games') ? ' -- the games you programmed for them there: ${(await CustomGames.mine(session, authUserId)).map((g) => g.title).join(', ')}' : ''}. That is what they are looking at as they ask: you are on that '
+        'Where they are in the app right now: $screen${screen.contains('Games') ? ' -- the games you programmed for them there: ${(await CustomGames.mine(session, authUserId)).map((g) => '${g.title} (${g.status == 'building'
+                      ? 'still being built'
+                      : g.status == 'failed'
+                      ? 'build failed'
+                      : 'ready to play'})').join(', ')}' : ''}. That is what they are looking at as they ask: you are on that '
             'page with them, so answer about it directly -- never say you can\'t see their screen. Take "this", '
             '"here" and "it" to mean what is on it. When something on it looks wrong (a colour, a layout), say '
             'what you see and the likely cause plainly, and change what customize_app can. To change the app for them (light or dark, the accent colour, the text size, or '

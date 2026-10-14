@@ -60,7 +60,7 @@ class ChatEndpoint extends Endpoint {
       passages: parts.isEmpty ? null : parts,
       screen: screen == null || screen.trim().isEmpty
           ? null
-          : (screen.length > 4500 ? screen.substring(0, 4500) : screen),
+          : (screen.length > 10000 ? screen.substring(0, 10000) : screen),
     );
     return ChatReply(
       reply: result.reply,

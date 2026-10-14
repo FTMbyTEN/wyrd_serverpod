@@ -100,7 +100,7 @@ class AppTools {
         type: 'customize',
         html: jsonEncode({'setting': setting, 'value': value}),
       ),
-      'Done: $setting is set to $value in their app as you reply. Say so in a few words.',
+      'Done: $setting is set to $value in their app as you reply. Say so in a few words${setting == 'games_order' ? ', naming the new order from first to last' : ''}. Trust their screen over anything you remember.',
     );
   }
 

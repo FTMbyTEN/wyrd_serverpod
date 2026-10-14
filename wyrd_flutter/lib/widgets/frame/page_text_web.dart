@@ -8,5 +8,24 @@ String pageText() {
       .replaceAll(RegExp(r'[ \t]+'), ' ')
       .replaceAll(RegExp(r'\n\s*\n+'), '\n')
       .trim();
-  return text.length > 3500 ? text.substring(0, 3500) : text;
+  return text.length > 9000 ? text.substring(0, 9000) : text;
+}
+
+/// A setting kept in this browser between visits (what WYRD changed with customize_app).
+String? loadLocal(String key) {
+  try {
+    return web.window.localStorage.getItem(key);
+  } catch (_) {
+    return null;
+  }
+}
+
+void saveLocal(String key, String? value) {
+  try {
+    if (value == null) {
+      web.window.localStorage.removeItem(key);
+    } else {
+      web.window.localStorage.setItem(key, value);
+    }
+  } catch (_) {}
 }
