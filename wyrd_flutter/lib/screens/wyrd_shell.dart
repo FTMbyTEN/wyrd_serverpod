@@ -697,10 +697,10 @@ class _AskWyrd extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: WyrdColors.greenBorder),
           ),
-          child: const Semantics(
+          child: Semantics(
             label: 'Ask WYRD about this screen',
             button: true,
-            child: FaceMark(size: 40),
+            child: const FaceMark(size: 40),
           ),
         ),
       ),

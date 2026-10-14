@@ -12,7 +12,13 @@ import 'topic_service.dart';
 ///  - learn: keeps a method WYRD just found on the web (how to do or fix something it didn't know)
 ///    as a memory block, which its recall searches, so the next time it knows.
 class AppTools {
-  static const settings = {'theme', 'accent', 'text_size', 'open'};
+  static const settings = {
+    'theme',
+    'accent',
+    'text_size',
+    'open',
+    'games_order',
+  };
   static const places = {
     'wyrd', 'academy', 'games', 'journal', 'drone', 'you', //
     'tasks', 'alerts', 'cop', 'brain', 'globe',
@@ -24,14 +30,17 @@ class AppTools {
         'Change the app for them, or take them somewhere in it. setting "theme": value light, dark or auto. '
         'setting "accent": the accent colour as a hex like #2A7FFF (pick a fitting one when they name a colour). '
         'setting "text_size": small, normal, large or huge. setting "open": a place -- wyrd (home), academy, '
-        'games, journal, drone, you, tasks, alerts, cop, brain (BRAIN_3D) or globe. Call it whenever they ask '
+        'games, journal, drone, you, tasks, alerts, cop, brain (BRAIN_3D) or globe. setting "games_order": the '
+        'order of the game cards on the Games tab, as their names separated by commas, first card first (built-in: '
+        'Chess, Connect Four, Reversi, Tic-tac-toe, plus the games you programmed for them; any left out keep '
+        'their place after) -- choose the order yourself when they just say "rearrange". Call it whenever they ask '
         'for any of these; it is applied the moment you reply.',
     'input_schema': {
       'type': 'object',
       'properties': {
         'setting': {
           'type': 'string',
-          'enum': ['theme', 'accent', 'text_size', 'open'],
+          'enum': ['theme', 'accent', 'text_size', 'open', 'games_order'],
         },
         'value': {'type': 'string'},
       },
@@ -75,6 +84,7 @@ class AppTools {
       'accent' => RegExp(r'^#[0-9a-f]{6}$').hasMatch(value),
       'text_size' => {'small', 'normal', 'large', 'huge'}.contains(value),
       'open' => places.contains(value),
+      'games_order' => value.split(',').any((n) => n.trim().isNotEmpty),
       _ => false,
     };
     if (!ok) {

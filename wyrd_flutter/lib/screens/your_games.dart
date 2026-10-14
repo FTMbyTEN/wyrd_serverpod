@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
+import '../customize.dart';
 import '../theme.dart';
 import '../widgets/frame/frame_stub.dart'
     if (dart.library.js_interop) '../widgets/frame/frame_web.dart';
@@ -29,6 +30,7 @@ class _YourGamesState extends State<YourGames> {
   void initState() {
     super.initState();
     _load();
+    gamesOrder.addListener(_reorder); // WYRD rearranged the cards
     // WYRD writes a game in the background: look again every few seconds, so a new one appears
     // (and a building one turns playable) without leaving the page
     _poll = Timer.periodic(const Duration(seconds: 6), (_) => _load());
@@ -37,7 +39,12 @@ class _YourGamesState extends State<YourGames> {
   @override
   void dispose() {
     _poll?.cancel();
+    gamesOrder.removeListener(_reorder);
     super.dispose();
+  }
+
+  void _reorder() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _load() async {
@@ -297,7 +304,10 @@ class _YourGamesState extends State<YourGames> {
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: widget.columns == 1 ? 2.6 : 2.3,
-        children: [for (final g in _games) _card(g), _newGame()],
+        children: [
+          for (final g in inGamesOrder(_games, (g) => g.title)) _card(g),
+          _newGame(),
+        ],
       ),
     ],
   );

@@ -10,11 +10,31 @@ import 'theme.dart';
 /// [openRequest] and opens it.
 final openRequest = ValueNotifier<String?>(null);
 
+/// The order of the game cards WYRD was asked for (customize_app "games_order"), by name.
+final gamesOrder = ValueNotifier<List<String>>(const []);
+
+/// [items] in [gamesOrder]'s order; those it doesn't name keep their place after.
+List<T> inGamesOrder<T>(List<T> items, String Function(T) name) {
+  final order = [for (final n in gamesOrder.value) n.trim().toLowerCase()];
+  int rank(T t) {
+    final i = order.indexOf(name(t).toLowerCase());
+    return i < 0 ? order.length : i;
+  }
+
+  final indexed = [for (var i = 0; i < items.length; i++) (i, items[i])];
+  indexed.sort((a, b) {
+    final r = rank(a.$2).compareTo(rank(b.$2));
+    return r != 0 ? r : a.$1.compareTo(b.$1);
+  });
+  return [for (final e in indexed) e.$2];
+}
+
 void applyCustomize(String json) {
   try {
     final c = jsonDecode(json) as Map<String, dynamic>;
     final setting = c['setting'] as String? ?? '';
     final value = c['value'] as String? ?? '';
+    // (games_order keeps the names' case for matching; everything else is lower case)
     switch (setting) {
       case 'theme':
         WyrdColors.night.value =
@@ -32,6 +52,11 @@ void applyCustomize(String json) {
           'huge' => 1.25,
           _ => 1.0,
         };
+      case 'games_order':
+        gamesOrder.value = [
+          for (final n in value.split(','))
+            if (n.trim().isNotEmpty) n.trim(),
+        ];
       case 'open':
         openRequest.value = null;
         openRequest.value = value;

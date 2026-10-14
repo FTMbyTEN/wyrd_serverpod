@@ -8,6 +8,7 @@ import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
 import '../theme.dart';
+import '../customize.dart';
 import 'your_games.dart';
 
 /// Games against WYRD: chess, Connect Four, Reversi and Tic-tac-toe, rated, with WYRD's line on
@@ -67,6 +68,17 @@ class _GamesTabState extends State<GamesTab> {
   void initState() {
     super.initState();
     _loadRatings();
+    gamesOrder.addListener(_reorder); // WYRD rearranged the cards
+  }
+
+  @override
+  void dispose() {
+    gamesOrder.removeListener(_reorder);
+    super.dispose();
+  }
+
+  void _reorder() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadRatings() async {
@@ -126,7 +138,10 @@ class _GamesTabState extends State<GamesTab> {
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childAspectRatio: cols == 1 ? 3.2 : 3.0,
-            children: [for (final g in _games) _card(g)],
+            children: [
+              for (final g in inGamesOrder(_games.toList(), (g) => g.name))
+                _card(g),
+            ],
           ),
           const SizedBox(height: 22),
           YourGames(columns: cols),

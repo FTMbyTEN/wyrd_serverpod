@@ -1,3 +1,4 @@
+import '../games/custom_games.dart';
 import 'dart:math';
 
 import '../generated/protocol.dart';
@@ -342,7 +343,7 @@ class ChatService {
           'your tasks and the city, so say plainly that you will remember it. When they ask you to forget something, '
           'call forget.',
       if (screen != null)
-        'Where they are in the app right now: $screen. Take "this", "here" and "it" to mean what is on '
+        'Where they are in the app right now: $screen${screen.contains('Games') ? ' -- the games you programmed for them there: ${(await CustomGames.mine(session, authUserId)).map((g) => g.title).join(', ')}' : ''}. Take "this", "here" and "it" to mean what is on '
             'that screen. To change the app for them (light or dark, the accent colour, the text size, or '
             'taking them to a tab or panel), call customize_app.',
       curiosityHint,
