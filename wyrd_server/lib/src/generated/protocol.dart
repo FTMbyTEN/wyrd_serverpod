@@ -1284,6 +1284,24 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'String?',
         ),
         _isp.ColumnDefinition(
+          name: 'wyrdBest',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'wyrdRounds',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'wyrdParams',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
           name: 'createdAt',
           columnType: _isp.ColumnType.timestampWithoutTimeZone,
           isNullable: false,

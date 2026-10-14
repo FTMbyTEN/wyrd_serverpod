@@ -359,7 +359,7 @@ class ChatService {
                       ? 'still being built'
                       : g.status == 'failed'
                       ? 'build failed'
-                      : 'ready to play'})').join(', ')}' : ''}. That is what they are looking at as they ask: you are on that '
+                      : 'ready to play'}${g.wyrdRounds == null ? '' : '; your best ${g.wyrdBest} after ${g.wyrdRounds} rounds of practice'})').join(', ')}' : ''}. That is what they are looking at as they ask: you are on that '
             'page with them, so answer about it directly -- never say you can\'t see their screen. Take "this", '
             '"here" and "it" to mean what is on it. When something on it looks wrong (a colour, a layout), say '
             'what you see and the likely cause plainly, and change what customize_app can. To change the app for them (light or dark, the accent colour, the text size, or '

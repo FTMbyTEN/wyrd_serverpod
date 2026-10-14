@@ -496,6 +496,23 @@ class EndpointGames extends _isc.EndpointRef {
         {'id': id},
       );
 
+  /// A round WYRD played of one of their games, reported by the game: how WYRD learns to play it.
+  _ida.Future<_ipkxxgte.CustomGame?> wyrdRound(
+    int id,
+    int score,
+    String params,
+    String note,
+  ) => caller.callServerEndpoint<_ipkxxgte.CustomGame?>(
+    'games',
+    'wyrdRound',
+    {
+      'id': id,
+      'score': score,
+      'params': params,
+      'note': note,
+    },
+  );
+
   _ida.Future<List<_ibpm8r25.PlayerRating>> myRatings() =>
       caller.callServerEndpoint<List<_ibpm8r25.PlayerRating>>(
         'games',

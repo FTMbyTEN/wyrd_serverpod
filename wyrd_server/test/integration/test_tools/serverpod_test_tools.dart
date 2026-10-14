@@ -1342,6 +1342,76 @@ class _GamesEndpoint {
     });
   }
 
+  _ida.Future<_ii38qo08.CustomGame?> readyForWyrd(
+    _ist.TestSessionBuilder sessionBuilder,
+    int id,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'readyForWyrd',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'readyForWyrd',
+          parameters: _ist.testObjectToJson({'id': id}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ii38qo08.CustomGame?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_ii38qo08.CustomGame?> wyrdRound(
+    _ist.TestSessionBuilder sessionBuilder,
+    int id,
+    int score,
+    String params,
+    String note,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'games',
+            method: 'wyrdRound',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'games',
+          methodName: 'wyrdRound',
+          parameters: _ist.testObjectToJson({
+            'id': id,
+            'score': score,
+            'params': params,
+            'note': note,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _ida.Future<_ii38qo08.CustomGame?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _ida.Future<List<_ii8ozmxa.PlayerRating>> myRatings(
     _ist.TestSessionBuilder sessionBuilder,
   ) async {

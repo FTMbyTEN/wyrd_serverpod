@@ -7,6 +7,7 @@ import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
 import '../mind/claude.dart';
 import '../mind/llm_budget.dart';
+import '../mind/topic_service.dart';
 
 /// Games WYRD programs on request and keeps in the person's Games tab. Writing a whole game takes
 /// a minute or two -- longer than a chat request may stay open -- so build_game only starts it:
@@ -62,11 +63,26 @@ class CustomGames {
       'localStorage only inside try/catch. Sound only via WebAudio, started after the first tap. Draw '
       'everything with canvas or CSS shapes (emoji are fine). Check every rule and every code path in your '
       'head before you write: no placeholders, no TODOs, no unfinished features, no console errors. '
-      'WYRD PLAYS mode, required in every game: when window.WYRD_PLAYS is true at load, skip the title '
-      'screen and start at once with your own computer player at the controls, playing well and visibly '
-      '(steering, aiming, choosing moves, answering) at a human pace, with a small badge "WYRD IS PLAYING" '
-      'in a corner; when it loses or wins, start again after a few seconds. The moment the person presses a '
-      'key or taps, hand the controls to them (the badge goes) and play on normally.';
+      '$_learns';
+
+  /// How WYRD plays a game and learns from it, the same in a new game and in an add-on.
+  static const _learns =
+      'WYRD LEARNS mode, required: at load, read window.WYRD_LEARNS (when set, an object {best, rounds, '
+      'params}); when it is set, YOUR computer player plays the game while they watch, and learns. Its strategy '
+      'depends on a params object of 3 to 6 numeric knobs with sensible ranges (how far ahead it looks, how '
+      'early it reacts, how much risk it takes...); start from WYRD_LEARNS.params when given, else your '
+      'defaults. Start the game once, as a player would, then play: decide at most once every 120 ms and send '
+      'only the key or pointer events the game listens for (or call its own input functions). Never call, '
+      'repeat or speed up the game\'s update or draw loop, never change its timers or frame rate, and never '
+      'restart while a round is in progress -- the game must run exactly as it does for a person. When a '
+      'round ends (game over or win), send its result to the page that holds the game: '
+      'parent.postMessage({wyrdRound: {score, params, note}}, "*") -- score a number from the game, note a '
+      'short plain line on what ended it ("hit a truck in the left lane at speed 7"). Then learn: keep the '
+      'params of your best round so far and try a small random change of them for the next round (hill '
+      'climbing), and start the next round after 2 seconds. Show a small fixed badge in a corner: "WYRD IS '
+      'PLAYING · round N · best X" (N counting on from WYRD_LEARNS.rounds, X the best including '
+      'WYRD_LEARNS.best). The moment a real person presses a key or taps (event.isTrusted), stop playing for '
+      'good (no more inputs, no restarts) and remove the badge. Never throw: wrap all of it in try/catch.';
 
   /// The spec that means "add the WYRD PLAYS mode to this game", written as an add-on script
   /// instead of rewriting the whole game (a big game is too long to write out again).
@@ -77,14 +93,8 @@ class CustomGames {
       'end of its <body>: it must not change or repeat any of the game. Reply with ONLY that <script>...</script>.';
 
   static const _playAddOn =
-      'Write the <script> that adds the WYRD PLAYS mode to this game. When window.WYRD_PLAYS is true: start '
-      'the game at once (skip or click through the title screen, the same way a player would start it), then '
-      'play it with a computer player that reads the game\'s real state (its variables, the DOM or the canvas '
-      'logic it uses) and sends the inputs a player would (dispatch the same key or pointer events the game '
-      'listens for, or call its own functions), playing well at a human pace. Show a small fixed badge '
-      '"WYRD IS PLAYING" in a corner. When a round ends, start again after a few seconds. The moment a real '
-      'person presses a key or taps (event.isTrusted), stop playing, remove the badge and leave the controls '
-      'to them. Never throw: wrap everything in try/catch.';
+      'Write the <script> that adds the WYRD LEARNS mode to this game. Your computer player reads the '
+      'game\'s real state (its variables, the DOM or the canvas logic it uses). $_learns';
 
   /// [game] with WYRD's add-on script spliced in before </body>, or null if [reply] holds no usable script.
   static String? withPlayAddOn(String game, String reply) {
@@ -92,8 +102,10 @@ class CustomGames {
     final start = lower.indexOf('<script');
     final end = lower.lastIndexOf('</script>');
     if (start < 0 || end < start) return null;
-    final script = reply.substring(start, end + 9);
-    if (!script.contains('WYRD_PLAYS')) return null;
+    final script = reply
+        .substring(start, end + 9)
+        .replaceFirst('<script', '<script data-wyrd-learns');
+    if (!script.contains('WYRD_LEARNS')) return null;
     final body = game.toLowerCase().lastIndexOf('</body>');
     return body < 0
         ? '$game\n$script'
@@ -158,7 +170,7 @@ class CustomGames {
         session.passwords['anthropicApiKey'] ?? '',
         // adding WYRD's play mode to an existing game is an add-on, never a whole rewrite
         previous.isNotEmpty &&
-                !previous.contains('WYRD_PLAYS') &&
+                !previous.contains('WYRD_LEARNS') &&
                 RegExp(
                   r'wyrd.?plays|play.?mode',
                   caseSensitive: false,
@@ -323,11 +335,19 @@ class CustomGames {
     },
   };
 
-  static const playMark = 'window.WYRD_PLAYS=true';
-
-  /// [html] with WYRD at the controls from the moment it loads.
-  static String withWyrdPlaying(String html) {
-    const flag = '<script>$playMark</script>';
+  /// [html] with WYRD at the controls from the moment it loads, starting from what it learned
+  /// before ([game]'s best, rounds and strategy).
+  static String withWyrdPlaying(String html, [CustomGame? game]) {
+    Object? params;
+    try {
+      params = game?.wyrdParams == null ? null : jsonDecode(game!.wyrdParams!);
+    } catch (_) {}
+    final learned = jsonEncode({
+      'best': game?.wyrdBest ?? 0,
+      'rounds': game?.wyrdRounds ?? 0,
+      'params': params,
+    }).replaceAll('<', r'\u003c');
+    final flag = '<script>window.WYRD_LEARNS=$learned</script>';
     final head = html.toLowerCase().indexOf('<head>');
     return head < 0
         ? '$flag$html'
@@ -363,8 +383,8 @@ class CustomGames {
         '"${game.title}" is not ready to play yet (${game.status ?? 'empty'}).',
       );
     }
-    if (!game.html.contains('WYRD_PLAYS')) {
-      // programmed before WYRD could play: add the mode now, as an add-on, in the background
+    if (!game.html.contains('WYRD_LEARNS')) {
+      // programmed before WYRD could play and learn: add the mode now, as an add-on, in the background
       await CustomGame.db.updateRow(
         session,
         game.copyWith(status: 'building', updatedAt: DateTime.now().toUtc()),
@@ -379,13 +399,13 @@ class CustomGames {
       );
       return (
         null,
-        '"${game.title}" had no WYRD PLAYS mode yet, so you are adding it now (about a minute; its tile '
+        '"${game.title}" had no WYRD LEARNS mode yet, so you are adding it now (about a minute; its tile '
             'shows "programming" until then). Tell them that, and that when it is ready they can tap WATCH '
             'WYRD PLAY on its tile or ask you again. Do not claim it is ready.',
       );
     }
     return (
-      ChatAction(type: 'preview_app', html: withWyrdPlaying(game.html)),
+      ChatAction(type: 'preview_app', html: withWyrdPlaying(game.html, game)),
       '"${game.title}" is open full screen with you at the controls. Say in a sentence that you are '
           'playing and that they can take over any time by pressing a key or tapping.',
     );
@@ -403,9 +423,54 @@ class CustomGames {
       where: (g) => g.id.equals(id) & g.authUserId.equals(user),
     );
     if (game == null) return null;
-    if (game.status != null || game.html.contains('WYRD_PLAYS')) return game;
+    if (game.status != null || game.html.contains('WYRD_LEARNS')) return game;
     await play(session, user, {'title': game.title}); // starts the add-on
     return CustomGame.db.findById(session, id);
+  }
+
+  /// One round WYRD played of [id] (sent by the game through the app): counted, and when it beats
+  /// WYRD's best, its strategy is kept to start the next session from, and WYRD remembers it got better.
+  static Future<CustomGame?> recordRound(
+    Session session,
+    UuidValue user,
+    int id,
+    int score,
+    String params,
+    String note,
+  ) async {
+    final game = await CustomGame.db.findFirstRow(
+      session,
+      where: (g) => g.id.equals(id) & g.authUserId.equals(user),
+    );
+    if (game == null) return null;
+    final rounds = (game.wyrdRounds ?? 0) + 1;
+    final best = game.wyrdBest;
+    final better = best == null || score > best;
+    final kept = params.length > 2000 ? null : params;
+    final updated = await CustomGame.db.updateRow(
+      session,
+      game.copyWith(
+        wyrdRounds: rounds,
+        wyrdBest: better ? score : best,
+        wyrdParams: better && kept != null ? kept : game.wyrdParams,
+      ),
+    );
+    if (better && best != null) {
+      final why = note.trim().isEmpty ? '' : ' Last round: ${note.trim()}.';
+      await MemoryBlock.db.insertRow(
+        session,
+        MemoryBlock(
+          timestamp: DateTime.now().toUtc(),
+          source: 'self',
+          title: 'Getting better at ${game.title}',
+          extract:
+              'My best at ${game.title} is now $score (it was $best), after $rounds rounds of practice.$why',
+          topics: TopicService.extractTopics(game.title),
+          ownerId: user,
+        ),
+      );
+    }
+    return updated;
   }
 
   /// When [text] asks WYRD to play one of their games by name ("play Lagos Dodge", "WYRD, play my

@@ -14,6 +14,8 @@ Widget sandboxFrame({
   String? pythonCode,
   required double height,
   void Function(double)? onHeight,
+  // a round WYRD played in the game (its WYRD LEARNS mode posts {wyrdRound: {score, params, note}})
+  void Function(Map<dynamic, dynamic> round)? onWyrdRound,
 }) {
   final viewType = 'wyrd-frame-$key';
   if (_registered.add(viewType)) {
@@ -39,6 +41,13 @@ Widget sandboxFrame({
         });
       } else {
         f.srcdoc = (html ?? '').toJS;
+        if (onWyrdRound != null) {
+          web.window.onMessage.listen((e) {
+            final d = e.data.dartify();
+            if (d is Map && d['wyrdRound'] is Map)
+              onWyrdRound(d['wyrdRound'] as Map);
+          });
+        }
       }
       return f;
     });

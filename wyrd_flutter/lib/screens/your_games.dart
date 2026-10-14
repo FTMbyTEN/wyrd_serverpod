@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -77,7 +78,7 @@ class _YourGamesState extends State<YourGames> {
   /// WATCH WYRD PLAY: straight in if the game has WYRD's play mode; else it's added (the tile shows
   /// "programming" for a minute, then the same button plays).
   Future<void> _watchWyrd(CustomGame g) async {
-    if (g.html.contains('WYRD_PLAYS')) {
+    if (g.html.contains('WYRD_LEARNS')) {
       _play(g, wyrd: true);
       return;
     }
@@ -88,6 +89,20 @@ class _YourGamesState extends State<YourGames> {
           () => _games = [for (final c in _games) c.id == next.id ? next : c],
         );
       }
+    } catch (_) {}
+  }
+
+  Future<void> _round(CustomGame g, Map<dynamic, dynamic> r) async {
+    final score = r['score'];
+    if (score is! num || !score.isFinite) return;
+    final note = '${r['note'] ?? ''}';
+    try {
+      await client.games.wyrdRound(
+        g.id!,
+        score.round(),
+        jsonEncode(r['params'] ?? {}),
+        note.length > 300 ? note.substring(0, 300) : note,
+      );
     } catch (_) {}
   }
 
@@ -103,9 +118,20 @@ class _YourGamesState extends State<YourGames> {
     }
   }
 
-  /// [html] with WYRD at the controls from the moment it loads (the game's WYRD PLAYS mode).
-  static String _wyrdPlaying(String html) {
-    const flag = '<script>window.WYRD_PLAYS=true</script>';
+  /// [g]'s game with WYRD at the controls from the moment it loads (its WYRD LEARNS mode), starting
+  /// from what it learned before: its best, its rounds and its best strategy.
+  static String _wyrdPlaying(CustomGame g) {
+    final html = g.html;
+    Object? params;
+    try {
+      params = g.wyrdParams == null ? null : jsonDecode(g.wyrdParams!);
+    } catch (_) {}
+    final learned = jsonEncode({
+      'best': g.wyrdBest ?? 0,
+      'rounds': g.wyrdRounds ?? 0,
+      'params': params,
+    }).replaceAll('<', r'\u003c');
+    final flag = '<script>window.WYRD_LEARNS=$learned</script>';
     final i = html.toLowerCase().indexOf('<head>');
     return i < 0
         ? '$flag$html'
@@ -125,7 +151,9 @@ class _YourGamesState extends State<YourGames> {
           builder: (_, c) => sandboxFrame(
             key:
                 'game-${g.id}-${g.updatedAt.millisecondsSinceEpoch}${wyrd ? '-wyrd' : ''}',
-            html: wyrd ? _wyrdPlaying(g.html) : g.html,
+            html: wyrd ? _wyrdPlaying(g) : g.html,
+            // each round WYRD plays goes to the server, which keeps its best and its strategy
+            onWyrdRound: wyrd ? (r) => _round(g, r) : null,
             height: c.maxHeight,
           ),
         ),
@@ -274,7 +302,9 @@ class _YourGamesState extends State<YourGames> {
                       : [
                           // the game's own WYRD PLAYS mode: WYRD at the controls, you watching
                           _chip(
-                            'WATCH WYRD PLAY',
+                            g.wyrdRounds == null
+                                ? 'WATCH WYRD PLAY'
+                                : 'WATCH WYRD PLAY · BEST ${g.wyrdBest}',
                             () => _watchWyrd(g),
                             color: WyrdColors.signal,
                           ),

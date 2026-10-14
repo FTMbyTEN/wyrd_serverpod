@@ -23,6 +23,9 @@ abstract class CustomGame
     required this.blurb,
     required this.html,
     this.status,
+    this.wyrdBest,
+    this.wyrdRounds,
+    this.wyrdParams,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -34,6 +37,9 @@ abstract class CustomGame
     required String blurb,
     required String html,
     String? status,
+    int? wyrdBest,
+    int? wyrdRounds,
+    String? wyrdParams,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _CustomGameImpl;
@@ -48,6 +54,9 @@ abstract class CustomGame
       blurb: jsonSerialization['blurb'] as String,
       html: jsonSerialization['html'] as String,
       status: jsonSerialization['status'] as String?,
+      wyrdBest: jsonSerialization['wyrdBest'] as int?,
+      wyrdRounds: jsonSerialization['wyrdRounds'] as int?,
+      wyrdParams: jsonSerialization['wyrdParams'] as String?,
       createdAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -72,6 +81,12 @@ abstract class CustomGame
 
   String? status;
 
+  int? wyrdBest;
+
+  int? wyrdRounds;
+
+  String? wyrdParams;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -86,6 +101,9 @@ abstract class CustomGame
     String? blurb,
     String? html,
     String? status,
+    int? wyrdBest,
+    int? wyrdRounds,
+    String? wyrdParams,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -99,6 +117,9 @@ abstract class CustomGame
       'blurb': blurb,
       'html': html,
       if (status != null) 'status': status,
+      if (wyrdBest != null) 'wyrdBest': wyrdBest,
+      if (wyrdRounds != null) 'wyrdRounds': wyrdRounds,
+      if (wyrdParams != null) 'wyrdParams': wyrdParams,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -114,6 +135,9 @@ abstract class CustomGame
       'blurb': blurb,
       'html': html,
       if (status != null) 'status': status,
+      if (wyrdBest != null) 'wyrdBest': wyrdBest,
+      if (wyrdRounds != null) 'wyrdRounds': wyrdRounds,
+      if (wyrdParams != null) 'wyrdParams': wyrdParams,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -135,6 +159,9 @@ class _CustomGameImpl extends CustomGame {
     required String blurb,
     required String html,
     String? status,
+    int? wyrdBest,
+    int? wyrdRounds,
+    String? wyrdParams,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -144,6 +171,9 @@ class _CustomGameImpl extends CustomGame {
          blurb: blurb,
          html: html,
          status: status,
+         wyrdBest: wyrdBest,
+         wyrdRounds: wyrdRounds,
+         wyrdParams: wyrdParams,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -159,6 +189,9 @@ class _CustomGameImpl extends CustomGame {
     String? blurb,
     String? html,
     Object? status = _Undefined,
+    Object? wyrdBest = _Undefined,
+    Object? wyrdRounds = _Undefined,
+    Object? wyrdParams = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -169,6 +202,9 @@ class _CustomGameImpl extends CustomGame {
       blurb: blurb ?? this.blurb,
       html: html ?? this.html,
       status: status is String? ? status : this.status,
+      wyrdBest: wyrdBest is int? ? wyrdBest : this.wyrdBest,
+      wyrdRounds: wyrdRounds is int? ? wyrdRounds : this.wyrdRounds,
+      wyrdParams: wyrdParams is String? ? wyrdParams : this.wyrdParams,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -34,6 +34,22 @@ class GamesEndpoint extends Endpoint {
   Future<CustomGame?> readyForWyrd(Session session, int id) =>
       CustomGames.readyForWyrd(session, _user(session), id);
 
+  /// A round WYRD played of one of their games, reported by the game: how WYRD learns to play it.
+  Future<CustomGame?> wyrdRound(
+    Session session,
+    int id,
+    int score,
+    String params,
+    String note,
+  ) => CustomGames.recordRound(
+    session,
+    _user(session),
+    id,
+    score.clamp(-1000000000, 1000000000),
+    params,
+    note.length > 300 ? note.substring(0, 300) : note,
+  );
+
   Future<List<PlayerRating>> myRatings(Session session) =>
       GameService.myRatings(session, _user(session));
 

@@ -23,6 +23,9 @@ abstract class CustomGame
     required this.blurb,
     required this.html,
     this.status,
+    this.wyrdBest,
+    this.wyrdRounds,
+    this.wyrdParams,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -34,6 +37,9 @@ abstract class CustomGame
     required String blurb,
     required String html,
     String? status,
+    int? wyrdBest,
+    int? wyrdRounds,
+    String? wyrdParams,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _CustomGameImpl;
@@ -48,6 +54,9 @@ abstract class CustomGame
       blurb: jsonSerialization['blurb'] as String,
       html: jsonSerialization['html'] as String,
       status: jsonSerialization['status'] as String?,
+      wyrdBest: jsonSerialization['wyrdBest'] as int?,
+      wyrdRounds: jsonSerialization['wyrdRounds'] as int?,
+      wyrdParams: jsonSerialization['wyrdParams'] as String?,
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -74,6 +83,12 @@ abstract class CustomGame
 
   String? status;
 
+  int? wyrdBest;
+
+  int? wyrdRounds;
+
+  String? wyrdParams;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -91,6 +106,9 @@ abstract class CustomGame
     String? blurb,
     String? html,
     String? status,
+    int? wyrdBest,
+    int? wyrdRounds,
+    String? wyrdParams,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -104,6 +122,9 @@ abstract class CustomGame
       'blurb': blurb,
       'html': html,
       if (status != null) 'status': status,
+      if (wyrdBest != null) 'wyrdBest': wyrdBest,
+      if (wyrdRounds != null) 'wyrdRounds': wyrdRounds,
+      if (wyrdParams != null) 'wyrdParams': wyrdParams,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -119,6 +140,9 @@ abstract class CustomGame
       'blurb': blurb,
       'html': html,
       if (status != null) 'status': status,
+      if (wyrdBest != null) 'wyrdBest': wyrdBest,
+      if (wyrdRounds != null) 'wyrdRounds': wyrdRounds,
+      if (wyrdParams != null) 'wyrdParams': wyrdParams,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -162,6 +186,9 @@ class _CustomGameImpl extends CustomGame {
     required String blurb,
     required String html,
     String? status,
+    int? wyrdBest,
+    int? wyrdRounds,
+    String? wyrdParams,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -171,6 +198,9 @@ class _CustomGameImpl extends CustomGame {
          blurb: blurb,
          html: html,
          status: status,
+         wyrdBest: wyrdBest,
+         wyrdRounds: wyrdRounds,
+         wyrdParams: wyrdParams,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -186,6 +216,9 @@ class _CustomGameImpl extends CustomGame {
     String? blurb,
     String? html,
     Object? status = _Undefined,
+    Object? wyrdBest = _Undefined,
+    Object? wyrdRounds = _Undefined,
+    Object? wyrdParams = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -196,6 +229,9 @@ class _CustomGameImpl extends CustomGame {
       blurb: blurb ?? this.blurb,
       html: html ?? this.html,
       status: status is String? ? status : this.status,
+      wyrdBest: wyrdBest is int? ? wyrdBest : this.wyrdBest,
+      wyrdRounds: wyrdRounds is int? ? wyrdRounds : this.wyrdRounds,
+      wyrdParams: wyrdParams is String? ? wyrdParams : this.wyrdParams,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -229,6 +265,21 @@ class CustomGameUpdateTable extends _is.UpdateTable<CustomGameTable> {
 
   _is.ColumnValue<String, String> status(String? value) => _is.ColumnValue(
     table.status,
+    value,
+  );
+
+  _is.ColumnValue<int, int> wyrdBest(int? value) => _is.ColumnValue(
+    table.wyrdBest,
+    value,
+  );
+
+  _is.ColumnValue<int, int> wyrdRounds(int? value) => _is.ColumnValue(
+    table.wyrdRounds,
+    value,
+  );
+
+  _is.ColumnValue<String, String> wyrdParams(String? value) => _is.ColumnValue(
+    table.wyrdParams,
     value,
   );
 
@@ -268,6 +319,18 @@ class CustomGameTable extends _is.Table<int?> {
       'status',
       this,
     );
+    wyrdBest = _is.ColumnInt(
+      'wyrdBest',
+      this,
+    );
+    wyrdRounds = _is.ColumnInt(
+      'wyrdRounds',
+      this,
+    );
+    wyrdParams = _is.ColumnString(
+      'wyrdParams',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -290,6 +353,12 @@ class CustomGameTable extends _is.Table<int?> {
 
   late final _is.ColumnString status;
 
+  late final _is.ColumnInt wyrdBest;
+
+  late final _is.ColumnInt wyrdRounds;
+
+  late final _is.ColumnString wyrdParams;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime updatedAt;
@@ -302,6 +371,9 @@ class CustomGameTable extends _is.Table<int?> {
     blurb,
     html,
     status,
+    wyrdBest,
+    wyrdRounds,
+    wyrdParams,
     createdAt,
     updatedAt,
   ];

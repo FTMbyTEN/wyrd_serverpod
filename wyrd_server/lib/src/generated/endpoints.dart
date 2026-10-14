@@ -822,6 +822,43 @@ class Endpoints extends _is.EndpointDispatch {
                     params['id'],
                   ),
         ),
+        'wyrdRound': _is.MethodConnector(
+          name: 'wyrdRound',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'score': _is.ParameterDescription(
+              name: 'score',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'params': _is.ParameterDescription(
+              name: 'params',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).wyrdRound(
+                    session,
+                    params['id'],
+                    params['score'],
+                    params['params'],
+                    params['note'],
+                  ),
+        ),
         'myRatings': _is.MethodConnector(
           name: 'myRatings',
           params: {},

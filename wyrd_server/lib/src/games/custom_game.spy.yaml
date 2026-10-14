@@ -9,6 +9,11 @@ fields:
   blurb: String # a line on its tile: what it is and how to play
   html: String # empty while WYRD is still writing it
   status: String? # building, failed, or null when it is ready to play
+  # WYRD learning to play it (WYRD LEARNS): its best score, the rounds it has played, and the
+  # strategy knobs (JSON) of its best round, which the next session starts from
+  wyrdBest: int?
+  wyrdRounds: int?
+  wyrdParams: String?
   createdAt: DateTime
   updatedAt: DateTime
 

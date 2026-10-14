@@ -30,6 +30,7 @@ games:
   - myGames:
   - deleteGame:
   - readyForWyrd:
+  - wyrdRound:
   - myRatings:
   - leaderboard:
   - active:

@@ -8,10 +8,10 @@ void main() {
     final played = CustomGames.withWyrdPlaying(game);
     expect(
       played,
-      contains('<head><script>window.WYRD_PLAYS=true</script><title>'),
+      contains('<head><script>window.WYRD_LEARNS={"best":0,"rounds":0,"params":null}</script><title>'),
     );
     expect(
-      played.indexOf('WYRD_PLAYS=true'),
+      played.indexOf("WYRD_LEARNS="),
       lessThan(played.indexOf('bot()')),
     );
     expect(CustomGames.playGameTool['name'], 'play_game');
