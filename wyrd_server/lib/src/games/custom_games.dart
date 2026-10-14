@@ -61,7 +61,12 @@ class CustomGames {
       'keys and space from scrolling. Storage may throw there: keep a best score in memory, or in '
       'localStorage only inside try/catch. Sound only via WebAudio, started after the first tap. Draw '
       'everything with canvas or CSS shapes (emoji are fine). Check every rule and every code path in your '
-      'head before you write: no placeholders, no TODOs, no unfinished features, no console errors.';
+      'head before you write: no placeholders, no TODOs, no unfinished features, no console errors. '
+      'WYRD PLAYS mode, required in every game: when window.WYRD_PLAYS is true at load, skip the title '
+      'screen and start at once with your own computer player at the controls, playing well and visibly '
+      '(steering, aiming, choosing moves, answering) at a human pace, with a small badge "WYRD IS PLAYING" '
+      'in a corner; when it loses or wins, start again after a few seconds. The moment the person presses a '
+      'key or taps, hand the controls to them (the badge goes) and play on normally.';
 
   /// Starts building (or rebuilding by title) and returns what the model is told.
   static Future<String> startBuild(
@@ -255,6 +260,77 @@ class CustomGames {
               )
             : g,
     ];
+  }
+
+  /// A game with WYRD at its controls: the game's own WYRD PLAYS mode, switched on before it loads.
+  static const playGameTool = {
+    'name': 'play_game',
+    'description':
+        'Launch one of the games you programmed for them, full screen, with YOU playing it (its WYRD PLAYS '
+        'mode) while they watch; they can take the controls at any moment. Use it when they ask you to play '
+        'a game, show them how it plays, or play against yourself. Give the game\'s title.',
+    'input_schema': {
+      'type': 'object',
+      'properties': {
+        'title': {'type': 'string'},
+      },
+      'required': ['title'],
+    },
+  };
+
+  static const playMark = 'window.WYRD_PLAYS=true';
+
+  /// [html] with WYRD at the controls from the moment it loads.
+  static String withWyrdPlaying(String html) {
+    const flag = '<script>$playMark</script>';
+    final head = html.toLowerCase().indexOf('<head>');
+    return head < 0
+        ? '$flag$html'
+        : '${html.substring(0, head + 6)}$flag${html.substring(head + 6)}';
+  }
+
+  /// The action that opens the game with WYRD playing, or why it can't yet.
+  static Future<(ChatAction?, String)> play(
+    Session session,
+    UuidValue user,
+    Map<String, dynamic> input,
+  ) async {
+    final title = (input['title'] as String? ?? '').trim();
+    final games = await mine(session, user);
+    final game = games
+        .where((g) => g.title.toLowerCase() == title.toLowerCase())
+        .followedBy(
+          games.where(
+            (g) => g.title.toLowerCase().contains(title.toLowerCase()),
+          ),
+        )
+        .firstOrNull;
+    if (game == null) {
+      return (
+        null,
+        'They have no game called "$title". Their games: ${games.map((g) => g.title).join(', ')}. '
+            'If they want a new one, build it with build_game.',
+      );
+    }
+    if (game.status != null || game.html.isEmpty) {
+      return (
+        null,
+        '"${game.title}" is not ready to play yet (${game.status ?? 'empty'}).',
+      );
+    }
+    if (!game.html.contains('WYRD_PLAYS')) {
+      return (
+        null,
+        '"${game.title}" was programmed before you could play your own games, so it has no WYRD PLAYS '
+            'mode. Offer to add it: call build_game with the same title and the spec "add the WYRD PLAYS '
+            'mode" (a minute or two), then they can ask you to play it.',
+      );
+    }
+    return (
+      ChatAction(type: 'preview_app', html: withWyrdPlaying(game.html)),
+      '"${game.title}" is open full screen with you at the controls. Say in a sentence that you are '
+          'playing and that they can take over any time by pressing a key or tapping.',
+    );
   }
 
   static Future<void> delete(Session session, UuidValue user, int id) async {

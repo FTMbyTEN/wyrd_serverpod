@@ -168,6 +168,7 @@ class CodeAgentService {
                   tools: [
                     _previewAppTool,
                     CustomGames.buildGameTool,
+                    CustomGames.playGameTool,
                     VisualTools.showVisual,
                     VisualTools.drawPicture,
                     VisualTools.runPython,
@@ -212,6 +213,20 @@ class CodeAgentService {
               'tool_use_id': block['id'],
               'content':
                   'The saved app is open again, live in their interface.',
+            });
+            continue;
+          }
+          if (block['name'] == 'play_game') {
+            final (a, told) = await CustomGames.play(
+              session,
+              authUserId,
+              block['input'] as Map<String, dynamic>? ?? {},
+            );
+            if (a != null) pendingAction = a;
+            toolResults.add({
+              'type': 'tool_result',
+              'tool_use_id': block['id'],
+              'content': told,
             });
             continue;
           }

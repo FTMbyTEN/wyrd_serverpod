@@ -279,6 +279,7 @@ class ChatToolService {
     VisualTools.drawPicture,
     VisualTools.runPython,
     CustomGames.buildGameTool,
+    CustomGames.playGameTool,
     AppTools.customizeTool,
     AppTools.learnTool,
     _webSearchTool,
@@ -464,6 +465,21 @@ class ChatToolService {
               // a change to their app (theme, accent, text size, a place), or a method learned from the web
               if (AppTools.names.contains(name)) {
                 final (a, told) = await AppTools.use(session, name, input);
+                if (a != null) pendingAction = a;
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': told,
+                });
+                continue;
+              }
+              // a game of theirs, opened with WYRD at the controls
+              if (name == 'play_game') {
+                final (a, told) = await CustomGames.play(
+                  session,
+                  authUserId,
+                  input,
+                );
                 if (a != null) pendingAction = a;
                 toolResults.add({
                   'type': 'tool_result',

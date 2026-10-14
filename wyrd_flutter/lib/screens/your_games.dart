@@ -86,7 +86,16 @@ class _YourGamesState extends State<YourGames> {
     }
   }
 
-  void _play(CustomGame g) => Navigator.of(context).push(
+  /// [html] with WYRD at the controls from the moment it loads (the game's WYRD PLAYS mode).
+  static String _wyrdPlaying(String html) {
+    const flag = '<script>window.WYRD_PLAYS=true</script>';
+    final i = html.toLowerCase().indexOf('<head>');
+    return i < 0
+        ? '$flag$html'
+        : '${html.substring(0, i + 6)}$flag${html.substring(i + 6)}';
+  }
+
+  void _play(CustomGame g, {bool wyrd = false}) => Navigator.of(context).push(
     MaterialPageRoute(
       fullscreenDialog: true,
       builder: (_) => Scaffold(
@@ -97,8 +106,9 @@ class _YourGamesState extends State<YourGames> {
         ),
         body: LayoutBuilder(
           builder: (_, c) => sandboxFrame(
-            key: 'game-${g.id}-${g.updatedAt.millisecondsSinceEpoch}',
-            html: g.html,
+            key:
+                'game-${g.id}-${g.updatedAt.millisecondsSinceEpoch}${wyrd ? '-wyrd' : ''}',
+            html: wyrd ? _wyrdPlaying(g.html) : g.html,
             height: c.maxHeight,
           ),
         ),
@@ -245,6 +255,15 @@ class _YourGamesState extends State<YourGames> {
                           _chip('KEEP', () => setState(() => _confirm = null)),
                         ]
                       : [
+                          // the game's own WYRD PLAYS mode: WYRD at the controls, you watching
+                          if (g.html.contains('WYRD_PLAYS')) ...[
+                            _chip(
+                              'WATCH WYRD PLAY',
+                              () => _play(g, wyrd: true),
+                              color: WyrdColors.signal,
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           _chip(
                             'CHANGE IT',
                             () => _ask('Change my game "${g.title}": '),
