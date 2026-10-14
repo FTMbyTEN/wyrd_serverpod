@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../client.dart';
 import '../customize.dart';
+import '../widgets/frame/page_text_stub.dart'
+    if (dart.library.js_interop) '../widgets/frame/page_text_web.dart';
 import '../theme.dart';
 import '../widgets/kept_card.dart';
 import '../widgets/wyrd_markdown.dart';
@@ -15,15 +17,26 @@ class DialogueScreen extends StatefulWidget {
   final bool embedded; // inside a glass panel: no page header
   // where they are in the app (told to WYRD with each message, so it knows what "this" is)
   final String? screen;
+  // the words on the page they opened Dialogue Link from, read just before it opened (a pop-up
+  // hides the page beneath it from the accessibility tree)
+  final String? page;
   const DialogueScreen({
     super.key,
     this.prompt,
     this.embedded = false,
     this.screen,
+    this.page,
   });
 
   @override
   State<DialogueScreen> createState() => _DialogueScreenState();
+}
+
+/// Where they are, light or dark, and the words on their screen as they send.
+String _describe(String? screen, String? page) {
+  final seen = page ?? pageText();
+  return '${screen ?? 'the app'}. The app is in ${WyrdColors.dark ? 'dark' : 'light'} mode.'
+      '${seen.isEmpty ? '' : ' The text on their screen right now:\n$seen'}';
 }
 
 class _Line {
@@ -79,6 +92,8 @@ class _DialogueScreenState extends State<DialogueScreen> {
     } catch (_) {}
   }
 
+  String _withPage() => _describe(widget.screen, widget.page);
+
   Future<void> _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
@@ -90,7 +105,7 @@ class _DialogueScreenState extends State<DialogueScreen> {
     try {
       final reply = await client.chat.sendMessage(
         text,
-        screen: widget.screen,
+        screen: _withPage(),
       );
       final a = reply.action;
       // a change WYRD made to the app (customize_app) is applied, not shown as a card

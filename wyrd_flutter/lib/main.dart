@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'client.dart';
@@ -10,6 +11,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeClient();
   runApp(const WyrdApp());
+  // the accessibility tree, mirrored into the web page: screen readers use it, and WYRD reads
+  // the words on the screen from it when asked about the page (page_text_web.dart)
+  SemanticsBinding.instance.ensureSemantics();
 }
 
 class WyrdApp extends StatelessWidget {

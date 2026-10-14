@@ -10,6 +10,8 @@ import '../widgets/frame/frame_stub.dart'
     if (dart.library.js_interop) '../widgets/frame/frame_web.dart';
 import '../widgets/glass_panel.dart';
 import 'dialogue_screen.dart';
+import '../widgets/frame/page_text_stub.dart'
+    if (dart.library.js_interop) '../widgets/frame/page_text_web.dart';
 
 /// YOUR GAMES: the games WYRD programmed on request (save_game), as in the main app. Each plays
 /// full screen in a sandboxed frame; "+ New game" opens Dialogue Link with the request drafted.
@@ -61,7 +63,13 @@ class _YourGamesState extends State<YourGames> {
       icon: Icons.forum_outlined,
       side: GlassSide.right,
       maxWidth: 760,
-      child: DialogueScreen(prompt: draft, embedded: true),
+      child: DialogueScreen(
+        prompt: draft,
+        embedded: true,
+        page: pageText(),
+        screen:
+            'the Games tab (chess, Connect Four, Reversi, Tic-tac-toe, leaderboard, and YOUR GAMES that WYRD programmed for them)',
+      ),
     );
     _load(); // a game WYRD just made shows straight away
   }

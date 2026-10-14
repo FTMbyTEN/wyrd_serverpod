@@ -8,6 +8,8 @@ import 'package:wyrd_client/wyrd_client.dart';
 import '../client.dart';
 import '../customize.dart';
 import 'dialogue_screen.dart';
+import '../widgets/frame/page_text_stub.dart'
+    if (dart.library.js_interop) '../widgets/frame/page_text_web.dart';
 import '../theme.dart';
 import '../widgets/glass_panel.dart';
 import 'alerts_panel.dart';
@@ -99,7 +101,11 @@ class _WyrdShellState extends State<WyrdShell> {
     icon: Icons.forum_outlined,
     side: GlassSide.right,
     maxWidth: 760,
-    child: DialogueScreen(embedded: true, screen: _screens[_index]),
+    child: DialogueScreen(
+      embedded: true,
+      screen: _screens[_index],
+      page: pageText(),
+    ),
   );
 
   void _tap(int bar) {

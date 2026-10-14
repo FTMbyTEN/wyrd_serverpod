@@ -3,6 +3,8 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:wyrd_client/wyrd_client.dart';
+import '../widgets/frame/page_text_stub.dart'
+    if (dart.library.js_interop) '../widgets/frame/page_text_web.dart';
 
 import '../client.dart';
 import '../theme.dart';
@@ -77,7 +79,13 @@ class _WyrdTabState extends State<WyrdTab> {
       icon: Icons.forum_outlined,
       side: GlassSide.right,
       maxWidth: 760,
-      child: DialogueScreen(prompt: prompt, embedded: true),
+      child: DialogueScreen(
+        prompt: prompt,
+        embedded: true,
+        page: pageText(),
+        screen:
+            'the home screen (WYRD tab: its brain, last thought, Dialogue Link box, chess challenge)',
+      ),
     );
     _loadMind();
   }
