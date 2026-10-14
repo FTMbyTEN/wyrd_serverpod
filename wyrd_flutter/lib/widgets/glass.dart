@@ -33,13 +33,13 @@ BoxDecoration glassDecoration(double radius) {
       stops: const [0, 0.09, 0.55, 1],
       colors: dark
           ? const [
-              Color(0x33FFF3E0), // the lit top edge
+              Color(0x7A1D1915),
               Color(0x7A1D1915),
               Color(0x8C1D1915),
               Color(0xA6171310),
             ]
           : const [
-              Color(0xE6FFFFFF),
+              Color(0x8CFFFAF2),
               Color(0x8CFFFAF2),
               Color(0x99FFFAF2),
               Color(0xB3F7EFE2),
