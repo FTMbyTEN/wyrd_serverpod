@@ -391,6 +391,23 @@ class CustomGames {
     );
   }
 
+  /// The game, with WYRD's play mode: as it is if it has one, else "building" while the add-on is
+  /// written (see [play]). Null if it isn't theirs.
+  static Future<CustomGame?> readyForWyrd(
+    Session session,
+    UuidValue user,
+    int id,
+  ) async {
+    final game = await CustomGame.db.findFirstRow(
+      session,
+      where: (g) => g.id.equals(id) & g.authUserId.equals(user),
+    );
+    if (game == null) return null;
+    if (game.status != null || game.html.contains('WYRD_PLAYS')) return game;
+    await play(session, user, {'title': game.title}); // starts the add-on
+    return CustomGame.db.findById(session, id);
+  }
+
   /// When [text] asks WYRD to play one of their games by name ("play Lagos Dodge", "WYRD, play my
   /// trivia quiz"), [play] it now and return what happened; null for any other message.
   static Future<(ChatAction?, String)?> playIfAsked(

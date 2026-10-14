@@ -803,6 +803,25 @@ class Endpoints extends _is.EndpointDispatch {
                     params['id'],
                   ),
         ),
+        'readyForWyrd': _is.MethodConnector(
+          name: 'readyForWyrd',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['games'] as _ittu6d2n.GamesEndpoint).readyForWyrd(
+                    session,
+                    params['id'],
+                  ),
+        ),
         'myRatings': _is.MethodConnector(
           name: 'myRatings',
           params: {},

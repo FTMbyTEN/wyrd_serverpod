@@ -29,6 +29,7 @@ drone:
 games:
   - myGames:
   - deleteGame:
+  - readyForWyrd:
   - myRatings:
   - leaderboard:
   - active:

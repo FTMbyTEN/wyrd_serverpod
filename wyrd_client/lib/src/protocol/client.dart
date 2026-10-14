@@ -487,6 +487,15 @@ class EndpointGames extends _isc.EndpointRef {
     {'id': id},
   );
 
+  /// WATCH WYRD PLAY: the game, ready for WYRD to play; one without WYRD's play mode yet comes
+  /// back "building" while it's added (a minute or so).
+  _ida.Future<_ipkxxgte.CustomGame?> readyForWyrd(int id) =>
+      caller.callServerEndpoint<_ipkxxgte.CustomGame?>(
+        'games',
+        'readyForWyrd',
+        {'id': id},
+      );
+
   _ida.Future<List<_ibpm8r25.PlayerRating>> myRatings() =>
       caller.callServerEndpoint<List<_ibpm8r25.PlayerRating>>(
         'games',

@@ -74,6 +74,23 @@ class _YourGamesState extends State<YourGames> {
     _load(); // a game WYRD just made shows straight away
   }
 
+  /// WATCH WYRD PLAY: straight in if the game has WYRD's play mode; else it's added (the tile shows
+  /// "programming" for a minute, then the same button plays).
+  Future<void> _watchWyrd(CustomGame g) async {
+    if (g.html.contains('WYRD_PLAYS')) {
+      _play(g, wyrd: true);
+      return;
+    }
+    try {
+      final next = await client.games.readyForWyrd(g.id!);
+      if (next != null && mounted) {
+        setState(
+          () => _games = [for (final c in _games) c.id == next.id ? next : c],
+        );
+      }
+    } catch (_) {}
+  }
+
   Future<void> _delete(CustomGame g) async {
     setState(() {
       _confirm = null;
@@ -256,14 +273,12 @@ class _YourGamesState extends State<YourGames> {
                         ]
                       : [
                           // the game's own WYRD PLAYS mode: WYRD at the controls, you watching
-                          if (g.html.contains('WYRD_PLAYS')) ...[
-                            _chip(
-                              'WATCH WYRD PLAY',
-                              () => _play(g, wyrd: true),
-                              color: WyrdColors.signal,
-                            ),
-                            const SizedBox(width: 8),
-                          ],
+                          _chip(
+                            'WATCH WYRD PLAY',
+                            () => _watchWyrd(g),
+                            color: WyrdColors.signal,
+                          ),
+                          const SizedBox(width: 8),
                           _chip(
                             'CHANGE IT',
                             () => _ask('Change my game "${g.title}": '),

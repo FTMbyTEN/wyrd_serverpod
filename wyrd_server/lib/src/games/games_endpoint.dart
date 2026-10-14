@@ -29,6 +29,11 @@ class GamesEndpoint extends Endpoint {
   Future<void> deleteGame(Session session, int id) =>
       CustomGames.delete(session, _user(session), id);
 
+  /// WATCH WYRD PLAY: the game, ready for WYRD to play; one without WYRD's play mode yet comes
+  /// back "building" while it's added (a minute or so).
+  Future<CustomGame?> readyForWyrd(Session session, int id) =>
+      CustomGames.readyForWyrd(session, _user(session), id);
+
   Future<List<PlayerRating>> myRatings(Session session) =>
       GameService.myRatings(session, _user(session));
 
