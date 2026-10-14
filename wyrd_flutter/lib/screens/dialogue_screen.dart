@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../client.dart';
+import '../customize.dart';
 import '../theme.dart';
 import '../widgets/kept_card.dart';
 import '../widgets/wyrd_markdown.dart';
@@ -12,7 +13,14 @@ import 'wyrd_shell.dart' show FaceMark;
 class DialogueScreen extends StatefulWidget {
   final String? prompt;
   final bool embedded; // inside a glass panel: no page header
-  const DialogueScreen({super.key, this.prompt, this.embedded = false});
+  // where they are in the app (told to WYRD with each message, so it knows what "this" is)
+  final String? screen;
+  const DialogueScreen({
+    super.key,
+    this.prompt,
+    this.embedded = false,
+    this.screen,
+  });
 
   @override
   State<DialogueScreen> createState() => _DialogueScreenState();
@@ -80,13 +88,24 @@ class _DialogueScreenState extends State<DialogueScreen> {
       _sending = true;
     });
     try {
-      final reply = await client.chat.sendMessage(text);
-      if (mounted)
+      final reply = await client.chat.sendMessage(
+        text,
+        screen: widget.screen,
+      );
+      final a = reply.action;
+      // a change WYRD made to the app (customize_app) is applied, not shown as a card
+      if (a?.type == 'customize' && a?.html != null) applyCustomize(a!.html!);
+      if (mounted) {
         setState(
           () => _lines.add(
-            _Line(reply.reply, false, reply.action?.html),
+            _Line(
+              reply.reply,
+              false,
+              a?.type == 'customize' ? null : a?.html,
+            ),
           ),
         );
+      }
     } catch (_) {
       if (mounted) {
         setState(

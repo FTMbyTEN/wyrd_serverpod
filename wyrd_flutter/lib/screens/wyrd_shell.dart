@@ -4,6 +4,8 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 
 import '../client.dart';
+import '../customize.dart';
+import 'dialogue_screen.dart';
 import '../theme.dart';
 import '../widgets/glass_panel.dart';
 import 'alerts_panel.dart';
@@ -30,6 +32,7 @@ class _WyrdShellState extends State<WyrdShell> {
   @override
   void initState() {
     super.initState();
+    openRequest.addListener(_openPlace); // a place WYRD was asked to take them
     client.drone
         .isOperator()
         .then((yes) {
@@ -41,6 +44,61 @@ class _WyrdShellState extends State<WyrdShell> {
   // pages: 0 WYRD, 1 Journal, 2 Games, 3 You -- the bar shows WYRD · Apps · You, as the main app,
   // with Journal and Games inside the Apps pop-up
   static const _wyrd = 0, _journal = 1, _games = 2, _you = 3;
+
+  @override
+  void dispose() {
+    openRequest.removeListener(_openPlace);
+    super.dispose();
+  }
+
+  /// A place WYRD was asked to take them (customize_app "open").
+  void _openPlace() {
+    final place = openRequest.value;
+    if (place == null || !mounted) return;
+    switch (place) {
+      case 'wyrd' || 'brain':
+        setState(() => _index = _wyrd);
+      case 'journal':
+        setState(() => _index = _journal);
+      case 'games':
+        setState(() => _index = _games);
+      case 'you':
+        _tap(2);
+      case 'tasks':
+        openGlassPanel(
+          context,
+          title: 'TASKS',
+          icon: Icons.auto_awesome_outlined,
+          side: GlassSide.left,
+          child: const TasksScreen(embedded: true),
+        );
+      case 'alerts':
+        openGlassPanel(
+          context,
+          title: 'ALERTS',
+          icon: Icons.notifications_none,
+          child: const AlertsPanel(),
+        );
+    }
+  }
+
+  // where they are, told to WYRD with each message from the ASK WYRD button
+  static const _screens = [
+    'the home screen (WYRD tab: its brain, last thought, Dialogue Link, chess challenge)',
+    'the Journal (diary, dreams, reasoning, feed)',
+    'the Games tab (chess, Connect Four, Reversi, Tic-tac-toe, leaderboard, and YOUR GAMES that WYRD programmed for them)',
+    'the You page (profile, memories, settings)',
+  ];
+
+  /// ASK WYRD: Dialogue Link from anywhere, knowing the screen they called it from.
+  void _askWyrd() => openGlassPanel(
+    context,
+    title: 'DIALOGUE_LINK',
+    icon: Icons.forum_outlined,
+    side: GlassSide.right,
+    maxWidth: 760,
+    child: DialogueScreen(embedded: true, screen: _screens[_index]),
+  );
 
   void _tap(int bar) {
     if (bar == 1) {
@@ -232,6 +290,8 @@ class _WyrdShellState extends State<WyrdShell> {
 
     return Scaffold(
       backgroundColor: WyrdColors.bg,
+      // ASK WYRD: a glass button over every page, as in the main app
+      floatingActionButton: _AskWyrd(onTap: _askWyrd),
       body: SafeArea(
         child: Column(
           children: [
@@ -612,4 +672,44 @@ class _SideBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The ASK WYRD button: frosted glass, the accent's chat mark and its name.
+class _AskWyrd extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AskWyrd({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: onTap,
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          decoration: BoxDecoration(
+            color: WyrdColors.glassBg,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: WyrdColors.greenBorder),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.forum_outlined, size: 20, color: WyrdColors.signal),
+              const SizedBox(width: 8),
+              Text(
+                'ASK WYRD',
+                style: WyrdText.mono(
+                  fontSize: 11,
+                  color: WyrdColors.mint,
+                ).copyWith(letterSpacing: 1.6),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

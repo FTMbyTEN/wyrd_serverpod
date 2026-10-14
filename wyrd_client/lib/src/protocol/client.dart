@@ -782,12 +782,14 @@ class EndpointChat extends _isc.EndpointRef {
   _ida.Future<_is592ckh.ChatReply> sendMessage(
     String text, {
     List<String>? passages,
+    String? screen,
   }) => caller.callServerEndpoint<_is592ckh.ChatReply>(
     'chat',
     'sendMessage',
     {
       'text': text,
       'passages': passages,
+      'screen': screen,
     },
   );
 

@@ -119,6 +119,8 @@ class ChatService {
     // passages of the shared file relevant to this message, picked in their browser (which keeps
     // the file; the server never stores it)
     List<String>? passages,
+    // where they are in the app right now (the screen they called WYRD from)
+    String? screen,
   }) async {
     final topics = TopicService.extractTopics(text);
 
@@ -339,6 +341,10 @@ class ChatService {
       'When they ask you to remember something about them, call remember: it is then kept across every chat, '
           'your tasks and the city, so say plainly that you will remember it. When they ask you to forget something, '
           'call forget.',
+      if (screen != null)
+        'Where they are in the app right now: $screen. Take "this", "here" and "it" to mean what is on '
+            'that screen. To change the app for them (light or dark, the accent colour, the text size, or '
+            'taking them to a tab or panel), call customize_app.',
       curiosityHint,
     ].join('\n');
 

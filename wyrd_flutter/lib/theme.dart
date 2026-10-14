@@ -15,6 +15,10 @@ class WyrdColors {
   );
   static bool get dark => night.value;
 
+  /// The accent WYRD was asked to use (customize_app), in place of terracotta; and the text size.
+  static final accent = ValueNotifier<Color?>(null);
+  static final textScale = ValueNotifier<double>(1);
+
   static Color _p(int day, int night) => Color(dark ? night : day);
 
   static Color get bg => _p(0xFFF7EFE2, 0xFF14110E);
@@ -26,9 +30,11 @@ class WyrdColors {
   static Color get mint => _p(0xFF2A1F17, 0xFFF4EADB); // headlines
   static Color get mintBright => _p(0xFF3A2D22, 0xFFE9DDCB);
   static Color get danger => _p(0xFFB83A26, 0xFFEE6A4E);
-  static Color get signal => _p(0xFFC4572E, 0xFFE5743F); // terracotta
-  static Color get signalSoft =>
-      dark ? const Color(0x29E5743F) : const Color(0x1AC4572E);
+  static Color get signal =>
+      accent.value ?? _p(0xFFC4572E, 0xFFE5743F); // terracotta
+  static Color get signalSoft => accent.value != null
+      ? accent.value!.withValues(alpha: dark ? 0.16 : 0.1)
+      : (dark ? const Color(0x29E5743F) : const Color(0x1AC4572E));
   static Color get onSignal => _p(0xFFFFFAF2, 0xFFFFF6EA);
   static Color get indigo => _p(0xFF24316B, 0xFF9AA8F2);
   static Color get ochre => _p(0xFFE2A32B, 0xFFEDB54A);

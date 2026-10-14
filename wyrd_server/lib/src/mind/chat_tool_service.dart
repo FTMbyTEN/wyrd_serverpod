@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../generated/protocol.dart';
+import 'app_tools.dart';
 import '../games/custom_games.dart';
 import '../agent/agent_service.dart';
 import '../drone/drone_service.dart';
@@ -278,6 +279,8 @@ class ChatToolService {
     VisualTools.drawPicture,
     VisualTools.runPython,
     CustomGames.buildGameTool,
+    AppTools.customizeTool,
+    AppTools.learnTool,
     _webSearchTool,
     _newsSearchTool,
     _marketPricesTool,
@@ -458,6 +461,17 @@ class ChatToolService {
                 continue;
               }
               // a game they asked for, programmed into their Games tab in the background
+              // a change to their app (theme, accent, text size, a place), or a method learned from the web
+              if (AppTools.names.contains(name)) {
+                final (a, told) = await AppTools.use(session, name, input);
+                if (a != null) pendingAction = a;
+                toolResults.add({
+                  'type': 'tool_result',
+                  'tool_use_id': toolUseId,
+                  'content': told,
+                });
+                continue;
+              }
               if (name == 'build_game') {
                 toolResults.add({
                   'type': 'tool_result',

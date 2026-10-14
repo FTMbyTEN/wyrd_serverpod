@@ -1297,6 +1297,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<List<String>?>(),
               nullable: true,
             ),
+            'screen': _is.ParameterDescription(
+              name: 'screen',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
           },
           call:
               (
@@ -1307,6 +1312,7 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['text'],
                     passages: params['passages'],
+                    screen: params['screen'],
                   ),
         ),
         'getHistory': _is.MethodConnector(

@@ -19,10 +19,21 @@ class WyrdApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Warm Lagos, as in the main app: day or night from the device, switched by the header's
     // sun/moon button; every screen is redrawn in the new colours (theme.dart)
-    return ValueListenableBuilder<bool>(
-      valueListenable: WyrdColors.night,
-      builder: (context, night, _) => MaterialApp(
-        key: ValueKey(night),
+    // ...and redrawn too when WYRD changes the accent or the text size (customize.dart)
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        WyrdColors.night,
+        WyrdColors.accent,
+        WyrdColors.textScale,
+      ]),
+      builder: (context, _) => MaterialApp(
+        key: ValueKey('${WyrdColors.night.value}${WyrdColors.accent.value}'),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(WyrdColors.textScale.value),
+          ),
+          child: child!,
+        ),
         title: 'WYRD',
         debugShowCheckedModeBanner: false,
         theme: buildWyrdTheme(),

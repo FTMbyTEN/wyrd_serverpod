@@ -26,6 +26,8 @@ class ChatEndpoint extends Endpoint {
     Session session,
     String text, {
     List<String>? passages,
+    // where they are in the app when they ask ("Games tab, Chess room"), so WYRD knows its place
+    String? screen,
   }) async {
     final authUserId = UuidValue.fromString(
       session.authenticated!.userIdentifier,
@@ -56,6 +58,9 @@ class ChatEndpoint extends Endpoint {
       shownAs: attached == null ? null : text,
       withFile: attached != null,
       passages: parts.isEmpty ? null : parts,
+      screen: screen == null || screen.trim().isEmpty
+          ? null
+          : (screen.length > 300 ? screen.substring(0, 300) : screen),
     );
     return ChatReply(
       reply: result.reply,
