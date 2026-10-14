@@ -15,7 +15,7 @@ them over time instead of starting from zero in every chat — first of all stud
 people in Lagos (it answers in Pidgin and Yoruba too).
 
 **Serverpod** is the whole backend: one Serverpod 4 server on Serverpod Cloud with 35 endpoints,
-55 database tables through Serverpod's ORM and migrations, and 11 future calls that run WYRD's
+56 database tables through Serverpod's ORM and migrations, and 11 future calls that run WYRD's
 background life on a schedule, so it keeps thinking with no one connected. Sign-in is Serverpod
 Auth, and Serverpod's web server hosts both apps.
 
