@@ -1,8 +1,8 @@
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import 'glass.dart';
 
 enum GlassSide { left, right, center }
 
@@ -27,30 +27,37 @@ Future<T?> openGlassPanel<T>(
     barrierColor: Colors.black.withValues(alpha: WyrdColors.dark ? 0.35 : 0.12),
     transitionDuration: Duration(milliseconds: sliding ? 340 : 420),
     pageBuilder: (ctx, _, _) {
-      final pane = _GlassPane(
+      final pane0 = _GlassPane(
         title: title,
         icon: icon,
         actions: actions,
         child: child,
       );
+      // the page behind, softly blurred, so the pane stands in front of it
+      Widget pane = pane0;
+      Widget withVeil(Widget w) => Stack(children: [glassVeil(), w]);
       if (sliding) {
-        return Align(
-          alignment: side == GlassSide.right
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
-          child: SizedBox(
-            width: side == GlassSide.right ? 460 : 420,
-            child: Padding(padding: const EdgeInsets.all(10), child: pane),
+        return withVeil(
+          Align(
+            alignment: side == GlassSide.right
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: SizedBox(
+              width: side == GlassSide.right ? 460 : 420,
+              child: Padding(padding: const EdgeInsets.all(10), child: pane),
+            ),
           ),
         );
       }
-      return SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: FractionallySizedBox(heightFactor: 0.94, child: pane),
+      return withVeil(
+        SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: FractionallySizedBox(heightFactor: 0.94, child: pane),
+              ),
             ),
           ),
         ),
@@ -102,52 +109,44 @@ class _GlassPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-        child: Material(
-          color: WyrdColors.glassBg,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: WyrdColors.glassBorder),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 6, 10),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: WyrdColors.greenBorderDim),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(icon, color: WyrdColors.signal),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: WyrdText.display(fontSize: 24),
-                        ),
-                      ),
-                      ...actions,
-                      IconButton(
-                        tooltip: 'Close',
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: WyrdColors.greenDim,
-                        ),
-                      ),
-                    ],
+    return Glass(
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 10, 6, 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: WyrdColors.glassBorder),
                   ),
                 ),
-                Expanded(child: child),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    Icon(icon, color: WyrdColors.signal),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: WyrdText.display(fontSize: 24),
+                      ),
+                    ),
+                    ...actions,
+                    IconButton(
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: WyrdColors.greenDim,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(child: child),
+            ],
           ),
         ),
       ),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:wyrd_client/wyrd_client.dart';
@@ -8,6 +7,7 @@ import '../widgets/frame/page_text_stub.dart'
 
 import '../client.dart';
 import '../theme.dart';
+import '../widgets/glass.dart';
 import '../widgets/brain_canvas.dart';
 import '../widgets/holo.dart';
 import '../widgets/glass_panel.dart';
@@ -264,14 +264,11 @@ class _WyrdTabState extends State<WyrdTab> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                  filter: glassFilter(),
                   child: Material(
-                    color: WyrdColors.glassBg,
+                    color: Colors.transparent,
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: WyrdColors.glassBorder),
-                      ),
+                      decoration: glassDecoration(24),
                       child: Column(
                         children: [
                           Padding(

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:wyrd_client/wyrd_client.dart';
@@ -11,6 +10,7 @@ import 'dialogue_screen.dart';
 import '../widgets/frame/page_text_stub.dart'
     if (dart.library.js_interop) '../widgets/frame/page_text_web.dart';
 import '../theme.dart';
+import '../widgets/glass.dart';
 import '../widgets/glass_panel.dart';
 import 'alerts_panel.dart';
 import 'cop_tab.dart';
@@ -141,15 +141,12 @@ class _WyrdShellState extends State<WyrdShell> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                filter: glassFilter(),
                 child: Material(
-                  color: WyrdColors.glassBg,
+                  color: Colors.transparent,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(16, 12, 8, 16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: WyrdColors.glassBorder),
-                    ),
+                    decoration: glassDecoration(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -796,24 +793,18 @@ class _AskWyrd extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
     behavior: HitTestBehavior.opaque,
     onTap: onTap,
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(999),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Container(
-          width: 58,
-          height: 58,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: WyrdColors.glassBg,
-            shape: BoxShape.circle,
-            border: Border.all(color: WyrdColors.greenBorder),
-          ),
-          child: Semantics(
-            label: 'Ask WYRD about this screen',
-            button: true,
-            child: const FaceMark(size: 40),
-          ),
+    child: Glass(
+      shape: BoxShape.circle,
+      sigma: 20,
+      lift: 0.6,
+      child: Container(
+        width: 58,
+        height: 58,
+        alignment: Alignment.center,
+        child: Semantics(
+          label: 'Ask WYRD about this screen',
+          button: true,
+          child: const FaceMark(size: 40),
         ),
       ),
     ),
