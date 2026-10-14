@@ -21,6 +21,7 @@ Yoruba too).
 |---|---|
 | **The app** (web) | **https://wryd00.serverpod.space** — sign up with an email, then talk to WYRD |
 | **The Flutter client** | **https://wryd00.serverpod.space/flutter** — the same account, the same WYRD |
+| **Demo video** (2 min) | **https://youtu.be/AbExdbpa0WI** |
 | The API | `https://wryd00.api.serverpod.space` (Serverpod RPC) |
 
 > **Signing up:** you sign up with your email and a code that WYRD emails you. The email often
