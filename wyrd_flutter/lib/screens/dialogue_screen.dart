@@ -44,7 +44,19 @@ class _Line {
   final bool mine;
   final String?
   picture; // what WYRD made in this reply (an app, visual, picture or program), kept on the turn
-  _Line(this.text, this.mine, [this.picture]);
+  final String?
+  thinking; // what WYRD thought before answering, opened from THOUGHT PROCESS
+  final int? turnId; // the turn, rated with 👍 👎
+  int rating = 0;
+  bool showThinking = false;
+  _Line(
+    this.text,
+    this.mine, [
+    this.picture,
+    this.thinking,
+    this.turnId,
+    int? rated,
+  ]) : rating = rated ?? 0;
 }
 
 class _DialogueScreenState extends State<DialogueScreen> {
@@ -52,6 +64,20 @@ class _DialogueScreenState extends State<DialogueScreen> {
   final _controller = TextEditingController();
   bool _loading = true;
   bool _sending = false;
+  String _mood = ''; // WYRD's mood, on the identity card
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_mood.isEmpty) {
+      client.mind
+          .getMind()
+          .then((m) {
+            if (mounted) setState(() => _mood = m.mood);
+          })
+          .catchError((_) {});
+    }
+  }
 
   @override
   void initState() {
@@ -74,7 +100,9 @@ class _DialogueScreenState extends State<DialogueScreen> {
         for (final t in turns) {
           if (t.userText.isNotEmpty) _lines.add(_Line(t.userText, true));
           if (t.botText.isNotEmpty) {
-            _lines.add(_Line(t.botText, false, t.appHtml));
+            _lines.add(
+              _Line(t.botText, false, t.appHtml, t.thinking, t.id, t.rating),
+            );
           }
         }
       });
@@ -110,6 +138,7 @@ class _DialogueScreenState extends State<DialogueScreen> {
       final a = reply.action;
       // a change WYRD made to the app (customize_app) is applied, not shown as a card
       if (a?.type == 'customize' && a?.html != null) applyCustomize(a!.html!);
+      if (reply.mind != null) _mood = reply.mind!.mood;
       if (mounted) {
         setState(
           () => _lines.add(
@@ -117,6 +146,8 @@ class _DialogueScreenState extends State<DialogueScreen> {
               reply.reply,
               false,
               a?.type == 'customize' ? null : a?.html,
+              reply.thinking,
+              reply.turnId,
             ),
           ),
         );
@@ -150,6 +181,7 @@ class _DialogueScreenState extends State<DialogueScreen> {
               ),
             ),
           ),
+          _identity(),
           Expanded(child: body),
         ],
       );
@@ -179,7 +211,12 @@ class _DialogueScreenState extends State<DialogueScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: body,
+      body: Column(
+        children: [
+          _identity(),
+          Expanded(child: body),
+        ],
+      ),
     );
   }
 
@@ -312,6 +349,7 @@ class _DialogueScreenState extends State<DialogueScreen> {
                 ),
                 if (l.picture != null && l.picture!.isNotEmpty)
                   KeptCard(l.picture!),
+                _replyFooter(l),
               ],
             ),
           ),
@@ -320,26 +358,199 @@ class _DialogueScreenState extends State<DialogueScreen> {
     );
   }
 
+  /// Under a reply, as in the main app: its thought process (opened on a tap), 👍 👎 and Reply.
+  Widget _replyFooter(_Line l) {
+    final dim = WyrdText.mono(fontSize: 10.5, color: WyrdColors.greenDim);
+    Widget tap(Widget child, VoidCallback onTap) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: child,
+      ),
+    );
+    Future<void> rate(int v) async {
+      final next = l.rating == v ? 0 : v;
+      final before = l.rating;
+      setState(() => l.rating = next);
+      try {
+        await client.chat.rate(l.turnId!, next);
+      } catch (_) {
+        if (mounted) setState(() => l.rating = before);
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (l.thinking != null && l.thinking!.trim().isNotEmpty) ...[
+          tap(
+            Text(
+              l.showThinking ? 'THOUGHT PROCESS ▾' : 'THOUGHT PROCESS ▸',
+              style: WyrdText.mono(
+                fontSize: 9.5,
+                color: WyrdColors.signal,
+              ).copyWith(letterSpacing: 1.6),
+            ),
+            () => setState(() => l.showThinking = !l.showThinking),
+          ),
+          if (l.showThinking)
+            Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: WyrdColors.signal, width: 2),
+                ),
+              ),
+              child: Text(
+                l.thinking!,
+                style: WyrdText.mono(
+                  fontSize: 11.5,
+                  color: WyrdColors.greenDim,
+                ).copyWith(height: 1.5),
+              ),
+            ),
+        ],
+        Row(
+          children: [
+            if (l.turnId != null) ...[
+              tap(
+                Icon(
+                  l.rating == 1 ? Icons.thumb_up : Icons.thumb_up_outlined,
+                  size: 14,
+                  color: l.rating == 1
+                      ? WyrdColors.signal
+                      : WyrdColors.greenDim,
+                ),
+                () => rate(1),
+              ),
+              tap(
+                Icon(
+                  l.rating == -1 ? Icons.thumb_down : Icons.thumb_down_outlined,
+                  size: 14,
+                  color: l.rating == -1
+                      ? WyrdColors.signal
+                      : WyrdColors.greenDim,
+                ),
+                () => rate(-1),
+              ),
+            ],
+            tap(Text('↩ Reply', style: dim), () {
+              final first = l.text.split('\n').first;
+              _controller.text =
+                  '> ${first.length > 80 ? '${first.substring(0, 80)}…' : first}\n';
+              _controller.selection = TextSelection.collapsed(
+                offset: _controller.text.length,
+              );
+            }),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// WYRD's identity card at the top of the panel, as in the main app: its face, its mood and
+  /// that the conversation is private.
+  Widget _identity() => Container(
+    margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: WyrdColors.glassBg,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: WyrdColors.greenBorder),
+    ),
+    child: Row(
+      children: [
+        const FaceMark(size: 44),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text('WYRD', style: WyrdText.display(fontSize: 22)),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: WyrdColors.signal,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _mood.toUpperCase(),
+                    style: WyrdText.mono(
+                      fontSize: 9.5,
+                      color: WyrdColors.greenDim,
+                    ).copyWith(letterSpacing: 1.6),
+                  ),
+                ],
+              ),
+              Text(
+                _sending
+                    ? 'Your conversation · thinking…'
+                    : 'Your conversation',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: WyrdText.mono(fontSize: 11, color: WyrdColors.greenDim),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: WyrdColors.greenBorder),
+          ),
+          child: Text(
+            '🔒 PRIVATE',
+            style: WyrdText.mono(
+              fontSize: 9,
+              color: WyrdColors.greenDim,
+            ).copyWith(letterSpacing: 1.4),
+          ),
+        ),
+      ],
+    ),
+  );
+
   Widget _bar() {
     OutlineInputBorder pill(Color c, [double w = 1]) => OutlineInputBorder(
       borderRadius: BorderRadius.circular(22),
       borderSide: BorderSide(color: c, width: w),
     );
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 14),
+      margin: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+      padding: const EdgeInsets.fromLTRB(4, 4, 8, 8),
+      decoration: BoxDecoration(
+        color: WyrdColors.panelBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: WyrdColors.signal.withValues(alpha: 0.7)),
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
             child: TextField(
               controller: _controller,
-              minLines: 1,
-              maxLines: 5,
+              minLines: 2,
+              maxLines: 6,
               style: WyrdText.mono(fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Message WYRD',
-                border: pill(WyrdColors.greenBorder),
-                enabledBorder: pill(WyrdColors.signal.withValues(alpha: 0.6)),
-                focusedBorder: pill(WyrdColors.signal, 1.5),
+                hintStyle: WyrdText.mono(
+                  fontSize: 14,
+                  color: WyrdColors.greenDim,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
               ),
               onSubmitted: (_) => _send(),
             ),
@@ -352,8 +563,8 @@ class _DialogueScreenState extends State<DialogueScreen> {
               customBorder: const CircleBorder(),
               onTap: _sending ? null : _send,
               child: SizedBox(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 child: Icon(Icons.arrow_upward, color: WyrdColors.onSignal),
               ),
             ),

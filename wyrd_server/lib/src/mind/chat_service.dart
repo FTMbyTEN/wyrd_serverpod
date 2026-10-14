@@ -279,7 +279,8 @@ class ChatService {
         : live
         ? remembered.copyWith(text: passages.join('\n\n'))
         : remembered;
-    final learned = isCode || followUp || aboutDoc
+    // asked from a screen: the answer is about what's on it, so no saved answer or local shortcut
+    final learned = isCode || followUp || aboutDoc || screen != null
         ? null
         : await LearnedAnswerService.recall(
             session,
@@ -291,7 +292,7 @@ class ChatService {
 
     // No API first: WYRD's own brain handles what it can (reading, meanings, places, what it
     // knows about you) before any AI is called -- except questions about a file, which the file answers.
-    final local = learned == null && !isCode && !aboutDoc
+    final local = learned == null && !isCode && !aboutDoc && screen == null
         ? await LocalBrainService.answer(
             session,
             authUserId: authUserId,
@@ -306,12 +307,17 @@ class ChatService {
 
     // Code requests (and short follow-ups to one) skip the conversational prompt entirely; if
     // the code path fails, fall through to it as a safety net, like Node.
+    // the message as the model sees it: with their screen right beside it, where it can't be missed
+    // (the conversation keeps only what they typed)
+    final asked = screen == null
+        ? text
+        : '$text\n\n[Their screen as they ask this -- you are on this page with them and can read it: $screen]';
     final codeReply = isCode
         ? await CodeAgentService.reply(
             session,
             authUserId: authUserId,
             history: codeHistory,
-            userText: text,
+            userText: asked,
             savedApp: savedApp,
           )
         : null;
@@ -382,7 +388,7 @@ class ChatService {
                 authUserId: authUserId,
                 systemPrompt: systemPrompt,
                 history: history,
-                userText: text,
+                userText: asked,
                 // teaching a file takes room; a summary of one needs less
                 maxTokens: aboutDoc
                     ? (DocumentService.wantsSummary(text) ? 700 : 1400)
