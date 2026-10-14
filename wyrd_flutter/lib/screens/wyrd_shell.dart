@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:wyrd_client/wyrd_client.dart';
 
 import '../client.dart';
 import '../customize.dart';
@@ -302,7 +304,13 @@ class _WyrdShellState extends State<WyrdShell> {
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _SideBar(items: bar, index: barIndex, onTap: _tap),
+                        // as the main app: WYRD and Apps above, you (avatar, name, Settings) at the foot
+                        _SideBar(
+                          items: bar.sublist(0, 2),
+                          index: barIndex,
+                          onTap: _tap,
+                          onYou: () => _tap(2),
+                        ),
                         Expanded(child: body),
                       ],
                     )
@@ -608,10 +616,12 @@ class _SideBar extends StatelessWidget {
   final List<({String label, IconData icon, Widget page})> items;
   final int index;
   final void Function(int) onTap;
+  final VoidCallback onYou;
   const _SideBar({
     required this.items,
     required this.index,
     required this.onTap,
+    required this.onYou,
   });
 
   @override
@@ -669,7 +679,103 @@ class _SideBar extends StatelessWidget {
                 ),
               ),
             ),
+          const Spacer(),
+          _YouChip(onTap: onYou),
         ],
+      ),
+    );
+  }
+}
+
+/// You, at the foot of the side bar as in the main app: your picture, your name and Settings;
+/// opens the You pop-up.
+class _YouChip extends StatefulWidget {
+  final VoidCallback onTap;
+  const _YouChip({required this.onTap});
+
+  @override
+  State<_YouChip> createState() => _YouChipState();
+}
+
+class _YouChipState extends State<_YouChip> {
+  UserProfile? _p;
+
+  @override
+  void initState() {
+    super.initState();
+    client.profile
+        .getProfile()
+        .then((p) {
+          if (mounted) setState(() => _p = p);
+        })
+        .catchError((_) {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? picture;
+    final av = _p?.avatar;
+    if (av != null && av.contains(',')) {
+      try {
+        picture = Image.memory(
+          base64Decode(av.split(',').last),
+          fit: BoxFit.cover,
+        );
+      } catch (_) {}
+    }
+    final name = (_p?.username ?? '').trim();
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: WyrdColors.ochre,
+              ),
+              alignment: Alignment.center,
+              child:
+                  picture ??
+                  Text(
+                    name.isEmpty ? '?' : name[0].toUpperCase(),
+                    style: WyrdText.mono(
+                      fontSize: 13,
+                      color: WyrdColors.onSignal,
+                    ),
+                  ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name.isEmpty ? 'You' : name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: WyrdText.mono(
+                      fontSize: 12.5,
+                      color: WyrdColors.green,
+                    ),
+                  ),
+                  Text(
+                    'Settings',
+                    style: WyrdText.mono(
+                      fontSize: 10,
+                      color: WyrdColors.greenDim,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
