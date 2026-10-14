@@ -23,6 +23,9 @@ Yoruba too).
 | **The Flutter client** | **https://wryd00.serverpod.space/flutter** — the same account, the same WYRD |
 | The API | `https://wryd00.api.serverpod.space` (Serverpod RPC) |
 
+> **Signing up:** you sign up with your email and a code that WYRD emails you. The email often
+> lands in **spam or junk** — please check those folders if it hasn't arrived within a minute.
+
 **The core flow:** open the app → sign up → open Dialogue Link and ask WYRD something → tell it
 something about yourself ("remember that my exam is on Friday") → start a new chat and ask what it
 remembers → press **ENTER 3D** to look inside its mind. Then ask it for a game ("make me a game:
