@@ -291,7 +291,8 @@ class _WyrdShellState extends State<WyrdShell> {
     return Scaffold(
       backgroundColor: WyrdColors.bg,
       // ASK WYRD: a glass button over every page, as in the main app
-      floatingActionButton: _AskWyrd(onTap: _askWyrd),
+      // (not on home, which has its own Dialogue Link box)
+      floatingActionButton: _index == _wyrd ? null : _AskWyrd(onTap: _askWyrd),
       body: SafeArea(
         child: Column(
           children: [
@@ -674,7 +675,7 @@ class _SideBar extends StatelessWidget {
   }
 }
 
-/// The ASK WYRD button: frosted glass, the accent's chat mark and its name.
+/// The ASK WYRD button: WYRD's face mark in a round frosted-glass button.
 class _AskWyrd extends StatelessWidget {
   final VoidCallback onTap;
   const _AskWyrd({required this.onTap});
@@ -688,25 +689,18 @@ class _AskWyrd extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          width: 58,
+          height: 58,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: WyrdColors.glassBg,
-            borderRadius: BorderRadius.circular(999),
+            shape: BoxShape.circle,
             border: Border.all(color: WyrdColors.greenBorder),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.forum_outlined, size: 20, color: WyrdColors.signal),
-              const SizedBox(width: 8),
-              Text(
-                'ASK WYRD',
-                style: WyrdText.mono(
-                  fontSize: 11,
-                  color: WyrdColors.mint,
-                ).copyWith(letterSpacing: 1.6),
-              ),
-            ],
+          child: const Semantics(
+            label: 'Ask WYRD about this screen',
+            button: true,
+            child: FaceMark(size: 40),
           ),
         ),
       ),
