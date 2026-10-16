@@ -18,7 +18,7 @@
   #title { font-weight: 800; font-size: 17px; white-space: nowrap; }
   #online { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
   #online i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; vertical-align: 1px; }
-  #talkTop { margin-left: auto; padding: 9px 16px; border: none; border-radius: 999px; background: var(--green); color: #fff; font: 700 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #talkTop { right: 16px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 24px; }
   #chips { position: fixed; top: calc(68px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: none; max-width: calc(100vw - 20px); }
   #chips .pill { padding: 6px 12px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #log { position: fixed; left: 12px; bottom: calc(150px + env(safe-area-inset-bottom)); max-width: min(360px, 72vw); font-size: 13px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; }
@@ -196,10 +196,11 @@
 <div id="top" class="pill">
   <div id="title">🌴 Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <button id="talkTop" aria-label="Say something to people near you">Say</button>
+
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
 <div id="log" aria-live="polite"></div>
+<div id="talkTop" class="btn" role="button" aria-label="Say something to people near you">💬</div>
 <div id="zoomin" class="btn" role="button" aria-label="Zoom in">+</div>
 <div id="zoomout" class="btn" role="button" aria-label="Zoom out">−</div>
 <div id="stick" aria-hidden="true"><div id="knob"></div></div>
@@ -254,6 +255,10 @@
     { id: 'fill1', name: 'Reclaimed land', rect: [38, 23, 42, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
     { id: 'fill2', name: 'Reclaimed land', rect: [53, 20, 60, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.9 } },
     { id: 'fill3', name: 'Reclaimed land', rect: [43, 1, 52, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } },
+    { id: 'welcome', name: 'Welcome Point', rect: [6, 17, 14, 20], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.35, pitch: 0.9, zoom: 1.0 } },
+    { id: 'fill4', name: 'Reclaimed land', rect: [54, 1, 60, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
+    { id: 'fill5', name: 'Reclaimed land', rect: [11, 23, 13, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.2, pitch: 0.85, zoom: 1.0 } },
+    { id: 'fill6', name: 'Reclaimed land', rect: [0, 0, 6, 2], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.3, pitch: 0.85, zoom: 1.0 } },
     { id: 'hqrow', name: 'HQ Row', rect: [44, 21, 51, 27], rows: [24], cols: [46], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
   ];
   // bridges and the ferry: [i0, j0, i1, j1, name]
@@ -328,6 +333,10 @@
     ['soon', 39, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 55, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 46, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['soon', 55, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['soon', 11, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
+    ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
+    ['welcome', 6, 17, 9, 4, 'Welcome to Lagos Island', '👋'],
     // the arena: shows with tickets, and the biggest screens on the island
     ['arena', 27, 23, 10, 6, 'The Arena (live shows)', '🎤'],
     // Ad Island and HQ Row
@@ -338,6 +347,8 @@
     [13, 3.4, 'WYRD', 'Ask me anything'],
     [27, 13.4, 'Lagos Island', 'Eko o ni baje'],
     [41, 7.4, 'WYRD', 'Lekki? I know the way'],
+    [12, 17.4, 'WELCOME', 'to Lagos Island'],
+    [40, 23.6, 'THE ARENA', 'Live shows, real tickets'],
   ];
   const WATER_NAMES = [['LAGOS LAGOON', 20, 1.2], ['ATLANTIC OCEAN', 40, 29.2], ['FIVE COWRIE CREEK', 14.6, 12.5], ['COMMODORE CHANNEL', 6, 19]];
 
@@ -364,7 +375,8 @@
   const isTouch = matchMedia('(pointer: coarse)').matches;
   if (isTouch) document.body.classList.add('touch');
   let W = 0, H = 0, DPR = 1;
-  function resize() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
+  let quality = 1; // drops when frames run slow
+  function resize() { DPR = Math.min(1.5, devicePixelRatio || 1) * quality; W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
   let co = 1, si = 0, sp = 1, cp = 0, K = 1;
@@ -383,7 +395,9 @@
 
   // ---- colour and light: soft light from the north-west
   const LIGHT = (() => { const l = [-0.5, 1, -0.35]; const n = Math.hypot(...l); return l.map((v) => v / n); })();
-  function shadeHex(hex, f) { const n = parseInt(hex.slice(1), 16); const c = (v) => Math.max(0, Math.min(255, Math.round(v * f))); return `rgb(${c(n >> 16)},${c((n >> 8) & 255)},${c(n & 255)})`; }
+  const shadeMemo = new Map();
+  function shadeHex(hex, f) { const key = hex + (Math.round(f * 100)); let v = shadeMemo.get(key); if (v) return v; v = shadeHex0(hex, Math.round(f * 100) / 100); if (shadeMemo.size < 6000) shadeMemo.set(key, v); return v; }
+  function shadeHex0(hex, f) { const n = parseInt(hex.slice(1), 16); const c = (v) => Math.max(0, Math.min(255, Math.round(v * f))); return `rgb(${c(n >> 16)},${c((n >> 8) & 255)},${c(n & 255)})`; }
   const lit = (hex, nx, ny, nz) => shadeHex(hex, 0.72 + 0.34 * Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]));
   const C = {
     water: '#3A86C8', land: '#9FCB7A', landEdge: '#5E8E48', sand: '#F3DE9C', sandEdge: '#C9A95E',
@@ -451,17 +465,34 @@
     x.ellipse(c[0], c[1], rr, Math.max(rr * 0.4, c[1] - t[1]), 0, Math.PI, Math.PI * 2); x.fill();
   }
   function tree(tx, tz, r, col) {
-    const base = P(tx, 0, tz), top = P(tx, r * 1.6, tz), rr = r * K;
-    x.fillStyle = 'rgba(30,60,35,0.22)'; x.beginPath(); x.ellipse(base[0] + rr * 0.3, base[1], rr, rr * sp * 0.9, 0, 0, Math.PI * 2); x.fill();
-    x.strokeStyle = C.trunk; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); x.moveTo(base[0], base[1]); x.lineTo(top[0], top[1]); x.stroke();
-    x.fillStyle = col || C.tree; x.beginPath(); x.arc(top[0], top[1] - rr * 0.3, rr, 0, Math.PI * 2); x.fill();
-    x.fillStyle = 'rgba(255,255,255,0.18)'; x.beginPath(); x.arc(top[0] - rr * 0.35, top[1] - rr * 0.65, rr * 0.4, 0, Math.PI * 2); x.fill();
+    const base = P(tx, 0, tz), top = P(tx, r * 1.5, tz), rr = r * K, c0 = col || C.tree;
+    x.fillStyle = 'rgba(25,55,30,0.28)'; x.beginPath(); x.ellipse(base[0] + rr * 0.45, base[1] + rr * 0.1, rr * 1.15, rr * sp, 0, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#7A4E2D'; x.beginPath(); x.moveTo(base[0] - rr * 0.18, base[1]); x.lineTo(top[0] - rr * 0.08, top[1]); x.lineTo(top[0] + rr * 0.08, top[1]); x.lineTo(base[0] + rr * 0.18, base[1]); x.fill();
+    if (rr < 3) { x.fillStyle = c0; x.beginPath(); x.arc(top[0], top[1] - rr * 0.4, rr, 0, Math.PI * 2); x.fill(); return; }
+    const blobs = [[-0.45, -0.15, 0.72], [0.45, -0.1, 0.7], [0, -0.7, 0.8]];
+    for (const [ox, oy, k] of blobs) {
+      const cx0 = top[0] + ox * rr, cy0 = top[1] - rr * 0.35 + oy * rr, r0 = rr * k;
+      const g = x.createRadialGradient(cx0 - r0 * 0.4, cy0 - r0 * 0.45, r0 * 0.1, cx0, cy0, r0);
+      g.addColorStop(0, shadeHex(c0, 1.35)); g.addColorStop(0.65, c0); g.addColorStop(1, shadeHex(c0, 0.7));
+      x.fillStyle = g; x.beginPath(); x.arc(cx0, cy0, r0, 0, Math.PI * 2); x.fill();
+    }
   }
   function palm(tx, tz, h) {
-    const base = P(tx, 0, tz), top = P(tx + 0.6, h, tz), s = K;
-    x.strokeStyle = '#9C6B43'; x.lineWidth = Math.max(1.5, s * 0.55); x.beginPath(); x.moveTo(base[0], base[1]); x.quadraticCurveTo(base[0] + s * 1.5, (base[1] + top[1]) / 2, top[0], top[1]); x.stroke();
-    x.strokeStyle = '#2F8A4A'; x.lineWidth = Math.max(1.5, s * 0.7); x.lineCap = 'round';
-    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; x.beginPath(); x.moveTo(top[0], top[1]); x.quadraticCurveTo(top[0] + Math.cos(a) * s * 2.6, top[1] + Math.sin(a) * s * 1.2 - s, top[0] + Math.cos(a) * s * 3.6, top[1] + Math.sin(a) * s * 1.6 + s * 0.8); x.stroke(); }
+    const base = P(tx, 0, tz), top = P(tx + 0.6, h, tz), s = K, t = performance.now() / 1400 + tx;
+    x.fillStyle = 'rgba(25,55,30,0.22)'; x.beginPath(); x.ellipse(base[0] + s * 2, base[1], s * 3.2, s * 1.2 * sp, 0, 0, Math.PI * 2); x.fill();
+    // a ringed, leaning trunk
+    const mx = base[0] + s * 1.5, my = (base[1] + top[1]) / 2;
+    x.strokeStyle = '#A0703F'; x.lineWidth = Math.max(1.8, s * 0.7); x.lineCap = 'round';
+    x.beginPath(); x.moveTo(base[0], base[1]); x.quadraticCurveTo(mx, my, top[0], top[1]); x.stroke();
+    if (s > 2.5) { x.strokeStyle = 'rgba(80,50,25,0.45)'; x.lineWidth = 1; for (let k = 1; k < 6; k++) { const u = k / 6, px = (1 - u) ** 2 * base[0] + 2 * (1 - u) * u * mx + u * u * top[0], py = (1 - u) ** 2 * base[1] + 2 * (1 - u) * u * my + u * u * top[1]; x.beginPath(); x.moveTo(px - s * 0.35, py); x.lineTo(px + s * 0.35, py); x.stroke(); } }
+    // fronds: leaf shapes, the far ones darker, swaying a little
+    for (let k = 0; k < 7; k++) {
+      const a = (k / 7) * Math.PI * 2 + Math.sin(t) * 0.05, L = s * (3.8 + (k % 2) * 0.6), ex = top[0] + Math.cos(a) * L, ey = top[1] + Math.sin(a) * L * 0.45 + s * 1.1;
+      const mxx = top[0] + Math.cos(a) * L * 0.55, myy = top[1] + Math.sin(a) * L * 0.25 - s * 0.9, nx = -Math.sin(a) * s * 0.55, ny = Math.cos(a) * s * 0.3;
+      x.fillStyle = Math.sin(a) < 0 ? '#2C7A43' : '#3FA35A';
+      x.beginPath(); x.moveTo(top[0], top[1]); x.quadraticCurveTo(mxx + nx, myy + ny, ex, ey); x.quadraticCurveTo(mxx - nx, myy - ny, top[0], top[1]); x.fill();
+    }
+    x.fillStyle = '#6B4423'; x.beginPath(); x.arc(top[0], top[1] + s * 0.2, s * 0.45, 0, Math.PI * 2); x.fill(); // coconuts
     x.lineCap = 'butt';
   }
   function umbrella(ux, uz, col) {
@@ -476,19 +507,35 @@
     flat(dx - w / 2 + 0.2, dz - d / 2 + 0.2, dx + w / 2 - 0.2, dz + d / 2 - 0.2, 2.25, '#111827');
   }
   function billboard(bx, bz, title, line) {
-    for (const ox of [-3, 3]) box(bx + ox - 0.25, 0, bz - 0.25, bx + ox + 0.25, 7, bz + 0.25, '#4B5563');
-    const a = P(bx - 6, 7, bz), b = P(bx + 6, 7, bz), c = P(bx + 6, 13, bz), d = P(bx - 6, 13, bz);
-    quad([a, b, c, d], '#1F2937');
-    const inset = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
-    const g = x.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, '#22B573'); g.addColorStop(1, '#0EA5E9');
-    quad([inset(a, c, 0.06), inset(b, d, 0.06), inset(c, a, 0.06), inset(d, b, 0.06)], g);
-    const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2], wpx = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    if (wpx < 30) return;
-    x.save(); x.translate(mid[0], mid[1]); x.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
-    x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.font = `800 ${Math.round(wpx * 0.13)}px "Plus Jakarta Sans", sans-serif`; x.fillText(title, 0, -wpx * 0.06);
-    x.font = `600 ${Math.round(wpx * 0.075)}px "Plus Jakarta Sans", sans-serif`; x.fillText(line, 0, wpx * 0.09);
-    x.restore();
+    const hw = 10, y0 = 10, y1 = 21;
+    for (const ox of [-6, 6]) { box(bx + ox - 0.5, 0, bz - 0.5, bx + ox + 0.5, y0, bz + 0.5, '#6B7280'); box(bx + ox - 1.2, 0, bz - 1.2, bx + ox + 1.2, 0.8, bz + 1.2, '#9CA3AF'); }
+    box(bx - hw, y0 - 0.6, bz - 0.2, bx + hw, y0, bz + 1.6, '#4B5563'); // the catwalk
+    const draw1 = () => {
+      const a = P(bx - hw, y0, bz), b = P(bx + hw, y0, bz), c = P(bx + hw, y1, bz), d = P(bx - hw, y1, bz);
+      quad([a, b, c, d], '#0B1020', '#E5E7EB');
+      const t = performance.now() / 1000, slot = Math.floor(t / 6 + bx * 0.01), ad = slot % 3 === 0 ? [title, line] : ADS[(slot + Math.round(bx)) % ADS.length], hue = (slot * 53 + bx) % 360;
+      const ins = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
+      const g = x.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, `hsl(${hue},85%,50%)`); g.addColorStop(1, `hsl(${(hue + 70) % 360},85%,38%)`);
+      quad([ins(a, c, 0.04), ins(b, d, 0.04), ins(c, a, 0.04), ins(d, b, 0.04)], g);
+      const wpx = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      // the lights along the top
+      for (let k = 0; k <= 6; k++) { const p = P(bx - hw + k * hw / 3, y1 + 0.6, bz); x.fillStyle = (k + Math.floor(t * 2)) % 2 ? '#FDE68A' : '#FFFFFF'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.35), 0, Math.PI * 2); x.fill(); }
+      if (wpx < 34) return;
+      x.save(); x.translate((a[0] + c[0]) / 2, (a[1] + c[1]) / 2); x.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
+      x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = 'rgba(0,0,0,.35)'; x.shadowBlur = 4;
+      x.font = `800 ${Math.round(wpx * 0.09)}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[0], 0, -wpx * 0.045);
+      x.font = `600 ${Math.round(wpx * 0.05)}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[1], 0, wpx * 0.07);
+      x.restore();
+    };
+    draw1(); glow.push(draw1);
+  }
+  // letters laid flat on the ground (a word engraved in the land)
+  function groundText(text, cx, cz, size, fill, shadow) {
+    const o = P(cx, 0.06, cz), ex = P(cx + 1, 0.06, cz), ez = P(cx, 0.06, cz + 1);
+    x.save(); x.transform(ex[0] - o[0], ex[1] - o[1], ez[0] - o[0], ez[1] - o[1], o[0], o[1]);
+    x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`;
+    if (shadow) { x.fillStyle = shadow; x.fillText(text, 0.35, 0.45); }
+    x.fillStyle = fill; x.fillText(text, 0, 0); x.restore();
   }
   function boat(bx, bz) {
     const p = [P(bx - 4, 0.4, bz - 1.3), P(bx + 4, 0.4, bz - 1.3), P(bx + 5, 0.4, bz), P(bx + 4, 0.4, bz + 1.3), P(bx - 4, 0.4, bz + 1.3)];
@@ -775,6 +822,13 @@
       const sg = () => { const p = P(cx, 3, d - 3); x.save(); x.font = `800 ${Math.max(9, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#A78BFA'; x.shadowBlur = 10; x.fillStyle = '#fff'; x.fillText('WYRD', p[0], p[1]); x.restore(); };
       sg(); glow.push(sg);
     },
+    welcome(a, b, c, d) {
+      const cx = (a + c) / 2, cz = (b + d) / 2;
+      groundText('WELCOME TO', cx, cz - 9, 5.5, '#B08A43', 'rgba(60,40,10,0.35)');
+      groundText('LAGOS ISLAND', cx, cz + 1, 10, '#F8FAFC', 'rgba(60,40,10,0.45)');
+      for (const px of [a + 4, c - 4]) { box(px - 0.3, 0, d - 5, px + 0.3, 14, d - 4.4, '#E5E7EB'); flat(px + 0.3, d - 4.9, px + 6, d - 4.5, 12.6, '#22B573'); flat(px + 0.3, d - 4.9, px + 6, d - 4.5, 11.4, '#F8FAFC'); flat(px + 0.3, d - 4.9, px + 6, d - 4.5, 10.2, '#22B573'); }
+      for (let k = 0; k < 5; k++) palm(a + 8 + k * 16, b + 3, 9 + (k % 2) * 2);
+    },
     soon(a, b, c, d) {
       for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
       box(a + 3, 2.4, d - 2.6, c - 3, 3, d - 1.8, '#FACC15');
@@ -869,9 +923,9 @@
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   // the footprints you walk round
-  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
+  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -975,6 +1029,7 @@
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
+      if (p[0] === 'club' || p[0] === 'welcome') continue;
       const cx = (p[1] + p[3] / 2) * T, cz = (p[2] + p[4] / 2) * T, top = PIN_H[p[0]] ?? 16;
       const s = P(cx, top, cz);
       if (s[0] < -40 || s[0] > W + 40 || s[1] < -40 || s[1] > H + 40) continue;
@@ -1427,9 +1482,14 @@
   }
 
   // ================= the loop =================
-  let last = performance.now(), whereT = 0, playing = false;
+  let last = performance.now(), whereT = 0, playing = false, slow = 0, fast = 0;
   function frame(t) {
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    if (document.hidden) { requestAnimationFrame(frame); return; }
+    // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
+    if (dt > 0.028) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    if (slow > 40 && quality > 0.6) { quality = Math.max(0.6, quality - 0.15); slow = 0; resize(); }
+    if (fast > 600 && quality < 1) { quality = Math.min(1, quality + 0.1); fast = 0; resize(); }
     if (playing) {
       let ix = stick.x, iz = stick.z;
       if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
@@ -1558,7 +1618,7 @@
   function lockScreen() {
     return new Promise((done) => {
       const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3);
-      document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+      document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }) + (notes.length ? ' · ' + notes.length + ' new' : '');
       L.style.display = 'flex'; L.onclick = () => { L.style.display = 'none'; done(); };
     });
@@ -1586,7 +1646,7 @@
       if (app === 'home') {
         const d = new Date(Date.now() + 3600e3), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
-        show(`<div class="widget"><div><div class="wt">${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${esc(me$.handle)}</div><div class="wn">${naira(me$.naira)}</div></div></div>
+        show(`<div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${esc(me$.handle)}</div><div class="wn" data-naira>${naira(me$.naira)}</div></div></div>
           <div class="apps">${APPS.filter((a) => !DOCK.includes(a[0])).map(tile).join('')}</div>
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
@@ -1755,7 +1815,7 @@
       }
       if (app === 'ride') {
         const spots = (k) => PLACES.filter((p) => sectorAt[p[2] * BOARD.w + p[1]] === k && p[0] !== 'soon');
-        show(`<div class="ptitle">Ride</div><div class="lock">Pick a place. Your okada takes you there.</div>${SECTORS.map((s, k) => s.fill === 'none' ? '' : `<div class="rsec">// ${esc(s.name)}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div>`).join('')}`);
+        show(`<div class="ptitle">Ride</div><div class="lock">Pick a place. Your okada takes you there.</div>${SECTORS.map((s, k) => s.id.startsWith('fill') ? '' : `<div class="rsec">// ${esc(s.name)}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div>`).join('')}`);
         pbody.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => { const s = SECTORS[b.dataset.s]; const j = s.rows[0] ?? s.rect[1], i = s.cols[0] ?? Math.round((s.rect[0] + s.rect[2]) / 2); if (inside) leaveRoom(); ride(i + 0.5, j + 0.5); closePhone(); }));
         pbody.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { const p = PLACES[b.dataset.p]; if (inside) leaveRoom(); const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); ride(t[0] + 0.5, t[1] + 0.5); closePhone(); }));
         // the pictures fill in one by one, nearest the top first
@@ -1787,7 +1847,15 @@
   document.getElementById('pclose').onclick = closePhone;
   document.getElementById('phome').onclick = () => { stack = [['home']]; clearInterval(chatTimer); render(signedIn() && me$ ? 'home' : 'signin'); };
   document.getElementById('pback').onclick = back;
-  setInterval(() => { const d = new Date(Date.now() + 3600e3); document.getElementById('pclock').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }, 1000);
+  // the phone's clocks (status bar, home, lock screen) on Lagos time, and the naira wherever it shows
+  setInterval(() => {
+    if (phone.style.display !== 'block') return;
+    const d = new Date(Date.now() + 3600e3), hm = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+    document.getElementById('pclock').textContent = hm + ':' + String(d.getUTCSeconds()).padStart(2, '0');
+    for (const el of phone.querySelectorAll('[data-clock]')) el.textContent = hm;
+    if (me$) for (const el of phone.querySelectorAll('[data-naira]')) el.textContent = naira(me$.naira);
+  }, 1000);
+  setInterval(() => { if (phone.style.display === 'block' && signedIn() && !document.hidden) my('me').then((v) => { if (me$) Object.assign(me$, v); pnaira.textContent = naira(v.naira); }).catch(() => {}); }, 5000);
   // a picture of a district or a landmark: the same renderer, drawn into a small canvas, kept once made
   const peeks = new Map();
   function peek(id) {
@@ -1894,7 +1962,7 @@
   function start() {
     store.set('li.color', myColor);
     hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true;
-    tick(); setInterval(tick, 1000);
+    tick(); setInterval(() => { if (!document.hidden) tick(); }, 1000);
     if (signedIn()) poll();
   }
   // already signed in (here or in the WYRD app on this site): welcome back
