@@ -1248,7 +1248,7 @@
     if (base[0] < -60 || base[0] > W + 60 || base[1] < -140 || base[1] > H + 60) return;
     const [lk, ps] = String(look || '').split('|'), pose = ps ? ps.split(',')[0] : null;
     const L = parseLook(lk, name), fem = L.g === 'f', seated = pose === 'sit', asleep = pose === 'sleep';
-    const seatPx = seated ? by0 - P(px, 2.4, pz)[1] : 0;
+    const seatY = ps ? Number(ps.split(',')[1]) || 2.2 : 0, seatPx = seated ? by0 - P(px, seatY, pz)[1] : 0;
     // the gait: phase advances with distance; which way the figure faces on screen
     const g = gaits.get(name) || { x: px, z: pz, at: 0, ph: 0, face: 1 }, moved = Math.hypot(px - g.x, pz - g.z);
     if (moved > 0.05) { const a = P(g.x, 0, g.z), b = P(px, 0, pz); if (Math.abs(b[0] - a[0]) > 0.3) g.face = b[0] > a[0] ? 1 : -1; g.at = now; g.ph += moved * 0.75; g.x = px; g.z = pz; }
@@ -1260,7 +1260,7 @@
     const skin = SKINS[L.skin], skinD = shadeHex(skin, 0.78), skinL = shadeHex(skin, 1.14), hairC = HAIRS[L.hair], hairL = shadeHex(hairC, 1.9);
     const top = color, topD = shadeHex(color, 0.72), topL = shadeHex(color, 1.15), bottom = BOTTOMS[L.bottom], bottomD = shadeHex(bottom, 0.75);
     const wear = fem ? ['trousers', 'skirt', 'dress'][L.bottom % 3] : 'trousers';
-    if (asleep) { x.save(); const c = P(px, 3, pz); x.translate(c[0], c[1]); x.rotate(-Math.PI / 2 * f * 0.94); x.translate(-bx, -(by - 13 * s)); }
+    if (asleep) { x.save(); const c = P(px, seatY + 0.4, pz); x.translate(c[0], c[1]); x.rotate(-Math.PI / 2 * f * 0.94); x.translate(-bx, -(by - 13 * s)); }
     if (!asleep) { x.fillStyle = 'rgba(15,25,40,0.3)'; x.beginPath(); x.ellipse(bx, by, 7 * s, 2.6 * s, 0, 0, Math.PI * 2); x.fill(); }
     if (mine && !asleep) { x.strokeStyle = '#22B573'; x.lineWidth = 2; x.beginPath(); x.ellipse(bx, by, 11 * s, 4.2 * s, 0, 0, Math.PI * 2); x.stroke(); }
     // proportions: about seven and a half heads tall
@@ -1609,7 +1609,7 @@
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
     for (const [pid, o] of others) items.push({ d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
-    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind : '')) });
+    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : '')) });
     if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
     if (R.kind === 'arena') drawStands(R, now);
     items.sort((p, q) => p.d - q.d);
@@ -2037,7 +2037,7 @@
   }
   async function tick() {
     try {
-      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind : '') });
+      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : '') });
       document.getElementById('count').textContent = r.online;
       const now = performance.now(), seen = new Set();
       for (const p of r.players) {
@@ -2650,7 +2650,7 @@
       for (const it of inside.layout) { const k = SEAT[it.k] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
       if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
-      else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { pose = { kind: near[1], x: near[0].x, z: near[0].z }; me.x = pose.x; me.z = pose.z; } };
+      else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y }; me.x = pose.x; me.z = pose.z; } };
       else next = null;
     }
     else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
@@ -2675,6 +2675,22 @@
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
   actBtn.onclick = () => act && act.run();
+  // the spot on a piece of furniture where you sit (or lie), and the seat's height
+  function seatOf(it) {
+    const f = FURN[it.k], rot = (it.r || 0) % 2, w = rot ? f[3] : f[2], d = rot ? f[2] : f[3], a = it.x - w / 2, b = it.z - d / 2, c = it.x + w / 2, e = it.z + d / 2;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    switch (it.k) {
+      case 'chair': return { x: it.x, z: it.z + 0.3, y: 1.8 };
+      case 'stool': return { x: it.x, z: it.z, y: 2.6 };
+      case 'armchair': return { x: it.x, z: it.z + 0.4, y: 2 };
+      case 'sofa': case 'couch2': // the cushion nearest you, in front of the back
+        return rot ? { x: a + 1.6, z: clamp(me.z, b + 1.5, e - 1.5), y: 2 } : { x: clamp(me.x, a + 1.5, c - 1.5), z: b + 1.8, y: 2 };
+      case 'booth': // the bench (the back of the U), not the table in the middle
+        return { x: a + 2.4, z: clamp(me.z, b + 2.6, e - 2.6), y: 1.8 };
+      case 'bed': return { x: it.x, z: it.z, y: 2.6 };
+      default: return { x: it.x, z: it.z, y: 2 };
+    }
+  }
   const leaveBtn = document.getElementById('leave');
   leaveBtn.onclick = () => { pose = null; leaveRoom(); };
   setInterval(() => { leaveBtn.style.display = inside ? 'grid' : 'none'; }, 300);
