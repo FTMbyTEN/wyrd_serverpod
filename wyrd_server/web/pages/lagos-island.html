@@ -141,7 +141,7 @@
   #pbar { position: relative; align-items: center; padding: 14px 26px 8px !important; border-bottom: none !important; }
   #pbar .cam { position: absolute; left: 50%; top: 11px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #2A3A55, #000 60%); box-shadow: 0 0 0 2px #000; }
   #pbar .sys { display: flex; align-items: center; gap: 6px; fill: currentColor; color: var(--c); }
-  #pbar .sys #pnaira { color: var(--y); margin-right: 2px; }
+  #pbar .sys #pnaira { display: none; }
   /* the wallpaper: a slow neon grid */
   #screen { background: linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(0,240,255,.07) 0) 0 0 / 100% 26px, linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), rgba(255,0,60,.06) 0) 0 0 / 26px 100%, radial-gradient(90% 60% at 100% 0%, rgba(255,0,60,.25), transparent 60%), radial-gradient(80% 60% at 0% 100%, rgba(0,240,255,.2), transparent 60%), linear-gradient(180deg, #0B0B14, #07070D) !important; animation: grid 18s linear infinite; }
   @keyframes grid { to { background-position: 0 260px, 260px 0, 0 0, 0 0, 0 0; } }
@@ -292,8 +292,8 @@
     { id: 'ads', name: 'Ad Island', rect: [29, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 23, 36, 28], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
-    { id: 'fill1', name: 'Reclaimed land', rect: [38, 23, 42, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
-    { id: 'fill2', name: 'Reclaimed land', rect: [53, 20, 60, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.9 } },
+    { id: 'station', name: 'Blue Line Station', rect: [38, 23, 42, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 1.0 } },
+    { id: 'airport', name: 'Lagos Island Airport', rect: [53, 20, 60, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
     { id: 'fill3', name: 'Reclaimed land', rect: [43, 1, 52, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } },
     { id: 'welcome', name: 'Welcome Point', rect: [6, 17, 14, 20], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.35, pitch: 0.9, zoom: 1.0 } },
     { id: 'fill4', name: 'Reclaimed land', rect: [54, 1, 60, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
@@ -370,8 +370,8 @@
     // the refinery, always running
     ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
     ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
-    ['soon', 39, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 55, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['station', 38, 24, 5, 5, 'Blue Line · Lagos Island Station', '🚆'],
+    ['airport', 53, 20, 8, 9, 'Lagos Island Airport', '✈️'],
     ['soon', 46, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 55, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 11, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
@@ -394,6 +394,7 @@
 
   // ---- the ground, tile by tile: water, land, sand, road, bridge, ferry
   const W0 = 0, LAND = 1, SAND = 2, ROAD = 3, BRIDGE = 4, FERRYLANE = 5;
+  const COAST = [24, 43, 22]; // from column, to column, on row
   const tile = new Uint8Array(BOARD.w * BOARD.h);
   const sectorAt = new Int8Array(BOARD.w * BOARD.h).fill(-1);
   const at = (i, j) => (i < 0 || j < 0 || i >= BOARD.w || j >= BOARD.h ? W0 : tile[j * BOARD.w + i]);
@@ -406,6 +407,9 @@
     }
   });
   for (const [i0, j0, i1, j1] of BRIDGES) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) tile[j * BOARD.w + i] = BRIDGE;
+  for (let i = COAST[0]; i <= COAST[1]; i++) if (tile[COAST[2] * BOARD.w + i] === W0) tile[COAST[2] * BOARD.w + i] = BRIDGE;
+  // the airport's and the station's gates onto the roads
+  tile[24 * BOARD.w + 52] = BRIDGE; tile[24 * BOARD.w + 53] = ROAD; tile[23 * BOARD.w + 40] = ROAD;
   // the beaches' sand
   for (const p of PLACES) if (p[0] === 'beach') for (let j = p[2]; j < p[2] + p[4]; j++) for (let i = p[1]; i < p[1] + p[3]; i++) if (at(i, j) === LAND) tile[j * BOARD.w + i] = SAND;
   const blocked = []; // footprints you walk round: [x0, z0, x1, z1]
@@ -862,6 +866,42 @@
       const sg = () => { const p = P(cx, 3, d - 3); x.save(); x.font = `800 ${Math.max(9, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#A78BFA'; x.shadowBlur = 10; x.fillStyle = '#fff'; x.fillText('WYRD', p[0], p[1]); x.restore(); };
       sg(); glow.push(sg);
     },
+    // ---- the airport: a runway with lights, a glass terminal, a control tower, planes at the gates, one taking off now and then
+    airport(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#C7CDD5');
+      const rz0 = b + 8, rz1 = b + 22; // the runway
+      flat(a + 3, rz0, c - 3, rz1, 0.08, '#374151');
+      for (let k = 0; k < 12; k++) flat(a + 8 + k * 6, (rz0 + rz1) / 2 - 0.3, a + 11 + k * 6, (rz0 + rz1) / 2 + 0.3, 0.1, '#F8FAFC');
+      for (let k = 0; k < 4; k++) { flat(a + 4 + k * 1.6, rz0 + 2, a + 5 + k * 1.6, rz1 - 2, 0.1, '#F8FAFC'); flat(c - 5 - k * 1.6, rz0 + 2, c - 4 - k * 1.6, rz1 - 2, 0.1, '#F8FAFC'); }
+      const lights = () => { const t = performance.now() / 120; for (let k = 0; k < 20; k++) for (const z of [rz0 + 0.4, rz1 - 0.4]) { const p = P(a + 4 + k * 3.6, 0.2, z); x.fillStyle = (k + Math.floor(t)) % 20 === 0 ? '#FFFFFF' : z === rz0 + 0.4 ? '#60A5FA' : '#FDE68A'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); } };
+      lights(); glow.push(lights);
+      flat(a + 10, rz1, a + 50, d - 22, 0.07, '#9CA3AF'); // the apron
+      box(a + 8, 0, d - 20, c - 12, 9, d - 6, '#BFDBFE', '#E0F2FE', 2); // the terminal
+      box(a + 8, 9, d - 20, c - 12, 10.5, d - 6, '#F8FAFC');
+      cyl(c - 6, d - 12, 2.2, 22, '#E5E7EB'); box(c - 8.6, 22, d - 14.6, c - 3.4, 26, d - 9.4, '#1E3A8A', '#93C5FD', 1); box(c - 9, 26, d - 15, c - 3, 26.6, d - 9, '#F8FAFC');
+      for (let k = 0; k < 3; k++) plane(a + 18 + k * 16, d - 24, 0);
+      // one plane rolls down the runway and climbs away, every 20 seconds
+      const ph = (performance.now() / 20000) % 1;
+      if (ph < 0.6) { const u = ph / 0.6, px = a + 8 + u * (c - a - 6), alt = u < 0.55 ? 0 : (u - 0.55) * 90; plane(px, (rz0 + rz1) / 2, alt); }
+      groundText('LAGOS ISLAND', (a + c) / 2, b + 4.2, 4, 'rgba(255,255,255,0.75)');
+    },
+    // ---- the station: two tracks, a long platform under a canopy, the Blue Line train in and out
+    station(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#D1D5DB');
+      const tz = [b + 12, b + 19];
+      for (const z of tz) { flat(a, z - 1.6, c, z + 1.6, 0.06, '#78716C'); for (let k = 0; k < 24; k++) flat(a + k * 2.1, z - 1.5, a + k * 2.1 + 0.6, z + 1.5, 0.07, '#57534E'); flat(a, z - 1, c, z - 0.75, 0.09, '#D6D3D1'); flat(a, z + 0.75, c, z + 1, 0.09, '#D6D3D1'); }
+      flat(a + 3, tz[0] + 2, c - 3, tz[1] - 2, 0.6, '#E5E7EB'); // the platform
+      for (const px of [a + 8, a + 22, a + 36]) box(px - 0.3, 0.6, (tz[0] + tz[1]) / 2 - 0.3, px + 0.3, 6.5, (tz[0] + tz[1]) / 2 + 0.3, '#6B7280');
+      box(a + 4, 6.5, tz[0] + 1, c - 4, 7.2, tz[1] - 1, '#1D4ED8'); // the canopy
+      box(a + 6, 0, d - 14, c - 6, 8, d - 3, '#F8FAFC', '#93C5FD', 2); box(a + 6, 8, d - 14, c - 6, 9, d - 3, '#1D4ED8'); // the hall
+      const sg = () => { const p = P((a + c) / 2, 5, d - 3); x.save(); x.font = `800 ${Math.max(8, K * 1.8)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#60A5FA'; x.shadowBlur = 8; x.fillStyle = '#1D4ED8'; x.fillText('BLUE LINE', p[0], p[1]); x.restore(); };
+      sg(); glow.push(sg);
+      // the train: comes in, waits at the platform, leaves
+      const ph = (performance.now() / 24000) % 1, L = 34;
+      let tx = null;
+      if (ph < 0.25) tx = c + 10 - (ph / 0.25) * (c - a + 10 - L) ; else if (ph < 0.55) tx = a + L; else if (ph < 0.8) tx = a + L - ((ph - 0.55) / 0.25) * (L + 60);
+      if (tx != null) for (let k = 0; k < 3; k++) { const x0 = tx - L + k * 11.5, x1 = x0 + 10.8; if (x1 < a - 2 || x0 > c + 2) continue; box(Math.max(a, x0), 0.4, tz[0] - 1.3, Math.min(c, x1), 4.4, tz[0] + 1.3, '#F8FAFC', '#1E3A8A', 1); box(Math.max(a, x0), 4.4, tz[0] - 1.1, Math.min(c, x1), 4.7, tz[0] + 1.1, '#1D4ED8'); }
+    },
     welcome(a, b, c, d) {
       const cx = (a + c) / 2, cz = (b + d) / 2;
       groundText('WELCOME TO', cx, cz - 9, 5.5, '#B08A43', 'rgba(60,40,10,0.35)');
@@ -896,6 +936,16 @@
     }
     const n = x.createRadialGradient(c[0] - K, c[1] - K, 1, c[0], c[1], K * 3); n.addColorStop(0, '#fff'); n.addColorStop(1, '#8B5CF6');
     x.fillStyle = n; x.beginPath(); x.arc(c[0], c[1], K * 2.6, 0, Math.PI * 2); x.fill();
+  }
+  // a plane: a white body, swept wings, a blue tail; [alt] lifts it off the ground
+  function plane(px, pz, alt) {
+    if (alt > 0) { const sh = P(px + alt * 0.4, 0, pz + alt * 0.2); x.fillStyle = 'rgba(20,40,60,' + Math.max(0.05, 0.25 - alt / 200) + ')'; x.beginPath(); x.ellipse(sh[0], sh[1], K * 9, K * 3 * sp, 0, 0, Math.PI * 2); x.fill(); }
+    const y = 1.2 + alt;
+    box(px - 9, y, pz - 1.2, px + 9, y + 2.4, pz + 1.2, '#F8FAFC');
+    quad([P(px - 2, y + 1.2, pz - 1), P(px + 3, y + 1.2, pz - 1), P(px - 1, y + 1.2, pz - 10), P(px - 4, y + 1.2, pz - 10)], '#E5E7EB', 'rgba(0,0,0,.15)');
+    quad([P(px - 2, y + 1.2, pz + 1), P(px + 3, y + 1.2, pz + 1), P(px - 1, y + 1.2, pz + 10), P(px - 4, y + 1.2, pz + 10)], '#E5E7EB', 'rgba(0,0,0,.15)');
+    box(px - 9, y + 2.4, pz - 0.3, px - 6, y + 6.5, pz + 0.3, '#1D4ED8');
+    box(px + 7.5, y + 1.4, pz - 1.25, px + 9, y + 2.2, pz + 1.25, '#1E3A8A');
   }
   // ---- shapes for the industry and the screens
   function cyl(cx, cz, r, h, col) {
@@ -963,9 +1013,9 @@
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   // the footprints you walk round
-  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
+  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -1009,8 +1059,34 @@
     }
     // the Link Bridge's pylon and cables
     { const cx = 27.5 * T, cz = 9.5 * T; box(cx - 0.8, 0, cz - 0.8, cx + 0.8, 26, cz + 0.8, '#F8FAFC');
-      const top = P(cx, 26, cz); x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 1;
-      for (let k = -4; k <= 4; k++) { if (!k) continue; const e = P(cx + k * 4.5, 0.6, cz); x.beginPath(); x.moveTo(top[0], top[1]); x.lineTo(e[0], e[1]); x.stroke(); } }
+      const cables = (lit) => {
+        const top = P(cx, 26, cz), t = performance.now() / 1000;
+        x.save(); if (lit) { x.globalCompositeOperation = 'lighter'; x.shadowBlur = 10; }
+        for (let k = -6; k <= 6; k++) {
+          if (!k) continue; const e = P(cx + k * 3.4, 0.6, cz), hue = (t * 30 + k * 18) % 360;
+          x.strokeStyle = lit ? `hsla(${hue},95%,62%,0.95)` : 'rgba(255,255,255,0.85)'; x.shadowColor = x.strokeStyle; x.lineWidth = lit ? 1.6 : 1;
+          x.beginPath(); x.moveTo(top[0], top[1]); x.lineTo(e[0], e[1]); x.stroke();
+        }
+        if (lit) { // the pylon glows, and lamps run along the deck
+          const p0 = P(cx, 0.6, cz), p1 = P(cx, 26, cz), g = x.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);
+          g.addColorStop(0, `hsla(${(t * 30) % 360},95%,60%,0.9)`); g.addColorStop(1, `hsla(${(t * 30 + 120) % 360},95%,70%,0.9)`);
+          x.strokeStyle = g; x.lineWidth = Math.max(3, K * 1.4); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
+          for (let k = 0; k <= 16; k++) { const p = P(26 * T + k * 2.5, 1.5, cz + 0.4); x.fillStyle = '#FEF3C7'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.4, K * 0.35), 0, Math.PI * 2); x.fill(); }
+        }
+        x.restore();
+      };
+      cables(false); glow.push(() => cables(true)); }
+    // the Coastal Road: along the Atlantic, lamps every few tiles that light at night
+    for (let i = COAST[0]; i <= COAST[1]; i++) {
+      if (!visible(i, COAST[2])) continue;
+      const xa = i * T, za = COAST[2] * T;
+      box(xa, -1, za + 0.5, xa + T, 0.3, za + T - 0.5, '#9CA3AF');
+      flat(xa, za + 0.5, xa + T, za + T - 0.5, 0.32, '#4B5563');
+      flat(xa, za + 1.1, xa + T, za + 1.4, 0.34, '#FACC15'); flat(xa, za + T - 1.4, xa + T, za + T - 1.1, 0.34, '#FACC15');
+      if (i % 2 === 0) flat(xa + 2, za + T / 2 - 0.15, xa + 7, za + T / 2 + 0.15, 0.35, '#F8FAFC');
+      if (i % 3 === 0) { box(xa + 5 - 0.2, 0.3, za + T - 0.9, xa + 5 + 0.2, 6, za + T - 0.5, '#6B7280'); const lamp = () => { const p = P(xa + 5, 6.2, za + T - 0.7); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 5); g.addColorStop(0, 'rgba(254,240,180,0.8)'); g.addColorStop(1, 'rgba(254,240,180,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 5, 0, Math.PI * 2); x.fill(); x.restore(); }; glow.push(lamp); }
+    }
+    { const a = P(COAST[0] * T + 40, 0.4, COAST[2] * T + T + 4); if (a[0] > -400 && a[0] < W + 400 && a[1] > -60 && a[1] < H + 60) groundText('LAGOS–CALABAR COASTAL ROAD', (COAST[0] + COAST[1]) / 2 * T, COAST[2] * T + T + 3.2, 4.2, 'rgba(255,255,255,0.6)'); }
     // the ferry lane, dashed across the water
     if (false) { const a = P(FERRY[0] * T + T / 2, 0.1, FERRY[1] * T), b = P(FERRY[0] * T + T / 2, 0.1, (FERRY[3] + 1) * T);
       x.setLineDash([6, 6]); x.strokeStyle = 'rgba(255,255,255,0.7)'; x.lineWidth = 2; x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); x.setLineDash([]); }
@@ -1391,6 +1467,7 @@
   let myName = store.get('li.name') || '', myColor = store.get('li.color') || COLORS[Math.floor(Math.random() * COLORS.length)];
   const me = { x: 7.5 * T, z: 10.5 * T }; // on the road beside the Central Mosque
   let sector = SECTORS[0];
+  { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
 
   // ---- input
   const keys = new Set();
@@ -1723,7 +1800,7 @@
       if (app === 'home') {
         const d = new Date(Date.now() + 3600e3), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
-        show(`<div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${esc(me$.handle)}</div><div class="wn" data-naira>${naira(me$.naira)}</div></div></div>
+        show(`<div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">Signed in</div><div class="wn">${esc(me$.handle)}</div></div></div>
           <div class="apps">${APPS.filter((a) => !DOCK.includes(a[0])).map(tile).join('')}</div>
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
@@ -1911,7 +1988,7 @@
           <div class="trip"><img alt="" src="${peek(d.peek)}"><div class="tl"><span class="dot a"></span><span>Your location · ${esc(inside ? inside.title : sector.name)}</span></div><div class="tl"><span class="dot b"></span><b>${esc((d.emoji ? d.emoji + ' ' : '') + d.name)}</b></div><div class="dim">About ${Math.max(1, Math.round(q.tiles * 0.25))} min · ${q.tiles * 100} m</div></div>
           <button class="opt on" data-k="okada"><span class="oi">🛵</span><span class="on2"><b>Okada</b><small>${q.okadaEta} min away · fastest in traffic</small></span><span class="of">${naira(q.okada)}</span></button>
           <button class="opt" data-k="car"><span class="oi">🚗</span><span class="on2"><b>Car</b><small>${q.carEta} min away · air-conditioned</small></span><span class="of">${naira(q.car)}</span></button>
-          <div class="dim" style="margin:8px 2px">Paid from your wallet when you arrive · balance <b data-naira>${naira(me$.naira)}</b></div>
+          <div class="dim" style="margin:8px 2px">Paid from your wallet when you arrive.</div>
           <button class="pbtn big2" id="rqGo">Request okada</button>`);
         let kind = 'okada';
         pbody.querySelectorAll('.opt').forEach((b) => (b.onclick = () => { kind = b.dataset.k; pbody.querySelectorAll('.opt').forEach((o) => o.classList.toggle('on', o === b)); $('rqGo').textContent = 'Request ' + kind; }));
