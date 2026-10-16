@@ -1326,12 +1326,12 @@
     tv: ['TV', '📺', 6, 1.6], plant: ['Plant', '🪴', 2.4, 2.4], lamp: ['Lamp', '💡', 2, 2], rug: ['Rug', '🟥', 9, 6], shelf: ['Shelf', '📚', 6, 2],
     fridge: ['Fridge', '🧊', 3, 3], kitchen: ['Kitchen', '🍳', 9, 3], desk: ['Desk', '🖥️', 6, 3], wardrobe: ['Wardrobe', '🚪', 5, 2.6],
     speaker: ['Speaker', '🔊', 3, 3], djbooth: ['DJ booth', '🎧', 10, 4], bar: ['Bar', '🍸', 14, 3.4], stool: ['Stool', '🟤', 1.8, 1.8],
-    dance: ['Dance floor', '🪩', 16, 12], booth: ['VIP booth', '🛋️', 9, 9], bottles: ['Bottle service', '🍾', 3.6, 3.6], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
+    dance: ['Dance floor', '🪩', 16, 12], podium: ['Podium', '💃', 4, 4], booth: ['VIP booth', '🛋️', 9, 9], bottles: ['Bottle service', '🍾', 3.6, 3.6], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
   };
   const PALETTE = ['#3B82F6', '#EF4444', '#22B573', '#F59E0B', '#A855F7', '#EC4899', '#111827', '#F8FAFC', '#8B5E3C'];
   const ROOMS = {
     hq: { w: 56, d: 40, floor: '#C9A27A', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } },
-    club: { w: 64, d: 46, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.6 } },
+    club: { w: 96, d: 66, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     casino: { w: 64, d: 46, floor: '#5B1A1A', wall: '#3F1D1D', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.75 } },
     tower: { w: 48, d: 36, floor: '#E2E8F0', wall: '#E0E7FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.92, zoom: 2.1 } },
     arena: { w: 110, d: 80, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.82, zoom: 1.05 } },
@@ -1349,10 +1349,19 @@
       { k: 'bath', x: 50, z: 3.5 }, { k: 'sink', x: 43, z: 1.8 }, { k: 'plant', x: 54.5, z: 11 },
     ],
     club: [
-      { k: 'speaker', x: 14, z: 6 }, { k: 'speaker', x: 50, z: 6 }, { k: 'dance', x: 32, z: 21 },
-      { k: 'booth', x: 54, z: 20, c: '#7C3AED' }, { k: 'booth', x: 54, z: 32, c: '#BE185D' }, { k: 'bottles', x: 54, z: 20 }, { k: 'bottles', x: 54, z: 32 },
-      { k: 'stool', x: 10.5, z: 16 }, { k: 'stool', x: 10.5, z: 21 }, { k: 'stool', x: 10.5, z: 26 }, { k: 'stool', x: 10.5, z: 31 }, { k: 'stool', x: 10.5, z: 36 },
-      { k: 'plant', x: 61, z: 43 }, { k: 'plant', x: 3, z: 43 },
+      // the dance floor, two halves, with speakers either side of the stage
+      { k: 'dance', x: 40, z: 30 }, { k: 'dance', x: 56, z: 30 }, { k: 'speaker', x: 26, z: 7 }, { k: 'speaker', x: 70, z: 7 }, { k: 'speaker', x: 26, z: 12 }, { k: 'speaker', x: 70, z: 12 },
+      { k: 'podium', x: 30, z: 22 }, { k: 'podium', x: 66, z: 22 }, { k: 'podium', x: 30, z: 40 }, { k: 'podium', x: 66, z: 40 },
+      // the main bar's stools (the bar itself is part of the room)
+      ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => ({ k: 'stool', x: 10.5, z: 16 + k * 5 })),
+      // VIP: four booths with bottle service behind the rope
+      { k: 'booth', x: 90, z: 16, c: '#7C3AED' }, { k: 'booth', x: 90, z: 28, c: '#BE185D' }, { k: 'booth', x: 90, z: 40, c: '#0E7490' }, { k: 'booth', x: 90, z: 52, c: '#B45309' },
+      { k: 'bottles', x: 90, z: 16 }, { k: 'bottles', x: 90, z: 28 }, { k: 'bottles', x: 90, z: 40 }, { k: 'bottles', x: 90, z: 52 },
+      // the lounge by the entrance
+      { k: 'rug', x: 26, z: 57, c: '#4C1D95' }, { k: 'couch2', x: 20, z: 57, r: 1, c: '#312E81' }, { k: 'couch2', x: 32, z: 57, r: 1, c: '#312E81' }, { k: 'coffee', x: 26, z: 57, c: '#111827' },
+      // the champagne bar's stools
+      { k: 'stool', x: 62, z: 55.5 }, { k: 'stool', x: 66, z: 55.5 }, { k: 'stool', x: 70, z: 55.5 }, { k: 'stool', x: 74, z: 55.5 },
+      { k: 'plant', x: 93, z: 63 }, { k: 'plant', x: 3, z: 63 }, { k: 'plant', x: 44, z: 63 }, { k: 'plant', x: 52, z: 63 },
     ],
     casino: [{ k: 'roulette', x: 20, z: 18 }, { k: 'roulette', x: 42, z: 18 }, ...[0, 1, 2, 3, 4, 5].map((k) => ({ k: 'slot', x: 10 + k * 8, z: 4 })), { k: 'bar', x: 32, z: 38 }, { k: 'plant', x: 60, z: 42 }, { k: 'plant', x: 4, z: 42 }],
     tower: [{ k: 'desk', x: 10, z: 6 }, { k: 'desk', x: 38, z: 6 }, { k: 'couch2', x: 12, z: 28, c: '#6366F1' }, { k: 'plant', x: 44, z: 32 }, { k: 'plant', x: 4, z: 32 }, { k: 'shelf', x: 24, z: 2 }],
@@ -1373,6 +1382,7 @@
       case 'tv': box(a + 1, 0, b, c - 1, 2, e, '#374151'); box(a, 2, b + 0.5, c, 6, b + 1, '#0B1020'); { const p0 = P(a + 0.4, 2.4, b + 1.02), p1 = P(c - 0.4, 2.4, b + 1.02), p2 = P(c - 0.4, 5.6, b + 1.02), p3 = P(a + 0.4, 5.6, b + 1.02); quad([p0, p1, p2, p3], `hsl(${(now / 30) % 360},70%,55%)`); } break;
       case 'plant': cyl(it.x, it.z, 1, 2, col || '#C2410C'); tree(it.x, it.z, 1.6, C.tree); break;
       case 'lamp': box(it.x - 0.2, 0, it.z - 0.2, it.x + 0.2, 6, it.z + 0.2, '#6B7280'); cyl(it.x, it.z, 1, 1.4, col || '#FDE68A'); { const p = P(it.x, 6.5, it.z); const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 6); g.addColorStop(0, 'rgba(253,230,138,0.45)'); g.addColorStop(1, 'rgba(253,230,138,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 6, 0, Math.PI * 2); x.fill(); } break;
+      case 'podium': { const t = now / 300, cc = `hsl(${(t * 25 + it.x * 9) % 360},90%,55%)`; cyl(it.x, it.z, 2, 1.6, '#1F1B2E'); const p = P(it.x, 1.6, it.z), r = K * 2; x.strokeStyle = cc; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); box(it.x - 0.12, 1.6, it.z - 0.12, it.x + 0.12, 14, it.z + 0.12, '#D1D5DB'); } break;
       case 'booth': { const cc = col || '#7C3AED'; box(a, 0, b, a + 1.6, 4.5, e, cc); box(a, 0, b, c, 4.5, b + 1.6, cc); box(a, 0, e - 1.6, c, 4.5, e, cc); box(a + 1.6, 0, b + 1.6, a + 3.2, 1.8, e - 1.6, shadeHex(cc, 0.8)); box(a + 1.6, 0, b + 1.6, c, 1.8, b + 3.2, shadeHex(cc, 0.8)); box(a + 1.6, 0, e - 3.2, c, 1.8, e - 1.6, shadeHex(cc, 0.8)); } break;
       case 'bottles': { box(a, 0, b, c, 3, e, '#111827'); box(a - 0.2, 3, b - 0.2, c + 0.2, 3.3, e + 0.2, '#F5C542'); const g = () => { for (const [ox, oz, hc] of [[-0.8, -0.6, '#FDE047'], [0.6, -0.4, '#22D3EE'], [0, 0.7, '#F472B6']]) { cyl(it.x + ox, it.z + oz, 0.35, 0, hc); const p0 = P(it.x + ox, 3.3, it.z + oz), p1 = P(it.x + ox, 6, it.z + oz); x.strokeStyle = hc; x.lineWidth = Math.max(2, K * 0.6); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); x.fillStyle = '#FFFFFF'; x.beginPath(); x.arc(p1[0], p1[1], Math.max(1.5, K * 0.3), 0, Math.PI * 2); x.fill(); } }; g(); } break;
       case 'nightstand': box(a, 0, b, c, 2.6, e, col || '#5B3A21'); box(a + 0.2, 1.3, e - 0.05, c - 0.2, 1.5, e, '#B08A43'); cyl(it.x, it.z, 0.5, 4, '#FDE68A'); break;
@@ -1427,50 +1437,60 @@
   // a club: a glossy black floor that catches the lights, LED strips round the walls, a raised DJ stage with an
   // LED wall behind it, a truss of moving heads above, a long bar with backlit bottles, neon signs, a VIP rope
   function drawClubShell(R, now) {
-    const t = now / 1000, hue = (t * 40) % 360;
+    const t = now / 1000, hue = (t * 40) % 360, cx = R.w / 2;
     // the floor: dark and glossy, with the lights' colour pooled on it
-    for (let k = 0; k < 4; k++) { const p = P(18 + k * 10, 0.02, 22 + Math.sin(t + k) * 8), r = K * 14; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(hue + k * 80) % 360},90%,55%,0.22)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); }
-    // LED strips along the floor edges of the walls
+    for (let k = 0; k < 6; k++) { const p = P(24 + k * 10, 0.02, 30 + Math.sin(t + k) * 10), r = K * 16; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(hue + k * 60) % 360},90%,55%,0.2)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); }
+    // zones on the floor: the VIP carpet, the lounge's darker wood, the entrance mat
+    flat(80, 8, R.w, 60, 0.015, '#2A0F2E'); flat(12, 48, 40, R.d, 0.015, '#1A1220'); flat(cx - 8, R.d - 3, cx + 8, R.d, 0.02, '#3F3F46');
+    // LED strips along the walls, low and high
     const strip = (x0, z0, x1, z1, h) => { const p = P(x0, 0.4, z0), q = P(x1, 0.4, z1); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsl(${hue},100%,60%)`); g.addColorStop(1, `hsl(${(hue + 120) % 360},100%,60%)`); x.strokeStyle = g; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); if (h) { const p2 = P(x0, h, z0), q2 = P(x1, h, z1); x.beginPath(); x.moveTo(p2[0], p2[1]); x.lineTo(q2[0], q2[1]); x.stroke(); } };
-    strip(0, 0.2, R.w, 0.2, 14); strip(0.2, 0, 0.2, R.d, 14);
-    // the stage and the LED wall behind it
-    box(20, 0, 1, 44, 2.2, 10, '#18122B'); box(20, 2.2, 1, 44, 2.5, 10, `hsl(${hue},90%,55%)`);
-    const a0 = P(18, 3, 0.1), a1 = P(46, 3, 0.1), a2 = P(46, 16, 0.1), a3 = P(18, 16, 0.1);
+    strip(0, 0.2, R.w, 0.2, 15); strip(0.2, 0, 0.2, R.d, 15);
+    // the stage and its LED wall
+    box(cx - 18, 0, 1, cx + 18, 2.4, 13, '#18122B'); box(cx - 18, 2.4, 1, cx + 18, 2.7, 13, `hsl(${hue},90%,55%)`);
+    for (const sx of [cx - 18, cx + 15]) box(sx, 0, 13, sx + 3, 1.2, 16, '#18122B'); // steps
+    const a0 = P(cx - 20, 3, 0.1), a1 = P(cx + 20, 3, 0.1), a2 = P(cx + 20, 17, 0.1), a3 = P(cx - 20, 17, 0.1);
     quad([a0, a1, a2, a3], '#050308');
-    const cols = 14, rows = 6;
+    const cols = 20, rows = 7;
     for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
       const u0 = i / cols, v0 = j / rows, lerp = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
       const pt = (u, v) => lerp(lerp(a0, a1, u), lerp(a3, a2, u), v);
-      const wave = Math.sin(i * 0.6 + t * 3) * 0.5 + Math.cos(j * 0.9 - t * 2) * 0.5;
-      x.fillStyle = `hsla(${(hue + i * 12 + j * 20) % 360},95%,${45 + wave * 20}%,0.95)`;
+      const wave = Math.sin(i * 0.5 + t * 3) * 0.5 + Math.cos(j * 0.9 - t * 2) * 0.5;
+      x.fillStyle = `hsla(${(hue + i * 10 + j * 20) % 360},95%,${45 + wave * 20}%,0.95)`;
       const q = [pt(u0 + 0.01, v0 + 0.02), pt(u0 + 1 / cols - 0.01, v0 + 0.02), pt(u0 + 1 / cols - 0.01, v0 + 1 / rows - 0.02), pt(u0 + 0.01, v0 + 1 / rows - 0.02)];
       x.beginPath(); x.moveTo(q[0][0], q[0][1]); for (let k = 1; k < 4; k++) x.lineTo(q[k][0], q[k][1]); x.closePath(); x.fill();
     }
-    // the DJ booth on the stage, decks lit
-    box(27, 2.5, 4, 37, 6, 6.5, '#0B0B10'); box(27, 6, 4, 37, 6.3, 6.5, '#22D3EE');
-    for (const dx of [29.5, 34.5]) { const p = P(dx, 6.35, 5.2); x.fillStyle = '#111'; x.beginPath(); x.ellipse(p[0], p[1], K * 1.3, K * 1.3 * sp, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#A855F7'; x.lineWidth = 1; x.stroke(); }
-    // the truss above, with moving heads throwing beams across the floor
-    box(10, 17, 12, 54, 17.6, 12.8, '#4B5563');
-    x.save(); x.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 6; k++) {
-      const hx = 13 + k * 8, p = P(hx, 17, 12.4), ang = t * (0.8 + k * 0.1) + k;
-      const q = P(hx + Math.sin(ang) * 14, 0, 24 + Math.cos(ang * 0.7) * 12);
-      const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(hue + k * 60) % 360},100%,70%,0.55)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
-      x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - K * 4, q[1]); x.lineTo(q[0] + K * 4, q[1]); x.fill();
-      x.fillStyle = '#FFF'; x.beginPath(); x.arc(p[0], p[1] + 2, Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill();
+    box(cx - 6, 2.7, 5, cx + 6, 6.2, 7.5, '#0B0B10'); box(cx - 6, 6.2, 5, cx + 6, 6.5, 7.5, '#22D3EE');
+    for (const dx of [cx - 3, cx + 3]) { const p = P(dx, 6.55, 6.2); x.fillStyle = '#111'; x.beginPath(); x.ellipse(p[0], p[1], K * 1.3, K * 1.3 * sp, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#A855F7'; x.lineWidth = 1; x.stroke(); }
+    // two trusses of moving heads
+    for (const tz of [15, 44]) {
+      box(16, 18, tz, R.w - 22, 18.6, tz + 0.8, '#4B5563');
+      x.save(); x.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < 8; k++) {
+        const hx = 20 + k * 8, p = P(hx, 18, tz + 0.4), ang = t * (0.8 + k * 0.1) + k + tz;
+        const q = P(hx + Math.sin(ang) * 16, 0, 30 + Math.cos(ang * 0.7) * 14);
+        const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(hue + k * 45) % 360},100%,70%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+        x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - K * 4, q[1]); x.lineTo(q[0] + K * 4, q[1]); x.fill();
+        x.fillStyle = '#FFF'; x.beginPath(); x.arc(p[0], p[1] + 2, Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill();
+      }
+      x.restore();
     }
-    x.restore();
-    // the bar along the left: a lit counter and a back wall of bottles
-    box(0.2, 0, 12, 2.4, 13, 40, '#1A1426');
-    for (let r = 0; r < 3; r++) { box(0.4, 3.5 + r * 3, 12, 1.8, 3.8 + r * 3, 40, '#F5C542'); for (let k = 0; k < 18; k++) { const z = 13 + k * 1.5, p = P(1.1, 4 + r * 3, z), q = P(1.1, 5.6 + r * 3, z); x.strokeStyle = STALLS[(k + r * 3) % STALLS.length]; x.lineWidth = Math.max(1.5, K * 0.4); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } }
-    box(6, 0, 12, 8.4, 4.2, 40, '#2A1D3A'); box(5.6, 4.2, 11.6, 8.8, 4.6, 40.4, '#F5C542');
-    // neon signs on the walls
-    const neon = (txt, x0, y0, z0, alongX, col) => { const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = '800 2.6px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
-    neon('EKO NIGHTS', 56, 11, 0.15, true, `hsl(${(hue + 180) % 360},100%,70%)`);
-    neon('VIP', 0.15, 10, 26, false, '#F5C542');
-    neon('BAR', 8, 9, 0.15, true, '#22D3EE');
-    // the VIP rope
-    for (let k = 0; k < 4; k++) { const px = 47.5, pz = 15 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
+    // the main bar along the left wall: backlit bottles, a gold-edged counter
+    box(0.2, 0, 12, 2.4, 14, 56, '#1A1426');
+    for (let r = 0; r < 3; r++) { box(0.4, 3.5 + r * 3, 12, 1.8, 3.8 + r * 3, 56, '#F5C542'); for (let k = 0; k < 28; k++) { const z = 13 + k * 1.5, p = P(1.1, 4 + r * 3, z), q = P(1.1, 5.6 + r * 3, z); x.strokeStyle = STALLS[(k + r * 3) % STALLS.length]; x.lineWidth = Math.max(1.5, K * 0.4); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } }
+    box(6, 0, 12, 8.4, 4.2, 56, '#2A1D3A'); box(5.6, 4.2, 11.6, 8.8, 4.6, 56.4, '#F5C542');
+    // the champagne bar, front right, in gold and white
+    box(58, 0, 58, 78, 4, 60.4, '#F8FAFC'); box(57.6, 4, 57.6, 78.4, 4.4, 60.8, '#F5C542');
+    for (let k = 0; k < 6; k++) { const bx = 60 + k * 3.2; cyl(bx, 59.2, 0.6, 1.4, '#E5E7EB'); const p = P(bx, 4.4, 59.2), q = P(bx, 6.6, 59.2); x.strokeStyle = '#166534'; x.lineWidth = Math.max(1.5, K * 0.45); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    // the coat check by the door, the restrooms along the back right
+    box(R.w / 2 + 10, 0, R.d - 7, R.w / 2 + 18, 4, R.d - 5, '#27272A'); box(R.w / 2 + 10, 4, R.d - 7, R.w / 2 + 18, 4.3, R.d - 5, '#A855F7');
+    for (const [dx, lbl] of [[62, 'WC'], [70, 'WC']]) { const p0 = P(dx, 0, 0.12), p1 = P(dx + 4, 0, 0.12), p2 = P(dx + 4, 9, 0.12), p3 = P(dx, 9, 0.12); quad([p0, p1, p2, p3], '#1F2937', '#A855F7'); const c0 = P(dx + 2, 10.5, 0.12); x.save(); x.font = `800 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.fillStyle = '#E9D5FF'; x.fillText(lbl, c0[0], c0[1]); x.restore(); }
+    // neon signs
+    const neon = (txt, x0, y0, z0, alongX, col, size) => { const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
+    neon('EKO NIGHTS', 86, 12, 0.15, true, `hsl(${(hue + 180) % 360},100%,70%)`, 3.4);
+    neon('BAR', 10, 10, 0.15, true, '#22D3EE');
+    neon('VIP', 0.15, 11, 36, false, '#F5C542');
+    // the VIP rope along the edge of the VIP carpet
+    for (let k = 0; k < 8; k++) { const px = 80, pz = 10 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
   }
   // an apartment: oak herringbone in the living room, carpet in the bedroom, marble in the kitchen,
   // tiles in the bathroom; low cut-away walls between the rooms; tall windows with the day coming in
