@@ -201,7 +201,6 @@
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
 <div id="log" aria-live="polite"></div>
-<div id="talkTop" class="btn" role="button" aria-label="Say something to people near you">💬</div>
 <div id="zoomin" class="btn" role="button" aria-label="Zoom in">+</div>
 <div id="zoomout" class="btn" role="button" aria-label="Zoom out">−</div>
 <div id="stick" aria-hidden="true"><div id="knob"></div></div>
@@ -1014,8 +1013,6 @@
     }
     for (const [i, j, t1, t2] of BILLBOARDS) if (visible(i, j)) items.push({ d: P(i * T, 0, j * T)[2], f: () => billboard(i * T, j * T, t1, t2) });
     const now = performance.now();
-    for (const [pid, o] of others) items.push({ d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false) });
-    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => (drive ? car(me.x, me.z, drive.dx, drive.dz, now) : person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true)) });
     items.push({ d: P(wyrd.x, 0, wyrd.z)[2] + 0.02, f: () => drawWyrd(now) });
     glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
@@ -1024,8 +1021,6 @@
     if (night > 0) {
       x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
       for (const g of glow) g();
-      for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false);
-      if (drive) car(me.x, me.z, drive.dx, drive.dz, now); else person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true);
     }
     // the pins, on top
     const placed = [];
@@ -1360,7 +1355,7 @@
   let okada = false, stick = { x: 0, z: 0 };
   addEventListener('keydown', (e) => {
     if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
-    if (e.key === 'Enter') { e.preventDefault(); if (playing) openSay(); return; }
+
     keys.add(e.key.toLowerCase());
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) e.preventDefault();
   });
@@ -1472,7 +1467,7 @@
   }
   const sayForm = document.getElementById('say'), sayText = document.getElementById('sayText');
   function openSay() { sayForm.style.display = 'flex'; sayText.focus(); }
-  document.getElementById('talkTop').onclick = openSay;
+
   sayForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const t = sayText.value.trim(); sayText.value = ''; sayForm.style.display = 'none'; sayText.blur();
@@ -1604,7 +1599,7 @@
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
   const APP_AC = { wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
-    ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔒', 'Chats'], ['hq', '🏠', 'My HQ'],
+    ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
     ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
@@ -1706,14 +1701,25 @@
       if (app === 'chats') {
         const gs = await my('groups');
         const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return '🔒 (can\'t open on this device)'; } }));
-        show(`<div class="ptitle">Chats</div><div class="lock">🔒 End-to-end encrypted on your device. The server stores only scrambled text; WYRD can't read it.</div><button class="pbtn" id="cNew">New chat or group</button>
-          ${gs.map((g, i) => `<div class="pcard" data-g="${i}" style="cursor:pointer"><h3>${esc(names[i])}</h3><div class="dim">${g.members.map(esc).join(', ')}</div></div>`).join('') || '<div class="pcard dim">No chats yet.</div>'}`);
-        $('cNew').onclick = () => go('newchat');
+        const people = [...new Map([...others.values()].filter((o) => o.name && o.name !== me$.handle && !/^(Guest|Lagosian)$/.test(o.name)).map((o) => [o.name, o])).values()];
+        show(`<div class="ptitle">Link</div><div class="lock">Person to person, over the cloud. Private conversations and group discussions, end-to-end encrypted on your device: the server only ever holds scrambled text, and WYRD can't read it.</div>
+          <button class="pbtn" id="cDm">New private conversation</button><button class="pbtn alt" id="cGroup">New group</button>
+          <div class="rsec">// Conversations</div>
+          ${gs.map((g, i) => `<div class="pcard" data-g="${i}" style="cursor:pointer"><h3>${g.members.length > 2 ? '👥' : '👤'} ${esc(names[i])}</h3><div class="dim">${g.members.map(esc).join(', ')}</div></div>`).join('') || '<div class="pcard dim">No conversations yet.</div>'}
+          <div class="rsec">// On the island now</div>
+          ${people.map((o) => `<div class="pcard" style="display:flex;align-items:center;justify-content:space-between"><span><b>${esc(o.name)}</b></span><button class="pbtn" data-dm="${esc(o.name)}">Link</button></div>`).join('') || '<div class="pcard dim">Nobody else signed in nearby right now.</div>'}`);
+        $('cDm').onclick = () => go('newchat', { dm: true });
+        $('cGroup').onclick = () => go('newchat', { dm: false });
+        pbody.querySelectorAll('[data-dm]').forEach((b) => (b.onclick = () => {
+          const g = gs.find((v) => v.members.length === 2 && v.members.includes(b.dataset.dm));
+          if (g) go('thread', { ...g, name: names[gs.indexOf(g)] }); else go('newchat', { dm: true, who: b.dataset.dm });
+        }));
         pbody.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => go('thread', { ...gs[b.dataset.g], name: names[b.dataset.g] })));
         return;
       }
       if (app === 'newchat') {
-        show(`<div class="ptitle">New chat</div><div class="pcard"><input id="nName" maxlength="40" placeholder="Name (encrypted too)"><input id="nWho" placeholder="Their island names, comma separated"><button class="pbtn" id="nGo">Start encrypted chat</button><p class="dim">Each person gets the chat's key locked to their own device key. Nobody else can open it, not even the server.</p></div>`);
+        const opt = arg || { dm: false };
+        show(`<div class="ptitle">${opt.dm ? 'Private conversation' : 'New group'}</div><div class="pcard">${opt.dm ? '' : '<input id="nName" maxlength="40" placeholder="Group name (encrypted too)">'}<input id="nWho" value="${esc(opt.who || '')}" placeholder="${opt.dm ? 'Their username' : 'Usernames, comma separated'}"><button class="pbtn" id="nGo">${opt.dm ? 'Start private conversation' : 'Start group'}</button><p class="dim">Each person gets the chat's key locked to their own device key. Nobody else can open it, not even the server.</p></div>`);
         $('nGo').onclick = async () => {
           try {
             const who = [...new Set($('nWho').value.split(',').map((s) => s.trim()).filter(Boolean))].filter((h) => h !== me$.handle);
@@ -1721,7 +1727,8 @@
             const raw = crypto.getRandomValues(new Uint8Array(32)), gk = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
             const k = await keyPair(), members = [{ handle: me$.handle, wrappedKey: await seal(await shared(k.pubJwk), raw) }];
             for (const h of who) { const p = await my('keyOf', { handle: h }); members.push({ handle: p.handle, wrappedKey: await seal(await shared(p.pubKey), raw) }); }
-            const name = $('nName').value.trim() || [me$.handle, ...who].join(', ');
+            if (opt.dm && who.length !== 1) throw new Error('A private conversation is with one person.');
+            const name = ($('nName') && $('nName').value.trim()) || [me$.handle, ...who].join(', ');
             const g = await my('createGroup', { nameCt: await seal(gk, enc.encode(name)), wrapperPub: k.pubJwk, members: JSON.stringify(members) });
             groupKeys.set(g.id, gk); stack.pop(); go('chats');
           } catch (e) { fail(e); }
