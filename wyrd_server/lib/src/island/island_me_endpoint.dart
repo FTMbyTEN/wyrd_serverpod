@@ -65,6 +65,7 @@ class IslandMeEndpoint extends Endpoint {
     'skills': p.skills,
     'openToWork': p.openToWork,
     'pubKey': p.pubKey,
+    'look': p.look,
     'hq': {
       'name': p.hqName ?? "${p.handle}'s HQ",
       'color': p.hqColor,
@@ -112,6 +113,14 @@ class IslandMeEndpoint extends Endpoint {
     }
     p = await IslandProfile.db.updateRow(session, p);
     return jsonEncode(_profileJson(p));
+  }
+
+  /// Save how I look on the island (chosen when I joined; changeable in Profile).
+  Future<String> setLook(Session session, String look) async {
+    if (!RegExp(r'^[mf](,[0-9]{1,2}){4}$').hasMatch(look)) return _err('Bad look.');
+    final p = await _profile(session, _user(session));
+    await IslandProfile.db.updateRow(session, p.copyWith(look: look));
+    return jsonEncode({'look': look});
   }
 
   /// Someone's public messaging key, by handle: {handle, pubKey} or {error}.

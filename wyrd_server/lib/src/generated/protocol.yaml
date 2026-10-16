@@ -60,6 +60,7 @@ island:
 islandMe:
   - me:
   - setProfile:
+  - setLook:
   - keyOf:
   - work:
   - receipts:

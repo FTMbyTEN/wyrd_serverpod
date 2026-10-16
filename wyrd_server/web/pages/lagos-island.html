@@ -10,7 +10,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root { --ink: #1F2A37; --dim: #6B7785; --green: #22B573; --green-dark: #189B60; --shadow: 0 6px 20px rgba(20, 60, 100, 0.16), 0 1px 3px rgba(20, 60, 100, 0.12); }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; scrollbar-width: thin; scrollbar-color: #22B573 transparent; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; margin: 14px 0; }
+  ::-webkit-scrollbar-thumb { border-radius: 999px; border: 2px solid transparent; background: linear-gradient(180deg, #22B573, #0EA5E9) padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #34D399, #38BDF8) padding-box; }
+  ::-webkit-scrollbar-corner { background: transparent; }
+  #phone, #phone * { scrollbar-color: #FCEE0A transparent; }
+  #phone ::-webkit-scrollbar { width: 5px; }
+  #phone ::-webkit-scrollbar-thumb { border: 0; border-radius: 0; background: linear-gradient(180deg, #FCEE0A, #FF003C); box-shadow: 0 0 6px rgba(252,238,10,.6); }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
   .pill { background: #fff; border-radius: 999px; box-shadow: var(--shadow); }
@@ -277,9 +285,9 @@
       <div class="note" id="note">One account for Lagos Island and WYRD. Sign in to either with your username or email.</div>
       <a class="note forgot" id="forgot" href="/" style="display:none">Forgot your password? Reset it on WYRD</a>
     </div>
-    <div class="fl" style="margin-top:12px">Your character</div>
+    <div id="lookPick"><div class="fl" style="margin-top:12px">Your character</div>
     <div class="lookrow"><button type="button" id="lkM">👨 Man</button><button type="button" id="lkF">👩 Woman</button><button type="button" id="lkS">🎲 New look</button></div>
-    <canvas id="lkPrev" width="320" height="360" aria-label="Your character"></canvas>
+    <canvas id="lkPrev" width="320" height="360" aria-label="Your character"></canvas></div>
     <div id="err" class="err"></div>
     <button id="go">Enter Lagos Island</button>
     <button id="guest" class="link">Look around as a guest</button>
@@ -2727,7 +2735,7 @@
   const strong = (p) => Object.values(RULES).every((f) => f(p));
   passIn.addEventListener('input', () => { for (const li of document.querySelectorAll('#rules li')) li.classList.toggle('ok', RULES[li.dataset.r](passIn.value)); });
   document.getElementById('peek').onclick = (e) => { const show = passIn.type === 'password'; passIn.type = pass2In.type = show ? 'text' : 'password'; e.target.textContent = show ? 'Hide' : 'Show'; };
-  const showFor = (n) => { for (const id of ['lEmail', 'rules', 'lConfirm']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lName').textContent = n ? 'Username' : 'Username or email'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Username or email'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
+  const showFor = (n) => { for (const id of ['lEmail', 'rules', 'lConfirm']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lookPick').style.display = n ? '' : 'none'; document.getElementById('lName').textContent = n ? 'Username' : 'Username or email'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Username or email'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
   let isNew = true;
   call('online', {}).then((n) => { if (typeof n === 'number') document.getElementById('crowd').textContent = n === 1 ? '1 Lagosian' : n + ' Lagosians'; }).catch(() => {});
   // the character picker: man or woman, and a new look (skin, hair, style, clothes) with each tap
@@ -2757,9 +2765,9 @@
   }
   // already signed in (here or in the WYRD app on this site): welcome back
   if (signedIn()) {
-    document.getElementById('auth').style.display = 'none';
+    document.getElementById('auth').style.display = 'none'; document.getElementById('lookPick').style.display = 'none';
     const who = document.getElementById('who'); who.style.display = 'block'; who.textContent = 'Welcome back.';
-    my('me').then((v) => { myName = v.handle; who.textContent = `Welcome back, ${v.handle}.`; }).catch(() => { who.style.display = 'none'; document.getElementById('auth').style.display = 'block'; });
+    my('me').then((v) => { myName = v.handle; who.textContent = `Welcome back, ${v.handle}.`; if (v.look) { myLook = v.look; store.set('li.look', myLook); } }).catch(() => { who.style.display = 'none'; document.getElementById('auth').style.display = 'block'; });
   }
   document.getElementById('go').onclick = async () => {
     if (signedIn() && document.getElementById('auth').style.display === 'none') return start();
@@ -2796,7 +2804,8 @@
       const a = JSON.parse(t);
       localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
       myName = u.includes('@') ? '' : u; me$ = null; start();
-      my('me').then((v) => { myName = v.handle; }).catch(() => {});
+      if (isNew) my('setLook', { look: myLook }).catch(() => {});
+      my('me').then((v) => { myName = v.handle; if (v.look) { myLook = v.look; store.set('li.look', myLook); } else my('setLook', { look: myLook }).catch(() => {}); }).catch(() => {});
     } catch (e) { errEl.textContent = e.message; }
     finally { btn.disabled = false; btn.textContent = 'Enter Lagos Island'; }
   };

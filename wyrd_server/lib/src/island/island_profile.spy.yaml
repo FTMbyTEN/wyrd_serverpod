@@ -16,6 +16,8 @@ fields:
   hqColor: String, default='#A855F7'
   hqLocked: bool, default=true
   hqInvites: String, default='[]'
+  ### how they look on the island: "g,skin,hair,style,bottom" (g: m or f), chosen when they joined
+  look: String?
   createdAt: DateTime
 indexes:
   island_profile_user_idx:

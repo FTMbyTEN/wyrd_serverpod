@@ -828,6 +828,13 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Save how I look on the island (chosen when I joined; changeable in Profile).
+  _ida.Future<String> setLook(String look) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setLook',
+    {'look': look},
+  );
+
   /// Someone's public messaging key, by handle: {handle, pubKey} or {error}.
   _ida.Future<String> keyOf(String handle) => caller.callServerEndpoint<String>(
     'islandMe',

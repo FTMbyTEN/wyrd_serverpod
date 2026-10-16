@@ -1450,6 +1450,25 @@ class Endpoints extends _is.EndpointDispatch {
                     params['pubKey'],
                   ),
         ),
+        'setLook': _is.MethodConnector(
+          name: 'setLook',
+          params: {
+            'look': _is.ParameterDescription(
+              name: 'look',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).setLook(
+                    session,
+                    params['look'],
+                  ),
+        ),
         'keyOf': _is.MethodConnector(
           name: 'keyOf',
           params: {

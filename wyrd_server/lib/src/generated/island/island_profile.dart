@@ -27,6 +27,7 @@ abstract class IslandProfile
     String? hqColor,
     bool? hqLocked,
     String? hqInvites,
+    this.look,
     required this.createdAt,
   }) : skills = skills ?? '',
        openToWork = openToWork ?? false,
@@ -45,6 +46,7 @@ abstract class IslandProfile
     String? hqColor,
     bool? hqLocked,
     String? hqInvites,
+    String? look,
     required DateTime createdAt,
   }) = _IslandProfileImpl;
 
@@ -66,6 +68,7 @@ abstract class IslandProfile
           ? null
           : _is.BoolJsonExtension.fromJson(jsonSerialization['hqLocked']),
       hqInvites: jsonSerialization['hqInvites'] as String?,
+      look: jsonSerialization['look'] as String?,
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -101,6 +104,9 @@ abstract class IslandProfile
 
   String hqInvites;
 
+  /// how they look on the island: "g,skin,hair,style,bottom" (g: m or f), chosen when they joined
+  String? look;
+
   DateTime createdAt;
 
   @override
@@ -120,6 +126,7 @@ abstract class IslandProfile
     String? hqColor,
     bool? hqLocked,
     String? hqInvites,
+    String? look,
     DateTime? createdAt,
   });
   @override
@@ -136,6 +143,7 @@ abstract class IslandProfile
       'hqColor': hqColor,
       'hqLocked': hqLocked,
       'hqInvites': hqInvites,
+      if (look != null) 'look': look,
       'createdAt': createdAt.toJson(),
     };
   }
@@ -154,6 +162,7 @@ abstract class IslandProfile
       'hqColor': hqColor,
       'hqLocked': hqLocked,
       'hqInvites': hqInvites,
+      if (look != null) 'look': look,
       'createdAt': createdAt.toJson(),
     };
   }
@@ -200,6 +209,7 @@ class _IslandProfileImpl extends IslandProfile {
     String? hqColor,
     bool? hqLocked,
     String? hqInvites,
+    String? look,
     required DateTime createdAt,
   }) : super._(
          id: id,
@@ -212,6 +222,7 @@ class _IslandProfileImpl extends IslandProfile {
          hqColor: hqColor,
          hqLocked: hqLocked,
          hqInvites: hqInvites,
+         look: look,
          createdAt: createdAt,
        );
 
@@ -230,6 +241,7 @@ class _IslandProfileImpl extends IslandProfile {
     String? hqColor,
     bool? hqLocked,
     String? hqInvites,
+    Object? look = _Undefined,
     DateTime? createdAt,
   }) {
     return IslandProfile(
@@ -243,6 +255,7 @@ class _IslandProfileImpl extends IslandProfile {
       hqColor: hqColor ?? this.hqColor,
       hqLocked: hqLocked ?? this.hqLocked,
       hqInvites: hqInvites ?? this.hqInvites,
+      look: look is String? ? look : this.look,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -298,6 +311,11 @@ class IslandProfileUpdateTable extends _is.UpdateTable<IslandProfileTable> {
     value,
   );
 
+  _is.ColumnValue<String, String> look(String? value) => _is.ColumnValue(
+    table.look,
+    value,
+  );
+
   _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _is.ColumnValue(
         table.createdAt,
@@ -350,6 +368,10 @@ class IslandProfileTable extends _is.Table<int?> {
       this,
       hasDefault: true,
     );
+    look = _is.ColumnString(
+      'look',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -380,6 +402,9 @@ class IslandProfileTable extends _is.Table<int?> {
 
   late final _is.ColumnString hqInvites;
 
+  /// how they look on the island: "g,skin,hair,style,bottom" (g: m or f), chosen when they joined
+  late final _is.ColumnString look;
+
   late final _is.ColumnDateTime createdAt;
 
   @override
@@ -394,6 +419,7 @@ class IslandProfileTable extends _is.Table<int?> {
     hqColor,
     hqLocked,
     hqInvites,
+    look,
     createdAt,
   ];
 }
