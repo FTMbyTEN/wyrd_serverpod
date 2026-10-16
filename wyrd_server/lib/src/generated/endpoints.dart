@@ -1341,6 +1341,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'look': _is.ParameterDescription(
+              name: 'look',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -1355,6 +1360,7 @@ class Endpoints extends _is.EndpointDispatch {
                 params['z'],
                 params['since'],
                 params['room'],
+                params['look'],
               ),
         ),
         'online': _is.MethodConnector(

@@ -747,6 +747,7 @@ class EndpointIsland extends _isc.EndpointRef {
     double z,
     int since,
     String room,
+    String look,
   ) => caller.callServerEndpoint<String>(
     'island',
     'tick',
@@ -758,6 +759,7 @@ class EndpointIsland extends _isc.EndpointRef {
       'z': z,
       'since': since,
       'room': room,
+      'look': look,
     },
   );
 
@@ -1232,7 +1234,7 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
-  /// Ask WYRD from the phone. It hears [text] and the district I'm in -- nothing from my chats.
+  /// Ask WYRD from the phone or in WYRD Tower. It hears [text] and where the player is -- nothing from their chats.
   _ida.Future<String> askWyrd(
     String text,
     String district,

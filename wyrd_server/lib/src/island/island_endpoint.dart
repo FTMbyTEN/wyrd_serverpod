@@ -42,6 +42,7 @@ class IslandEndpoint extends Endpoint {
     double z,
     int since,
     String room,
+    String look,
   ) async {
     final now = DateTime.now();
     _players.removeWhere((_, p) => now.difference(p.seen) > _fade);
@@ -55,12 +56,13 @@ class IslandEndpoint extends Endpoint {
       ..x = x.clamp(-60000, 60000).toDouble()
       ..z = z.clamp(-60000, 60000).toDouble()
       ..room = _clean(room, 40)
+      ..look = RegExp(r'^[a-z0-9,|.-]{0,40}$').hasMatch(look) ? look : ''
       ..seen = now;
     double dist(double ax, double az) => sqrt(pow(ax - me.x, 2) + pow(az - me.z, 2));
     final near = [
       for (final p in _players.values)
         if (p.id != id && p.room == me.room && (me.room.isNotEmpty || dist(p.x, p.z) < _near))
-          {'id': p.id, 'name': p.name, 'color': p.color, 'x': p.x.round(), 'z': p.z.round()},
+          {'id': p.id, 'name': p.name, 'color': p.color, 'x': p.room.isEmpty ? p.x.round() : (p.x * 10).round() / 10, 'z': p.room.isEmpty ? p.z.round() : (p.z * 10).round() / 10, 'look': p.look},
     ];
     final heard = [
       for (final l in _chat)
@@ -102,6 +104,8 @@ class _Player {
   double x = 0, z = 0;
   /// '' outside; inside a building, its key (everyone in the same room sees and hears each other)
   String room = '';
+  /// how they look and what they're doing: "g,skin,hair,style,bottom|pose,x,z" (pose: sit, sleep)
+  String look = '';
   DateTime seen = DateTime.now();
   DateTime lastSaid = DateTime.fromMillisecondsSinceEpoch(0);
   _Player(this.id);
