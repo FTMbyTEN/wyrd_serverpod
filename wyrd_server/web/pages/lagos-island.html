@@ -14,6 +14,7 @@
   html, body { margin: 0; height: 100%; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
   .pill { background: #fff; border-radius: 999px; box-shadow: var(--shadow); }
+  .drivebtn { display: block; margin: 10px auto 0; padding: 10px 18px; border: none; border-radius: 999px; background: var(--green); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
   #top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; }
   #title { font-weight: 800; font-size: 17px; white-space: nowrap; }
   #online { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
@@ -36,7 +37,7 @@
   #say { position: fixed; left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); bottom: calc(120px + env(safe-area-inset-bottom)); display: none; gap: 8px; padding: 6px; }
   #say input { flex: 1; padding: 11px 14px; border: none; border-radius: 999px; background: #F2F6FA; color: var(--ink); font: 500 15px 'Plus Jakarta Sans', sans-serif; outline: none; }
   #say button { padding: 0 20px; border-radius: 999px; border: none; background: var(--green); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; }
-  #card { position: fixed; left: 50%; bottom: calc(140px + env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 12px 18px; border-radius: 20px; display: none; text-align: center; font-size: 13px; color: var(--dim); max-width: 86vw; background: #fff; box-shadow: var(--shadow); }
+  #card { pointer-events: auto; position: fixed; left: 50%; bottom: calc(140px + env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 12px 18px; border-radius: 20px; display: none; text-align: center; font-size: 13px; color: var(--dim); max-width: 86vw; background: #fff; box-shadow: var(--shadow); }
   #card b { display: block; font-size: 18px; font-weight: 800; color: var(--ink); margin-bottom: 2px; }
   #hello { position: fixed; inset: 0; display: grid; place-items: end center; padding-bottom: max(20px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(79, 159, 216, 0) 35%, rgba(40, 100, 160, 0.5)); }
   #hello .box { width: min(400px, calc(100vw - 24px)); padding: 20px; border-radius: 28px; background: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow); text-align: center; }
@@ -1014,7 +1015,7 @@
     for (const [i, j, t1, t2] of BILLBOARDS) if (visible(i, j)) items.push({ d: P(i * T, 0, j * T)[2], f: () => billboard(i * T, j * T, t1, t2) });
     const now = performance.now();
     for (const [pid, o] of others) items.push({ d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false) });
-    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true) });
+    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => (drive ? car(me.x, me.z, drive.dx, drive.dz, now) : person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true)) });
     items.push({ d: P(wyrd.x, 0, wyrd.z)[2] + 0.02, f: () => drawWyrd(now) });
     glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
@@ -1024,7 +1025,7 @@
       x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
       for (const g of glow) g();
       for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false);
-      person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true);
+      if (drive) car(me.x, me.z, drive.dx, drive.dz, now); else person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true);
     }
     // the pins, on top
     const placed = [];
@@ -1399,8 +1400,19 @@
     if (inside) return tapInside(sx, sy);
     let best = null, bd = 34;
     for (const p of PLACES) { const s = P((p[1] + p[3] / 2) * T, PIN_H[p[0]] ?? 16, (p[2] + p[4] / 2) * T); const d = Math.hypot(s[0] - sx, s[1] - 21 - sy); if (d < bd) { bd = d; best = p; } }
-    if (best) { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = best[6] + ' ' + best[5]; const s = document.createElement('span'); s.textContent = (sectorOf((best[1] + 0.5) * T, (best[2] + 0.5) * T) || {}).name || ''; card.append(b, s); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); }
-    else { card.style.display = 'none'; cam.follow = true; }
+    if (best) {
+      card.innerHTML = ''; const b = document.createElement('b'); b.textContent = best[6] + ' ' + best[5]; const s = document.createElement('span'); s.textContent = (sectorOf((best[1] + 0.5) * T, (best[2] + 0.5) * T) || {}).name || '';
+      const go = document.createElement('button'); go.className = 'drivebtn'; go.textContent = '🚗 Drive there'; const place = best;
+      go.onclick = () => { card.style.display = 'none'; const t = nearestRoad(place[1] + place[3] / 2, place[2] + place[4] / 2); driveTo(t[0], t[1]); };
+      card.append(b, s, go); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 6000);
+      return;
+    }
+    card.style.display = 'none';
+    // the ground: drive to the nearest road to it; an HQ lot, to its door
+    const [fx, fz] = floorAt(sx, sy), i = Math.floor(fx / T), j = Math.floor(fz / T);
+    if (at(i, j) === W0) { cam.follow = true; return; }
+    const lot = hqIndex.get(i + ',' + j);
+    const t = nearestRoad(i + 0.5, j + 0.5); driveTo(t[0], t[1], lot != null ? [i * T + T / 2, j * T + T - 1] : null);
   }
 
   // ---- others and chat (the island endpoint)
@@ -1498,13 +1510,17 @@
       if (keys.has('s') || keys.has('arrowdown')) iz += 1;
       const L = Math.hypot(ix, iz);
       if (L > 0.08) {
-        const fast = Math.hypot(stick.x, stick.z) > 0.92 || keys.has('shift'), speed = (fast ? 34 : 12) * Math.min(1, L);
         const [wx, wz] = toWorldDir(ix / L, (iz / L) * sp), wl = Math.hypot(wx, wz) || 1;
-        const nx = me.x + (wx / wl) * speed * dt, nz = me.z + (wz / wl) * speed * dt;
-        if (walkable(nx, nz)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) me.x = nx; else if (walkable(me.x, nz)) me.z = nz;
-        cam.follow = true;
+        if (inside) {
+          const speed = 12 * Math.min(1, L), nx = me.x + (wx / wl) * speed * dt, nz = me.z + (wz / wl) * speed * dt;
+          if (walkable(nx, nz)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) me.x = nx; else if (walkable(me.x, nz)) me.z = nz;
+        } else { // look around the island
+          const speed = (keys.has('shift') ? 160 : 80) * Math.min(1, L) / (cam.user || 1);
+          cam.follow = false; cam.x += (wx / wl) * speed * dt; cam.z += (wz / wl) * speed * dt;
+        }
       }
     }
+    if (drive && !inside) driveStep(dt);
     if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
@@ -1882,7 +1898,38 @@
     for (const t of roadTiles) { const d = (t[0] + 0.5 - ci) ** 2 + (t[1] + 0.5 - cj) ** 2; if (d < bd) { bd = d; best = t; } }
     return best;
   }
-  function ride(i, j) { me.x = i * T; me.z = j * T; cam.follow = true; updateWhere(); }
+  function ride(i, j) { const t = nearestRoad(i, j); if (!driveTo(t[0], t[1])) { me.x = i * T; me.z = j * T; cam.follow = true; updateWhere(); } }
+  // ---- the car: from the road you're on to the one you want, along the roads and bridges
+  let drive = null;
+  function driveTo(ti, tj, endAt) {
+    const here = nearestRoad(me.x / T, me.z / T), path = pathTo(here[0], here[1], ti, tj);
+    if (path.length < 2) { if (path.length === 1 || here[0] === ti && here[1] === tj) { if (endAt) { me.x = endAt[0]; me.z = endAt[1]; } return true; } return false; }
+    path.unshift([me.x, me.z]);
+    if (endAt) path.push(endAt);
+    drive = { path, dx: 1, dz: 0, v: 0 }; cam.follow = true; card.style.display = 'none';
+    return true;
+  }
+  function driveStep(dt) {
+    const d = drive, left = d.path.length;
+    if (!left) { drive = null; updateWhere(); return; }
+    const [tx, tz] = d.path[0], ex = tx - me.x, ez = tz - me.z, dist = Math.hypot(ex, ez);
+    d.v = Math.min(60, d.v + 50 * dt); // pull away, then cruise
+    const step = d.v * dt;
+    if (dist <= step) { me.x = tx; me.z = tz; d.path.shift(); }
+    else { me.x += (ex / dist) * step; me.z += (ez / dist) * step; d.dx = ex / dist; d.dz = ez / dist; }
+    cam.follow = true;
+  }
+  function car(cx, cz, dx, dz, now) {
+    const along = Math.abs(dx) >= Math.abs(dz), L = 3.4, Wd = 1.8, a = along ? L : Wd, b = along ? Wd : L;
+    x.fillStyle = 'rgba(20,40,60,0.3)'; const sh = P(cx + 0.6, 0, cz + 0.4); x.beginPath(); x.ellipse(sh[0], sh[1], (a + 0.6) * K, (b + 0.6) * K * sp, 0, 0, Math.PI * 2); x.fill();
+    box(cx - a, 0.5, cz - b, cx + a, 2.2, cz + b, myColor);
+    const ca = along ? a * 0.55 : a, cb = along ? b : b * 0.55, off = 0.5 * (along ? -Math.sign(dx) : 0), offz = 0.5 * (along ? 0 : -Math.sign(dz));
+    box(cx - ca + off, 2.2, cz - cb + offz, cx + ca + off, 3.6, cz + cb + offz, '#1F2937', '#93C5FD', 1);
+    for (const [wx, wz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const p = P(cx + wx * a * 0.7, 0.5, cz + wz * b); x.fillStyle = '#111827'; x.beginPath(); x.ellipse(p[0], p[1], K * 0.7, K * 0.7 * sp + 1, 0, 0, Math.PI * 2); x.fill(); }
+    const hl = P(cx + dx * a, 1.4, cz + dz * b); x.fillStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.beginPath(); x.arc(hl[0], hl[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill();
+    const tag = P(cx, 5.2, cz); x.font = '700 12px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    const nm = myName || 'You', nw = x.measureText(nm).width + 14; x.fillStyle = '#22B573'; x.beginPath(); x.roundRect(tag[0] - nw / 2, tag[1] - 10, nw, 19, 9.5); x.fill(); x.fillStyle = '#fff'; x.fillText(nm, tag[0], tag[1]); x.textBaseline = 'alphabetic';
+  }
   function near(type, pad) { return PLACES.some((p) => p[0] === type && me.x > p[1] * T - pad && me.x < (p[1] + p[3]) * T + pad && me.z > p[2] * T - pad && me.z < (p[2] + p[4]) * T + pad); }
   async function loadHqRow() { if (!signedIn()) return; try { hqSlots = await my('hqRow'); } catch {} }
 
