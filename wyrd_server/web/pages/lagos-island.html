@@ -14,7 +14,10 @@
   html, body { margin: 0; height: 100%; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
   .pill { background: #fff; border-radius: 999px; box-shadow: var(--shadow); }
-  .drivebtn { display: block; margin: 10px auto 0; padding: 10px 18px; border: none; border-radius: 999px; background: var(--green); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #card .offer { margin: 10px 0 2px; } #card .offer strong { display: block; font-size: 16px; color: var(--ink); } #card .offer small { display: block; color: var(--dim); }
+  .drivebtn.alt { background: #EEF2F6; color: var(--ink); }
+  .drivebtn.soonbtn { background: #FACC15; color: #1F2937; cursor: default; opacity: .95; }
+  .drivebtn { display: inline-block; margin: 10px 4px 0 !important; margin: 10px auto 0; padding: 10px 18px; border: none; border-radius: 999px; background: var(--green); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
   #top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; }
   #title { font-weight: 800; font-size: 17px; white-space: nowrap; }
   #online { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
@@ -879,10 +882,9 @@
       box(a + 8, 0, d - 20, c - 12, 9, d - 6, '#BFDBFE', '#E0F2FE', 2); // the terminal
       box(a + 8, 9, d - 20, c - 12, 10.5, d - 6, '#F8FAFC');
       cyl(c - 6, d - 12, 2.2, 22, '#E5E7EB'); box(c - 8.6, 22, d - 14.6, c - 3.4, 26, d - 9.4, '#1E3A8A', '#93C5FD', 1); box(c - 9, 26, d - 15, c - 3, 26.6, d - 9, '#F8FAFC');
-      for (let k = 0; k < 3; k++) plane(a + 18 + k * 16, d - 24, 0);
-      // one plane rolls down the runway and climbs away, every 20 seconds
-      const ph = (performance.now() / 20000) % 1;
-      if (ph < 0.6) { const u = ph / 0.6, px = a + 8 + u * (c - a - 6), alt = u < 0.55 ? 0 : (u - 0.55) * 90; plane(px, (rz0 + rz1) / 2, alt); }
+      // the private aviation side: three hangars, a jet in each doorway, two more on the apron
+      for (let k = 0; k < 2; k++) hangar(a + 6 + k * 30, b + 24, 26, 18, k);
+
       groundText('LAGOS ISLAND', (a + c) / 2, b + 4.2, 4, 'rgba(255,255,255,0.75)');
     },
     // ---- the station: two tracks, a long platform under a canopy, the Blue Line train in and out
@@ -938,6 +940,46 @@
     x.fillStyle = n; x.beginPath(); x.arc(c[0], c[1], K * 2.6, 0, Math.PI * 2); x.fill();
   }
   // a plane: a white body, swept wings, a blue tail; [alt] lifts it off the ground
+  // a hangar: an arched roof over open doors, lit inside, a jet parked in the doorway
+  function hangar(hx, hz, w, d, k) {
+    flat(hx - 1, hz - 1, hx + w + 1, hz + d + 3, 0.06, '#9CA3AF');
+    box(hx, 0, hz, hx + 0.6, 9, hz + d, '#E5E7EB'); box(hx + w - 0.6, 0, hz, hx + w, 9, hz + d, '#E5E7EB'); box(hx, 0, hz, hx + w, 9, hz + 0.6, '#E5E7EB');
+    // the inside, lit warm
+    flat(hx + 0.6, hz + 0.6, hx + w - 0.6, hz + d, 0.07, '#F5F0E6');
+    const glowIn = () => { const p = P(hx + w / 2, 4, hz + d / 2); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * w * 0.6); g.addColorStop(0, 'rgba(255,236,200,0.45)'); g.addColorStop(1, 'rgba(255,236,200,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * w * 0.6, 0, Math.PI * 2); x.fill(); x.restore(); };
+    glow.push(glowIn);
+    jet(hx + w / 2, hz + d / 2 + 2, k);
+    // the arched roof, in ribs
+    const ribs = 7;
+    for (let r = 0; r <= ribs; r++) {
+      const z = hz + (r / ribs) * d, pts = [];
+      for (let u = 0; u <= 10; u++) { const ang = Math.PI * u / 10; pts.push(P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, z)); }
+      x.strokeStyle = 'rgba(148,163,184,0.9)'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts) x.lineTo(p[0], p[1]); x.stroke();
+    }
+    const back = []; for (let u = 0; u <= 10; u++) { const ang = Math.PI * u / 10; back.push(P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, hz)); }
+    const front = back.map((_, u) => { const ang = Math.PI * u / 10; return P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, hz + d); });
+    x.fillStyle = 'rgba(203,213,225,0.55)'; x.beginPath(); x.moveTo(back[0][0], back[0][1]); for (const p of back) x.lineTo(p[0], p[1]); for (let u = front.length - 1; u >= 0; u--) x.lineTo(front[u][0], front[u][1]); x.closePath(); x.fill();
+    const sg = P(hx + w / 2, 10.5, hz + d); x.save(); x.font = `800 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#B08A43'; x.fillText(['EKO JET CLUB', 'ATLANTIC AVIATION', 'ISLAND PRIVATE'][k % 3], sg[0], sg[1]); x.restore();
+  }
+  // a private jet: a slim white fuselage with a gold cheatline, swept wings with winglets, a T-tail, engines at the back
+  function jet(px, pz, k) {
+    const S = 1.55, y = 1.6 * S, accent = ['#B08A43', '#1E3A8A', '#111827'][k % 3];
+    const X = (v) => px + v * S, Z = (v) => pz + v * S, Y = (v) => y + v * S;
+    x.fillStyle = 'rgba(20,40,60,0.22)'; const sh = P(X(1), 0, Z(0.6)); x.beginPath(); x.ellipse(sh[0], sh[1], K * 8 * S, K * 4 * S * sp, 0, 0, Math.PI * 2); x.fill();
+    for (const gx of [4.5, -2.5]) { const p = P(X(gx), 0.4, pz); x.fillStyle = '#111827'; x.beginPath(); x.arc(p[0], p[1], K * 0.45 * S, 0, Math.PI * 2); x.fill(); }
+    for (const sd of [-1, 1]) {
+      quad([P(X(1.5), Y(0.4), Z(sd * 0.8)), P(X(-1), Y(0.4), Z(sd * 0.8)), P(X(-3.6), Y(0.6), Z(sd * 6.8)), P(X(-2.4), Y(0.6), Z(sd * 6.8))], '#E2E8F0', 'rgba(0,0,0,.18)');
+      box(X(-3.6), Y(0.6), Z(sd * 6.8 - 0.1), X(-2.6), Y(2), Z(sd * 6.8 + 0.1), accent);
+    }
+    box(X(-5.5), y, Z(-0.85), X(4.5), Y(1.8), Z(0.85), '#FFFFFF');
+    box(X(4.5), Y(0.25), Z(-0.6), X(6.3), Y(1.5), Z(0.6), '#F8FAFC');
+    box(X(6.3), Y(0.5), Z(-0.3), X(7), Y(1.15), Z(0.3), '#E5E7EB');
+    box(X(-5.5), Y(0.75), Z(0.86), X(5), Y(0.95), Z(0.88), accent); box(X(-5.5), Y(0.75), Z(-0.88), X(5), Y(0.95), Z(-0.86), accent);
+    for (let w = 0; w < 6; w++) box(X(-3 + w * 1.3), Y(1.05), Z(0.87), X(-2.4 + w * 1.3), Y(1.45), Z(0.89), '#1E293B');
+    box(X(4.6), Y(1.2), Z(-0.55), X(5.6), Y(1.6), Z(0.55), '#0F172A');
+    for (const sd of [-1, 1]) box(X(-5), Y(0.9), Z(sd * 1.1 - 0.45), X(-2.8), Y(1.9), Z(sd * 1.1 + 0.45), '#CBD5E1');
+    box(X(-6.2), Y(1.6), Z(-0.2), X(-4.4), Y(5), Z(0.2), '#FFFFFF'); box(X(-6.6), Y(4.8), Z(-2.4), X(-5.2), Y(5.2), Z(2.4), accent);
+  }
   function plane(px, pz, alt) {
     if (alt > 0) { const sh = P(px + alt * 0.4, 0, pz + alt * 0.2); x.fillStyle = 'rgba(20,40,60,' + Math.max(0.05, 0.25 - alt / 200) + ')'; x.beginPath(); x.ellipse(sh[0], sh[1], K * 9, K * 3 * sp, 0, 0, Math.PI * 2); x.fill(); }
     const y = 1.2 + alt;
@@ -1284,18 +1326,28 @@
     tv: ['TV', '📺', 6, 1.6], plant: ['Plant', '🪴', 2.4, 2.4], lamp: ['Lamp', '💡', 2, 2], rug: ['Rug', '🟥', 9, 6], shelf: ['Shelf', '📚', 6, 2],
     fridge: ['Fridge', '🧊', 3, 3], kitchen: ['Kitchen', '🍳', 9, 3], desk: ['Desk', '🖥️', 6, 3], wardrobe: ['Wardrobe', '🚪', 5, 2.6],
     speaker: ['Speaker', '🔊', 3, 3], djbooth: ['DJ booth', '🎧', 10, 4], bar: ['Bar', '🍸', 14, 3.4], stool: ['Stool', '🟤', 1.8, 1.8],
-    dance: ['Dance floor', '🪩', 16, 12], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
+    dance: ['Dance floor', '🪩', 16, 12], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
   };
   const PALETTE = ['#3B82F6', '#EF4444', '#22B573', '#F59E0B', '#A855F7', '#EC4899', '#111827', '#F8FAFC', '#8B5E3C'];
   const ROOMS = {
-    hq: { w: 44, d: 32, floor: '#E9D8BE', wall: '#FBF6EE', trim: '#C8B79A', cam: { yaw: -0.55, pitch: 0.92, zoom: 2.3 } },
+    hq: { w: 56, d: 40, floor: '#C9A27A', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } },
     club: { w: 64, d: 46, floor: '#1E1B2E', wall: '#2B2440', trim: '#7C3AED', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.75 } },
     casino: { w: 64, d: 46, floor: '#5B1A1A', wall: '#3F1D1D', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.75 } },
     tower: { w: 48, d: 36, floor: '#E2E8F0', wall: '#E0E7FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.92, zoom: 2.1 } },
     arena: { w: 110, d: 80, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.82, zoom: 1.05 } },
   };
   const DEFAULTS = {
-    hq: [{ k: 'rug', x: 22, z: 18, c: '#EF4444' }, { k: 'bed', x: 8, z: 7 }, { k: 'sofa', x: 22, z: 24, c: '#3B82F6' }, { k: 'tv', x: 22, z: 12 }, { k: 'plant', x: 40, z: 4 }, { k: 'lamp', x: 30, z: 24 }, { k: 'kitchen', x: 34, z: 4 }, { k: 'fridge', x: 41, z: 10 }, { k: 'wardrobe', x: 4, z: 18, r: 1 }],
+    hq: [
+      // the bedroom (back left)
+      { k: 'bed', x: 9, z: 6, c: '#334155' }, { k: 'nightstand', x: 3, z: 3 }, { k: 'nightstand', x: 15, z: 3 }, { k: 'wardrobe', x: 2.5, z: 12, r: 1, c: '#5B3A21' }, { k: 'lamp', x: 17, z: 12 },
+      // the living room
+      { k: 'rug', x: 28, z: 26, c: '#7C2D12' }, { k: 'sofa', x: 28, z: 32, c: '#1F2937' }, { k: 'armchair', x: 20, z: 25, c: '#B08A43' }, { k: 'coffee', x: 28, z: 26 }, { k: 'tv', x: 28, z: 19.5 }, { k: 'plant', x: 21, z: 37 }, { k: 'plant', x: 35, z: 37 }, { k: 'lamp', x: 36, z: 31 }, { k: 'art', x: 28, z: 0.4 },
+      // the kitchen and dining (right)
+      { k: 'kitchen', x: 47, z: 17.5, c: '#F8FAFC' }, { k: 'fridge', x: 54, z: 17.5 }, { k: 'island', x: 47, z: 24 }, { k: 'stool', x: 44, z: 27 }, { k: 'stool', x: 47, z: 27 }, { k: 'stool', x: 50, z: 27 },
+      { k: 'table', x: 47, z: 34, c: '#3F2A18' }, { k: 'chair', x: 43.5, z: 34 }, { k: 'chair', x: 50.5, z: 34 },
+      // the bathroom (back right)
+      { k: 'bath', x: 50, z: 3.5 }, { k: 'sink', x: 43, z: 1.8 }, { k: 'plant', x: 54.5, z: 11 },
+    ],
     club: [{ k: 'djbooth', x: 32, z: 5 }, { k: 'speaker', x: 22, z: 4 }, { k: 'speaker', x: 42, z: 4 }, { k: 'dance', x: 32, z: 20 }, { k: 'bar', x: 9, z: 26, r: 1 }, { k: 'stool', x: 14, z: 20 }, { k: 'stool', x: 14, z: 26 }, { k: 'stool', x: 14, z: 32 }, { k: 'couch2', x: 54, z: 36, c: '#A855F7' }, { k: 'couch2', x: 54, z: 22, c: '#EC4899' }],
     casino: [{ k: 'roulette', x: 20, z: 18 }, { k: 'roulette', x: 42, z: 18 }, ...[0, 1, 2, 3, 4, 5].map((k) => ({ k: 'slot', x: 10 + k * 8, z: 4 })), { k: 'bar', x: 32, z: 38 }, { k: 'plant', x: 60, z: 42 }, { k: 'plant', x: 4, z: 42 }],
     tower: [{ k: 'desk', x: 10, z: 6 }, { k: 'desk', x: 38, z: 6 }, { k: 'couch2', x: 12, z: 28, c: '#6366F1' }, { k: 'plant', x: 44, z: 32 }, { k: 'plant', x: 4, z: 32 }, { k: 'shelf', x: 24, z: 2 }],
@@ -1316,6 +1368,13 @@
       case 'tv': box(a + 1, 0, b, c - 1, 2, e, '#374151'); box(a, 2, b + 0.5, c, 6, b + 1, '#0B1020'); { const p0 = P(a + 0.4, 2.4, b + 1.02), p1 = P(c - 0.4, 2.4, b + 1.02), p2 = P(c - 0.4, 5.6, b + 1.02), p3 = P(a + 0.4, 5.6, b + 1.02); quad([p0, p1, p2, p3], `hsl(${(now / 30) % 360},70%,55%)`); } break;
       case 'plant': cyl(it.x, it.z, 1, 2, col || '#C2410C'); tree(it.x, it.z, 1.6, C.tree); break;
       case 'lamp': box(it.x - 0.2, 0, it.z - 0.2, it.x + 0.2, 6, it.z + 0.2, '#6B7280'); cyl(it.x, it.z, 1, 1.4, col || '#FDE68A'); { const p = P(it.x, 6.5, it.z); const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 6); g.addColorStop(0, 'rgba(253,230,138,0.45)'); g.addColorStop(1, 'rgba(253,230,138,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 6, 0, Math.PI * 2); x.fill(); } break;
+      case 'nightstand': box(a, 0, b, c, 2.6, e, col || '#5B3A21'); box(a + 0.2, 1.3, e - 0.05, c - 0.2, 1.5, e, '#B08A43'); cyl(it.x, it.z, 0.5, 4, '#FDE68A'); break;
+      case 'coffee': box(a, 1.4, b, c, 1.8, e, col || '#111827'); box(a + 0.4, 0, b + 0.4, a + 0.8, 1.4, b + 0.8, '#B08A43'); box(c - 0.8, 0, e - 0.8, c - 0.4, 1.4, e - 0.4, '#B08A43'); box(it.x - 0.8, 1.8, it.z - 0.5, it.x + 0.8, 2.4, it.z + 0.5, '#F8FAFC'); break;
+      case 'island': box(a, 0, b, c, 3.6, e, col || '#E5E7EB'); box(a - 0.3, 3.6, b - 0.3, c + 0.3, 4, e + 0.3, '#F8FAFC'); break;
+      case 'bath': box(a, 0, b, c, 2.6, e, '#F8FAFC'); flat(a + 0.6, b + 0.6, c - 0.6, e - 0.6, 2.5, '#7DD3FC'); box(c - 1, 2.6, it.z - 0.2, c - 0.6, 3.8, it.z + 0.2, '#B08A43'); break;
+      case 'sink': box(a, 0, b, c, 3.2, e, col || '#334155'); box(a + 0.3, 3.2, b + 0.2, c - 0.3, 3.5, e - 0.2, '#F8FAFC'); box(a + 0.6, 4.2, b - 0.3, c - 0.6, 8.5, b - 0.1, '#BAE6FD'); break;
+      case 'art': { const p0 = P(a, 6, 0.05), p1 = P(c, 6, 0.05), p2 = P(c, 12, 0.05), p3 = P(a, 12, 0.05); quad([p0, p1, p2, p3], '#B08A43'); const ins = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u]; const g = x.createLinearGradient(p0[0], p0[1], p2[0], p2[1]); g.addColorStop(0, col || '#0EA5E9'); g.addColorStop(0.5, '#F59E0B'); g.addColorStop(1, '#BE185D'); quad([ins(p0, p2, 0.08), ins(p1, p3, 0.08), ins(p2, p0, 0.08), ins(p3, p1, 0.08)], g); } break;
+      case 'mirror': { const p0 = P(a, 4, 0.05), p1 = P(c, 4, 0.05), p2 = P(c, 11, 0.05), p3 = P(a, 11, 0.05); quad([p0, p1, p2, p3], '#E0F2FE', '#B08A43'); } break;
       case 'rug': flat(a, b, c, e, 0.05, col || '#EF4444'); flat(a + 0.8, b + 0.8, c - 0.8, e - 0.8, 0.06, 'rgba(255,255,255,0.18)'); break;
       case 'shelf': box(a, 0, b, c, 9, e, col || '#8B5E3C'); for (let k = 0; k < 3; k++) box(a + 0.4, 1 + k * 2.8, e - 0.1, c - 0.4, 2.8 + k * 2.8, e, STALLS[(k * 3) % STALLS.length]); break;
       case 'fridge': box(a, 0, b, c, 9, e, col || '#F1F5F9'); break;
@@ -1342,6 +1401,7 @@
     box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
     box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
     flat(R.w / 2 - 4, R.d - 1.2, R.w / 2 + 4, R.d, 0.04, '#94A3B8'); // the door mat
+    if (R.kind === 'hq') drawApartment(R);
     if (R.kind === 'arena') drawStage(now);
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
@@ -1355,6 +1415,33 @@
       for (let k = 0; k < 4; k++) { const p = P(10 + k * 15, 17, 1), q = P(R.w / 2 + Math.sin(t + k) * 18, 0, R.d / 2 + Math.cos(t * 0.7 + k) * 10); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(k * 90 + t * 40) % 360},100%,65%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - 30, q[1]); x.lineTo(q[0] + 30, q[1]); x.fill(); }
       x.restore();
     }
+  }
+  // an apartment: oak herringbone in the living room, carpet in the bedroom, marble in the kitchen,
+  // tiles in the bathroom; low cut-away walls between the rooms; tall windows with the day coming in
+  function drawApartment(R) {
+    const zone = (x0, z0, x1, z1, base, line, step, diag) => {
+      flat(x0, z0, x1, z1, 0.02, base);
+      x.strokeStyle = line; x.lineWidth = 1;
+      for (let v = (diag ? z0 - (x1 - x0) : x0) + step; v < (diag ? z1 : x1); v += step) {
+        const p = diag ? P(x0, 0.03, Math.max(z0, v)) : P(v, 0.03, z0), q = diag ? P(Math.min(x1, x0 + (z1 - v)), 0.03, Math.min(z1, v + (z1 - v))) : P(v, 0.03, z1);
+        x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke();
+      }
+    };
+    zone(0, 0, R.w, R.d, '#B7895C', 'rgba(70,40,15,0.18)', 2.2, true);   // oak, laid on the diagonal
+    zone(0, 0, 20, 17, '#8E9AAF', 'rgba(255,255,255,0.08)', 3, false);     // the bedroom carpet
+    zone(40, 0, R.w, 14, '#E2E8F0', 'rgba(100,116,139,0.35)', 2.5, false); // bathroom tiles
+    for (let z = 2.5; z < 14; z += 2.5) { const p = P(40, 0.03, z), q = P(R.w, 0.03, z); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    zone(40, 14, R.w, R.d, '#F1F5F9', 'rgba(148,163,184,0.35)', 5, false);  // kitchen marble
+    for (let z = 19; z < R.d; z += 5) { const p = P(40, 0.03, z), q = P(R.w, 0.03, z); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    // windows along the back and left walls, daylight falling in
+    for (const wx of [6, 26, 34]) { const p0 = P(wx - 3, 4, 0.05), p1 = P(wx + 3, 4, 0.05), p2 = P(wx + 3, 15, 0.05), p3 = P(wx - 3, 15, 0.05); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); x.strokeStyle = '#E5E7EB'; x.lineWidth = Math.max(1, K * 0.3); const m0 = P(wx, 4, 0.05), m1 = P(wx, 15, 0.05); x.beginPath(); x.moveTo(m0[0], m0[1]); x.lineTo(m1[0], m1[1]); x.stroke();
+      if (night < 0.5) { x.fillStyle = 'rgba(255,248,220,0.18)'; x.beginPath(); const f0 = P(wx - 3, 0.05, 0), f1 = P(wx + 3, 0.05, 0), f2 = P(wx + 5, 0.05, 10), f3 = P(wx - 1, 0.05, 10); x.moveTo(f0[0], f0[1]); x.lineTo(f1[0], f1[1]); x.lineTo(f2[0], f2[1]); x.lineTo(f3[0], f3[1]); x.fill(); } }
+    for (const wz of [24, 32]) { const p0 = P(0.05, 4, wz - 3), p1 = P(0.05, 4, wz + 3), p2 = P(0.05, 15, wz + 3), p3 = P(0.05, 15, wz - 3); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); }
+    // skirting boards
+    box(0, 0, -0.1, R.w, 0.7, 0.15, '#FFFFFF'); box(-0.1, 0, 0, 0.15, 0.7, R.d, '#FFFFFF');
+    // partition walls, cut away low so you can see in: the bedroom and the bathroom, with door gaps
+    const wall = (x0, z0, x1, z1) => { box(x0, 0, z0, x1, 5, z1, '#EDE7DD'); box(x0, 5, z0, x1, 5.3, z1, '#B08A43'); };
+    wall(0, 16.6, 13, 17.2); wall(19.6, 0, 20.2, 10); wall(39.8, 0, 40.4, 8); wall(40.4, 13.6, 47, 14.2); wall(52, 13.6, R.w, 14.2);
   }
   // the arena's stage: lights, the big screen with the artist's live lines, the crowd's glow
   let stageLines = [], stageInfo = null;
@@ -1381,9 +1468,9 @@
   async function enterRoom(kind, key, title, extra = {}) {
     if (inside) return;
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
-    if (signedIn() && kind !== 'arena') {
+    if (signedIn() && kind === 'hq') {
       try { const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine; }
-      catch (e) { if (kind === 'hq') { bubbles.set('me', { text: e.message, until: performance.now() + 5000 }); return; } }
+      catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
     outside = { x: me.x, z: me.z, cam: { ...cam } };
     inside = R; me.x = R.w / 2; me.z = R.d - 3; cam.x = R.w / 2; cam.z = R.d / 2; cam.user = 1; cam.follow = false;
@@ -1522,16 +1609,54 @@
     if (target) { card.style.display = 'none'; return enterPlace(target); }
     const lot = hqIndex.get(i + ',' + j);
     if (!best && lot != null) { card.style.display = 'none'; return enterHq(lot, i, j); }
-    if (best) {
-      card.innerHTML = ''; const b = document.createElement('b'); b.textContent = best[6] + ' ' + best[5]; const s = document.createElement('span'); s.textContent = (sectorOf((best[1] + 0.5) * T, (best[2] + 0.5) * T) || {}).name || '';
-      const go = document.createElement('button'); go.className = 'drivebtn'; go.textContent = '🛵 Ride there'; const place = best;
-      go.onclick = () => { card.style.display = 'none'; const t = nearestRoad(place[1] + place[3] / 2, place[2] + place[4] / 2); openPhone('rideq', { i: t[0], j: t[1], name: place[5], emoji: place[6], peek: 'p' + PLACES.indexOf(place) }); };
-      card.append(b, s, go); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 6000);
-      return;
-    }
+    if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
   const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena']);
+  // what each place offers when you tap its tag: a question, and what happens if you say yes (null: coming soon)
+  const OFFERS = {
+    airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets from the hangars.', null],
+    station: ['🚆 Take the Blue Line?', 'Trains to the mainland: Mile 2, Iganmu, National Theatre.', null],
+    jetty: ['⛴️ Take a boat?', 'Water taxis to Ilashe, Badagry and Ikorodu.', null],
+    hotel: ['🏨 Book a room?', 'A night on the island, a pool, room service.', null],
+    mall: ['🛍️ Go shopping?', 'Fashion, phones, food court.', null], arcade: ['🛍️ Go shopping?', 'Shops and cafés.', null], shops: ['🛍️ Go shopping?', 'Idumota: everything, cheaper.', null],
+    hospital: ['🏥 See a doctor?', 'Check-ups and the pharmacy.', null],
+    beach: ['🏖️ Spend the day here?', 'Sun, suya, and a horse ride on the sand.', null],
+    mosque: ['🕌 Visit?', 'Lagos Central Mosque, open for prayers.', null], cathedral: ['⛪ Visit?', 'The Cathedral Church of Christ.', null],
+    palace: ["👑 Visit the Oba's palace?", 'Tours of Iga Idunganran.', null],
+    gallery: ['🎨 See the art?', 'Nike Art Gallery, five floors of it.', null],
+    forest: ['🌿 Walk the canopy?', "Africa's longest canopy walkway.", null],
+    golf: ['⛳ Play a round?', 'Ikoyi Club 1938.', null],
+    skyline: ['🏙️ Visit Eko Atlantic?', 'Penthouses and the marina.', null],
+    park: ['🌳 Take a walk?', 'Shade, music and art.', null], field: ['⭐ Visit?', 'Tafawa Balewa Square.', null], fountain: ['⛲ Visit?', 'Tinubu Square.', null],
+    refinery: ['🛢️ Work a shift?', 'The refinery pays ₦6,500 a shift.', (p) => { at$(p); doWork('refinery'); }],
+    market: ['🧺 Help at a stall?', 'Market work pays ₦2,500 a turn.', (p) => { at$(p); doWork('market'); }],
+    motorpark: ['🛵 Do okada rides?', 'Pays ₦1,800 a round.', (p) => { at$(p); doWork('okada'); }],
+    hqgate: ['🏠 Go to your HQ?', 'Your own place on HQ Row.', () => openPhone('hq')],
+    screens: ['📺 Advertise here?', 'Your ad on Ad Island\'s digital billboards.', null],
+    welcome: null, soon: ['🚧 Reclaimed land', 'Something new is coming here.', null],
+  };
+  function placeCard(p) {
+    if (ENTERABLE.has(p[0])) return enterPlace(p);
+    const o = OFFERS[p[0]];
+    card.innerHTML = '';
+    const b = document.createElement('b'); b.textContent = p[6] + ' ' + p[5];
+    const s = document.createElement('span'); s.textContent = (sectorOf((p[1] + 0.5) * T, (p[2] + 0.5) * T) || {}).name || '';
+    card.append(b, s);
+    if (o) {
+      const q = document.createElement('div'); q.className = 'offer'; q.innerHTML = '<strong></strong><small></small>'; q.firstChild.textContent = o[0]; q.lastChild.textContent = o[1]; card.append(q);
+      const yes = document.createElement('button'); yes.className = 'drivebtn';
+      if (o[2]) { yes.textContent = 'Yes'; yes.onclick = () => { card.style.display = 'none'; o[2](p); }; }
+      else { yes.textContent = 'Coming soon'; yes.disabled = true; yes.classList.add('soonbtn'); }
+      card.append(yes);
+    }
+    if (p[0] !== 'soon') {
+      const go = document.createElement('button'); go.className = 'drivebtn alt'; go.textContent = '🛵 Ride there';
+      go.onclick = () => { card.style.display = 'none'; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); openPhone('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); };
+      card.append(go);
+    }
+    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 8000);
+  }
   function at$(p) { me.x = (p[1] + p[3] / 2) * T; me.z = (p[2] + p[4]) * T + 2; } // you're at its door (out of sight)
   function enterPlace(p) {
     if (p[0] === 'arena') { at$(p); return openPhone('arena'); }

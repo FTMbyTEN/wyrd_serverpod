@@ -569,7 +569,7 @@ class IslandMeEndpoint extends Endpoint {
       final p = await IslandProfile.db.findById(s, int.tryParse(key.substring(3)) ?? -1);
       return p != null && p.authUserId == u;
     }
-    return key.startsWith('place:') && await DroneService.isOperator(s, u);
+    return false; // only HQs are arranged by players; every other building keeps its design
   }
 
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
