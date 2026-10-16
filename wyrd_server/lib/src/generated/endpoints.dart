@@ -1227,6 +1227,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'email': _is.ParameterDescription(
+              name: 'email',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
             'password': _is.ParameterDescription(
               name: 'password',
               type: _is.getType<String>(),
@@ -1242,7 +1247,28 @@ class Endpoints extends _is.EndpointDispatch {
                       .register(
                         session,
                         params['username'],
+                        params['email'],
                         params['password'],
+                      ),
+        ),
+        'emailFree': _is.MethodConnector(
+          name: 'emailFree',
+          params: {
+            'email': _is.ParameterDescription(
+              name: 'email',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandAuth'] as _ifhwc3xe.IslandAuthEndpoint)
+                      .emailFree(
+                        session,
+                        params['email'],
                       ),
         ),
         'login': _is.MethodConnector(

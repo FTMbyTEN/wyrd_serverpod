@@ -667,10 +667,10 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
-/// One account for Lagos Island and WYRD: a username and a password, chosen at the door of the
-/// island. Registering makes a WYRD account (the same email/password provider the app uses, with an
-/// address made from the username, so no email has to be confirmed) and the island name; signing in
-/// works with the username on the island and in the WYRD app.
+/// One account for Lagos Island and WYRD: a username, an email and a password, chosen at the door of
+/// the island. Registering makes a WYRD account (the same email/password provider the app uses, so
+/// "forgot password" works through that email) and the island name; signing in works with the
+/// username or the email, on the island and in the WYRD app.
 /// {@category Endpoint}
 class EndpointIslandAuth extends _isc.EndpointRef {
   EndpointIslandAuth(_isc.EndpointCaller caller) : super(caller);
@@ -689,14 +689,23 @@ class EndpointIslandAuth extends _isc.EndpointRef {
   /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
   _ida.Future<_iacc.AuthSuccess> register(
     String username,
+    String email,
     String password,
   ) => caller.callServerEndpoint<_iacc.AuthSuccess>(
     'islandAuth',
     'register',
     {
       'username': username,
+      'email': email,
       'password': password,
     },
+  );
+
+  /// Is this email free?
+  _ida.Future<bool> emailFree(String email) => caller.callServerEndpoint<bool>(
+    'islandAuth',
+    'emailFree',
+    {'email': email},
   );
 
   /// Sign in with a Lagos Island username (or the email of a WYRD account) and password.

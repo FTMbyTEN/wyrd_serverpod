@@ -4,10 +4,10 @@ import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import '../generated/protocol.dart';
 
-/// One account for Lagos Island and WYRD: a username and a password, chosen at the door of the
-/// island. Registering makes a WYRD account (the same email/password provider the app uses, with an
-/// address made from the username, so no email has to be confirmed) and the island name; signing in
-/// works with the username on the island and in the WYRD app.
+/// One account for Lagos Island and WYRD: a username, an email and a password, chosen at the door of
+/// the island. Registering makes a WYRD account (the same email/password provider the app uses, so
+/// "forgot password" works through that email) and the island name; signing in works with the
+/// username or the email, on the island and in the WYRD app.
 class IslandAuthEndpoint extends Endpoint {
   @override
   bool get requireLogin => false;
@@ -35,24 +35,34 @@ class IslandAuthEndpoint extends Endpoint {
   }
 
   /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
-  Future<AuthSuccess> register(Session session, String username, String password) async {
-    final name = username.trim();
+  Future<AuthSuccess> register(Session session, String username, String email, String password) async {
+    final name = username.trim(), mail = email.trim().toLowerCase();
     if (!_ok.hasMatch(name)) throw Exception('A username of 3 to 20 letters, digits, _ . or -.');
-    if (password.length < 8) throw Exception('A password of at least 8 characters.');
+    if (!_mail.hasMatch(mail) || mail.endsWith('@$domain')) throw Exception('A real email address.');
+    if (!strong(password)) throw Exception('A stronger password.');
     _throttle(session, 'reg', 300);
     final taken = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.ilike(_lit(name)));
     final emailIdp = AuthServices.instance.emailIdp;
     if (taken != null || await emailIdp.admin.findAccount(session, email: emailOf(name)) != null) {
       throw Exception('That username is taken.');
     }
+    if (await emailIdp.admin.findAccount(session, email: mail) != null) throw Exception('That email already has an account.');
     await session.db.transaction((tx) async {
       final user = await AuthServices.instance.authUsers.create(session, transaction: tx);
-      await emailIdp.admin.createEmailAuthentication(session, authUserId: user.id, email: emailOf(name), password: password, transaction: tx);
-      await AuthServices.instance.userProfiles.createUserProfile(session, user.id, UserProfileData(userName: name, email: emailOf(name)), transaction: tx);
+      await emailIdp.admin.createEmailAuthentication(session, authUserId: user.id, email: mail, password: password, transaction: tx);
+      await AuthServices.instance.userProfiles.createUserProfile(session, user.id, UserProfileData(userName: name, email: mail), transaction: tx);
       await IslandProfile.db.insertRow(session, IslandProfile(authUserId: user.id, handle: name, createdAt: DateTime.now().toUtc()), transaction: tx);
     });
-    return emailIdp.login(session, email: emailOf(name), password: password);
+    return emailIdp.login(session, email: mail, password: password);
   }
+
+  static final _mail = RegExp(r'^[^@\s]{1,64}@[^@\s]+\.[a-z]{2,}$');
+  /// 8+ characters with an upper-case letter, a lower-case letter and a digit
+  static bool strong(String p) => p.length >= 8 && p.length <= 128 && RegExp(r'[A-Z]').hasMatch(p) && RegExp(r'[a-z]').hasMatch(p) && RegExp(r'[0-9]').hasMatch(p);
+
+  /// Is this email free?
+  Future<bool> emailFree(Session session, String email) async =>
+      await AuthServices.instance.emailIdp.admin.findAccount(session, email: email.trim().toLowerCase()) == null;
 
   /// Sign in with a Lagos Island username (or the email of a WYRD account) and password.
   Future<AuthSuccess> login(Session session, String username, String password) async {

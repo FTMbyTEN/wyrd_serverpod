@@ -51,6 +51,7 @@ greeting:
 islandAuth:
   - available:
   - register:
+  - emailFree:
   - login:
 island:
   - tick:

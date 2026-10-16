@@ -52,7 +52,16 @@
   #hello .tabs { display: flex; gap: 6px; padding: 4px; margin-bottom: 10px; border-radius: 999px; background: #EEF2F6; }
   #hello .tabs button { flex: 1; padding: 9px; border: none; border-radius: 999px; background: none; font: 700 14px 'Plus Jakarta Sans', sans-serif; color: var(--dim); cursor: pointer; }
   #hello .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
-  #hello #pass { margin-top: 8px; }
+  #hello .fl { display: block; text-align: left; font-size: 12.5px; font-weight: 700; color: var(--dim); margin-top: 10px; }
+  #hello .fl input { margin-top: 4px; text-align: left; font-size: 15px; padding: 12px 14px; border-radius: 14px; }
+  #hello .pw { position: relative; display: block; }
+  #hello .pw button { position: absolute; right: 8px; top: 50%; transform: translateY(-40%); border: none; background: none; color: var(--green-dark); font: 800 12px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #hello .rules { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; text-align: left; font-size: 12px; color: var(--dim); }
+  #hello .rules li::before { content: '○ '; }
+  #hello .rules li.ok { color: var(--green-dark); }
+  #hello .rules li.ok::before { content: '✓ '; }
+  #hello .forgot { display: block; text-align: left; color: var(--green-dark); font-weight: 700; }
+  #hello .box { max-height: calc(100vh - 24px); overflow-y: auto; }
   #hello .note { font-size: 12px; color: var(--dim); margin-top: 8px; }
   #hello .err { color: #DC2626; font-size: 13px; font-weight: 700; min-height: 18px; margin-bottom: 6px; }
   #hello .who { font-size: 15px; font-weight: 700; margin-bottom: 8px; display: none; }
@@ -149,11 +158,14 @@
     <div id="who" class="who"></div>
     <div id="auth">
       <div class="tabs"><button id="tNew" class="on">New here</button><button id="tOld">I have an account</button></div>
-      <input id="name" maxlength="20" placeholder="Username" autocomplete="username" autocapitalize="off">
-      <input id="pass" type="password" maxlength="80" placeholder="Password (8 or more characters)" autocomplete="new-password">
-      <div class="note">One account for Lagos Island and WYRD: sign in to the WYRD app with this username too.</div>
+      <label class="fl" id="lEmail">Email<input id="email" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"></label>
+      <label class="fl"><span id="lName">Username</span><input id="name" maxlength="120" placeholder="e.g. tunde.lagos" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
+      <label class="fl">Password<span class="pw"><input id="pass" type="password" maxlength="128" placeholder="Create a password" autocomplete="new-password"><button type="button" id="peek" aria-label="Show password">Show</button></span></label>
+      <ul id="rules" class="rules"><li data-r="len">8+ characters</li><li data-r="up">An upper-case letter</li><li data-r="low">A lower-case letter</li><li data-r="num">A number</li></ul>
+      <label class="fl" id="lConfirm">Confirm password<input id="pass2" type="password" maxlength="128" placeholder="Type it again" autocomplete="new-password"></label>
+      <div class="note" id="note">One account for Lagos Island and WYRD. Sign in to either with your username or email.</div>
+      <a class="note forgot" id="forgot" href="/" style="display:none">Forgot your password? Reset it on WYRD</a>
     </div>
-    <div id="colors"></div>
     <div id="err" class="err"></div>
     <button id="go">Enter Lagos Island</button>
     <button id="guest" class="link">Look around as a guest</button>
@@ -926,15 +938,36 @@
   }
 
   // a person: a little figure in your colour, your name on a pill, what you said in a bubble
+  const gaits = new Map(), SKINS = ['#8D5A3B', '#6B4226', '#A0673F', '#5C3A21', '#C58C5C'];
   function person(px, pz, color, name, bubble, now, mine) {
-    const base = P(px, 0, pz), head = P(px, 5.6, pz), body = P(px, 3, pz), s = Math.max(0.7, K / 4.6);
-    if (base[0] < -60 || base[0] > W + 60 || base[1] < -80 || base[1] > H + 60) return;
-    if (onFerry(px, pz)) boat(px, pz);
-    x.fillStyle = 'rgba(20,40,60,0.25)'; x.beginPath(); x.ellipse(base[0], base[1], 7 * s, 3.2 * s, 0, 0, Math.PI * 2); x.fill();
-    if (mine) { x.strokeStyle = color; x.lineWidth = 2; x.beginPath(); x.ellipse(base[0], base[1], 11 * s, 5 * s, 0, 0, Math.PI * 2); x.stroke(); }
-    x.fillStyle = color; x.beginPath(); x.roundRect(body[0] - 5 * s, body[1] - 9 * s, 10 * s, 14 * s, 5 * s); x.fill();
-    x.fillStyle = '#8D5A3B'; x.beginPath(); x.arc(head[0], head[1] - 2 * s, 5.2 * s, 0, Math.PI * 2); x.fill();
-    x.fillStyle = '#1F2937'; x.beginPath(); x.arc(head[0], head[1] - 4.2 * s, 5.2 * s, Math.PI, Math.PI * 2); x.fill();
+    const base = P(px, 0, pz), s = Math.max(0.75, K / 4.6) * (inside ? 1.6 : 1);
+    if (base[0] < -60 || base[0] > W + 60 || base[1] < -100 || base[1] > H + 60) return;
+    // walking: legs and arms swing while the figure moves, and rest when it stops
+    const g = gaits.get(name) || { x: px, z: pz, at: 0, ph: 0 }, moved = Math.hypot(px - g.x, pz - g.z);
+    if (moved > 0.05) { g.at = now; g.ph += moved * 0.9; g.x = px; g.z = pz; }
+    gaits.set(name, g);
+    const swing = now - g.at < 180 ? Math.sin(g.ph) : 0;
+    const bx = base[0], by = base[1], skin = SKINS[[...name].reduce((a, ch) => a + ch.charCodeAt(0), 0) % SKINS.length];
+    x.fillStyle = 'rgba(20,40,60,0.28)'; x.beginPath(); x.ellipse(bx, by, 8 * s, 3.4 * s, 0, 0, Math.PI * 2); x.fill();
+    if (mine) { x.strokeStyle = '#22B573'; x.lineWidth = 2; x.beginPath(); x.ellipse(bx, by, 12 * s, 5.2 * s, 0, 0, Math.PI * 2); x.stroke(); }
+    const limb = (x0, y0, x1, y1, w, col) => { x.strokeStyle = col; x.lineWidth = w; x.lineCap = 'round'; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x1, y1); x.stroke(); };
+    const hip = by - 11 * s, sh = by - 22 * s;
+    // legs (trousers, shoes)
+    for (const side of [-1, 1]) { const fx = bx + side * 2.6 * s + swing * side * 3.2 * s; limb(bx + side * 2.2 * s, hip, fx, by - 1.5 * s, 3.6 * s, '#1F2937'); x.fillStyle = '#111827'; x.beginPath(); x.ellipse(fx, by - 0.8 * s, 2.6 * s, 1.4 * s, 0, 0, Math.PI * 2); x.fill(); }
+    // back arm, torso, front arm
+    limb(bx - 5 * s, sh + 2 * s, bx - 6 * s - swing * 2.6 * s, hip + 1 * s, 3 * s, shadeHex(color, 0.78));
+    const tg = x.createLinearGradient(bx - 6 * s, 0, bx + 6 * s, 0); tg.addColorStop(0, shadeHex(color, 1.15)); tg.addColorStop(1, shadeHex(color, 0.8));
+    x.fillStyle = tg; x.beginPath(); x.roundRect(bx - 5.6 * s, sh, 11.2 * s, 13 * s, [5 * s, 5 * s, 3 * s, 3 * s]); x.fill();
+    limb(bx + 5 * s, sh + 2 * s, bx + 6 * s + swing * 2.6 * s, hip + 1 * s, 3 * s, color);
+    for (const side of [-1, 1]) { x.fillStyle = skin; x.beginPath(); x.arc(bx + side * (6 * s + swing * side * 2.6 * s), hip + 1.6 * s, 1.6 * s, 0, Math.PI * 2); x.fill(); }
+    // neck, head, hair, face
+    x.fillStyle = skin; x.fillRect(bx - 1.4 * s, sh - 2.4 * s, 2.8 * s, 3 * s);
+    const hy = sh - 7 * s;
+    x.beginPath(); x.ellipse(bx, hy, 5 * s, 5.6 * s, 0, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#1F1A17'; x.beginPath(); x.ellipse(bx, hy - 2.6 * s, 5.3 * s, 3.6 * s, 0, Math.PI, Math.PI * 2); x.fill();
+    x.fillStyle = '#111827'; for (const side of [-1, 1]) { x.beginPath(); x.arc(bx + side * 1.8 * s, hy + 0.6 * s, 0.7 * s, 0, Math.PI * 2); x.fill(); }
+    x.strokeStyle = 'rgba(0,0,0,0.35)'; x.lineWidth = 0.8 * s; x.beginPath(); x.arc(bx, hy + 2 * s, 1.4 * s, 0.2, Math.PI - 0.2); x.stroke();
+    const head = [bx, hy + 4 * s];
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.font = '700 12px "Plus Jakarta Sans", sans-serif';
     const nw = x.measureText(name).width + 14, ny = base[1] + 8 * s;
@@ -1721,13 +1754,18 @@
   poll(); setInterval(poll, 15000);
 
   // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
-  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), colorsEl = document.getElementById('colors'), errEl = document.getElementById('err');
+  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), errEl = document.getElementById('err');
+  const emailIn = document.getElementById('email'), pass2In = document.getElementById('pass2');
+  const RULES = { len: (p) => p.length >= 8, up: (p) => /[A-Z]/.test(p), low: (p) => /[a-z]/.test(p), num: (p) => /[0-9]/.test(p) };
+  const strong = (p) => Object.values(RULES).every((f) => f(p));
+  passIn.addEventListener('input', () => { for (const li of document.querySelectorAll('#rules li')) li.classList.toggle('ok', RULES[li.dataset.r](passIn.value)); });
+  document.getElementById('peek').onclick = (e) => { const show = passIn.type === 'password'; passIn.type = pass2In.type = show ? 'text' : 'password'; e.target.textContent = show ? 'Hide' : 'Show'; };
+  const showFor = (n) => { for (const id of ['lEmail', 'rules', 'lConfirm']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lName').textContent = n ? 'Username' : 'Username or email'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Username or email'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
   let isNew = true;
   call('online', {}).then((n) => { if (typeof n === 'number') document.getElementById('crowd').textContent = n === 1 ? '1 Lagosian' : n + ' Lagosians'; }).catch(() => {});
-  for (const c of COLORS) { const s = document.createElement('span'); s.style.background = c; s.setAttribute('role', 'button'); s.setAttribute('aria-label', 'Colour ' + c); if (c === myColor) s.className = 'on'; s.onclick = () => { myColor = c; for (const o of colorsEl.children) o.className = ''; s.className = 'on'; }; colorsEl.append(s); }
   const tabNew = document.getElementById('tNew'), tabOld = document.getElementById('tOld');
-  tabNew.onclick = () => { isNew = true; tabNew.className = 'on'; tabOld.className = ''; passIn.autocomplete = 'new-password'; };
-  tabOld.onclick = () => { isNew = false; tabOld.className = 'on'; tabNew.className = ''; passIn.autocomplete = 'current-password'; };
+  tabNew.onclick = () => { isNew = true; tabNew.className = 'on'; tabOld.className = ''; passIn.autocomplete = 'new-password'; showFor(true); };
+  tabOld.onclick = () => { isNew = false; tabOld.className = 'on'; tabNew.className = ''; passIn.autocomplete = 'current-password'; showFor(false); };
   function start() {
     store.set('li.color', myColor);
     hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true;
@@ -1742,14 +1780,22 @@
   }
   document.getElementById('go').onclick = async () => {
     if (signedIn() && document.getElementById('auth').style.display === 'none') return start();
-    const u = nameIn.value.trim(), p = passIn.value;
+    const u = nameIn.value.trim(), p = passIn.value, mail = emailIn.value.trim().toLowerCase();
     errEl.textContent = '';
-    if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(u)) { errEl.textContent = 'Pick a username of 3 to 20 letters, digits, _ . or -.'; return; }
-    if (p.length < 8) { errEl.textContent = 'Your password needs 8 or more characters.'; return; }
+    if (isNew) {
+      if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { errEl.textContent = 'Enter a valid email address.'; emailIn.focus(); return; }
+      if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(u)) { errEl.textContent = 'Usernames are 3 to 20 letters, digits, _ . or -.'; nameIn.focus(); return; }
+      if (!strong(p)) { errEl.textContent = 'Your password needs 8+ characters with an upper-case letter, a lower-case letter and a number.'; passIn.focus(); return; }
+      if (p !== pass2In.value) { errEl.textContent = 'The passwords don\'t match.'; pass2In.focus(); return; }
+    } else if (!u || !p) { errEl.textContent = 'Enter your username (or email) and password.'; return; }
     const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = isNew ? 'Making your account…' : 'Signing in…';
     try {
-      if (isNew) { const av = await fetch(`${API}/islandAuth/available`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u }) }); if (av.ok && (await av.text()).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.'); }
-      const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
+      if (isNew) {
+        const ask = (m, b) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then((r) => r.ok ? r.text() : 'true');
+        if ((await ask('available', { username: u })).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
+        if ((await ask('emailFree', { email: mail })).trim() === 'false') throw new Error('That email already has a WYRD account. Sign in instead.');
+      }
+      const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isNew ? { username: u, email: mail, password: p } : { username: u, password: p }) });
       const t = await r.text();
       if (!r.ok) {
         let m = t; try { const j = JSON.parse(t); m = j.message || j.error || j.reason || t; } catch {}
@@ -1757,12 +1803,13 @@
       }
       const a = JSON.parse(t);
       localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
-      myName = u; me$ = null; start();
+      myName = u.includes('@') ? '' : u; me$ = null; start();
+      my('me').then((v) => { myName = v.handle; }).catch(() => {});
     } catch (e) { errEl.textContent = e.message; }
     finally { btn.disabled = false; btn.textContent = 'Enter Lagos Island'; }
   };
   document.getElementById('guest').onclick = () => { myName = store.get('li.name') || 'Guest'; start(); };
-  for (const el of [nameIn, passIn]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
+  for (const el of [emailIn, nameIn, passIn, pass2In]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
 })();
 </script>
 </body>
