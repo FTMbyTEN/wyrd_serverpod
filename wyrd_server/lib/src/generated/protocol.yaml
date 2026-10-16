@@ -83,6 +83,10 @@ islandMe:
   - askHq:
   - hqRequests:
   - answerHq:
+  - rideQuote:
+  - requestRide:
+  - payRide:
+  - cancelRide:
   - room:
   - saveRoom:
   - shows:

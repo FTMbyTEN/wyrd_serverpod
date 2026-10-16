@@ -516,6 +516,52 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'id': id, 'status': grant ? 'granted' : 'denied'});
   }
 
+  // ---------------- rides (like a ride-hailing app: quote, request, pay on arrival) ----------------
+  /// Fares in naira for a trip between two board tiles (distance on the grid): okada and car.
+  static Map<String, int> _fares(int fi, int fj, int ti, int tj) {
+    final d = (fi - ti).abs() + (tj - fj).abs();
+    return {'okada': min(6000, 400 + d * 22), 'car': min(15000, 1000 + d * 48)};
+  }
+
+  static final _rides = <String, ({String user, int fare, String kind, DateTime at})>{};
+
+  /// What a trip would cost, and roughly how long until a rider reaches you.
+  Future<String> rideQuote(Session session, int fi, int fj, int ti, int tj) async {
+    final f = _fares(fi, fj, ti, tj), d = (fi - ti).abs() + (tj - fj).abs();
+    return jsonEncode({...f, 'tiles': d, 'okadaEta': 2 + _rnd.nextInt(3), 'carEta': 3 + _rnd.nextInt(4)});
+  }
+
+  /// Book a ride: the fare is fixed now (and must be affordable); it's charged when you arrive.
+  Future<String> requestRide(Session session, int fi, int fj, int ti, int tj, String kind) async {
+    final u = _user(session);
+    final f = _fares(fi, fj, ti, tj)[kind];
+    if (f == null) return _err('Okada or car.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < f) return _err('This ride costs ₦${_n(f)} and you have ₦${_n(c.naira)}. Work a shift first.');
+    _rides.removeWhere((_, r) => DateTime.now().difference(r.at).inHours >= 2);
+    final id = '${DateTime.now().millisecondsSinceEpoch}${_rnd.nextInt(1 << 20)}';
+    _rides[id] = (user: u.uuid, fare: f, kind: kind, at: DateTime.now());
+    return jsonEncode({'id': id, 'fare': f, 'kind': kind});
+  }
+
+  /// You've arrived: pay the fare (once).
+  Future<String> payRide(Session session, String id) => _money(session, (u) async {
+    final r = _rides[id];
+    if (r == null || r.user != u.uuid) return _err('No such ride.');
+    final res = await Bank.post(session, u, key: 'island:ride:$id', amount: -r.fare, kind: 'ride', counter: 'city:transport', memo: r.kind == 'okada' ? 'Okada ride' : 'Car ride');
+    if (res.short != null) return _err('Not enough naira for the fare.');
+    _rides.remove(id);
+    final c = await Bank.fresh(session, u);
+    return jsonEncode({'paid': r.fare, 'naira': c.naira});
+  });
+
+  /// Cancel before the trip starts: nothing is charged.
+  Future<String> cancelRide(Session session, String id) async {
+    final r = _rides[id];
+    if (r != null && r.user == _user(session).uuid) _rides.remove(id);
+    return jsonEncode({'cancelled': true});
+  }
+
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {

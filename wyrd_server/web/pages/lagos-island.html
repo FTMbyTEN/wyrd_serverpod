@@ -130,6 +130,46 @@
   .ptitle { color: #fff; font-size: 22px; font-weight: 800; margin: 6px 0 12px; }
   .lock { font-size: 11.5px; color: #fff; opacity: .9; margin-bottom: 10px; }
   /* ================= WYRD OS ================= */
+  /* the body: a titanium frame, side keys, a punch-hole camera, a sheen across the glass; it rises as it opens */
+  #phone { border-radius: 46px !important; padding: 10px !important; background: linear-gradient(135deg, #8A8F98, #3A3E46 18%, #1C1E23 50%, #3A3E46 82%, #9AA0A8) !important; box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset, 0 0 0 2px #0B0C10, 0 0 40px rgba(0,240,255,.18), 0 40px 90px rgba(0,0,0,.6) !important; transform-origin: 30px 60px; animation: phoneOpen .42s cubic-bezier(.2,.9,.25,1.15) !important; }
+  @keyframes phoneOpen { from { transform: perspective(900px) translate(-46vw, -30vh) scale(.12) rotateY(-30deg); opacity: .2; } to { transform: none; opacity: 1; } }
+  #phone::before { display: none !important; }
+  #phone > i { position: absolute; width: 4px; border-radius: 3px; background: linear-gradient(90deg, #5A5F68, #C9CED6, #5A5F68); }
+  #phone .btnL1 { left: -3px; top: 120px; height: 34px; } #phone .btnL2 { left: -3px; top: 166px; height: 56px; } #phone .btnR { right: -3px; top: 150px; height: 80px; }
+  #screen { border-radius: 37px !important; box-shadow: 0 0 0 3px #000; }
+  #screen::before { content: ''; position: absolute; inset: 0; z-index: 6; pointer-events: none; background: linear-gradient(115deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(255,255,255,.04)); }
+  #pbar { position: relative; align-items: center; padding: 14px 26px 8px !important; border-bottom: none !important; }
+  #pbar .cam { position: absolute; left: 50%; top: 11px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #2A3A55, #000 60%); box-shadow: 0 0 0 2px #000; }
+  #pbar .sys { display: flex; align-items: center; gap: 6px; fill: currentColor; color: var(--c); }
+  #pbar .sys #pnaira { color: var(--y); margin-right: 2px; }
+  /* the wallpaper: a slow neon grid */
+  #screen { background: linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(0,240,255,.07) 0) 0 0 / 100% 26px, linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), rgba(255,0,60,.06) 0) 0 0 / 26px 100%, radial-gradient(90% 60% at 100% 0%, rgba(255,0,60,.25), transparent 60%), radial-gradient(80% 60% at 0% 100%, rgba(0,240,255,.2), transparent 60%), linear-gradient(180deg, #0B0B14, #07070D) !important; animation: grid 18s linear infinite; }
+  @keyframes grid { to { background-position: 0 260px, 260px 0, 0 0, 0 0, 0 0; } }
+  #pbody > * { animation: appIn .22s ease-out both; }
+  #pbody > *:nth-child(2) { animation-delay: .03s; } #pbody > *:nth-child(3) { animation-delay: .06s; } #pbody > *:nth-child(4) { animation-delay: .09s; }
+  @keyframes appIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .app:hover i { filter: brightness(1.25); }
+  .app:active i { transform: scale(.9); filter: brightness(1.5); }
+  /* Ride */
+  .trip { position: relative; margin-bottom: 10px; padding: 10px; background: var(--panel); border: 1px solid rgba(0,240,255,.25); }
+  .trip img { display: block; width: 100%; aspect-ratio: 16 / 8; object-fit: cover; margin-bottom: 8px; }
+  .trip .tl { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 15px; }
+  .trip .dot { width: 10px; height: 10px; flex: none; } .trip .dot.a { background: var(--c); border-radius: 50%; } .trip .dot.b { background: var(--y); }
+  .opt { display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 8px; padding: 12px; text-align: left; border: 1px solid rgba(0,240,255,.2); background: rgba(0,0,0,.45); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; cursor: pointer; }
+  .opt.on { border-color: var(--y); box-shadow: inset 3px 0 0 var(--y), 0 0 16px rgba(252,238,10,.15); }
+  .opt .oi { font-size: 28px; } .opt .on2 { flex: 1; } .opt b { display: block; font: 800 15px 'Orbitron', sans-serif; color: #fff; } .opt small { color: #8FB6C2; font-size: 13px; } .opt .of { font: 800 16px 'Orbitron', sans-serif; color: var(--y); }
+  .big2 { width: 100%; padding: 14px; font-size: 15px; }
+  .radar { position: relative; width: 170px; height: 170px; margin: 16px auto; display: grid; place-items: center; }
+  .radar i { position: absolute; inset: 0; border: 2px solid var(--c); border-radius: 50%; animation: ping 2s ease-out infinite; opacity: 0; }
+  .radar i:nth-child(2) { animation-delay: .66s; } .radar i:nth-child(3) { animation-delay: 1.33s; }
+  .radar span { font-size: 38px; }
+  @keyframes ping { 0% { transform: scale(.2); opacity: .9; } 100% { transform: scale(1); opacity: 0; } }
+  .driver { display: flex; align-items: center; gap: 14px; margin: 10px 0; padding: 12px; background: var(--panel); border: 1px solid rgba(252,238,10,.35); }
+  .driver .av { width: 56px; height: 56px; display: grid; place-items: center; font-size: 30px; background: rgba(252,238,10,.12); border: 1px solid var(--y); }
+  .driver b { font: 800 16px 'Orbitron', sans-serif; color: #fff; }
+  .plate { display: inline-block; margin-top: 4px; padding: 2px 8px; background: #F8FAFC; color: #111827; font: 800 13px 'Rajdhani', sans-serif; letter-spacing: 2px; border: 2px solid #16A34A; }
+  .prog { height: 6px; margin: 6px 0 12px; background: rgba(0,240,255,.15); } .prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--c), var(--y)); transition: width .5s; }
+  .stars { display: flex; gap: 6px; margin: 8px 0 12px; } .stars button { border: none; background: none; font-size: 28px; color: #3A4250; cursor: pointer; } .stars button.on { color: var(--y); text-shadow: 0 0 10px rgba(252,238,10,.6); }
   #phone { --y: #FCEE0A; --c: #00F0FF; --m: #FF003C; --bg: #07070D; --panel: rgba(12,14,24,.92); border-radius: 30px; padding: 7px; background: linear-gradient(160deg, #2A2A35, #07070D 40%, #1A0A12); box-shadow: 0 0 0 1px rgba(252,238,10,.35), 0 0 30px rgba(0,240,255,.18), 0 30px 80px rgba(0,0,0,.6); }
   #phone::before { top: 13px; width: 70px; height: 20px; margin-left: -35px; border-radius: 0 0 8px 8px; background: #000; box-shadow: inset 0 -2px 0 var(--m); }
   #screen { border-radius: 24px; background: radial-gradient(90% 60% at 100% 0%, rgba(255,0,60,.22), transparent 60%), radial-gradient(80% 60% at 0% 100%, rgba(0,240,255,.18), transparent 60%), linear-gradient(180deg, #0B0B14, #07070D); font-family: 'Rajdhani', sans-serif; color: #E6F9FF; }
@@ -211,7 +251,7 @@
 <div id="phoneBtn" class="btn" role="button" aria-label="Open your phone"><b id="pbadge"></b></div>
 <div id="joins" aria-live="polite"></div>
 <button id="act"></button>
-<div id="phone" role="dialog" aria-label="Your phone"><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span>Lagos Island</span><span id="pnaira"></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lu">Tap to unlock</div></div><div id="pbody"></div><div id="pnav"><button id="pback">‹ Back</button><button id="phome">Home</button><button id="pclose">Close</button></div></div></div>
+<div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lu">Tap to unlock</div></div><div id="pbody"></div><div id="pnav"><button id="pback">‹ Back</button><button id="phome">Home</button><button id="pclose">Close</button></div></div></div>
 <div id="hello">
   <div class="box">
     <h1>🌴 Lagos Island</h1>
@@ -1014,6 +1054,8 @@
     for (const [i, j, t1, t2] of BILLBOARDS) if (visible(i, j)) items.push({ d: P(i * T, 0, j * T)[2], f: () => billboard(i * T, j * T, t1, t2) });
     const now = performance.now();
     items.push({ d: P(wyrd.x, 0, wyrd.z)[2] + 0.02, f: () => drawWyrd(now) });
+    if (trip && (trip.phase === 'coming' || trip.phase === 'arrived')) { const c = trip.car; items.push({ d: P(c.x, 0, c.z)[2] + 0.01, f: () => vehicle(c.x, c.z, c.dx, c.dz, trip.kind, trip.driver.color, trip.driver.plate) }); }
+    if (trip && trip.phase === 'ontrip' && drive) items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => vehicle(me.x, me.z, drive.dx, drive.dz, trip.kind, trip.driver.color, trip.driver.plate) });
     glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
@@ -1405,8 +1447,8 @@
     if (!best && lot != null) { card.style.display = 'none'; return enterHq(lot, i, j); }
     if (best) {
       card.innerHTML = ''; const b = document.createElement('b'); b.textContent = best[6] + ' ' + best[5]; const s = document.createElement('span'); s.textContent = (sectorOf((best[1] + 0.5) * T, (best[2] + 0.5) * T) || {}).name || '';
-      const go = document.createElement('button'); go.className = 'drivebtn'; go.textContent = '🚗 Drive there'; const place = best;
-      go.onclick = () => { card.style.display = 'none'; const t = nearestRoad(place[1] + place[3] / 2, place[2] + place[4] / 2); driveTo(t[0], t[1]); };
+      const go = document.createElement('button'); go.className = 'drivebtn'; go.textContent = '🛵 Ride there'; const place = best;
+      go.onclick = () => { card.style.display = 'none'; const t = nearestRoad(place[1] + place[3] / 2, place[2] + place[4] / 2); openPhone('rideq', { i: t[0], j: t[1], name: place[5], emoji: place[6], peek: 'p' + PLACES.indexOf(place) }); };
       card.append(b, s, go); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 6000);
       return;
     }
@@ -1538,6 +1580,7 @@
         }
       }
     }
+    if (trip && !inside) tripStep(dt);
     if (drive && !inside) driveStep(dt);
     if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
@@ -1669,7 +1712,7 @@
   async function openPhone(app, arg) {
     phone.style.display = 'block'; stack = [['home']]; shadeEl.classList.remove('on');
     if (!booted) await boot();
-    if (!app) await lockScreen();
+    await lockScreen();
     if (!signedIn()) return render('signin');
     try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { return fail(e); }
     if (app) go(app, arg); else render('home');
@@ -1804,7 +1847,7 @@
         pbody.querySelectorAll('[data-buy]').forEach((b) => (b.onclick = async () => { try { const v = await my('buyTicket', { showId: Number(b.dataset.buy) }); if (v.naira != null) pnaira.textContent = naira(v.naira); render('arena'); } catch (e) { fail(e); } }));
         pbody.querySelectorAll('[data-stage]').forEach((b) => (b.onclick = () => {
           const sh = list.find((v) => v.id === Number(b.dataset.stage));
-          if (sh && (sh.live || sh.mine)) { closePhone(); if (!near('arena', 20) && !inside) ride(31, 26.5); enterRoom('arena', 'arena:' + sh.id, 'The Arena · ' + sh.artist, { show: sh.id }); }
+          if (sh && (sh.live || sh.mine)) { closePhone(); if (!inside) { me.x = 31 * T; me.z = 29 * T; } enterRoom('arena', 'arena:' + sh.id, 'The Arena · ' + sh.artist, { show: sh.id }); }
           else go('stage', Number(b.dataset.stage));
         }));
         return;
@@ -1838,7 +1881,7 @@
       }
       if (app === 'casino') {
         const atTable = (inside && inside.kind === 'casino') || near('casino', 25);
-        if (!atTable) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>Walk to the Island Casino in Lekki to play. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Ride there</button></div>`), ($('cRide').onclick = () => { ride(31.5, 19.5); closePhone(); });
+        if (!atTable) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>The Island Casino is in Lekki. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Go in</button></div>`), ($('cRide').onclick = () => { closePhone(); enterPlace(PLACES.find((p) => p[0] === 'casino')); });
         await loadMe();
         show(`<div class="ptitle">Island Casino</div><div class="pcard"><div class="dim">Your naira</div><div class="big" id="cBal">${naira(me$.naira)}</div><label class="dim">Stake</label><select id="cStake">${[100, 200, 500, 1000, 2000, 5000].map((v) => `<option value="${v}">${naira(v)}</option>`).join('')}</select></div>
           <div class="pcard"><h3>Roulette</h3><button class="pbtn" style="background:#DC2626" data-bet="red">Red ×2</button><button class="pbtn" style="background:#111827" data-bet="black">Black ×2</button><button class="pbtn" style="background:#16A34A" data-bet="green">Green ×14</button></div>
@@ -1859,11 +1902,47 @@
         $('wGo').onclick = ask; $('wText').onkeydown = (e) => { if (e.key === 'Enter') ask(); };
         return;
       }
+      if (app === 'ride' && trip) return render('trip');
+      if (app === 'rideq') {
+        const d = arg, from = nearestRoad(me.x / T, me.z / T);
+        if (from[0] === d.i && from[1] === d.j) return show('<div class="ptitle">Ride</div><div class="pcard">You\'re already there.</div>');
+        const q = await my('rideQuote', { fi: from[0], fj: from[1], ti: d.i, tj: d.j });
+        show(`<div class="ptitle">Where to</div>
+          <div class="trip"><img alt="" src="${peek(d.peek)}"><div class="tl"><span class="dot a"></span><span>Your location · ${esc(inside ? inside.title : sector.name)}</span></div><div class="tl"><span class="dot b"></span><b>${esc((d.emoji ? d.emoji + ' ' : '') + d.name)}</b></div><div class="dim">About ${Math.max(1, Math.round(q.tiles * 0.25))} min · ${q.tiles * 100} m</div></div>
+          <button class="opt on" data-k="okada"><span class="oi">🛵</span><span class="on2"><b>Okada</b><small>${q.okadaEta} min away · fastest in traffic</small></span><span class="of">${naira(q.okada)}</span></button>
+          <button class="opt" data-k="car"><span class="oi">🚗</span><span class="on2"><b>Car</b><small>${q.carEta} min away · air-conditioned</small></span><span class="of">${naira(q.car)}</span></button>
+          <div class="dim" style="margin:8px 2px">Paid from your wallet when you arrive · balance <b data-naira>${naira(me$.naira)}</b></div>
+          <button class="pbtn big2" id="rqGo">Request okada</button>`);
+        let kind = 'okada';
+        pbody.querySelectorAll('.opt').forEach((b) => (b.onclick = () => { kind = b.dataset.k; pbody.querySelectorAll('.opt').forEach((o) => o.classList.toggle('on', o === b)); $('rqGo').textContent = 'Request ' + kind; }));
+        $('rqGo').onclick = async () => {
+          try { const r = await my('requestRide', { fi: from[0], fj: from[1], ti: d.i, tj: d.j, kind }); startTrip(r, d, from, kind === 'okada' ? q.okadaEta : q.carEta); stack = [['home'], ['trip']]; render('trip'); }
+          catch (e) { fail(e); }
+        };
+        return;
+      }
+      if (app === 'trip') {
+        if (!trip) { stack = [['home']]; return render('home'); }
+        const t = trip, dv = t.driver;
+        const head = { searching: 'Finding you a rider', coming: `${dv.name} is on the way`, arrived: `${dv.name} is here`, ontrip: 'On the way', done: 'You\'ve arrived' }[t.phase];
+        const sub = t.phase === 'searching' ? 'Matching you with riders nearby…' : t.phase === 'coming' ? `Arriving in ${Math.max(1, Math.ceil(t.eta))} s` : t.phase === 'arrived' ? 'Hop on. Your trip is starting.' : t.phase === 'ontrip' ? `To ${t.dest.name}` : `${t.dest.name}`;
+        const pct = t.phase === 'ontrip' && drive ? Math.round(100 * (1 - drive.path.length / t.legs)) : t.phase === 'done' ? 100 : 0;
+        show(`<div class="ptitle">${head}</div><div class="lock">${sub}</div>
+          ${t.phase === 'searching' ? '<div class="radar"><i></i><i></i><i></i><span>🛰️</span></div>' : `<div class="driver"><div class="av">${t.kind === 'okada' ? '🛵' : '🚗'}</div><div><b>${esc(dv.name)}</b><div class="dim">★ ${dv.rating} · ${esc(dv.vehicle)}</div><div class="plate">${esc(dv.plate)}</div></div></div>`}
+          ${t.phase === 'ontrip' || t.phase === 'done' ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}
+          <div class="pcard"><div class="row"><span>Fare</span><b>${naira(t.fare)}</b></div><div class="row"><span>Ride</span><b>${t.kind === 'okada' ? 'Okada' : 'Car'}</b></div><div class="row"><span>To</span><b>${esc(t.dest.name)}</b></div></div>
+          ${t.phase === 'done' ? `<div class="pcard"><h3>Paid ${naira(t.fare)}</h3><div class="dim">Rate ${esc(dv.name)}</div><div class="stars">${[1, 2, 3, 4, 5].map((n) => `<button data-star="${n}">★</button>`).join('')}</div><button class="pbtn" id="tDone">Done</button></div>` : ''}
+          ${t.phase === 'searching' || t.phase === 'coming' ? '<button class="pbtn alt" id="tCancel">Cancel ride</button>' : ''}`);
+        if ($('tCancel')) $('tCancel').onclick = () => cancelTrip();
+        if ($('tDone')) $('tDone').onclick = () => { trip = null; stack = [['home']]; closePhone(); };
+        pbody.querySelectorAll('[data-star]').forEach((b) => (b.onclick = () => { pbody.querySelectorAll('[data-star]').forEach((o) => o.classList.toggle('on', Number(o.dataset.star) <= Number(b.dataset.star))); }));
+        return;
+      }
       if (app === 'ride') {
         const spots = (k) => PLACES.filter((p) => sectorAt[p[2] * BOARD.w + p[1]] === k && p[0] !== 'soon');
-        show(`<div class="ptitle">Ride</div><div class="lock">Pick a place. Your okada takes you there.</div>${SECTORS.map((s, k) => s.id.startsWith('fill') ? '' : `<div class="rsec">// ${esc(s.name)}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div>`).join('')}`);
-        pbody.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => { const s = SECTORS[b.dataset.s]; const j = s.rows[0] ?? s.rect[1], i = s.cols[0] ?? Math.round((s.rect[0] + s.rect[2]) / 2); if (inside) leaveRoom(); ride(i + 0.5, j + 0.5); closePhone(); }));
-        pbody.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { const p = PLACES[b.dataset.p]; if (inside) leaveRoom(); const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); ride(t[0] + 0.5, t[1] + 0.5); closePhone(); }));
+        show(`<div class="ptitle">Ride</div><div class="lock">Where to? Pick a place, see the fare, and a rider comes to you. Paid from your wallet.</div>${SECTORS.map((s, k) => s.id.startsWith('fill') ? '' : `<div class="rsec">// ${esc(s.name)}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div>`).join('')}`);
+        pbody.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => { const s = SECTORS[b.dataset.s]; const j = s.rows[0] ?? s.rect[1], i = s.cols[0] ?? Math.round((s.rect[0] + s.rect[2]) / 2); const t = nearestRoad(i + 0.5, j + 0.5); go('rideq', { i: t[0], j: t[1], name: s.name, peek: 's' + b.dataset.s }); }));
+        pbody.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { const p = PLACES[b.dataset.p]; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + b.dataset.p }); }));
         // the pictures fill in one by one, nearest the top first
         const todo = [...pbody.querySelectorAll('[data-peek]')];
         const next = () => { const el = todo.shift(); if (!el || stack[stack.length - 1][0] !== 'ride') return; el.outerHTML = '<img alt="" src="' + peek(el.dataset.peek) + '">'; setTimeout(next, 16); };
@@ -1901,6 +1980,7 @@
     for (const el of phone.querySelectorAll('[data-clock]')) el.textContent = hm;
     if (me$) for (const el of phone.querySelectorAll('[data-naira]')) el.textContent = naira(me$.naira);
   }, 1000);
+  setInterval(() => { if (phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'trip') render('trip'); }, 500);
   setInterval(() => { if (phone.style.display === 'block' && signedIn() && !document.hidden) my('me').then((v) => { if (me$) Object.assign(me$, v); pnaira.textContent = naira(v.naira); }).catch(() => {}); }, 5000);
   // a picture of a district or a landmark: the same renderer, drawn into a small canvas, kept once made
   const peeks = new Map();
@@ -1930,7 +2010,67 @@
   }
   function ride(i, j) { const t = nearestRoad(i, j); if (!driveTo(t[0], t[1])) { me.x = i * T; me.z = j * T; cam.follow = true; updateWhere(); } }
   // ---- the car: from the road you're on to the one you want, along the roads and bridges
-  let drive = null;
+  let drive = null, trip = null;
+  const DRIVERS = ['Tunde', 'Chiamaka', 'Ibrahim', 'Funmi', 'Emeka', 'Aisha', 'Segun', 'Ngozi', 'Kunle', 'Halima', 'Dayo', 'Bisi'];
+  const CARS = ['Toyota Corolla', 'Honda Accord', 'Kia Rio', 'Toyota Camry', 'Hyundai Elantra'];
+  function startTrip(r, dest, from, etaMin) {
+    const R = rnd(Date.now() % 100000);
+    const name = DRIVERS[Math.floor(R() * DRIVERS.length)], L = 'ABCDEFGHJKLMNPRSTUVWXYZ', plate = ['LND', 'KJA', 'EKY', 'APP'][Math.floor(R() * 4)] + '-' + (100 + Math.floor(R() * 899)) + L[Math.floor(R() * L.length)] + L[Math.floor(R() * L.length)];
+    trip = { id: r.id, fare: r.fare, kind: r.kind, dest, from, phase: 'searching', until: performance.now() + 3000 + R() * 4000, eta: 0, legs: 1,
+      driver: { name, plate, rating: (4.6 + R() * 0.39).toFixed(2), vehicle: r.kind === 'okada' ? 'Bajaj Boxer · red' : CARS[Math.floor(R() * CARS.length)], color: r.kind === 'okada' ? '#DC2626' : ['#F8FAFC', '#111827', '#1D4ED8', '#9CA3AF', '#B91C1C'][Math.floor(R() * 5)] }, car: null };
+    if (inside) leaveRoom();
+  }
+  async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; stack = [['home']]; render('ride'); }
+  function tripStep(dt) {
+    const t = trip, now = performance.now();
+    if (t.phase === 'searching' && now > t.until) {
+      // a rider a few streets away accepts
+      const [pi, pj] = t.from, cands = roadTiles.filter(([i, j]) => { const d = Math.abs(i - pi) + Math.abs(j - pj); return d >= 5 && d <= 11; });
+      const st = cands.length ? cands[Math.floor(Math.random() * cands.length)] : t.from, path = pathTo(st[0], st[1], pi, pj);
+      t.car = { x: st[0] * T + T / 2, z: st[1] * T + T / 2, path, dx: 1, dz: 0 }; t.phase = 'coming';
+      notify(`${t.driver.name} accepted your ride · ${t.driver.plate}`, 'ride');
+      cam.follow = false; cam.x = (t.car.x + me.x) / 2; cam.z = (t.car.z + me.z) / 2;
+    }
+    if (t.phase === 'coming') {
+      const c = t.car, sp = t.kind === 'okada' ? 30 : 24;
+      let left = 0; for (let k = 0; k < c.path.length; k++) left += k ? Math.hypot(c.path[k][0] - c.path[k - 1][0], c.path[k][1] - c.path[k - 1][1]) : Math.hypot(c.path[0][0] - c.x, c.path[0][1] - c.z);
+      t.eta = left / sp;
+      if (!c.path.length) { t.phase = 'arrived'; t.until = now + 2200; notify(`${t.driver.name} is here`, 'ride'); }
+      else { const [tx, tz] = c.path[0], ex = tx - c.x, ez = tz - c.z, dist = Math.hypot(ex, ez), st = sp * dt; if (dist <= st) { c.x = tx; c.z = tz; c.path.shift(); } else { c.x += (ex / dist) * st; c.z += (ez / dist) * st; c.dx = ex / dist; c.dz = ez / dist; } }
+      const e = Math.min(1, dt * 2); cam.x += (c.x - cam.x) * e; cam.z += (c.z - cam.z) * e;
+    }
+    if (t.phase === 'arrived' && now > t.until) {
+      me.x = t.car.x; me.z = t.car.z;
+      if (!driveTo(t.dest.i, t.dest.j)) { me.x = t.dest.i * T + T / 2; me.z = t.dest.j * T + T / 2; }
+      t.phase = 'ontrip'; t.legs = drive ? drive.path.length : 1;
+    }
+    if (t.phase === 'ontrip' && !drive) {
+      t.phase = 'done';
+      my('payRide', { id: t.id }).then((v) => { if (me$) me$.naira = v.naira; pnaira.textContent = naira(v.naira); notify(`Paid ${naira(t.fare)} for your ride`, 'wallet'); }).catch((e) => notify(e.message, 'ride'));
+      if (phone.style.display !== 'block') openPhone('trip');
+    }
+  }
+  // the ride on the map: an okada or a car, with the driver's plate over it
+  function vehicle(vx, vz, dx, dz, kind, col, label) {
+    if (kind === 'okada') {
+      const along = Math.abs(dx) >= Math.abs(dz), a = along ? 1.8 : 0.5, b = along ? 0.5 : 1.8;
+      x.fillStyle = 'rgba(20,40,60,0.3)'; const sh = P(vx + 0.4, 0, vz + 0.3); x.beginPath(); x.ellipse(sh[0], sh[1], 2.2 * K, 1.2 * K * sp, 0, 0, Math.PI * 2); x.fill();
+      for (const k of [-1, 1]) { const p = P(vx + (along ? k * 1.5 : 0), 0.8, vz + (along ? 0 : k * 1.5)); x.fillStyle = '#111827'; x.beginPath(); x.arc(p[0], p[1], K * 0.8, 0, Math.PI * 2); x.fill(); }
+      box(vx - a, 0.8, vz - b, vx + a, 1.8, vz + b, col);
+      const r0 = P(vx, 1.8, vz), r1 = P(vx, 4.2, vz); x.strokeStyle = '#1F2937'; x.lineWidth = K * 0.9; x.lineCap = 'round'; x.beginPath(); x.moveTo(r0[0], r0[1]); x.lineTo(r1[0], r1[1]); x.stroke(); x.lineCap = 'butt';
+      x.fillStyle = '#FACC15'; x.beginPath(); x.arc(r1[0], r1[1] - K * 0.5, K * 0.75, 0, Math.PI * 2); x.fill(); // the helmet
+    } else {
+      const along = Math.abs(dx) >= Math.abs(dz), L = 3.4, Wd = 1.8, a = along ? L : Wd, b = along ? Wd : L;
+      x.fillStyle = 'rgba(20,40,60,0.3)'; const sh = P(vx + 0.6, 0, vz + 0.4); x.beginPath(); x.ellipse(sh[0], sh[1], (a + 0.6) * K, (b + 0.6) * K * sp, 0, 0, Math.PI * 2); x.fill();
+      box(vx - a, 0.5, vz - b, vx + a, 2.2, vz + b, col);
+      const ca = along ? a * 0.55 : a, cb = along ? b : b * 0.55;
+      box(vx - ca, 2.2, vz - cb, vx + ca, 3.5, vz + cb, '#1F2937', '#93C5FD', 1);
+      for (const [wx, wz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const p = P(vx + wx * a * 0.7, 0.5, vz + wz * b); x.fillStyle = '#111827'; x.beginPath(); x.ellipse(p[0], p[1], K * 0.7, K * 0.7 * sp + 1, 0, 0, Math.PI * 2); x.fill(); }
+      const hl = P(vx + dx * a, 1.4, vz + dz * b); x.fillStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.beginPath(); x.arc(hl[0], hl[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill();
+    }
+    const tag = P(vx, 6.5, vz); x.font = '800 11px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    const nw = x.measureText(label).width + 14; x.fillStyle = '#111827'; x.beginPath(); x.roundRect(tag[0] - nw / 2, tag[1] - 10, nw, 19, 6); x.fill(); x.fillStyle = '#FCEE0A'; x.fillText(label, tag[0], tag[1]); x.textBaseline = 'alphabetic';
+  }
   function driveTo(ti, tj, endAt) {
     const here = nearestRoad(me.x / T, me.z / T), path = pathTo(here[0], here[1], ti, tj);
     if (path.length < 2) { if (path.length === 1 || here[0] === ti && here[1] === tj) { if (endAt) { me.x = endAt[0]; me.z = endAt[1]; } return true; } return false; }

@@ -1082,6 +1082,57 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// What a trip would cost, and roughly how long until a rider reaches you.
+  _ida.Future<String> rideQuote(
+    int fi,
+    int fj,
+    int ti,
+    int tj,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'rideQuote',
+    {
+      'fi': fi,
+      'fj': fj,
+      'ti': ti,
+      'tj': tj,
+    },
+  );
+
+  /// Book a ride: the fare is fixed now (and must be affordable); it's charged when you arrive.
+  _ida.Future<String> requestRide(
+    int fi,
+    int fj,
+    int ti,
+    int tj,
+    String kind,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'requestRide',
+    {
+      'fi': fi,
+      'fj': fj,
+      'ti': ti,
+      'tj': tj,
+      'kind': kind,
+    },
+  );
+
+  /// You've arrived: pay the fare (once).
+  _ida.Future<String> payRide(String id) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payRide',
+    {'id': id},
+  );
+
+  /// Cancel before the trip starts: nothing is charged.
+  _ida.Future<String> cancelRide(String id) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'cancelRide',
+        {'id': id},
+      );
+
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
   /// owner and the people they've let in.
   _ida.Future<String> room(String key) => caller.callServerEndpoint<String>(

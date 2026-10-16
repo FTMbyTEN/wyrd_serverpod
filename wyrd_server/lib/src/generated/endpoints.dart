@@ -1956,6 +1956,124 @@ class Endpoints extends _is.EndpointDispatch {
                     params['grant'],
                   ),
         ),
+        'rideQuote': _is.MethodConnector(
+          name: 'rideQuote',
+          params: {
+            'fi': _is.ParameterDescription(
+              name: 'fi',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'fj': _is.ParameterDescription(
+              name: 'fj',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'ti': _is.ParameterDescription(
+              name: 'ti',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'tj': _is.ParameterDescription(
+              name: 'tj',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .rideQuote(
+                    session,
+                    params['fi'],
+                    params['fj'],
+                    params['ti'],
+                    params['tj'],
+                  ),
+        ),
+        'requestRide': _is.MethodConnector(
+          name: 'requestRide',
+          params: {
+            'fi': _is.ParameterDescription(
+              name: 'fi',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'fj': _is.ParameterDescription(
+              name: 'fj',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'ti': _is.ParameterDescription(
+              name: 'ti',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'tj': _is.ParameterDescription(
+              name: 'tj',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'kind': _is.ParameterDescription(
+              name: 'kind',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .requestRide(
+                    session,
+                    params['fi'],
+                    params['fj'],
+                    params['ti'],
+                    params['tj'],
+                    params['kind'],
+                  ),
+        ),
+        'payRide': _is.MethodConnector(
+          name: 'payRide',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).payRide(
+                    session,
+                    params['id'],
+                  ),
+        ),
+        'cancelRide': _is.MethodConnector(
+          name: 'cancelRide',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .cancelRide(
+                    session,
+                    params['id'],
+                  ),
+        ),
         'room': _is.MethodConnector(
           name: 'room',
           params: {
