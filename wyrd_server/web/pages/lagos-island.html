@@ -92,11 +92,12 @@
   const API = new URLSearchParams(location.search).get('api') || location.origin.replace(/^(https?:\/\/)([^.]+)\./, '$1$2.api.');
   const dark = matchMedia('(prefers-color-scheme: dark)').matches;
   // bright and friendly, day or night: the sky-blue sea, warm sand-cream land, white streets
-  const C = { sea: '#7CC7EC', seaDeep: '#5AAEE0', land: '#FFF6E5', shore: '#F4DFB4', water: '#7CC7EC', road: ['#FFD866', '#FFE08A', '#FFFFFF', '#FFFFFF', '#FFFFFF'], casing: '#E8DCC6', icon: '#22B573', text: '#1F2A37', halo: '#FFFFFF' };
-  const ROAD_W = [16, 14, 11, 9, 7]; // metres
+  // soft grass, flat blue water, grey roads and light grey plots: a sunny little town seen from above
+  const C = { sea: '#5DAFE3', seaDeep: '#4FA3DB', land: '#A9D08E', shore: '#E9D9A6', water: '#5DAFE3', road: ['#7D858D', '#848C94', '#939AA1', '#9DA4AA', '#A7ADB3'], casing: '#8FB877', plot: '#E3E6EA', plotEdge: '#D2D6DB', tree: '#3E8E4E', treeLight: '#4FA35E', icon: '#22B573', text: '#1F2A37', halo: '#FFFFFF', label: 'rgba(255,255,255,0.75)' };
+  const ROAD_W = [14, 12, 10, 8, 6]; // metres
   const ROAD_MIN = [3, 2.6, 2, 1.4, 1]; // px, so roads read when zoomed out
   const EMOJI = { beach: '🏖️', park: '🌳', faith: '⛪', market: '🛍️', tower: '🏢', hotel: '🏨', culture: '🎭', civic: '🏛️', transport: '🚌', shop: '🛍️', home: '🏡', bridge: '🌉', palace: '👑', square: '⛲', water: '⚓' };
-  const EMOJI_ID = { 'central-mosque': '🕌', 'balogun': '🧺', 'idumota': '🧺', 'eko-atlantic': '🏙️', 'link-bridge': '🌉', 'lekki-toll': '🚧', 'ajah': '🧺', 'ilashe': '🏝️', 'tarkwa-bay': '🏄🏾', 'lighthouse-beach': '🗼', 'museum': '🏺', 'nike-gallery': '🎨', 'freedom-park': '🎷', 'ikoyi-club': '⛳', 'banana-island': '🍌', 'muri-okunola': '🌳', 'lekki-conservation': '🌿', 'oba-palace': '👑', 'tbs': '🇳🇬', 'obalende': '🚌', 'eko-hotel': '🏨', 'css-bookshop': '📚' };
+  const EMOJI_ID = { 'central-mosque': '🕌', 'balogun': '🧺', 'idumota': '🧺', 'eko-atlantic': '🏙️', 'link-bridge': '🌉', 'lekki-toll': '🚧', 'ajah': '🧺', 'ilashe': '🏝️', 'tarkwa-bay': '🏄🏾', 'lighthouse-beach': '🗼', 'museum': '🏺', 'nike-gallery': '🎨', 'freedom-park': '🎷', 'ikoyi-club': '⛳', 'banana-island': '🍌', 'muri-okunola': '🌳', 'lekki-conservation': '🌿', 'oba-palace': '👑', 'tbs': '⭐', 'obalende': '🚌', 'eko-hotel': '🏨', 'css-bookshop': '📚' };
   const KIND_DOT = { beach: '#3E9BBE', park: '#58AE7E', faith: '#9AA8F2', market: '#E2A32B', tower: '#7A6656', hotel: '#C4572E', culture: '#B05FA0', civic: '#24316B', transport: '#E5743F', shop: '#E2A32B', home: '#58AE7E', bridge: '#7A6656', palace: '#C9A227', square: '#C4572E', water: '#3E9BBE' };
   const COLORS = ['#22B573', '#FF7A45', '#3B82F6', '#A855F7', '#F59E0B', '#EC4899'];
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
@@ -113,7 +114,26 @@
   const pathOf = (a) => { const p = new Path2D(); p.moveTo(a[0], a[1]); for (let i = 2; i < a.length; i += 2) p.lineTo(a[i], a[i + 1]); return p; };
   const bboxOf = (a) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; for (let i = 0; i < a.length; i += 2) { x0 = Math.min(x0, a[i]); x1 = Math.max(x1, a[i]); z0 = Math.min(z0, a[i + 1]); z1 = Math.max(z1, a[i + 1]); } return [x0, x1, z0, z1]; };
   function inPoly(a, px, pz) { let c = false; for (let i = 0, j = a.length - 2; i < a.length; j = i, i += 2) { const xi = a[i], zi = a[i + 1], xj = a[j], zj = a[j + 1]; if (zi > pz !== zj > pz && px < ((xj - xi) * (pz - zi)) / (zj - zi) + xi) c = !c; } return c; }
+  // the island painted once into a small hidden picture (10 m a pixel): land is one lookup, not a
+  // polygon test -- fast enough to place thousands of buildings and to check every step
+  const MR = 10; let mask = null, mx0 = 0, mz0 = 0, mw = 0, mh = 0;
+  function buildMask() {
+    const [x0, x1, z0, z1] = bboxOf(island);
+    mx0 = x0; mz0 = z0; mw = Math.ceil((x1 - x0) / MR); mh = Math.ceil((z1 - z0) / MR);
+    const off = document.createElement('canvas'); off.width = mw; off.height = mh;
+    const o = off.getContext('2d', { willReadFrequently: true });
+    o.setTransform(1 / MR, 0, 0, 1 / MR, -x0 / MR, -z0 / MR);
+    o.save(); o.clip(islandP);
+    o.fillStyle = '#fff'; for (const p of landP) o.fill(p);
+    o.fillStyle = '#000'; for (const p of waterP) o.fill(p);
+    o.restore();
+    const d = o.getImageData(0, 0, mw, mh).data;
+    mask = new Uint8Array(mw * mh);
+    for (let i = 0; i < mask.length; i++) mask[i] = d[i * 4] > 127 ? 1 : 0;
+  }
+  const maskAt = (px, pz) => { const i = Math.floor((px - mx0) / MR), j = Math.floor((pz - mz0) / MR); return i >= 0 && j >= 0 && i < mw && j < mh && mask[j * mw + i] === 1; };
   function onLand(px, pz) {
+    if (mask) return maskAt(px, pz);
     if (!inPoly(island, px, pz)) return false;
     let land = false;
     for (let i = 0; i < map.land.length; i++) { const b = landB[i]; if (px > b[0] && px < b[1] && pz > b[2] && pz < b[3] && inPoly(map.land[i], px, pz)) { land = true; break; } }
@@ -122,11 +142,168 @@
     return true;
   }
 
+  // ---------- the town: plots along the streets, a few houses on them, one building for each landmark,
+  // and trees -- generated from the streets, the same for everyone (seeded by place). Not many: most
+  // plots stay plots, as in a calm little game town.
+  const ZONES = {
+    island: { gap: 30, d: [14, 24], house: 0.18 },
+    vi: { gap: 40, d: [18, 30], house: 0.14 },
+    atlantic: { gap: 50, d: [24, 36], house: 0.1 },
+    ikoyi: { gap: 46, d: [16, 26], house: 0.14 },
+    lekki: { gap: 42, d: [14, 24], house: 0.12 },
+    ajah: { gap: 38, d: [12, 20], house: 0.12 },
+    beach: { gap: 90, d: [10, 14], house: 0.05 },
+  };
+  const ROOFS = ['#C2410C', '#B45309', '#9A3412', '#475569', '#0F766E', '#B91C1C'];
+  const LANDMARK_ROOF = { faith: '#4F46E5', market: '#D97706', tower: '#64748B', hotel: '#0EA5E9', culture: '#A855F7', civic: '#1E3A8A', transport: '#EA580C', shop: '#F59E0B', home: '#16A34A', palace: '#CA8A04' };
+  const OPEN = { square: 110, park: 90, beach: 70, bridge: 40, water: 30 };
+  const clearOf = (px, pz) => { for (const ic of icons) { const r = OPEN[ic.kind] ?? 30; if (Math.abs(ic.x - px) < r && Math.abs(ic.z - pz) < r && Math.hypot(ic.x - px, ic.z - pz) < r) return true; } return false; };
+  function zoneOf(px, pz) {
+    const d = districtOf(px, pz);
+    if (d.startsWith('The barrier')) return 'beach';
+    if (d === 'Lagos Island') return 'island';
+    if (d === 'Eko Atlantic') return 'atlantic';
+    if (d === 'Ikoyi') return 'ikoyi';
+    if (d === 'Victoria Island') return 'vi';
+    if (d === 'Ajah') return 'ajah';
+    return 'lekki';
+  }
+  function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; }
+  const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); const c = (v) => Math.max(0, Math.min(255, Math.round(v * f))); return '#' + ((c(n >> 16) << 16) | (c((n >> 8) & 255) << 8) | c(n & 255)).toString(16).padStart(6, '0'); };
+  const plots = [], houses = [], trees = [], grid = new Map(), BG = 400;
+  const put = (kind, o) => { const g = Math.floor(o.x / BG) + ',' + Math.floor(o.z / BG); if (!grid.has(g)) grid.set(g, { plots: [], houses: [], trees: [] }); grid.get(g)[kind].push(o); };
+  function genTown() {
+    const cell = (px, pz, c) => Math.floor(px / c) + ',' + Math.floor(pz / c);
+    const road = new Set(), taken = new Set();
+    for (const r of map.roads) {
+      const half = ROAD_W[r.k] / 2 + 2;
+      for (let i = 2; i < r.p.length; i += 2) {
+        const ax = r.p[i - 2], az = r.p[i - 1], bx = r.p[i], bz = r.p[i + 1], L = Math.hypot(bx - ax, bz - az) || 1;
+        const ux = (bx - ax) / L, uz = (bz - az) / L;
+        for (let t = 0; t <= L; t += 3) for (let o = -half; o <= half; o += 3) road.add(cell(ax + ux * t - uz * o, az + uz * t + ux * o, 6));
+      }
+    }
+    const fits = (cx, cz, ux, uz, nx, nz, w, d) => {
+      const cells = [];
+      for (let a = -w / 2; a <= w / 2; a += 4) for (let b = -d / 2; b <= d / 2; b += 4) {
+        const px = cx + ux * a + nx * b, pz = cz + uz * a + nz * b, c = cell(px, pz, 6);
+        if (!maskAt(px, pz) || road.has(c) || taken.has(c)) return null;
+        cells.push(c);
+      }
+      return cells;
+    };
+    const rect = (cx, cz, ux, uz, nx, nz, w, d) => { const p = []; for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) p.push(cx + ux * (w / 2) * a + nx * (d / 2) * b, cz + uz * (w / 2) * a + nz * (d / 2) * b); return p; };
+    // one chunky building under each landmark's pin (squares, parks and beaches stay open)
+    for (const ic of icons) {
+      if (OPEN[ic.kind] || !maskAt(ic.x, ic.z)) continue;
+      const R = rng(ic.x * 7919 ^ ic.z * 104729), w = 34 + R() * 18, d = 26 + R() * 12;
+      const roof = LANDMARK_ROOF[ic.kind] || '#C2410C';
+      const o = { p: rect(ic.x, ic.z + 8, 1, 0, 0, 1, w, d), h: ic.kind === 'tower' ? 40 : 16 + R() * 8, roof, wall: '#F8FAFC', side: '#E2E8F0', x: ic.x, z: ic.z };
+      houses.push(o); put('houses', o);
+      for (const c of fits(ic.x, ic.z + 8, 1, 0, 0, 1, w + 6, d + 6) || []) taken.add(c);
+    }
+    // plots along the streets; a few of them built on
+    for (const r of map.roads) {
+      if (r.k === 0) continue;
+      for (let i = 2; i < r.p.length; i += 2) {
+        const ax = r.p[i - 2], az = r.p[i - 1], bx = r.p[i], bz = r.p[i + 1], L = Math.hypot(bx - ax, bz - az);
+        if (L < 16) continue;
+        const ux = (bx - ax) / L, uz = (bz - az) / L, nx = -uz, nz = ux;
+        const Z = ZONES[zoneOf(ax, az)];
+        for (let t = Z.gap / 2; t < L - 6; t += Z.gap) {
+          const px = ax + ux * t, pz = az + uz * t;
+          for (const side of [-1, 1]) {
+            const R = rng(Math.round(px) * 73856093 ^ Math.round(pz) * 19349663 ^ (side + 2) * 83492791);
+            if (R() < 0.35) continue; // open ground
+            const d = Z.d[0] + (Z.d[1] - Z.d[0]) * R(), w = Z.gap * (0.6 + 0.25 * R());
+            const off = ROAD_W[r.k] / 2 + 5 + d / 2, cx = px + nx * off * side, cz = pz + nz * off * side;
+            if (clearOf(cx, cz)) continue;
+            const cells = fits(cx, cz, ux, uz, nx, nz, w, d);
+            if (!cells) continue;
+            for (const c of cells) taken.add(c);
+            const plot = { p: rect(cx, cz, ux, uz, nx, nz, w, d), x: cx, z: cz };
+            plots.push(plot); put('plots', plot);
+            if (R() < Z.house) { // a small house on the plot
+              const hw = w * 0.5, hd = d * 0.55, roof = ROOFS[Math.floor(R() * ROOFS.length)];
+              const o = { p: rect(cx, cz, ux, uz, nx, nz, hw, hd), h: 6 + R() * 5, roof, wall: '#FFFFFF', side: '#E5E7EB', x: cx, z: cz };
+              houses.push(o); put('houses', o);
+            }
+          }
+        }
+      }
+    }
+    // trees: a light scatter, thicker in the parks
+    const [x0, x1, z0, z1] = bboxOf(island);
+    for (let gz = z0; gz < z1; gz += 45) for (let gx = x0; gx < x1; gx += 45) {
+      const R = rng(Math.round(gx) * 2654435761 ^ Math.round(gz) * 40503);
+      const px = gx + R() * 40, pz = gz + R() * 40;
+      let park = false;
+      for (const ic of icons) if (ic.kind === 'park' && Math.hypot(ic.x - px, ic.z - pz) < 120) { park = true; break; }
+      if (R() > (park ? 0.85 : 0.07) || !maskAt(px, pz) || road.has(cell(px, pz, 6)) || taken.has(cell(px, pz, 6))) continue;
+      const o = { x: px, z: pz, r: 4 + R() * 3, c: R() < 0.5 ? C.tree : C.treeLight };
+      trees.push(o); put('trees', o);
+    }
+  }
+  function drawTown() {
+    const s = cam.scale;
+    if (s < 0.08) return; // far out, the island is its streets
+    const ox = W / 2 - cam.x * s, oz = H / 2 - cam.z * s, lift = 0.55 * s;
+    const vx0 = cam.x - W / 2 / s - 80, vx1 = cam.x + W / 2 / s + 80, vz0 = cam.z - H / 2 / s - 80, vz1 = cam.z + H / 2 / s + 120;
+    const P = [], Hs = [], T = [];
+    for (let gx = Math.floor(vx0 / BG); gx <= Math.floor(vx1 / BG); gx++) for (let gz = Math.floor(vz0 / BG); gz <= Math.floor(vz1 / BG); gz++) {
+      const g = grid.get(gx + ',' + gz); if (!g) continue;
+      for (const o of g.plots) if (o.x > vx0 && o.x < vx1 && o.z > vz0 && o.z < vz1) P.push(o);
+      for (const o of g.houses) if (o.x > vx0 && o.x < vx1 && o.z > vz0 && o.z < vz1) Hs.push(o);
+      for (const o of g.trees) if (o.x > vx0 && o.x < vx1 && o.z > vz0 && o.z < vz1) T.push(o);
+    }
+    // the plots, flat, in one go
+    x.beginPath();
+    for (const o of P) { const p = o.p; x.moveTo(p[0] * s + ox, p[1] * s + oz); for (let i = 2; i < 8; i += 2) x.lineTo(p[i] * s + ox, p[i + 1] * s + oz); x.closePath(); }
+    x.fillStyle = C.plot; x.fill(); x.strokeStyle = C.plotEdge; x.lineWidth = 1; x.stroke();
+    // trees and houses, back to front: soft shadow, the walls facing you, the roof
+    const all = [...Hs, ...T].sort((a, b) => a.z - b.z);
+    for (const o of all) {
+      if (o.r) { // a tree: a round crown on a little shadow
+        const tx = o.x * s + ox, ty = o.z * s + oz, r = Math.max(2.5, o.r * s);
+        x.fillStyle = 'rgba(31,60,40,0.18)'; x.beginPath(); x.ellipse(tx + r * 0.35, ty + r * 0.3, r, r * 0.6, 0, 0, Math.PI * 2); x.fill();
+        x.fillStyle = o.c; x.beginPath(); x.arc(tx, ty - r * 0.8, r, 0, Math.PI * 2); x.fill();
+        continue;
+      }
+      const p = o.p, up = o.h * lift;
+      x.fillStyle = 'rgba(31,42,55,0.14)'; x.beginPath();
+      x.moveTo(p[0] * s + ox + up * 0.4, p[1] * s + oz + up * 0.15); for (let i = 2; i < 8; i += 2) x.lineTo(p[i] * s + ox + up * 0.4, p[i + 1] * s + oz + up * 0.15); x.fill();
+      x.beginPath();
+      for (let i = 0; i < 8; i += 2) {
+        const j = (i + 2) % 8, ax = p[i] * s + ox, ay = p[i + 1] * s + oz, bx = p[j] * s + ox, by = p[j + 1] * s + oz;
+        if (bx - ax <= 0) continue;
+        x.moveTo(ax, ay); x.lineTo(bx, by); x.lineTo(bx, by - up); x.lineTo(ax, ay - up); x.closePath();
+      }
+      x.fillStyle = o.side; x.fill();
+      x.fillStyle = o.roof; x.beginPath();
+      x.moveTo(p[0] * s + ox, p[1] * s + oz - up); for (let i = 2; i < 8; i += 2) x.lineTo(p[i] * s + ox, p[i + 1] * s + oz - up); x.fill();
+    }
+  }
+  // the big water's names, like a map's
+  const WATER_NAMES = [['LAGOS LAGOON', 6.478, 3.415], ['ATLANTIC OCEAN', 6.385, 3.45], ['FIVE COWRIE CREEK', 6.4405, 3.4185]];
+  function drawWaterNames() {
+    if (!map) return;
+    const KXo = 111320 * Math.cos(map.origin.lat * Math.PI / 180);
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    for (const [name, lat, lon] of WATER_NAMES) {
+      const [sx, sy] = toScreen((lon - map.origin.lon) * KXo, -(lat - map.origin.lat) * 110540);
+      if (sx < -300 || sx > W + 300 || sy < -50 || sy > H + 50) continue;
+      x.font = '800 ' + (name.length > 14 ? 15 : 20) + 'px "Plus Jakarta Sans", sans-serif';
+      x.fillStyle = C.label;
+      x.fillText(name.split('').join(String.fromCharCode(8202)), sx, sy);
+    }
+    x.textBaseline = 'alphabetic';
+  }
+
   // ---------- you
   const id = store.get('li.id') || (() => { const v = 'p' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); store.set('li.id', v); return v; })();
   let myName = store.get('li.name') || '', myColor = store.get('li.color') || COLORS[Math.floor(Math.random() * COLORS.length)];
   const me = { x: 0, z: 0, vx: 0, vz: 0, heading: 0 };
-  const cam = { x: 0, z: 0, scale: isTouch ? 0.6 : 0.45, follow: true };
+  const cam = { x: 0, z: 0, scale: isTouch ? 1.3 : 1.0, follow: true };
 
   // ---------- others and chat
   const others = new Map(); // id -> { name, color, x, z, tx, tz, seen }
@@ -266,14 +443,13 @@
   const toScreen = (wx, wz) => [(wx - cam.x) * cam.scale + W / 2, (wz - cam.z) * cam.scale + H / 2];
   function draw() {
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#8ED1F2'); g.addColorStop(1, C.seaDeep);
-    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.fillStyle = C.sea; x.fillRect(0, 0, W, H);
     if (!map) return;
     const s = cam.scale;
     x.setTransform(DPR * s, 0, 0, DPR * s, DPR * (W / 2 - cam.x * s), DPR * (H / 2 - cam.z * s));
     // only the island: everything beyond it (the mainland too) is left as sea
     x.save(); x.clip(islandP);
-    x.strokeStyle = C.shore; x.lineWidth = Math.max(6, 5 / s); x.lineJoin = 'round';
+    x.strokeStyle = C.shore; x.lineWidth = Math.max(4, 3 / s); x.lineJoin = 'round';
     for (const p of landP) x.stroke(p); // a sandy edge where land meets water
     x.fillStyle = C.land; for (const p of landP) x.fill(p);
     x.fillStyle = C.water; for (const p of waterP) x.fill(p);
@@ -282,14 +458,16 @@
     for (let k = 4; k >= 0; k--) {
       if (k === 4 && s < 0.06) continue;
       const w = Math.max(ROAD_W[k], ROAD_MIN[k] / s);
-      x.strokeStyle = C.casing; x.lineWidth = w + 2.2 / s; x.stroke(roadP[k]);
-      x.strokeStyle = C.road[k]; x.lineWidth = w; x.stroke(roadP[k]);
+      x.strokeStyle = C.road[k]; x.lineWidth = w * 0.8; x.stroke(roadP[k]);
     }
     x.restore();
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
+    drawWaterNames();
+    drawTown();
     // icons: an emoji in a white circle, its name in a white pill when you're close enough to read it
     const label = s > 0.2;
     x.textAlign = 'center'; x.textBaseline = 'middle';
+    const placed = []; // label boxes already drawn: a label that would cover one waits until you zoom in
     for (const ic of icons) {
       const [ix, iy] = toScreen(ic.x, ic.z);
       if (ix < -120 || ix > W + 120 || iy < -60 || iy > H + 60) continue;
@@ -301,6 +479,9 @@
       if (label) {
         x.font = '700 12px "Plus Jakarta Sans", sans-serif';
         const w = x.measureText(ic.name).width + 16;
+        const bx = ix - w / 2, by = iy + r + 4;
+        if (placed.some((q) => bx < q[0] + q[2] + 4 && bx + w + 4 > q[0] && by < q[1] + 26 && by + 26 > q[1])) continue;
+        placed.push([bx, by, w]);
         x.save(); x.shadowColor = 'rgba(20,60,100,0.18)'; x.shadowBlur = 6; x.shadowOffsetY = 1;
         x.beginPath(); x.roundRect(ix - w / 2, iy + r + 4, w, 22, 11); x.fillStyle = '#fff'; x.fill(); x.restore();
         x.fillStyle = C.text; x.fillText(ic.name, ix, iy + r + 15.5);
@@ -376,6 +557,8 @@
     roadP = [0, 1, 2, 3, 4].map(() => new Path2D());
     for (const r of m.roads) { const p = roadP[r.k]; p.moveTo(r.p[0], r.p[1]); for (let i = 2; i < r.p.length; i += 2) p.lineTo(r.p[i], r.p[i + 1]); }
     icons = m.icons;
+    buildMask();
+    genTown();
     // start near Tafawa Balewa Square, on land
     for (let tries = 0; tries < 200; tries++) { const a = Math.random() * Math.PI * 2, d = 20 + tries * 6; const px = Math.cos(a) * d, pz = Math.sin(a) * d; if (onLand(px, pz)) { me.x = px; me.z = pz; break; } }
     cam.x = me.x; cam.z = me.z;
