@@ -64,6 +64,20 @@ void run(List<String> args) async {
     '/konnectly',
   );
 
+  // LAGOS ISLAND: the canvas game, multiplayer through the island endpoint. One page and one small map.
+  pod.webServer.addRoute(
+    StaticRoute.file(
+      File(Uri(path: 'web/pages/lagos-island.html').toFilePath()),
+    ),
+    '/lagos-island',
+  );
+  pod.webServer.addRoute(
+    StaticRoute.file(
+      File(Uri(path: 'web/pages/lagos-island-map.json').toFilePath()),
+    ),
+    '/lagos-island/map.json',
+  );
+
   // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.
   pod.webServer.addRoute(PartnerRoute(), '/partner/v1/**');
 

@@ -24,6 +24,7 @@ import '../drone/drone_bridge_endpoint.dart' as _igomlm42;
 import '../drone/drone_endpoint.dart' as _iec5mi4p;
 import '../games/games_endpoint.dart' as _ittu6d2n;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../island/island_endpoint.dart' as _i1elbils;
 import '../konnectly/konnectly_endpoint.dart' as _i79gaqir;
 import '../mind/account_endpoint.dart' as _i45717np;
 import '../mind/alerts_endpoint.dart' as _impqu952;
@@ -100,6 +101,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'island': _i1elbils.IslandEndpoint()
+        ..initialize(
+          server,
+          'island',
           null,
         ),
       'konnectly': _i79gaqir.KonnectlyEndpoint()
@@ -1171,6 +1178,94 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['name'],
                   ),
+        ),
+      },
+    );
+    connectors['island'] = _is.EndpointConnector(
+      name: 'island',
+      endpoint: endpoints['island']!,
+      methodConnectors: {
+        'tick': _is.MethodConnector(
+          name: 'tick',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'name': _is.ParameterDescription(
+              name: 'name',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'color': _is.ParameterDescription(
+              name: 'color',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'x': _is.ParameterDescription(
+              name: 'x',
+              type: _is.getType<double>(),
+              nullable: false,
+            ),
+            'z': _is.ParameterDescription(
+              name: 'z',
+              type: _is.getType<double>(),
+              nullable: false,
+            ),
+            'since': _is.ParameterDescription(
+              name: 'since',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['island'] as _i1elbils.IslandEndpoint).tick(
+                session,
+                params['id'],
+                params['name'],
+                params['color'],
+                params['x'],
+                params['z'],
+                params['since'],
+              ),
+        ),
+        'online': _is.MethodConnector(
+          name: 'online',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['island'] as _i1elbils.IslandEndpoint)
+                  .online(session),
+        ),
+        'say': _is.MethodConnector(
+          name: 'say',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['island'] as _i1elbils.IslandEndpoint).say(
+                session,
+                params['id'],
+                params['text'],
+              ),
         ),
       },
     );

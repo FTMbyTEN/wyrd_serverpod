@@ -667,6 +667,64 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// LAGOS ISLAND together: who is on the island and where, and what they say to the people near them.
+///
+/// Less is more: all of it lives in memory (a player who stops sending fades out in 20 seconds; the
+/// last 300 lines of chat are kept), nothing is stored, and no account is needed -- the page makes
+/// up an id and a name the first time and keeps them in the browser. Positions are metres from Tafawa
+/// Balewa Square (x east, z south), as in the map.
+///
+/// The page calls [tick] about once a second: its own position in, the people near it, any new
+/// lines of chat near it and the count on the island out (as JSON). [say] posts a line.
+/// {@category Endpoint}
+class EndpointIsland extends _isc.EndpointRef {
+  EndpointIsland(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'island';
+
+  /// Here I am; who's around? [since]: the last chat line already seen (0 the first time).
+  _ida.Future<String> tick(
+    String id,
+    String name,
+    String color,
+    double x,
+    double z,
+    int since,
+  ) => caller.callServerEndpoint<String>(
+    'island',
+    'tick',
+    {
+      'id': id,
+      'name': name,
+      'color': color,
+      'x': x,
+      'z': z,
+      'since': since,
+    },
+  );
+
+  /// How many are on the island now (for the welcome, before you join).
+  _ida.Future<int> online() => caller.callServerEndpoint<int>(
+    'island',
+    'online',
+    {},
+  );
+
+  /// A line of chat, heard by the people near the speaker.
+  _ida.Future<void> say(
+    String id,
+    String text,
+  ) => caller.callServerEndpoint<void>(
+    'island',
+    'say',
+    {
+      'id': id,
+      'text': text,
+    },
+  );
+}
+
 /// WYRD for Konnectly, demo mode: open to anyone (no sign-in, no Konnectly data), so it is held to
 /// a shared pace and a daily allowance of its own (see KonnectlyService). The demo page lives at
 /// /konnectly on the web server. Replies are JSON strings so the page needs no generated client;
@@ -2120,6 +2178,7 @@ class Client extends _isc.ServerpodClientShared {
     drone = EndpointDrone(this);
     games = EndpointGames(this);
     greeting = EndpointGreeting(this);
+    island = EndpointIsland(this);
     konnectly = EndpointKonnectly(this);
     account = EndpointAccount(this);
     alerts = EndpointAlerts(this);
@@ -2166,6 +2225,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointGames games;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointIsland island;
 
   late final EndpointKonnectly konnectly;
 
@@ -2238,6 +2299,7 @@ class Client extends _isc.ServerpodClientShared {
     'drone': drone,
     'games': games,
     'greeting': greeting,
+    'island': island,
     'konnectly': konnectly,
     'account': account,
     'alerts': alerts,

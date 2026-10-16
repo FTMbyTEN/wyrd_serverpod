@@ -48,6 +48,10 @@ games:
   - poll:
 greeting:
   - hello:
+island:
+  - tick:
+  - online:
+  - say:
 konnectly:
   - status:
   - writeListing:
