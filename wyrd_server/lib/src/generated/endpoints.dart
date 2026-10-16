@@ -24,6 +24,7 @@ import '../drone/drone_bridge_endpoint.dart' as _igomlm42;
 import '../drone/drone_endpoint.dart' as _iec5mi4p;
 import '../games/games_endpoint.dart' as _ittu6d2n;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
+import '../island/island_auth_endpoint.dart' as _ifhwc3xe;
 import '../island/island_endpoint.dart' as _i1elbils;
 import '../island/island_me_endpoint.dart' as _ixszl6xq;
 import '../konnectly/konnectly_endpoint.dart' as _i79gaqir;
@@ -102,6 +103,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'greeting',
+          null,
+        ),
+      'islandAuth': _ifhwc3xe.IslandAuthEndpoint()
+        ..initialize(
+          server,
+          'islandAuth',
           null,
         ),
       'island': _i1elbils.IslandEndpoint()
@@ -1188,6 +1195,64 @@ class Endpoints extends _is.EndpointDispatch {
         ),
       },
     );
+    connectors['islandAuth'] = _is.EndpointConnector(
+      name: 'islandAuth',
+      endpoint: endpoints['islandAuth']!,
+      methodConnectors: {
+        'register': _is.MethodConnector(
+          name: 'register',
+          params: {
+            'username': _is.ParameterDescription(
+              name: 'username',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'password': _is.ParameterDescription(
+              name: 'password',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandAuth'] as _ifhwc3xe.IslandAuthEndpoint)
+                      .register(
+                        session,
+                        params['username'],
+                        params['password'],
+                      ),
+        ),
+        'login': _is.MethodConnector(
+          name: 'login',
+          params: {
+            'username': _is.ParameterDescription(
+              name: 'username',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'password': _is.ParameterDescription(
+              name: 'password',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandAuth'] as _ifhwc3xe.IslandAuthEndpoint)
+                      .login(
+                        session,
+                        params['username'],
+                        params['password'],
+                      ),
+        ),
+      },
+    );
     connectors['island'] = _is.EndpointConnector(
       name: 'island',
       endpoint: endpoints['island']!,
@@ -1225,6 +1290,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<int>(),
               nullable: false,
             ),
+            'room': _is.ParameterDescription(
+              name: 'room',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -1238,6 +1308,7 @@ class Endpoints extends _is.EndpointDispatch {
                 params['x'],
                 params['z'],
                 params['since'],
+                params['room'],
               ),
         ),
         'online': _is.MethodConnector(
@@ -1837,6 +1908,50 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['id'],
                     params['grant'],
+                  ),
+        ),
+        'room': _is.MethodConnector(
+          name: 'room',
+          params: {
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).room(
+                    session,
+                    params['key'],
+                  ),
+        ),
+        'saveRoom': _is.MethodConnector(
+          name: 'saveRoom',
+          params: {
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'layout': _is.ParameterDescription(
+              name: 'layout',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .saveRoom(
+                    session,
+                    params['key'],
+                    params['layout'],
                   ),
         ),
         'shows': _is.MethodConnector(

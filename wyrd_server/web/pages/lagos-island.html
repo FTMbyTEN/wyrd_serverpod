@@ -11,7 +11,7 @@
 <style>
   :root { --ink: #1F2A37; --dim: #6B7785; --green: #22B573; --green-dark: #189B60; --shadow: 0 6px 20px rgba(20, 60, 100, 0.16), 0 1px 3px rgba(20, 60, 100, 0.12); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #4F9FD8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
   .pill { background: #fff; border-radius: 999px; box-shadow: var(--shadow); }
   #top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; }
@@ -49,6 +49,26 @@
   #colors span { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid #fff; box-shadow: 0 0 0 2px transparent; }
   #colors span.on { box-shadow: 0 0 0 2px var(--ink); }
   #go { width: 100%; padding: 15px; border-radius: 999px; border: none; background: var(--green); color: #fff; font: 800 17px 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 4px 0 var(--green-dark); }
+  #hello .tabs { display: flex; gap: 6px; padding: 4px; margin-bottom: 10px; border-radius: 999px; background: #EEF2F6; }
+  #hello .tabs button { flex: 1; padding: 9px; border: none; border-radius: 999px; background: none; font: 700 14px 'Plus Jakarta Sans', sans-serif; color: var(--dim); cursor: pointer; }
+  #hello .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  #hello #pass { margin-top: 8px; }
+  #hello .note { font-size: 12px; color: var(--dim); margin-top: 8px; }
+  #hello .err { color: #DC2626; font-size: 13px; font-weight: 700; min-height: 18px; margin-bottom: 6px; }
+  #hello .who { font-size: 15px; font-weight: 700; margin-bottom: 8px; display: none; }
+  #hello .link { margin-top: 10px; border: none; background: none; color: var(--dim); font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; text-decoration: underline; }
+  #deco { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); max-width: calc(100vw - 20px); display: none; align-items: center; gap: 8px; padding: 8px; border-radius: 22px; background: rgba(255,255,255,.95); box-shadow: var(--shadow); z-index: 5; }
+  #deco .dscroll { display: flex; gap: 6px; overflow-x: auto; max-width: min(640px, calc(100vw - 200px)); scrollbar-width: none; }
+  #deco .ditem { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px; border: 2px solid transparent; border-radius: 14px; background: #F3F6FA; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; color: var(--ink); cursor: pointer; }
+  #deco .ditem span { font-size: 22px; }
+  #deco .ditem.on { border-color: var(--green); background: #E8FBF2; }
+  #deco .dbtn { flex: none; padding: 10px 14px; border: none; border-radius: 999px; background: #EEF2F6; font: 800 13px 'Plus Jakarta Sans', sans-serif; color: var(--ink); cursor: pointer; }
+  #deco .dbtn.main { background: var(--green); color: #fff; }
+  #deco .dsw { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #CBD5E1; cursor: pointer; }
+  #deco .dl { font-weight: 800; font-size: 13px; padding: 0 6px; }
+  #ask { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); width: min(560px, calc(100vw - 20px)); display: none; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 999px; background: linear-gradient(90deg, #EEF2FF, #fff); box-shadow: 0 8px 30px rgba(99,102,241,.3); z-index: 5; }
+  #ask input { flex: 1; border: none; background: none; font: 600 15px 'Plus Jakarta Sans', sans-serif; outline: none; color: var(--ink); }
+  #ask button { padding: 10px 18px; border: none; border-radius: 999px; background: #6366F1; color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
   #go:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--green-dark); }
   /* the phone */
   #phoneBtn { left: 14px; top: calc(118px + env(safe-area-inset-top)); width: 46px; height: 74px; border-radius: 14px; padding: 0; background: linear-gradient(160deg, #3B4252, #0B0F19); box-shadow: 0 10px 24px rgba(10,20,40,.35), inset 0 0 0 1.5px rgba(255,255,255,.18); }
@@ -65,16 +85,26 @@
   @keyframes phoneIn { from { transform: translateY(24px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
   #phone::before { content: ''; position: absolute; top: 18px; left: 50%; width: 96px; height: 28px; margin-left: -48px; border-radius: 16px; background: #000; z-index: 2; }
   .touch #phone { right: 8px; left: 8px; bottom: 8px; width: auto; height: calc(100vh - 16px - env(safe-area-inset-top)); }
-  #screen { position: relative; height: 100%; border-radius: 40px; overflow: hidden; background: linear-gradient(160deg, #22B573, #0EA5E9 60%, #6366F1); display: flex; flex-direction: column; }
+  #screen { position: relative; height: 100%; border-radius: 40px; overflow: hidden; background: radial-gradient(120% 70% at 0% 0%, #34D399 0%, transparent 55%), radial-gradient(120% 80% at 100% 30%, #818CF8 0%, transparent 60%), radial-gradient(100% 80% at 30% 100%, #0EA5E9 0%, transparent 60%), #1E1B4B; display: flex; flex-direction: column; }
   #pbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 26px 8px; color: #fff; font: 700 13px 'Plus Jakarta Sans', sans-serif; }
   #pbody { flex: 1; overflow-y: auto; padding: 8px 14px 14px; }
   #pnav { display: flex; justify-content: space-between; margin: 6px 14px 12px; padding: 6px; border-radius: 999px; background: rgba(255,255,255,.18); backdrop-filter: blur(12px); }
   #pnav button { border: none; background: transparent; color: #fff; border-radius: 999px; padding: 8px 16px; font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
   .apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; padding-top: 18px; }
   .app { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: none; border: none; }
-  .app i { position: relative; font-style: normal; width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; font-size: 28px; background: linear-gradient(160deg, rgba(255,255,255,.95), rgba(255,255,255,.7)); box-shadow: 0 8px 18px rgba(10,30,60,.22), inset 0 1px 0 #fff; }
+  .app i { position: relative; font-style: normal; width: 58px; height: 58px; border-radius: 17px; display: grid; place-items: center; font-size: 27px; box-shadow: 0 8px 18px rgba(10,20,50,.3), inset 0 1px 0 rgba(255,255,255,.45); }
+  .app:active i { transform: scale(.92); }
+  .widget { display: flex; justify-content: space-between; align-items: flex-end; margin: 8px 2px 4px; padding: 16px 18px; border-radius: 24px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(16px); color: #fff; }
+  .widget .wt { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .widget .wd { font-size: 12px; font-weight: 700; opacity: .85; margin-top: 4px; }
+  .widget .wr { text-align: right; }
+  .widget .wn { font-size: 20px; font-weight: 800; }
+  .dock { display: flex; justify-content: space-around; margin-top: 22px; padding: 10px 6px; border-radius: 28px; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.28); backdrop-filter: blur(18px); }
+  .dock .app { font-size: 0; }
+  .glass { padding: 16px; margin-bottom: 12px; border-radius: 22px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3); backdrop-filter: blur(16px); color: #fff; font-size: 14px; }
+  .glass h3 { margin: 0 0 6px; font-size: 18px; }
   .app i b { position: absolute; right: -5px; top: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #EF4444; color: #fff; font: 800 11px/20px 'Plus Jakarta Sans', sans-serif; }
-  .pcard { background: #fff; border-radius: 18px; padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--ink); }
+  .pcard { background: rgba(255,255,255,.96); border-radius: 20px; box-shadow: 0 6px 18px rgba(10,20,50,.18); padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--ink); }
   .pcard h3 { margin: 0 0 6px; font-size: 17px; font-weight: 800; }
   .pcard .dim { color: var(--dim); font-size: 12.5px; }
   .pcard input, .pcard textarea, .pcard select { width: 100%; margin: 4px 0 8px; padding: 10px 12px; border: 2px solid #E6EEF5; border-radius: 12px; font: 500 14px 'Plus Jakarta Sans', sans-serif; background: #F7FAFC; color: var(--ink); }
@@ -105,6 +135,8 @@
 <div id="stick" aria-hidden="true"><div id="knob"></div></div>
 <form id="say" class="pill"><input id="sayText" maxlength="140" placeholder="Say something to people near you" autocomplete="off"><button>Send</button></form>
 <div id="card"></div>
+<div id="deco"></div>
+<form id="ask"><span>⚛️</span><input id="askText" maxlength="600" placeholder="Ask WYRD anything" autocomplete="off"><button>Ask</button></form>
 <div id="phoneBtn" class="btn" role="button" aria-label="Open your phone"><b id="pbadge"></b></div>
 <div id="joins" aria-live="polite"></div>
 <button id="act"></button>
@@ -114,9 +146,17 @@
     <h1>🌴 Lagos Island</h1>
     <p>Lagos Island, Ikoyi, VI, Eko Atlantic, Lekki and Ajah, and Ilashe across the water. Walk it, meet the people on it, and WYRD.</p>
     <div class="crowd"><b id="crowd">Lagosians</b> on the island right now · free</div>
-    <input id="name" maxlength="24" placeholder="Your name on the island" autocomplete="nickname">
+    <div id="who" class="who"></div>
+    <div id="auth">
+      <div class="tabs"><button id="tNew" class="on">New here</button><button id="tOld">I have an account</button></div>
+      <input id="name" maxlength="20" placeholder="Username" autocomplete="username" autocapitalize="off">
+      <input id="pass" type="password" maxlength="80" placeholder="Password (8 or more characters)" autocomplete="new-password">
+      <div class="note">One account for Lagos Island and WYRD: sign in to the WYRD app with this username too.</div>
+    </div>
     <div id="colors"></div>
+    <div id="err" class="err"></div>
     <button id="go">Enter Lagos Island</button>
+    <button id="guest" class="link">Look around as a guest</button>
   </div>
 </div>
 <script>
@@ -138,6 +178,9 @@
     { id: 'ads', name: 'Ad Island', rect: [29, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 23, 36, 28], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
+    { id: 'fill1', name: 'Reclaimed land', rect: [38, 23, 42, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
+    { id: 'fill2', name: 'Reclaimed land', rect: [53, 20, 60, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.9 } },
+    { id: 'fill3', name: 'Reclaimed land', rect: [43, 1, 52, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } },
     { id: 'hqrow', name: 'HQ Row', rect: [44, 21, 51, 27], rows: [24], cols: [46], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
   ];
   // bridges and the ferry: [i0, j0, i1, j1, name]
@@ -183,7 +226,7 @@
     ['hotel', 16, 14, 3, 2, 'Federal Palace Hotel', '🏨'],
     ['beach', 20, 20, 3, 2, 'Bar Beach', '🏖️'],
     ['beach', 24, 20, 4, 2, 'Kuramo Beach', '🏖️'],
-    ['towers', 24, 14, 4, 2, 'Adeola Odeku offices', '🏢'],
+    ['wyrdtower', 24, 14, 4, 2, 'WYRD Tower', '⚛️'],
     // Eko Atlantic
     ['skyline', 15, 26, 4, 2, 'Eko Atlantic City', '🏙️'],
     ['skyline', 20, 26, 3, 2, 'Eko Pearl Towers', '🏙️'],
@@ -209,6 +252,9 @@
     // the refinery, always running
     ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
     ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
+    ['soon', 39, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
+    ['soon', 55, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['soon', 46, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     // the arena: shows with tickets, and the biggest screens on the island
     ['arena', 27, 23, 10, 6, 'The Arena (live shows)', '🎤'],
     // Ad Island and HQ Row
@@ -267,8 +313,8 @@
   function shadeHex(hex, f) { const n = parseInt(hex.slice(1), 16); const c = (v) => Math.max(0, Math.min(255, Math.round(v * f))); return `rgb(${c(n >> 16)},${c((n >> 8) & 255)},${c(n & 255)})`; }
   const lit = (hex, nx, ny, nz) => shadeHex(hex, 0.72 + 0.34 * Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]));
   const C = {
-    water: '#4F9FD8', land: '#B5D69B', landEdge: '#8FB878', sand: '#F1DFA8', sandEdge: '#D9C283',
-    road: '#8C949C', roadLine: '#E6E9EC', plot: '#E3E6EA', plotEdge: '#CDD3D9', paving: '#D9DDE2', grassLot: '#A3CC86',
+    water: '#3A86C8', land: '#9FCB7A', landEdge: '#5E8E48', sand: '#F3DE9C', sandEdge: '#C9A95E',
+    road: '#5F6873', roadLine: '#F8FAFC', plot: '#E5E8EC', plotEdge: '#AEB7C2', paving: '#D3D8DE', grassLot: '#8FC56E',
     white: '#F8FAFC', tree: '#3F8F4F', treeLight: '#55A863', trunk: '#8B5E3C',
   };
 
@@ -286,10 +332,10 @@
     for (const f of faces) {
       if (viewDot(f[4], f[5], f[6]) <= 0) continue;
       const pts = [P(...f[0]), P(...f[1]), P(...f[2]), P(...f[3])];
-      quad(pts, lit(col, f[4], f[5], f[6]));
+      quad(pts, lit(col, f[4], f[5], f[6]), 'rgba(20,30,45,0.22)');
       if (win) windows(pts, win, winRows || Math.max(1, Math.round((y1 - y0) / 3.2)));
     }
-    quad([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)], lit(col, 0, 1, 0));
+    quad([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)], lit(col, 0, 1, 0), 'rgba(20,30,45,0.18)');
   }
   // a grid of windows on a wall (pts: bottom-left, bottom-right, top-right, top-left)
   function windows(pts, col, rows) {
@@ -642,6 +688,24 @@
       // the massive billboards, on the plaza in front
       screen(a + 13, d - 4, 3, 1.6); screen(c - 13, d - 4, 5, 1.6);
     },
+    // ---- WYRD Tower: the tallest glass on the island, an atom turning on its crown
+    wyrdtower(a, b, c, d) {
+      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
+      const cx = (a + c) / 2, cz = (b + d) / 2;
+      box(a + 4, 0, b + 3, c - 4, 6, d - 3, '#E0E7FF', '#6366F1', 1); // the podium
+      box(cx - 9, 6, cz - 6, cx + 9, 96, cz + 6, '#4F46E5', '#A5B4FC');
+      box(cx - 7, 96, cz - 5, cx + 7, 112, cz + 5, '#6366F1', '#C7D2FE');
+      box(cx - 4, 112, cz - 3, cx + 4, 118, cz + 3, '#818CF8');
+      box(cx - 0.4, 118, cz - 0.4, cx + 0.4, 124, cz + 0.4, '#E0E7FF');
+      const atomDraw = () => atom(cx, 134, cz);
+      atomDraw(); glow.push(atomDraw);
+      const sg = () => { const p = P(cx, 3, d - 3); x.save(); x.font = `800 ${Math.max(9, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#A78BFA'; x.shadowBlur = 10; x.fillStyle = '#fff'; x.fillText('WYRD', p[0], p[1]); x.restore(); };
+      sg(); glow.push(sg);
+    },
+    soon(a, b, c, d) {
+      for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
+      box(a + 3, 2.4, d - 2.6, c - 3, 3, d - 1.8, '#FACC15');
+    },
     screens(a, b, c, d) { flat(a, b, c, d, 0.05, '#1F2937'); for (let k = 0; k < 2; k++) screen(a + 10 + k * 20, b + 10, k + 7); },
     hqgate(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
@@ -649,6 +713,23 @@
       box(a + 3, 8, b + 8, c - 3, 10, b + 10, '#A855F7');
     },
   };
+  // the atom: a glowing nucleus, three tilted orbits, an electron racing round each
+  function atom(ax, ay, az) {
+    const c = P(ax, ay, az), t = performance.now() / 1000, R = 11 * K;
+    x.save(); x.globalCompositeOperation = 'lighter';
+    const g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], R * 1.6); g.addColorStop(0, 'rgba(167,139,250,0.55)'); g.addColorStop(1, 'rgba(56,189,248,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], R * 1.6, 0, Math.PI * 2); x.fill(); x.restore();
+    for (let k = 0; k < 3; k++) {
+      const rot = k * Math.PI / 3 + t * 0.15;
+      x.strokeStyle = ['#38BDF8', '#A78BFA', '#F472B6'][k]; x.lineWidth = Math.max(1.5, K * 0.45);
+      x.beginPath(); x.ellipse(c[0], c[1], R, R * 0.34, rot, 0, Math.PI * 2); x.stroke();
+      const e = t * (2 + k * 0.6) + k, ex = Math.cos(e) * R, ey = Math.sin(e) * R * 0.34;
+      const px = c[0] + ex * Math.cos(rot) - ey * Math.sin(rot), py = c[1] + ex * Math.sin(rot) + ey * Math.cos(rot);
+      x.fillStyle = '#fff'; x.shadowColor = x.strokeStyle; x.shadowBlur = 8; x.beginPath(); x.arc(px, py, Math.max(2, K * 0.7), 0, Math.PI * 2); x.fill(); x.shadowBlur = 0;
+    }
+    const n = x.createRadialGradient(c[0] - K, c[1] - K, 1, c[0], c[1], K * 3); n.addColorStop(0, '#fff'); n.addColorStop(1, '#8B5CF6');
+    x.fillStyle = n; x.beginPath(); x.arc(c[0], c[1], K * 2.6, 0, Math.PI * 2); x.fill();
+  }
   // ---- shapes for the industry and the screens
   function cyl(cx, cz, r, h, col) {
     const b0 = P(cx, 0, cz), t0 = P(cx, h, cz), rr = r * K;
@@ -711,13 +792,13 @@
     const t = at(i, j);
     if ((t !== LAND && t !== SAND) || placeAt[j * BOARD.w + i] >= 0) continue;
     const v = rnd(i * 97 + j * 131)(), sec = SECTORS[sectorAt[j * BOARD.w + i]];
-    if (sec && sec.fill) { lots.push({ i, j, kind: sec.fill }); continue; }
+    if (sec && sec.fill) { if (sec.fill !== 'none') lots.push({ i, j, kind: sec.fill }); continue; }
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   // the footprints you walk round
-  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
+  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -736,6 +817,7 @@
   function draw() {
     setCam(); glow = []; night = nightNow();
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (inside) return drawInterior(performance.now());
     x.fillStyle = C.water; x.fillRect(0, 0, W, H);
     x.fillStyle = 'rgba(255,255,255,0.05)';
     for (let k = -2; k < 12; k++) { x.beginPath(); x.ellipse(W * 0.1 * k, H * 0.12 * k, W * 0.5, 40, -0.4, 0, Math.PI * 2); x.fill(); }
@@ -888,7 +970,7 @@
   }
   function wyrdStep(dt) {
     const talking = Math.hypot(me.x - wyrd.x, me.z - wyrd.z) < 30;
-    if (talking) { if (!wyrd.met) { wyrd.met = true; bubbles.set('wyrd', { text: `Hello ${myName || 'friend'}. Talk to me.`, until: performance.now() + 5000 }); } return; }
+    if (talking) { if (!wyrd.met) { wyrd.met = true; bubbles.set('wyrd', { text: `Hello ${myName || 'friend'}. Come and see me at WYRD Tower in VI.`, until: performance.now() + 5000 }); } return; }
     wyrd.met = false;
     if (!wyrd.path.length) {
       if ((wyrd.wait -= dt) > 0) return;
@@ -902,8 +984,8 @@
     const [tx, tz] = wyrd.path[0], dx = tx - wyrd.x, dz = tz - wyrd.z, d = Math.hypot(dx, dz), v = 9 * dt;
     if (d <= v) { wyrd.x = tx; wyrd.z = tz; wyrd.path.shift(); } else { wyrd.x += (dx / d) * v; wyrd.z += (dz / d) * v; }
   }
-  function drawWyrd(now) {
-    const t = now / 1000, hover = 4 + Math.sin(t * 2) * 0.8, base = P(wyrd.x, 0, wyrd.z), c = P(wyrd.x, hover + 3, wyrd.z), s = Math.max(0.8, K / 4.6);
+  function drawWyrd(now, wx = wyrd.x, wz = wyrd.z) {
+    const t = now / 1000, hover = 4 + Math.sin(t * 2) * 0.8, base = P(wx, 0, wz), c = P(wx, hover + 3, wz), s = Math.max(0.8, K / 4.6);
     if (base[0] < -80 || base[0] > W + 80 || base[1] < -120 || base[1] > H + 80) return;
     x.fillStyle = 'rgba(99,102,241,0.3)'; x.beginPath(); x.ellipse(base[0], base[1], 9 * s, 4 * s, 0, 0, Math.PI * 2); x.fill();
     x.save(); x.globalCompositeOperation = 'lighter';
@@ -930,9 +1012,184 @@
     x.textBaseline = 'alphabetic';
   }
 
+  // ================= insides: walk into a building, see its rooms, arrange the furniture =================
+  // A room is a floor with two walls, seen from the same slant as the town. Your HQ is yours to
+  // furnish (pick a piece, tap the floor, tap a piece to turn or remove it); the clubs, the casino and
+  // WYRD Tower are furnished by WYRD's team. Everyone in the same room sees and hears each other.
+  const FURN = {
+    bed: ['Bed', '🛏️', 8, 6], sofa: ['Sofa', '🛋️', 8, 3.4], armchair: ['Armchair', '💺', 3.6, 3.6], table: ['Table', '🍽️', 6, 4], chair: ['Chair', '🪑', 2.4, 2.4],
+    tv: ['TV', '📺', 6, 1.6], plant: ['Plant', '🪴', 2.4, 2.4], lamp: ['Lamp', '💡', 2, 2], rug: ['Rug', '🟥', 9, 6], shelf: ['Shelf', '📚', 6, 2],
+    fridge: ['Fridge', '🧊', 3, 3], kitchen: ['Kitchen', '🍳', 9, 3], desk: ['Desk', '🖥️', 6, 3], wardrobe: ['Wardrobe', '🚪', 5, 2.6],
+    speaker: ['Speaker', '🔊', 3, 3], djbooth: ['DJ booth', '🎧', 10, 4], bar: ['Bar', '🍸', 14, 3.4], stool: ['Stool', '🟤', 1.8, 1.8],
+    dance: ['Dance floor', '🪩', 16, 12], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
+  };
+  const PALETTE = ['#3B82F6', '#EF4444', '#22B573', '#F59E0B', '#A855F7', '#EC4899', '#111827', '#F8FAFC', '#8B5E3C'];
+  const ROOMS = {
+    hq: { w: 44, d: 32, floor: '#E9D8BE', wall: '#FBF6EE', trim: '#C8B79A', cam: { yaw: -0.55, pitch: 0.92, zoom: 2.3 } },
+    club: { w: 64, d: 46, floor: '#1E1B2E', wall: '#2B2440', trim: '#7C3AED', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.75 } },
+    casino: { w: 64, d: 46, floor: '#5B1A1A', wall: '#3F1D1D', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.75 } },
+    tower: { w: 48, d: 36, floor: '#E2E8F0', wall: '#E0E7FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.92, zoom: 2.1 } },
+    arena: { w: 110, d: 80, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.82, zoom: 1.05 } },
+  };
+  const DEFAULTS = {
+    hq: [{ k: 'rug', x: 22, z: 18, c: '#EF4444' }, { k: 'bed', x: 8, z: 7 }, { k: 'sofa', x: 22, z: 24, c: '#3B82F6' }, { k: 'tv', x: 22, z: 12 }, { k: 'plant', x: 40, z: 4 }, { k: 'lamp', x: 30, z: 24 }, { k: 'kitchen', x: 34, z: 4 }, { k: 'fridge', x: 41, z: 10 }, { k: 'wardrobe', x: 4, z: 18, r: 1 }],
+    club: [{ k: 'djbooth', x: 32, z: 5 }, { k: 'speaker', x: 22, z: 4 }, { k: 'speaker', x: 42, z: 4 }, { k: 'dance', x: 32, z: 20 }, { k: 'bar', x: 9, z: 26, r: 1 }, { k: 'stool', x: 14, z: 20 }, { k: 'stool', x: 14, z: 26 }, { k: 'stool', x: 14, z: 32 }, { k: 'couch2', x: 54, z: 36, c: '#A855F7' }, { k: 'couch2', x: 54, z: 22, c: '#EC4899' }],
+    casino: [{ k: 'roulette', x: 20, z: 18 }, { k: 'roulette', x: 42, z: 18 }, ...[0, 1, 2, 3, 4, 5].map((k) => ({ k: 'slot', x: 10 + k * 8, z: 4 })), { k: 'bar', x: 32, z: 38 }, { k: 'plant', x: 60, z: 42 }, { k: 'plant', x: 4, z: 42 }],
+    tower: [{ k: 'desk', x: 10, z: 6 }, { k: 'desk', x: 38, z: 6 }, { k: 'couch2', x: 12, z: 28, c: '#6366F1' }, { k: 'plant', x: 44, z: 32 }, { k: 'plant', x: 4, z: 32 }, { k: 'shelf', x: 24, z: 2 }],
+    arena: [],
+  };
+  let inside = null, outside = null, deco = null; // deco: the furnishing state { sel: kind | index, colour }
+  function furnDraw(it, now) {
+    const f = FURN[it.k]; if (!f) return;
+    const rot = (it.r || 0) % 2, w = rot ? f[3] : f[2], d = rot ? f[2] : f[3], a = it.x - w / 2, b = it.z - d / 2, c = it.x + w / 2, e = it.z + d / 2, col = it.c;
+    const sel = deco && deco.pick === it;
+    if (sel) flat(a - 0.6, b - 0.6, c + 0.6, e + 0.6, 0.02, 'rgba(34,181,115,0.45)');
+    switch (it.k) {
+      case 'bed': box(a, 0, b, c, 1.6, e, col || '#8B5E3C'); box(a + 0.3, 1.6, b + 0.3, c - 0.3, 2.6, e - 0.3, '#F8FAFC'); if (rot) box(a, 0, b, a + 0.6, 4.5, e, col || '#8B5E3C'); else box(a, 0, b, c, 4.5, b + 0.6, col || '#8B5E3C'); box(a + 1, 2.6, b + 1, c - 1, 3.2, b + 2.4, '#E2E8F0'); break;
+      case 'sofa': case 'couch2': box(a, 0, b, c, 2, e, col || '#3B82F6'); if (rot) box(a, 2, b, a + 1, 4, e, col || '#3B82F6'); else box(a, 2, b, c, 4, b + 1, col || '#3B82F6'); break;
+      case 'armchair': box(a, 0, b, c, 2, e, col || '#F59E0B'); box(a, 2, b, c, 4, b + 0.9, col || '#F59E0B'); break;
+      case 'table': box(a + 0.3, 0, b + 0.3, a + 0.8, 2.6, b + 0.8, '#78350F'); box(c - 0.8, 0, e - 0.8, c - 0.3, 2.6, e - 0.3, '#78350F'); box(a, 2.6, b, c, 3.1, e, col || '#A16207'); break;
+      case 'chair': box(a, 0, b, c, 1.8, e, col || '#A16207'); box(a, 1.8, b, c, 4, b + 0.4, col || '#A16207'); break;
+      case 'tv': box(a + 1, 0, b, c - 1, 2, e, '#374151'); box(a, 2, b + 0.5, c, 6, b + 1, '#0B1020'); { const p0 = P(a + 0.4, 2.4, b + 1.02), p1 = P(c - 0.4, 2.4, b + 1.02), p2 = P(c - 0.4, 5.6, b + 1.02), p3 = P(a + 0.4, 5.6, b + 1.02); quad([p0, p1, p2, p3], `hsl(${(now / 30) % 360},70%,55%)`); } break;
+      case 'plant': cyl(it.x, it.z, 1, 2, col || '#C2410C'); tree(it.x, it.z, 1.6, C.tree); break;
+      case 'lamp': box(it.x - 0.2, 0, it.z - 0.2, it.x + 0.2, 6, it.z + 0.2, '#6B7280'); cyl(it.x, it.z, 1, 1.4, col || '#FDE68A'); { const p = P(it.x, 6.5, it.z); const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 6); g.addColorStop(0, 'rgba(253,230,138,0.45)'); g.addColorStop(1, 'rgba(253,230,138,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 6, 0, Math.PI * 2); x.fill(); } break;
+      case 'rug': flat(a, b, c, e, 0.05, col || '#EF4444'); flat(a + 0.8, b + 0.8, c - 0.8, e - 0.8, 0.06, 'rgba(255,255,255,0.18)'); break;
+      case 'shelf': box(a, 0, b, c, 9, e, col || '#8B5E3C'); for (let k = 0; k < 3; k++) box(a + 0.4, 1 + k * 2.8, e - 0.1, c - 0.4, 2.8 + k * 2.8, e, STALLS[(k * 3) % STALLS.length]); break;
+      case 'fridge': box(a, 0, b, c, 9, e, col || '#F1F5F9'); break;
+      case 'kitchen': box(a, 0, b, c, 3.6, e, col || '#F8FAFC'); box(a, 3.6, b, c, 3.9, e, '#334155'); break;
+      case 'desk': box(a, 0, b, c, 3, e, col || '#E5E7EB'); box(it.x - 1.6, 3, it.z - 0.3, it.x + 1.6, 5.4, it.z, '#111827'); break;
+      case 'wardrobe': box(a, 0, b, c, 10, e, col || '#A16207'); break;
+      case 'speaker': box(a, 0, b, c, 7, e, '#111827'); { const p = P(it.x, 4, e + 0.05); x.fillStyle = '#4B5563'; x.beginPath(); x.arc(p[0], p[1], K * 1, 0, Math.PI * 2); x.fill(); } break;
+      case 'djbooth': box(a, 0, b, c, 4, e, '#111827'); { const t = now / 300; box(a, 4, b, c, 4.3, e, `hsl(${(t * 20) % 360},90%,60%)`); } break;
+      case 'bar': box(a, 0, b, c, 4, e, col || '#7C2D12'); box(a - 0.2, 4, b - 0.2, c + 0.2, 4.4, e + 0.2, '#F5C542'); break;
+      case 'stool': cyl(it.x, it.z, 0.8, 2.6, col || '#B45309'); break;
+      case 'dance': { const n = 4, m = 3, t = Math.floor(now / 400); for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) flat(a + i * w / n + 0.15, b + j * d / m + 0.15, a + (i + 1) * w / n - 0.15, b + (j + 1) * d / m - 0.15, 0.06, `hsl(${((i * 3 + j * 5 + t) * 47) % 360},85%,${night ? 60 : 55}%)`); } break;
+      case 'slot': box(a, 0, b, c, 6, e, col || '#F59E0B'); box(a + 0.4, 3.4, e - 0.05, c - 0.4, 5.2, e, '#0EA5E9'); break;
+      case 'roulette': box(a, 0, b, c, 3, e, '#166534'); { const p = P(it.x, 3.1, it.z), r = K * 2.2; x.fillStyle = '#7C2D12'; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#FDE047'; x.beginPath(); x.ellipse(p[0], p[1], r * 0.3, r * 0.3 * sp, 0, 0, Math.PI * 2); x.fill(); } break;
+    }
+  }
+  function drawInterior(now) {
+    const R = inside;
+    x.fillStyle = '#0F172A'; x.fillRect(0, 0, W, H);
+    // floor, tiles, walls
+    flat(0, 0, R.w, R.d, 0, R.floor);
+    x.strokeStyle = 'rgba(0,0,0,0.08)'; x.lineWidth = 1;
+    for (let i = 5; i < R.w; i += 5) { const p = P(i, 0.01, 0), q = P(i, 0.01, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    for (let j = 5; j < R.d; j += 5) { const p = P(0, 0.01, j), q = P(R.w, 0.01, j); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
+    box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
+    flat(R.w / 2 - 4, R.d - 1.2, R.w / 2 + 4, R.d, 0.04, '#94A3B8'); // the door mat
+    if (R.kind === 'arena') drawStage(now);
+    const items = [];
+    for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
+    for (const [pid, o] of others) items.push({ d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false) });
+    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true) });
+    if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
+    items.sort((p, q) => p.d - q.d);
+    for (const it of items) it.f();
+    if (R.kind === 'club') { // the light show
+      x.save(); x.globalCompositeOperation = 'lighter'; const t = now / 1000;
+      for (let k = 0; k < 4; k++) { const p = P(10 + k * 15, 17, 1), q = P(R.w / 2 + Math.sin(t + k) * 18, 0, R.d / 2 + Math.cos(t * 0.7 + k) * 10); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(k * 90 + t * 40) % 360},100%,65%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - 30, q[1]); x.lineTo(q[0] + 30, q[1]); x.fill(); }
+      x.restore();
+    }
+  }
+  // the arena's stage: lights, the big screen with the artist's live lines, the crowd's glow
+  let stageLines = [], stageInfo = null;
+  function drawStage(now) {
+    const R = inside, t = now / 1000;
+    box(15, 0, 2, R.w - 15, 4, 22, '#1F2937'); box(15, 4, 2, R.w - 15, 4.4, 22, '#38BDF8');
+    box(20, 4, 1, R.w - 20, 40, 2, '#0B1020');
+    const a = P(22, 8, 2.05), b = P(R.w - 22, 8, 2.05), c = P(R.w - 22, 38, 2.05), d = P(22, 38, 2.05);
+    const g = x.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, `hsl(${(t * 20) % 360},80%,30%)`); g.addColorStop(1, `hsl(${(t * 20 + 120) % 360},80%,22%)`);
+    quad([a, b, c, d], g);
+    const wpx = Math.hypot(b[0] - a[0], b[1] - a[1]), mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2];
+    x.save(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#fff';
+    x.font = `800 ${Math.round(wpx * 0.05)}px "Plus Jakarta Sans", sans-serif`;
+    x.fillText(stageInfo ? stageInfo.artist : 'The Arena', mid[0], mid[1] - wpx * 0.12);
+    x.font = `700 ${Math.round(wpx * 0.032)}px "Plus Jakarta Sans", sans-serif`;
+    const last = stageLines.slice(-3);
+    last.forEach((l, k) => { x.globalAlpha = 0.5 + 0.5 * (k + 1) / last.length; x.fillText(l.text.length > 46 ? l.text.slice(0, 45) + '…' : l.text, mid[0], mid[1] + k * wpx * 0.055); });
+    if (!last.length) x.fillText(stageInfo ? (stageInfo.live ? 'The show is about to start…' : 'Doors open. The show starts soon.') : '', mid[0], mid[1]);
+    x.restore();
+    x.save(); x.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 6; k++) { const p = P(18 + k * (R.w - 36) / 5, 40, 2), q = P(R.w / 2 + Math.sin(t * 1.3 + k) * 40, 0, 40 + Math.cos(t + k) * 20); const gr = x.createLinearGradient(p[0], p[1], q[0], q[1]); gr.addColorStop(0, `hsla(${(k * 60 + t * 50) % 360},100%,65%,0.4)`); gr.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = gr; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - 26, q[1]); x.lineTo(q[0] + 26, q[1]); x.fill(); }
+    x.restore();
+  }
+  async function enterRoom(kind, key, title, extra = {}) {
+    if (inside) return;
+    const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
+    if (signedIn() && kind !== 'arena') {
+      try { const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine; }
+      catch (e) { if (kind === 'hq') { bubbles.set('me', { text: e.message, until: performance.now() + 5000 }); return; } }
+    }
+    outside = { x: me.x, z: me.z, cam: { ...cam } };
+    inside = R; me.x = R.w / 2; me.z = R.d - 3; cam.x = R.w / 2; cam.z = R.d / 2; cam.user = 1; cam.follow = false;
+    others.clear(); updateWhere(); setDeco();
+    if (kind === 'arena') { stageLines = []; stagePoll(); }
+    if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
+  }
+  function leaveRoom() {
+    if (!inside) return;
+    inside = null; deco = null; setDeco();
+    me.x = outside.x; me.z = outside.z; Object.assign(cam, outside.cam, { follow: true });
+    others.clear(); updateWhere();
+  }
+  let stageTimer = 0;
+  async function stagePoll() {
+    clearTimeout(stageTimer);
+    if (!inside || inside.kind !== 'arena') return;
+    try { const v = await my('stage', { showId: inside.show, since: stageLines.length ? stageLines[stageLines.length - 1].n : 0 }); stageInfo = v; stageLines.push(...v.lines); if (stageLines.length > 50) stageLines = stageLines.slice(-50); } catch {}
+    stageTimer = setTimeout(stagePoll, 2000);
+  }
+  // furnishing: the bar along the bottom, for the owner
+  const decoEl = document.getElementById('deco'), askEl = document.getElementById('ask');
+  function setDeco() {
+    askEl.style.display = inside && inside.kind === 'tower' ? 'flex' : 'none';
+    if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
+    decoEl.style.display = 'flex';
+    if (!deco) { decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>'; document.getElementById('dOn').onclick = () => { deco = { sel: 'sofa', colour: null, pick: null }; setDeco(); }; return; }
+    if (deco.pick) {
+      decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">🗑 Remove</button><button class="dbtn" id="dDone">Done</button>`;
+      document.getElementById('dRot').onclick = () => { deco.pick.r = ((deco.pick.r || 0) + 1) % 4; };
+      document.getElementById('dDel').onclick = () => { inside.layout = inside.layout.filter((v) => v !== deco.pick); deco.pick = null; setDeco(); };
+      document.getElementById('dDone').onclick = () => { deco.pick = null; setDeco(); };
+      decoEl.querySelectorAll('[data-c]').forEach((b) => (b.onclick = () => { deco.pick.c = b.dataset.c; }));
+      return;
+    }
+    decoEl.innerHTML = `<div class="dscroll">${Object.entries(FURN).map(([k, f]) => `<button class="ditem${deco.sel === k ? ' on' : ''}" data-k="${k}"><span>${f[1]}</span>${f[0]}</button>`).join('')}</div><button class="dbtn main" id="dSave">Save</button><button class="dbtn" id="dOff">Close</button>`;
+    decoEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { deco.sel = b.dataset.k; setDeco(); }));
+    document.getElementById('dSave').onclick = async () => { try { await my('saveRoom', { key: inside.key, layout: JSON.stringify(inside.layout) }); bubbles.set('me', { text: 'Saved. Looking good.', until: performance.now() + 3000 }); } catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 4000 }); } };
+    document.getElementById('dOff').onclick = () => { deco = null; setDeco(); };
+  }
+  function floorAt(sx, sy) { // the screen point to a spot on the floor
+    const rx = (sx - W / 2) / K, rz = (sy - H * 0.55) / (K * sp);
+    return [cam.x + rx * co + rz * si, cam.z - rx * si + rz * co];
+  }
+  function tapInside(sx, sy) {
+    if (!deco) return;
+    const [fx, fz] = floorAt(sx, sy);
+    const hit = inside.layout.slice().reverse().find((it) => { const f = FURN[it.k]; return f && Math.abs(it.x - fx) < Math.max(f[2], f[3]) / 2 + 0.5 && Math.abs(it.z - fz) < Math.max(f[2], f[3]) / 2 + 0.5; });
+    if (hit) { deco.pick = hit; setDeco(); return; }
+    if (deco.pick) { deco.pick = null; setDeco(); return; }
+    if (fx < 1 || fz < 1 || fx > inside.w - 1 || fz > inside.d - 1) return;
+    if (inside.layout.length >= 200) return;
+    const it = { k: deco.sel, x: Math.round(fx * 2) / 2, z: Math.round(fz * 2) / 2 };
+    inside.layout.push(it);
+  }
+  document.getElementById('ask').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const inp = document.getElementById('askText'), t = inp.value.trim(); if (!t) return; inp.value = ''; inp.blur();
+    bubbles.set('me', { text: t, until: performance.now() + 6000 });
+    if (!signedIn()) { bubbles.set('wyrd', { text: 'Sign in at the door and I can really talk with you.', until: performance.now() + 6000 }); return; }
+    bubbles.set('wyrd', { text: '…', until: performance.now() + 30000 });
+    try { const v = await my('askWyrd', { text: t, district: 'WYRD Tower' }); bubbles.set('wyrd', { text: v.say || 'Hmm.', until: performance.now() + 14000 }); }
+    catch (er) { bubbles.set('wyrd', { text: 'I lost the thread. Ask me again?', until: performance.now() + 6000 }); }
+  });
+
   // ================= moving =================
   const onFerry = (px, pz) => at(Math.floor(px / T), Math.floor(pz / T)) === FERRYLANE;
   function walkable(px, pz) {
+    if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && pz < 23);
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
     for (const b of blocked) if (px > b[0] && px < b[2] && pz > b[1] && pz < b[3]) return false;
@@ -990,6 +1247,7 @@
   cv.addEventListener('wheel', (e) => { e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
   const card = document.getElementById('card');
   function tapAt(sx, sy) {
+    if (inside) return tapInside(sx, sy);
     let best = null, bd = 34;
     for (const p of PLACES) { const s = P((p[1] + p[3] / 2) * T, PIN_H[p[0]] ?? 16, (p[2] + p[4] / 2) * T); const d = Math.hypot(s[0] - sx, s[1] - 21 - sy); if (d < bd) { bd = d; best = p; } }
     if (best) { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = best[6] + ' ' + best[5]; const s = document.createElement('span'); s.textContent = (sectorOf((best[1] + 0.5) * T, (best[2] + 0.5) * T) || {}).name || ''; card.append(b, s); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); }
@@ -1026,7 +1284,7 @@
   }
   async function tick() {
     try {
-      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since });
+      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '' });
       document.getElementById('count').textContent = r.online;
       const now = performance.now(), seen = new Set();
       for (const p of r.players) {
@@ -1064,6 +1322,7 @@
   // ---- where you are
   const whereEl = document.getElementById('where');
   function updateWhere() {
+    if (inside) { whereEl.textContent = '📍 ' + inside.title; return; }
     const s = sectorOf(me.x, me.z);
     if (s) sector = s;
     let best = null, bd = 45;
@@ -1090,13 +1349,14 @@
         cam.follow = true;
       }
     }
-    if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
+    if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
+    else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
-    const want = sector.cam, e2 = Math.min(1, dt * 1.4);
+    const want = inside ? inside.cam : sector.cam, e2 = Math.min(1, dt * 1.4);
     let dy = want.yaw - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     cam.yaw += dy * e2; cam.pitch += (want.pitch - cam.pitch) * e2; cam.zoom += (want.zoom - cam.zoom) * e2;
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
-    wyrdStep(dt);
+    if (!inside) wyrdStep(dt);
     if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); }
     draw();
     requestAnimationFrame(frame);
@@ -1169,6 +1429,7 @@
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
   let me$ = null, stack = [], chatTimer = 0;
+  const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔒', 'Chats'], ['hq', '🏠', 'My HQ'],
     ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
@@ -1195,9 +1456,13 @@
   }
   async function render(app, arg) {
     try {
-      if (app === 'signin') return show(`<div class="ptitle">Your phone</div><div class="pcard"><h3>Sign in to WYRD</h3><p class="dim">The phone holds your wallet, jobs, encrypted chats and your HQ. It uses your WYRD account. You can walk the island and chat nearby without one.</p><a class="pbtn" style="display:inline-block;text-decoration:none" href="/">Sign in on WYRD</a></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`), ($('gRide').onclick = () => go('ride'));
+      if (app === 'signin') { show(`<div class="ptitle">Your phone</div><div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
       if (app === 'home') {
-        show(`<div class="ptitle">Hi, ${esc(me$.handle)}</div><div class="lock">🔒 Chats are end-to-end encrypted. WYRD can't read them.</div><div class="apps">${APPS.map(([k, i, n]) => `<button class="app" data-app="${k}"><i>${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`).join('')}</div>`);
+        const d = new Date(Date.now() + 3600e3), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+        const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}"><i style="background:${APP_BG[k]}">${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
+        show(`<div class="widget"><div><div class="wt">${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${esc(me$.handle)}</div><div class="wn">${naira(me$.naira)}</div></div></div>
+          <div class="apps">${APPS.filter((a) => !DOCK.includes(a[0])).map(tile).join('')}</div>
+          <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
         return;
       }
@@ -1305,7 +1570,11 @@
             ${s.mine ? `<button class="pbtn" data-stage="${s.id}">${s.live ? 'Take the stage' : 'Open the stage'}</button>` : s.ticket ? `<button class="pbtn" data-stage="${s.id}">🎟️ ${s.live ? 'Go in: it\'s live' : 'Your ticket: go in when it starts'}</button>` : `<button class="pbtn" data-buy="${s.id}">Buy ticket ${s.price ? naira(s.price) : ''}</button>`}</div>`).join('') || '<div class="pcard dim">No shows booked yet. Artists: host one.</div>'}`);
         $('aHost').onclick = () => go('hostshow'); if ($('aQueue')) $('aQueue').onclick = () => go('showqueue');
         pbody.querySelectorAll('[data-buy]').forEach((b) => (b.onclick = async () => { try { const v = await my('buyTicket', { showId: Number(b.dataset.buy) }); if (v.naira != null) pnaira.textContent = naira(v.naira); render('arena'); } catch (e) { fail(e); } }));
-        pbody.querySelectorAll('[data-stage]').forEach((b) => (b.onclick = () => go('stage', Number(b.dataset.stage))));
+        pbody.querySelectorAll('[data-stage]').forEach((b) => (b.onclick = () => {
+          const sh = list.find((v) => v.id === Number(b.dataset.stage));
+          if (sh && (sh.live || sh.mine)) { closePhone(); if (!near('arena', 20) && !inside) ride(31, 26.5); enterRoom('arena', 'arena:' + sh.id, 'The Arena · ' + sh.artist, { show: sh.id }); }
+          else go('stage', Number(b.dataset.stage));
+        }));
         return;
       }
       if (app === 'hostshow') {
@@ -1336,8 +1605,8 @@
         return;
       }
       if (app === 'casino') {
-        const inside = near('casino', 25);
-        if (!inside) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>Walk to the Island Casino in Lekki to play. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Ride there</button></div>`), ($('cRide').onclick = () => { ride(31.5, 19.5); closePhone(); });
+        const atTable = (inside && inside.kind === 'casino') || near('casino', 25);
+        if (!atTable) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>Walk to the Island Casino in Lekki to play. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Ride there</button></div>`), ($('cRide').onclick = () => { ride(31.5, 19.5); closePhone(); });
         await loadMe();
         show(`<div class="ptitle">Island Casino</div><div class="pcard"><div class="dim">Your naira</div><div class="big" id="cBal">${naira(me$.naira)}</div><label class="dim">Stake</label><select id="cStake">${[100, 200, 500, 1000, 2000, 5000].map((v) => `<option value="${v}">${naira(v)}</option>`).join('')}</select></div>
           <div class="pcard"><h3>Roulette</h3><button class="pbtn" style="background:#DC2626" data-bet="red">Red ×2</button><button class="pbtn" style="background:#111827" data-bet="black">Black ×2</button><button class="pbtn" style="background:#16A34A" data-bet="green">Green ×14</button></div>
@@ -1397,9 +1666,16 @@
   let act = null;
   function updateAct() {
     let next = null;
-    if (Math.hypot(me.x - wyrd.x, me.z - wyrd.z) < 30) next = { label: '✨ Talk to WYRD', run: talkToWyrd };
+    const door = (type) => PLACES.find((p) => p[0] === type && me.x > p[1] * T - 14 && me.x < (p[1] + p[3]) * T + 14 && me.z > p[2] * T - 14 && me.z < (p[2] + p[4]) * T + 14);
+    if (inside) {
+      if (me.z > inside.d - 2.2 && !deco && inside.entered) { leaveRoom(); return; }
+      if (me.z < inside.d - 4) inside.entered = true;
+      next = inside.kind === 'casino' && me.z < inside.d - 8 ? { label: '🎰 Play', run: () => openPhone('casino') } : { label: '🚪 Leave', run: leaveRoom };
+    }
+    else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
+    else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); next = { label: '🪩 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
+    else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
     else if (near('arena', 12)) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
-    else if (near('casino', 15)) next = { label: '🎰 Play at the casino', run: () => openPhone('casino') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
@@ -1409,8 +1685,7 @@
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
         else if (!hq) next = { label: '🏚️ Unclaimed lot', run: () => {} };
-        else if (hq.mine) next = { label: `🏠 Enter ${hq.name}`, run: () => openPhone('hqin', hq) };
-        else if (hq.may) next = { label: `🚪 Enter ${hq.name}`, run: () => openPhone('hqin', hq) };
+        else if (hq.mine || hq.may) next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) };
         else if (hq.asked === 'pending') next = { label: '⏳ Waiting for the owner to let you in', run: () => {} };
         else if (hq.asked === 'denied') next = { label: '⛔ The owner said no', run: () => askHq(hq) };
         else next = { label: '🔔 Ask to enter', run: () => askHq(hq) };
@@ -1419,15 +1694,7 @@
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
   actBtn.onclick = () => act && act.run();
-  // talking to WYRD in the street: what you say shows over you, its answer over it
-  async function talkToWyrd() {
-    if (!signedIn()) { bubbles.set('wyrd', { text: 'Sign in to WYRD and I can really talk with you. Your phone shows how.', until: performance.now() + 6000 }); return; }
-    const t = prompt('Say something to WYRD'); if (!t || !t.trim()) return;
-    bubbles.set('me', { text: t.trim(), until: performance.now() + 6000 });
-    bubbles.set('wyrd', { text: '…', until: performance.now() + 30000 });
-    try { const v = await my('askWyrd', { text: t.trim(), district: sector.name }); bubbles.set('wyrd', { text: v.say || v.reply || v.text || 'Hmm.', until: performance.now() + 12000 }); }
-    catch (e) { bubbles.set('wyrd', { text: e.message === 'signin' ? 'Sign in to WYRD first.' : 'I lost the thread. Ask me again?', until: performance.now() + 6000 }); }
-  }
+
   async function doWork(place) {
     if (!signedIn()) return openPhone();
     try { const v = await my('work', { place }); pnaira.textContent = naira(v.naira); bubbles.set('me', { text: `${v.memo}: +${naira(v.paid)}`, until: performance.now() + 5000 }); }
@@ -1453,18 +1720,48 @@
   }
   poll(); setInterval(poll, 15000);
 
-  // ---- the welcome: your name and colour, kept in this browser
-  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), colorsEl = document.getElementById('colors');
-  nameIn.value = myName;
+  // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
+  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), colorsEl = document.getElementById('colors'), errEl = document.getElementById('err');
+  let isNew = true;
   call('online', {}).then((n) => { if (typeof n === 'number') document.getElementById('crowd').textContent = n === 1 ? '1 Lagosian' : n + ' Lagosians'; }).catch(() => {});
   for (const c of COLORS) { const s = document.createElement('span'); s.style.background = c; s.setAttribute('role', 'button'); s.setAttribute('aria-label', 'Colour ' + c); if (c === myColor) s.className = 'on'; s.onclick = () => { myColor = c; for (const o of colorsEl.children) o.className = ''; s.className = 'on'; }; colorsEl.append(s); }
-  document.getElementById('go').onclick = () => {
-    myName = nameIn.value.trim().slice(0, 24) || 'Lagosian';
-    store.set('li.name', myName); store.set('li.color', myColor);
-    hello.style.display = 'none'; nameIn.blur(); playing = true;
+  const tabNew = document.getElementById('tNew'), tabOld = document.getElementById('tOld');
+  tabNew.onclick = () => { isNew = true; tabNew.className = 'on'; tabOld.className = ''; passIn.autocomplete = 'new-password'; };
+  tabOld.onclick = () => { isNew = false; tabOld.className = 'on'; tabNew.className = ''; passIn.autocomplete = 'current-password'; };
+  function start() {
+    store.set('li.color', myColor);
+    hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true;
     tick(); setInterval(tick, 1000);
+    if (signedIn()) poll();
+  }
+  // already signed in (here or in the WYRD app on this site): welcome back
+  if (signedIn()) {
+    document.getElementById('auth').style.display = 'none';
+    const who = document.getElementById('who'); who.style.display = 'block'; who.textContent = 'Welcome back.';
+    my('me').then((v) => { myName = v.handle; who.textContent = `Welcome back, ${v.handle}.`; }).catch(() => { who.style.display = 'none'; document.getElementById('auth').style.display = 'block'; });
+  }
+  document.getElementById('go').onclick = async () => {
+    if (signedIn() && document.getElementById('auth').style.display === 'none') return start();
+    const u = nameIn.value.trim(), p = passIn.value;
+    errEl.textContent = '';
+    if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(u)) { errEl.textContent = 'Pick a username of 3 to 20 letters, digits, _ . or -.'; return; }
+    if (p.length < 8) { errEl.textContent = 'Your password needs 8 or more characters.'; return; }
+    const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = isNew ? 'Making your account…' : 'Signing in…';
+    try {
+      const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
+      const t = await r.text();
+      if (!r.ok) {
+        let m = t; try { const j = JSON.parse(t); m = j.message || j.error || j.reason || t; } catch {}
+        throw new Error(/taken/i.test(m) ? 'That username is taken. Try another, or sign in.' : /invalid|credential|password|not found/i.test(m) || r.status === 401 ? 'That username and password don\'t match.' : /Too many/i.test(m) ? m : 'Something went wrong. Try again.');
+      }
+      const a = JSON.parse(t);
+      localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
+      myName = u; me$ = null; start();
+    } catch (e) { errEl.textContent = e.message; }
+    finally { btn.disabled = false; btn.textContent = 'Enter Lagos Island'; }
   };
-  nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
+  document.getElementById('guest').onclick = () => { myName = store.get('li.name') || 'Guest'; start(); };
+  for (const el of [nameIn, passIn]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
 })();
 </script>
 </body>

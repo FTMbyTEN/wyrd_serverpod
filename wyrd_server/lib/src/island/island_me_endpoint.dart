@@ -516,6 +516,51 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'id': id, 'status': grant ? 'granted' : 'denied'});
   }
 
+  // ---------------- insides ----------------
+  /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
+  static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {
+    if (key.startsWith('hq:')) {
+      final p = await IslandProfile.db.findById(s, int.tryParse(key.substring(3)) ?? -1);
+      return p != null && p.authUserId == u;
+    }
+    return key.startsWith('place:') && await DroneService.isOperator(s, u);
+  }
+
+  /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
+  /// owner and the people they've let in.
+  Future<String> room(Session session, String key) async {
+    final u = _user(session);
+    if (key.startsWith('hq:')) {
+      final p = await IslandProfile.db.findById(session, int.tryParse(key.substring(3)) ?? -1);
+      if (p == null) return _err('No HQ there.');
+      final me = await _profile(session, u);
+      final may = p.authUserId == u || !p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle);
+      if (!may) return _err('Knock first: the owner lets people in.');
+    }
+    final r = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));
+    return jsonEncode({'key': key, 'layout': r == null ? null : jsonDecode(r.layout), 'mine': await _mayArrange(session, u, key)});
+  }
+
+  /// Save a room's furniture.
+  Future<String> saveRoom(Session session, String key, String layout) async {
+    final u = _user(session);
+    if (!await _mayArrange(session, u, key)) return _err('Only the owner can arrange this room.');
+    if (layout.length > 24000) return _err('Too much furniture.');
+    final list = jsonDecode(layout);
+    if (list is! List || list.length > 200) return _err('At most 200 pieces.');
+    for (final it in list) {
+      if (it is! Map || it['k'] is! String || it['x'] is! num || it['z'] is! num) return _err('Bad furniture.');
+    }
+    final had = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));
+    final now = DateTime.now().toUtc();
+    if (had == null) {
+      await IslandRoom.db.insertRow(session, IslandRoom(key: key, layout: layout, updatedAt: now));
+    } else {
+      await IslandRoom.db.updateRow(session, had.copyWith(layout: layout, updatedAt: now));
+    }
+    return jsonEncode({'saved': list.length});
+  }
+
   // ---------------- the arena ----------------
   static Map<String, dynamic> _showJson(IslandShow s, {int sold = 0, bool mine = false, bool ticket = false}) {
     final now = DateTime.now().toUtc();

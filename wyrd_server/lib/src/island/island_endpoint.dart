@@ -41,6 +41,7 @@ class IslandEndpoint extends Endpoint {
     double x,
     double z,
     int since,
+    String room,
   ) async {
     final now = DateTime.now();
     _players.removeWhere((_, p) => now.difference(p.seen) > _fade);
@@ -53,16 +54,17 @@ class IslandEndpoint extends Endpoint {
       ..color = RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(color) ? color : '#C4572E'
       ..x = x.clamp(-60000, 60000).toDouble()
       ..z = z.clamp(-60000, 60000).toDouble()
+      ..room = _clean(room, 40)
       ..seen = now;
     double dist(double ax, double az) => sqrt(pow(ax - me.x, 2) + pow(az - me.z, 2));
     final near = [
       for (final p in _players.values)
-        if (p.id != id && dist(p.x, p.z) < _near)
+        if (p.id != id && p.room == me.room && (me.room.isNotEmpty || dist(p.x, p.z) < _near))
           {'id': p.id, 'name': p.name, 'color': p.color, 'x': p.x.round(), 'z': p.z.round()},
     ];
     final heard = [
       for (final l in _chat)
-        if (l.seq > since && (l.id == id || dist(l.x, l.z) < _hear))
+        if (l.seq > since && (l.id == id || (l.room == me.room && (me.room.isNotEmpty || dist(l.x, l.z) < _hear))))
           {'seq': l.seq, 'id': l.id, 'name': l.name, 'color': l.color, 'text': l.text},
     ];
     return jsonEncode({
@@ -88,7 +90,7 @@ class IslandEndpoint extends Endpoint {
     final now = DateTime.now();
     if (now.difference(p.lastSaid) < const Duration(milliseconds: 800)) return; // no flooding
     p.lastSaid = now;
-    _chat.add(_Line(++_seq, p.id, p.name, p.color, t, p.x, p.z));
+    _chat.add(_Line(++_seq, p.id, p.name, p.color, t, p.x, p.z, p.room));
     if (_chat.length > _keepChat) _chat.removeRange(0, _chat.length - _keepChat);
   }
 }
@@ -98,6 +100,8 @@ class _Player {
   String name = 'Lagosian';
   String color = '#C4572E';
   double x = 0, z = 0;
+  /// '' outside; inside a building, its key (everyone in the same room sees and hears each other)
+  String room = '';
   DateTime seen = DateTime.now();
   DateTime lastSaid = DateTime.fromMillisecondsSinceEpoch(0);
   _Player(this.id);
@@ -105,7 +109,7 @@ class _Player {
 
 class _Line {
   final int seq;
-  final String id, name, color, text;
+  final String id, name, color, text, room;
   final double x, z;
-  _Line(this.seq, this.id, this.name, this.color, this.text, this.x, this.z);
+  _Line(this.seq, this.id, this.name, this.color, this.text, this.x, this.z, this.room);
 }

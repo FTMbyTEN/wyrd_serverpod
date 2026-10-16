@@ -1,0 +1,13 @@
+### The inside of a building: its furniture, as JSON [{k: kind, x, z, r: quarter turns, c: colour}].
+### [key] is hq:<slot> for an HQ (its owner arranges it) or place:<id> for a club, the casino, the
+### tower and the rest (WYRD's operator arranges those).
+class: IslandRoom
+table: island_room
+fields:
+  key: String
+  layout: String
+  updatedAt: DateTime
+indexes:
+  island_room_key_idx:
+    fields: key
+    unique: true

@@ -48,6 +48,9 @@ games:
   - poll:
 greeting:
   - hello:
+islandAuth:
+  - register:
+  - login:
 island:
   - tick:
   - online:
@@ -78,6 +81,8 @@ islandMe:
   - askHq:
   - hqRequests:
   - answerHq:
+  - room:
+  - saveRoom:
   - shows:
   - hostShow:
   - pendingShows:

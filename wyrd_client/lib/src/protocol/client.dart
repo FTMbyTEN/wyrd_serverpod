@@ -667,6 +667,44 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
+/// One account for Lagos Island and WYRD: a username and a password, chosen at the door of the
+/// island. Registering makes a WYRD account (the same email/password provider the app uses, with an
+/// address made from the username, so no email has to be confirmed) and the island name; signing in
+/// works with the username on the island and in the WYRD app.
+/// {@category Endpoint}
+class EndpointIslandAuth extends _isc.EndpointRef {
+  EndpointIslandAuth(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'islandAuth';
+
+  /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
+  _ida.Future<_iacc.AuthSuccess> register(
+    String username,
+    String password,
+  ) => caller.callServerEndpoint<_iacc.AuthSuccess>(
+    'islandAuth',
+    'register',
+    {
+      'username': username,
+      'password': password,
+    },
+  );
+
+  /// Sign in with a Lagos Island username (or the email of a WYRD account) and password.
+  _ida.Future<_iacc.AuthSuccess> login(
+    String username,
+    String password,
+  ) => caller.callServerEndpoint<_iacc.AuthSuccess>(
+    'islandAuth',
+    'login',
+    {
+      'username': username,
+      'password': password,
+    },
+  );
+}
+
 /// LAGOS ISLAND together: who is on the island and where, and what they say to the people near them.
 ///
 /// Less is more: all of it lives in memory (a player who stops sending fades out in 20 seconds; the
@@ -691,6 +729,7 @@ class EndpointIsland extends _isc.EndpointRef {
     double x,
     double z,
     int since,
+    String room,
   ) => caller.callServerEndpoint<String>(
     'island',
     'tick',
@@ -701,6 +740,7 @@ class EndpointIsland extends _isc.EndpointRef {
       'x': x,
       'z': z,
       'since': since,
+      'room': room,
     },
   );
 
@@ -1022,6 +1062,27 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {
       'id': id,
       'grant': grant,
+    },
+  );
+
+  /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
+  /// owner and the people they've let in.
+  _ida.Future<String> room(String key) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'room',
+    {'key': key},
+  );
+
+  /// Save a room's furniture.
+  _ida.Future<String> saveRoom(
+    String key,
+    String layout,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'saveRoom',
+    {
+      'key': key,
+      'layout': layout,
     },
   );
 
@@ -2570,6 +2631,7 @@ class Client extends _isc.ServerpodClientShared {
     drone = EndpointDrone(this);
     games = EndpointGames(this);
     greeting = EndpointGreeting(this);
+    islandAuth = EndpointIslandAuth(this);
     island = EndpointIsland(this);
     islandMe = EndpointIslandMe(this);
     konnectly = EndpointKonnectly(this);
@@ -2618,6 +2680,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointGames games;
 
   late final EndpointGreeting greeting;
+
+  late final EndpointIslandAuth islandAuth;
 
   late final EndpointIsland island;
 
@@ -2694,6 +2758,7 @@ class Client extends _isc.ServerpodClientShared {
     'drone': drone,
     'games': games,
     'greeting': greeting,
+    'islandAuth': islandAuth,
     'island': island,
     'islandMe': islandMe,
     'konnectly': konnectly,

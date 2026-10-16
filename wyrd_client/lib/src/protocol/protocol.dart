@@ -58,6 +58,7 @@ import 'island/island_job.dart' as _ifd0cm6h;
 import 'island/island_member.dart' as _inkhm4mi;
 import 'island/island_message.dart' as _i4pfszr3;
 import 'island/island_profile.dart' as _ii1l0ai6;
+import 'island/island_room.dart' as _i4c46r6a;
 import 'island/island_show.dart' as _ivo4faiv;
 import 'island/island_ticket.dart' as _il1ztsg5;
 import 'mind/account_export.dart' as _ij1ha6k5;
@@ -162,6 +163,7 @@ export 'island/island_job.dart';
 export 'island/island_member.dart';
 export 'island/island_message.dart';
 export 'island/island_profile.dart';
+export 'island/island_room.dart';
 export 'island/island_show.dart';
 export 'island/island_ticket.dart';
 export 'mind/account_export.dart';
@@ -333,6 +335,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ii1l0ai6.IslandProfile) {
       return _ii1l0ai6.IslandProfile.fromJson(data) as T;
+    }
+    if (t == _i4c46r6a.IslandRoom) {
+      return _i4c46r6a.IslandRoom.fromJson(data) as T;
     }
     if (t == _ivo4faiv.IslandShow) {
       return _ivo4faiv.IslandShow.fromJson(data) as T;
@@ -649,6 +654,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ii1l0ai6.IslandProfile?>()) {
       return (data != null ? _ii1l0ai6.IslandProfile.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i4c46r6a.IslandRoom?>()) {
+      return (data != null ? _i4c46r6a.IslandRoom.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ivo4faiv.IslandShow?>()) {
       return (data != null ? _ivo4faiv.IslandShow.fromJson(data) : null) as T;
@@ -1288,6 +1296,7 @@ class Protocol extends _isc.SerializationManager {
       _inkhm4mi.IslandMember => 'IslandMember',
       _i4pfszr3.IslandMessage => 'IslandMessage',
       _ii1l0ai6.IslandProfile => 'IslandProfile',
+      _i4c46r6a.IslandRoom => 'IslandRoom',
       _ivo4faiv.IslandShow => 'IslandShow',
       _il1ztsg5.IslandTicket => 'IslandTicket',
       _ij1ha6k5.AccountExport => 'AccountExport',
@@ -1422,6 +1431,8 @@ class Protocol extends _isc.SerializationManager {
         return 'IslandMessage';
       case _ii1l0ai6.IslandProfile():
         return 'IslandProfile';
+      case _i4c46r6a.IslandRoom():
+        return 'IslandRoom';
       case _ivo4faiv.IslandShow():
         return 'IslandShow';
       case _il1ztsg5.IslandTicket():
@@ -1667,6 +1678,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'IslandProfile') {
       return deserialize<_ii1l0ai6.IslandProfile>(data['data']);
+    }
+    if (dataClassName == 'IslandRoom') {
+      return deserialize<_i4c46r6a.IslandRoom>(data['data']);
     }
     if (dataClassName == 'IslandShow') {
       return deserialize<_ivo4faiv.IslandShow>(data['data']);
