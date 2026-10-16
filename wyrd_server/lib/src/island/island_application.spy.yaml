@@ -1,0 +1,13 @@
+### Someone applied for a job: the employer sees their handle, the skills they listed and this note --
+### nothing else about them.
+class: IslandApplication
+table: island_application
+fields:
+  jobId: int
+  authUserId: UuidValue
+  note: String
+  createdAt: DateTime
+indexes:
+  island_application_idx:
+    fields: jobId, authUserId
+    unique: true

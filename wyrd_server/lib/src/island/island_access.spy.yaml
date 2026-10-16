@@ -1,0 +1,14 @@
+### Someone asked to enter another person's HQ; the owner says yes or no. Who asked is shown to the
+### owner only; the owner's name is shown to the asker only once they're let in.
+class: IslandAccess
+table: island_access
+fields:
+  ownerId: UuidValue
+  requesterId: UuidValue
+  ### pending | granted | denied
+  status: String, default='pending'
+  createdAt: DateTime
+indexes:
+  island_access_idx:
+    fields: ownerId, requesterId
+    unique: true

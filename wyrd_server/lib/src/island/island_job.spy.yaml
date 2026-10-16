@@ -1,0 +1,22 @@
+### A real job, posted by an employer on LAGOS ISLAND. It shows on the job board once WYRD's operator
+### has checked it (status open).
+class: IslandJob
+table: island_job
+fields:
+  employerUserId: UuidValue
+  company: String
+  title: String
+  ### as the employer wrote it, e.g. "₦250,000 a month"
+  pay: String
+  ### the skills it needs, comma separated
+  skills: String
+  location: String
+  about: String
+  ### how the employer wants to be reached; shown to an applicant only after they apply
+  contact: String
+  ### pending | open | closed | rejected
+  status: String, default='pending'
+  createdAt: DateTime
+indexes:
+  island_job_status_idx:
+    fields: status, createdAt

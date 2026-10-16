@@ -1,0 +1,20 @@
+### A show at the arena: an artist performs live for the people holding tickets. WYRD's operator checks
+### each before tickets go on sale (status on_sale).
+class: IslandShow
+table: island_show
+fields:
+  hostUserId: UuidValue
+  artist: String
+  title: String
+  startsAt: DateTime
+  ### how long it runs
+  minutes: int, default=60
+  ### ticket price in naira (play money), 0 for free
+  price: int
+  capacity: int, default=500
+  ### pending | on_sale | rejected | cancelled
+  status: String, default='pending'
+  createdAt: DateTime
+indexes:
+  island_show_time_idx:
+    fields: status, startsAt

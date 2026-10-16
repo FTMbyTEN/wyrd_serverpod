@@ -56,6 +56,15 @@ import 'games/custom_game.dart' as _ixx1i67o;
 import 'games/game_match.dart' as _iucyrm0h;
 import 'games/player_rating.dart' as _ihg2pt9t;
 import 'greetings/greeting.dart' as _izw8z7ou;
+import 'island/island_access.dart' as _irpwye33;
+import 'island/island_application.dart' as _i62wuws7;
+import 'island/island_group.dart' as _ia3qph7z;
+import 'island/island_job.dart' as _ifd0cm6h;
+import 'island/island_member.dart' as _inkhm4mi;
+import 'island/island_message.dart' as _i4pfszr3;
+import 'island/island_profile.dart' as _ii1l0ai6;
+import 'island/island_show.dart' as _ivo4faiv;
+import 'island/island_ticket.dart' as _il1ztsg5;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/belief.dart' as _ijbewlez;
@@ -151,6 +160,15 @@ export 'games/custom_game.dart';
 export 'games/game_match.dart';
 export 'games/player_rating.dart';
 export 'greetings/greeting.dart';
+export 'island/island_access.dart';
+export 'island/island_application.dart';
+export 'island/island_group.dart';
+export 'island/island_job.dart';
+export 'island/island_member.dart';
+export 'island/island_message.dart';
+export 'island/island_profile.dart';
+export 'island/island_show.dart';
+export 'island/island_ticket.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/belief.dart';
@@ -2150,6 +2168,656 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'day',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_access',
+      dartName: 'IslandAccess',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ownerId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'requesterId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'pending\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_access_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'ownerId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'requesterId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_application',
+      dartName: 'IslandApplication',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'jobId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'note',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_application_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'jobId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_group',
+      dartName: 'IslandGroup',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nameCt',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_job',
+      dartName: 'IslandJob',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'employerUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'company',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'pay',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'skills',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'location',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'about',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'contact',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'pending\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_job_status_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_member',
+      dartName: 'IslandMember',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'groupId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'wrappedKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'wrapperPub',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'addedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_member_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'groupId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'island_member_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_message',
+      dartName: 'IslandMessage',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'groupId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'senderId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ct',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_message_group_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'groupId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_profile',
+      dartName: 'IslandProfile',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'handle',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'skills',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'openToWork',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'pubKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'hqName',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'hqColor',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'#A855F7\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'hqLocked',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'true',
+        ),
+        _isp.ColumnDefinition(
+          name: 'hqInvites',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'[]\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_profile_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'island_profile_handle_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'handle',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_show',
+      dartName: 'IslandShow',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'hostUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'artist',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'startsAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'minutes',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '60',
+        ),
+        _isp.ColumnDefinition(
+          name: 'price',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'capacity',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '500',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'pending\'',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_show_time_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'startsAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_ticket',
+      dartName: 'IslandTicket',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'showId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_ticket_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'showId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
             ),
           ],
           type: 'btree',
@@ -5183,6 +5851,33 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
     }
+    if (t == _irpwye33.IslandAccess) {
+      return _irpwye33.IslandAccess.fromJson(data) as T;
+    }
+    if (t == _i62wuws7.IslandApplication) {
+      return _i62wuws7.IslandApplication.fromJson(data) as T;
+    }
+    if (t == _ia3qph7z.IslandGroup) {
+      return _ia3qph7z.IslandGroup.fromJson(data) as T;
+    }
+    if (t == _ifd0cm6h.IslandJob) {
+      return _ifd0cm6h.IslandJob.fromJson(data) as T;
+    }
+    if (t == _inkhm4mi.IslandMember) {
+      return _inkhm4mi.IslandMember.fromJson(data) as T;
+    }
+    if (t == _i4pfszr3.IslandMessage) {
+      return _i4pfszr3.IslandMessage.fromJson(data) as T;
+    }
+    if (t == _ii1l0ai6.IslandProfile) {
+      return _ii1l0ai6.IslandProfile.fromJson(data) as T;
+    }
+    if (t == _ivo4faiv.IslandShow) {
+      return _ivo4faiv.IslandShow.fromJson(data) as T;
+    }
+    if (t == _il1ztsg5.IslandTicket) {
+      return _il1ztsg5.IslandTicket.fromJson(data) as T;
+    }
     if (t == _ij1ha6k5.AccountExport) {
       return _ij1ha6k5.AccountExport.fromJson(data) as T;
     }
@@ -5468,6 +6163,36 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_irpwye33.IslandAccess?>()) {
+      return (data != null ? _irpwye33.IslandAccess.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i62wuws7.IslandApplication?>()) {
+      return (data != null ? _i62wuws7.IslandApplication.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ia3qph7z.IslandGroup?>()) {
+      return (data != null ? _ia3qph7z.IslandGroup.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ifd0cm6h.IslandJob?>()) {
+      return (data != null ? _ifd0cm6h.IslandJob.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_inkhm4mi.IslandMember?>()) {
+      return (data != null ? _inkhm4mi.IslandMember.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i4pfszr3.IslandMessage?>()) {
+      return (data != null ? _i4pfszr3.IslandMessage.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ii1l0ai6.IslandProfile?>()) {
+      return (data != null ? _ii1l0ai6.IslandProfile.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ivo4faiv.IslandShow?>()) {
+      return (data != null ? _ivo4faiv.IslandShow.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_il1ztsg5.IslandTicket?>()) {
+      return (data != null ? _il1ztsg5.IslandTicket.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ij1ha6k5.AccountExport?>()) {
       return (data != null ? _ij1ha6k5.AccountExport.fromJson(data) : null)
@@ -6097,6 +6822,15 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iucyrm0h.GameMatch => 'GameMatch',
       _ihg2pt9t.PlayerRating => 'PlayerRating',
       _izw8z7ou.Greeting => 'Greeting',
+      _irpwye33.IslandAccess => 'IslandAccess',
+      _i62wuws7.IslandApplication => 'IslandApplication',
+      _ia3qph7z.IslandGroup => 'IslandGroup',
+      _ifd0cm6h.IslandJob => 'IslandJob',
+      _inkhm4mi.IslandMember => 'IslandMember',
+      _i4pfszr3.IslandMessage => 'IslandMessage',
+      _ii1l0ai6.IslandProfile => 'IslandProfile',
+      _ivo4faiv.IslandShow => 'IslandShow',
+      _il1ztsg5.IslandTicket => 'IslandTicket',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
       _ijbewlez.Belief => 'Belief',
@@ -6215,6 +6949,24 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'PlayerRating';
       case _izw8z7ou.Greeting():
         return 'Greeting';
+      case _irpwye33.IslandAccess():
+        return 'IslandAccess';
+      case _i62wuws7.IslandApplication():
+        return 'IslandApplication';
+      case _ia3qph7z.IslandGroup():
+        return 'IslandGroup';
+      case _ifd0cm6h.IslandJob():
+        return 'IslandJob';
+      case _inkhm4mi.IslandMember():
+        return 'IslandMember';
+      case _i4pfszr3.IslandMessage():
+        return 'IslandMessage';
+      case _ii1l0ai6.IslandProfile():
+        return 'IslandProfile';
+      case _ivo4faiv.IslandShow():
+        return 'IslandShow';
+      case _il1ztsg5.IslandTicket():
+        return 'IslandTicket';
       case _ij1ha6k5.AccountExport():
         return 'AccountExport';
       case _itui3kw8.AlertNote():
@@ -6439,6 +7191,33 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
+    }
+    if (dataClassName == 'IslandAccess') {
+      return deserialize<_irpwye33.IslandAccess>(data['data']);
+    }
+    if (dataClassName == 'IslandApplication') {
+      return deserialize<_i62wuws7.IslandApplication>(data['data']);
+    }
+    if (dataClassName == 'IslandGroup') {
+      return deserialize<_ia3qph7z.IslandGroup>(data['data']);
+    }
+    if (dataClassName == 'IslandJob') {
+      return deserialize<_ifd0cm6h.IslandJob>(data['data']);
+    }
+    if (dataClassName == 'IslandMember') {
+      return deserialize<_inkhm4mi.IslandMember>(data['data']);
+    }
+    if (dataClassName == 'IslandMessage') {
+      return deserialize<_i4pfszr3.IslandMessage>(data['data']);
+    }
+    if (dataClassName == 'IslandProfile') {
+      return deserialize<_ii1l0ai6.IslandProfile>(data['data']);
+    }
+    if (dataClassName == 'IslandShow') {
+      return deserialize<_ivo4faiv.IslandShow>(data['data']);
+    }
+    if (dataClassName == 'IslandTicket') {
+      return deserialize<_il1ztsg5.IslandTicket>(data['data']);
     }
     if (dataClassName == 'AccountExport') {
       return deserialize<_ij1ha6k5.AccountExport>(data['data']);
@@ -6753,6 +7532,24 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _iucyrm0h.GameMatch.t;
       case _ihg2pt9t.PlayerRating:
         return _ihg2pt9t.PlayerRating.t;
+      case _irpwye33.IslandAccess:
+        return _irpwye33.IslandAccess.t;
+      case _i62wuws7.IslandApplication:
+        return _i62wuws7.IslandApplication.t;
+      case _ia3qph7z.IslandGroup:
+        return _ia3qph7z.IslandGroup.t;
+      case _ifd0cm6h.IslandJob:
+        return _ifd0cm6h.IslandJob.t;
+      case _inkhm4mi.IslandMember:
+        return _inkhm4mi.IslandMember.t;
+      case _i4pfszr3.IslandMessage:
+        return _i4pfszr3.IslandMessage.t;
+      case _ii1l0ai6.IslandProfile:
+        return _ii1l0ai6.IslandProfile.t;
+      case _ivo4faiv.IslandShow:
+        return _ivo4faiv.IslandShow.t;
+      case _il1ztsg5.IslandTicket:
+        return _il1ztsg5.IslandTicket.t;
       case _ijbewlez.Belief:
         return _ijbewlez.Belief.t;
       case _ibisfjf2.Chat:

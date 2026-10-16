@@ -1,0 +1,11 @@
+### A ticket to an arena show.
+class: IslandTicket
+table: island_ticket
+fields:
+  showId: int
+  authUserId: UuidValue
+  createdAt: DateTime
+indexes:
+  island_ticket_idx:
+    fields: showId, authUserId
+    unique: true

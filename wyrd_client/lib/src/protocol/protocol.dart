@@ -51,6 +51,15 @@ import 'games/custom_game.dart' as _ixx1i67o;
 import 'games/game_match.dart' as _iucyrm0h;
 import 'games/player_rating.dart' as _ihg2pt9t;
 import 'greetings/greeting.dart' as _izw8z7ou;
+import 'island/island_access.dart' as _irpwye33;
+import 'island/island_application.dart' as _i62wuws7;
+import 'island/island_group.dart' as _ia3qph7z;
+import 'island/island_job.dart' as _ifd0cm6h;
+import 'island/island_member.dart' as _inkhm4mi;
+import 'island/island_message.dart' as _i4pfszr3;
+import 'island/island_profile.dart' as _ii1l0ai6;
+import 'island/island_show.dart' as _ivo4faiv;
+import 'island/island_ticket.dart' as _il1ztsg5;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/belief.dart' as _ijbewlez;
@@ -146,6 +155,15 @@ export 'games/custom_game.dart';
 export 'games/game_match.dart';
 export 'games/player_rating.dart';
 export 'greetings/greeting.dart';
+export 'island/island_access.dart';
+export 'island/island_application.dart';
+export 'island/island_group.dart';
+export 'island/island_job.dart';
+export 'island/island_member.dart';
+export 'island/island_message.dart';
+export 'island/island_profile.dart';
+export 'island/island_show.dart';
+export 'island/island_ticket.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/belief.dart';
@@ -294,6 +312,33 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _izw8z7ou.Greeting) {
       return _izw8z7ou.Greeting.fromJson(data) as T;
+    }
+    if (t == _irpwye33.IslandAccess) {
+      return _irpwye33.IslandAccess.fromJson(data) as T;
+    }
+    if (t == _i62wuws7.IslandApplication) {
+      return _i62wuws7.IslandApplication.fromJson(data) as T;
+    }
+    if (t == _ia3qph7z.IslandGroup) {
+      return _ia3qph7z.IslandGroup.fromJson(data) as T;
+    }
+    if (t == _ifd0cm6h.IslandJob) {
+      return _ifd0cm6h.IslandJob.fromJson(data) as T;
+    }
+    if (t == _inkhm4mi.IslandMember) {
+      return _inkhm4mi.IslandMember.fromJson(data) as T;
+    }
+    if (t == _i4pfszr3.IslandMessage) {
+      return _i4pfszr3.IslandMessage.fromJson(data) as T;
+    }
+    if (t == _ii1l0ai6.IslandProfile) {
+      return _ii1l0ai6.IslandProfile.fromJson(data) as T;
+    }
+    if (t == _ivo4faiv.IslandShow) {
+      return _ivo4faiv.IslandShow.fromJson(data) as T;
+    }
+    if (t == _il1ztsg5.IslandTicket) {
+      return _il1ztsg5.IslandTicket.fromJson(data) as T;
     }
     if (t == _ij1ha6k5.AccountExport) {
       return _ij1ha6k5.AccountExport.fromJson(data) as T;
@@ -580,6 +625,36 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_izw8z7ou.Greeting?>()) {
       return (data != null ? _izw8z7ou.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_irpwye33.IslandAccess?>()) {
+      return (data != null ? _irpwye33.IslandAccess.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i62wuws7.IslandApplication?>()) {
+      return (data != null ? _i62wuws7.IslandApplication.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ia3qph7z.IslandGroup?>()) {
+      return (data != null ? _ia3qph7z.IslandGroup.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ifd0cm6h.IslandJob?>()) {
+      return (data != null ? _ifd0cm6h.IslandJob.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_inkhm4mi.IslandMember?>()) {
+      return (data != null ? _inkhm4mi.IslandMember.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i4pfszr3.IslandMessage?>()) {
+      return (data != null ? _i4pfszr3.IslandMessage.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ii1l0ai6.IslandProfile?>()) {
+      return (data != null ? _ii1l0ai6.IslandProfile.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ivo4faiv.IslandShow?>()) {
+      return (data != null ? _ivo4faiv.IslandShow.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_il1ztsg5.IslandTicket?>()) {
+      return (data != null ? _il1ztsg5.IslandTicket.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ij1ha6k5.AccountExport?>()) {
       return (data != null ? _ij1ha6k5.AccountExport.fromJson(data) : null)
@@ -1206,6 +1281,15 @@ class Protocol extends _isc.SerializationManager {
       _iucyrm0h.GameMatch => 'GameMatch',
       _ihg2pt9t.PlayerRating => 'PlayerRating',
       _izw8z7ou.Greeting => 'Greeting',
+      _irpwye33.IslandAccess => 'IslandAccess',
+      _i62wuws7.IslandApplication => 'IslandApplication',
+      _ia3qph7z.IslandGroup => 'IslandGroup',
+      _ifd0cm6h.IslandJob => 'IslandJob',
+      _inkhm4mi.IslandMember => 'IslandMember',
+      _i4pfszr3.IslandMessage => 'IslandMessage',
+      _ii1l0ai6.IslandProfile => 'IslandProfile',
+      _ivo4faiv.IslandShow => 'IslandShow',
+      _il1ztsg5.IslandTicket => 'IslandTicket',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
       _ijbewlez.Belief => 'Belief',
@@ -1324,6 +1408,24 @@ class Protocol extends _isc.SerializationManager {
         return 'PlayerRating';
       case _izw8z7ou.Greeting():
         return 'Greeting';
+      case _irpwye33.IslandAccess():
+        return 'IslandAccess';
+      case _i62wuws7.IslandApplication():
+        return 'IslandApplication';
+      case _ia3qph7z.IslandGroup():
+        return 'IslandGroup';
+      case _ifd0cm6h.IslandJob():
+        return 'IslandJob';
+      case _inkhm4mi.IslandMember():
+        return 'IslandMember';
+      case _i4pfszr3.IslandMessage():
+        return 'IslandMessage';
+      case _ii1l0ai6.IslandProfile():
+        return 'IslandProfile';
+      case _ivo4faiv.IslandShow():
+        return 'IslandShow';
+      case _il1ztsg5.IslandTicket():
+        return 'IslandTicket';
       case _ij1ha6k5.AccountExport():
         return 'AccountExport';
       case _itui3kw8.AlertNote():
@@ -1544,6 +1646,33 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'Greeting') {
       return deserialize<_izw8z7ou.Greeting>(data['data']);
+    }
+    if (dataClassName == 'IslandAccess') {
+      return deserialize<_irpwye33.IslandAccess>(data['data']);
+    }
+    if (dataClassName == 'IslandApplication') {
+      return deserialize<_i62wuws7.IslandApplication>(data['data']);
+    }
+    if (dataClassName == 'IslandGroup') {
+      return deserialize<_ia3qph7z.IslandGroup>(data['data']);
+    }
+    if (dataClassName == 'IslandJob') {
+      return deserialize<_ifd0cm6h.IslandJob>(data['data']);
+    }
+    if (dataClassName == 'IslandMember') {
+      return deserialize<_inkhm4mi.IslandMember>(data['data']);
+    }
+    if (dataClassName == 'IslandMessage') {
+      return deserialize<_i4pfszr3.IslandMessage>(data['data']);
+    }
+    if (dataClassName == 'IslandProfile') {
+      return deserialize<_ii1l0ai6.IslandProfile>(data['data']);
+    }
+    if (dataClassName == 'IslandShow') {
+      return deserialize<_ivo4faiv.IslandShow>(data['data']);
+    }
+    if (dataClassName == 'IslandTicket') {
+      return deserialize<_il1ztsg5.IslandTicket>(data['data']);
     }
     if (dataClassName == 'AccountExport') {
       return deserialize<_ij1ha6k5.AccountExport>(data['data']);

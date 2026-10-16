@@ -1,0 +1,12 @@
+### One message in an encrypted group: ciphertext only.
+class: IslandMessage
+table: island_message
+fields:
+  groupId: int
+  senderId: UuidValue
+  ### base64 iv.ciphertext (AES-GCM, the group key)
+  ct: String
+  createdAt: DateTime
+indexes:
+  island_message_group_idx:
+    fields: groupId, id

@@ -725,6 +725,398 @@ class EndpointIsland extends _isc.EndpointRef {
   );
 }
 
+/// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
+///
+/// - Wallet: naira on the same balanced books as the rest of the city (Bank), earned at realistic
+///   Lagos rates by shifts at the refinery and the clubs, capped a day; no cash in or out.
+/// - Casino: play money only, small stakes, a daily loss limit.
+/// - Jobs: real employers post real jobs; WYRD's operator checks each before it shows. A user's
+///   skills are matched to jobs only when they choose to be open to work, and an employer sees an
+///   applicant's handle, skills and note -- nothing more -- and only after they apply.
+/// - Chats: end-to-end encrypted in the browser. The server stores ciphertext and wrapped keys; it
+///   can't read a message, a group's name, or who said what inside it.
+/// - HQ: everyone's own place on HQ Row: invite-only unless they open it.
+/// - WYRD: asked from the phone, it hears what the user types and which district they're in. It never
+///   sees their chats, and their wallet only as a number when they ask about money.
+/// {@category Endpoint}
+class EndpointIslandMe extends _isc.EndpointRef {
+  EndpointIslandMe(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'islandMe';
+
+  /// Who I am on the island, my naira, and whether I can check job posts. JSON.
+  _ida.Future<String> me() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'me',
+    {},
+  );
+
+  /// Change my handle, skills, open-to-work, or messaging key. Empty strings leave a field as it is.
+  _ida.Future<String> setProfile(
+    String handle,
+    String skills,
+    bool openToWork,
+    String pubKey,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setProfile',
+    {
+      'handle': handle,
+      'skills': skills,
+      'openToWork': openToWork,
+      'pubKey': pubKey,
+    },
+  );
+
+  /// Someone's public messaging key, by handle: {handle, pubKey} or {error}.
+  _ida.Future<String> keyOf(String handle) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'keyOf',
+    {'handle': handle},
+  );
+
+  /// Work a shift at [place] (refinery, club, market, okada). Paid at Lagos rates, capped each day.
+  _ida.Future<String> work(String place) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'work',
+    {'place': place},
+  );
+
+  /// My last receipts (JSON list).
+  _ida.Future<String> receipts() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'receipts',
+    {},
+  );
+
+  /// Send naira to another person by handle (at most ₦50,000 at a time).
+  _ida.Future<String> send(
+    String handle,
+    int amount,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'send',
+    {
+      'handle': handle,
+      'amount': amount,
+      'note': note,
+    },
+  );
+
+  /// One round. [game]: roulette (bet red | black | green) or slots. [stake]: ₦100 to ₦5,000.
+  /// Play money only, with a daily loss limit.
+  _ida.Future<String> casino(
+    String game,
+    String bet,
+    int stake,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'casino',
+    {
+      'game': game,
+      'bet': bet,
+      'stake': stake,
+    },
+  );
+
+  /// The job board: open jobs, best matches first when I'm open to work (WYRD compares my skills with
+  /// each job's, here on the server, for me only), with the ones I've applied to marked.
+  _ida.Future<String> jobs() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'jobs',
+    {},
+  );
+
+  /// Post a real job. It shows once WYRD's operator has checked it.
+  _ida.Future<String> postJob(
+    String company,
+    String title,
+    String pay,
+    String skills,
+    String location,
+    String about,
+    String contact,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'postJob',
+    {
+      'company': company,
+      'title': title,
+      'pay': pay,
+      'skills': skills,
+      'location': location,
+      'about': about,
+      'contact': contact,
+    },
+  );
+
+  /// Apply: the employer sees my handle, my skills and [note].
+  _ida.Future<String> apply(
+    int jobId,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'apply',
+    {
+      'jobId': jobId,
+      'note': note,
+    },
+  );
+
+  /// My posts, each with who applied: their handle, skills and note.
+  _ida.Future<String> myJobs() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myJobs',
+    {},
+  );
+
+  /// Close one of my posts.
+  _ida.Future<String> closeJob(int jobId) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'closeJob',
+    {'jobId': jobId},
+  );
+
+  /// The operator's queue: posts waiting to be checked.
+  _ida.Future<String> pendingJobs() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'pendingJobs',
+    {},
+  );
+
+  /// The operator approves (open) or rejects a post.
+  _ida.Future<String> reviewJob(
+    int jobId,
+    bool approve,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'reviewJob',
+    {
+      'jobId': jobId,
+      'approve': approve,
+    },
+  );
+
+  /// Start a chat. [members]: JSON list of {handle, wrappedKey} -- me included -- each with the group
+  /// key wrapped (in my browser) for that person, using my public key [wrapperPub].
+  _ida.Future<String> createGroup(
+    String nameCt,
+    String wrapperPub,
+    String members,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'createGroup',
+    {
+      'nameCt': nameCt,
+      'wrapperPub': wrapperPub,
+      'members': members,
+    },
+  );
+
+  /// Add someone to a chat I'm in, with the group key wrapped for them.
+  _ida.Future<String> addMember(
+    int groupId,
+    String handle,
+    String wrappedKey,
+    String wrapperPub,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'addMember',
+    {
+      'groupId': groupId,
+      'handle': handle,
+      'wrappedKey': wrappedKey,
+      'wrapperPub': wrapperPub,
+    },
+  );
+
+  /// Leave a chat.
+  _ida.Future<String> leaveGroup(int groupId) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'leaveGroup',
+        {'groupId': groupId},
+      );
+
+  /// My chats: each with its encrypted name, my wrapped key, who's in it, and the last message's id.
+  _ida.Future<String> groups() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'groups',
+    {},
+  );
+
+  /// Post an encrypted message to a chat I'm in.
+  _ida.Future<String> post(
+    int groupId,
+    String ct,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'post',
+    {
+      'groupId': groupId,
+      'ct': ct,
+    },
+  );
+
+  /// A chat's messages after [since] (at most 100), as ciphertext with the sender's handle.
+  _ida.Future<String> messages(
+    int groupId,
+    int since,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'messages',
+    {
+      'groupId': groupId,
+      'since': since,
+    },
+  );
+
+  /// Set up my HQ: its name, colour, whether it's locked, and who's invited (JSON list of handles).
+  _ida.Future<String> setHq(
+    String name,
+    String color,
+    bool locked,
+    String invites,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setHq',
+    {
+      'name': name,
+      'color': color,
+      'locked': locked,
+      'invites': invites,
+    },
+  );
+
+  /// HQ Row: every HQ, with whether I may go in (mine, open, or I'm invited). Names show only for
+  /// HQs I may enter.
+  _ida.Future<String> hqRow() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'hqRow',
+    {},
+  );
+
+  /// Ask to enter the HQ in [slot] (from hqRow). The owner gets the request on their phone.
+  _ida.Future<String> askHq(int slot) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'askHq',
+    {'slot': slot},
+  );
+
+  /// Requests to enter my HQ, waiting for my answer.
+  _ida.Future<String> hqRequests() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'hqRequests',
+    {},
+  );
+
+  /// Let someone in (they join my HQ's invite list) or turn them away.
+  _ida.Future<String> answerHq(
+    int id,
+    bool grant,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'answerHq',
+    {
+      'id': id,
+      'grant': grant,
+    },
+  );
+
+  /// Shows on sale and coming up (and my own, whatever their status).
+  _ida.Future<String> shows() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'shows',
+    {},
+  );
+
+  /// An artist books the arena. Tickets go on sale once WYRD's operator has checked it.
+  _ida.Future<String> hostShow(
+    String artist,
+    String title,
+    String startsAt,
+    int minutes,
+    int price,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'hostShow',
+    {
+      'artist': artist,
+      'title': title,
+      'startsAt': startsAt,
+      'minutes': minutes,
+      'price': price,
+    },
+  );
+
+  /// The operator's queue of shows to check, and the decision.
+  _ida.Future<String> pendingShows() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'pendingShows',
+    {},
+  );
+
+  _ida.Future<String> reviewShow(
+    int showId,
+    bool approve,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'reviewShow',
+    {
+      'showId': showId,
+      'approve': approve,
+    },
+  );
+
+  /// Buy a ticket with naira. Nine tenths goes to the artist who hosts the show.
+  _ida.Future<String> buyTicket(int showId) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'buyTicket',
+        {'showId': showId},
+      );
+
+  _ida.Future<String> stage(
+    int showId,
+    int since,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'stage',
+    {
+      'showId': showId,
+      'since': since,
+    },
+  );
+
+  /// The artist performs: a line onto the arena's screens, for everyone with a ticket.
+  _ida.Future<String> perform(
+    int showId,
+    String text,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'perform',
+    {
+      'showId': showId,
+      'text': text,
+    },
+  );
+
+  /// Ask WYRD from the phone. It hears [text] and the district I'm in -- nothing from my chats.
+  _ida.Future<String> askWyrd(
+    String text,
+    String district,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'askWyrd',
+    {
+      'text': text,
+      'district': district,
+    },
+  );
+}
+
 /// WYRD for Konnectly, demo mode: open to anyone (no sign-in, no Konnectly data), so it is held to
 /// a shared pace and a daily allowance of its own (see KonnectlyService). The demo page lives at
 /// /konnectly on the web server. Replies are JSON strings so the page needs no generated client;
@@ -2179,6 +2571,7 @@ class Client extends _isc.ServerpodClientShared {
     games = EndpointGames(this);
     greeting = EndpointGreeting(this);
     island = EndpointIsland(this);
+    islandMe = EndpointIslandMe(this);
     konnectly = EndpointKonnectly(this);
     account = EndpointAccount(this);
     alerts = EndpointAlerts(this);
@@ -2227,6 +2620,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointGreeting greeting;
 
   late final EndpointIsland island;
+
+  late final EndpointIslandMe islandMe;
 
   late final EndpointKonnectly konnectly;
 
@@ -2300,6 +2695,7 @@ class Client extends _isc.ServerpodClientShared {
     'games': games,
     'greeting': greeting,
     'island': island,
+    'islandMe': islandMe,
     'konnectly': konnectly,
     'account': account,
     'alerts': alerts,

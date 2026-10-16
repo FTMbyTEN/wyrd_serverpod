@@ -1,0 +1,9 @@
+### An encrypted chat (two people or a group). The server holds only ciphertext: the group's name is
+### encrypted with the group key, and each member's copy of that key is wrapped for them in the browser.
+class: IslandGroup
+table: island_group
+fields:
+  createdBy: UuidValue
+  ### the name, encrypted with the group key (base64 iv.ciphertext)
+  nameCt: String
+  createdAt: DateTime

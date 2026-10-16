@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>LAGOS ISLAND</title>
-<meta name="description" content="LAGOS ISLAND: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
+<title>Lagos Island</title>
+<meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#4F9FD8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
@@ -50,12 +50,55 @@
   #colors span.on { box-shadow: 0 0 0 2px var(--ink); }
   #go { width: 100%; padding: 15px; border-radius: 999px; border: none; background: var(--green); color: #fff; font: 800 17px 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 4px 0 var(--green-dark); }
   #go:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--green-dark); }
+  /* the phone */
+  #phoneBtn { left: 14px; top: calc(118px + env(safe-area-inset-top)); width: 46px; height: 74px; border-radius: 14px; padding: 0; background: linear-gradient(160deg, #3B4252, #0B0F19); box-shadow: 0 10px 24px rgba(10,20,40,.35), inset 0 0 0 1.5px rgba(255,255,255,.18); }
+  #phoneBtn::before { content: ''; position: absolute; inset: 4px; border-radius: 11px; background: linear-gradient(160deg, #22B573, #0EA5E9 55%, #6366F1); }
+  #phoneBtn::after { content: ''; position: absolute; top: 7px; left: 50%; width: 14px; height: 4px; margin-left: -7px; border-radius: 4px; background: #0B0F19; }
+  #phoneBtn b { position: absolute; right: -6px; top: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #EF4444; color: #fff; font: 800 11px/20px 'Plus Jakarta Sans', sans-serif; display: none; }
+  /* who just arrived: names drop in under the phone and dissolve into a white cloud */
+  #joins { position: fixed; left: 10px; top: calc(204px + env(safe-area-inset-top)); width: 170px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; }
+  #joins .j { align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 5px 11px 5px 6px; border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: var(--shadow); font-size: 12.5px; font-weight: 700; color: var(--ink); animation: joinFade 6s ease-in forwards; }
+  #joins .j i { width: 16px; height: 16px; border-radius: 50%; }
+  #joins .cloud { position: relative; height: 46px; margin-top: -4px; }
+  #joins .cloud::before, #joins .cloud::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,.85); filter: blur(10px); }
+  #joins .cloud::before { left: 4px; top: 6px; width: 120px; height: 34px; }
+  #joins .cloud::after { left: 40px; top: 0; width: 80px; height: 40px; }
+  @keyframes joinFade { 0% { opacity: 0; transform: translateY(-8px); } 10% { opacity: 1; transform: none; } 60% { opacity: 1; filter: none; } 100% { opacity: 0; transform: translateY(46px) scale(1.15); filter: blur(8px); background: #fff; color: #fff; } }
+  #act { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(118px + env(safe-area-inset-bottom)); display: none; padding: 12px 20px; border-radius: 999px; border: none; background: var(--ink); color: #fff; font: 800 15px 'Plus Jakarta Sans', sans-serif; box-shadow: var(--shadow); cursor: pointer; }
+  #phone { position: fixed; right: 16px; bottom: 16px; width: min(370px, calc(100vw - 16px)); height: min(720px, calc(100vh - 32px)); border-radius: 48px; background: linear-gradient(160deg, #4B5563, #111827 30%, #0B0F19); padding: 9px; box-shadow: 0 30px 80px rgba(5,15,35,.45), inset 0 0 0 1.5px rgba(255,255,255,.22); display: none; z-index: 20; animation: phoneIn .25s ease-out; }
+  @keyframes phoneIn { from { transform: translateY(24px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+  #phone::before { content: ''; position: absolute; top: 18px; left: 50%; width: 96px; height: 28px; margin-left: -48px; border-radius: 16px; background: #000; z-index: 2; }
+  .touch #phone { right: 8px; left: 8px; bottom: 8px; width: auto; height: calc(100vh - 16px - env(safe-area-inset-top)); }
+  #screen { position: relative; height: 100%; border-radius: 40px; overflow: hidden; background: linear-gradient(160deg, #22B573, #0EA5E9 60%, #6366F1); display: flex; flex-direction: column; }
+  #pbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 26px 8px; color: #fff; font: 700 13px 'Plus Jakarta Sans', sans-serif; }
+  #pbody { flex: 1; overflow-y: auto; padding: 8px 14px 14px; }
+  #pnav { display: flex; justify-content: space-between; margin: 6px 14px 12px; padding: 6px; border-radius: 999px; background: rgba(255,255,255,.18); backdrop-filter: blur(12px); }
+  #pnav button { border: none; background: transparent; color: #fff; border-radius: 999px; padding: 8px 16px; font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; padding-top: 18px; }
+  .app { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: none; border: none; }
+  .app i { position: relative; font-style: normal; width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; font-size: 28px; background: linear-gradient(160deg, rgba(255,255,255,.95), rgba(255,255,255,.7)); box-shadow: 0 8px 18px rgba(10,30,60,.22), inset 0 1px 0 #fff; }
+  .app i b { position: absolute; right: -5px; top: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #EF4444; color: #fff; font: 800 11px/20px 'Plus Jakarta Sans', sans-serif; }
+  .pcard { background: #fff; border-radius: 18px; padding: 14px; margin-bottom: 10px; font-size: 14px; color: var(--ink); }
+  .pcard h3 { margin: 0 0 6px; font-size: 17px; font-weight: 800; }
+  .pcard .dim { color: var(--dim); font-size: 12.5px; }
+  .pcard input, .pcard textarea, .pcard select { width: 100%; margin: 4px 0 8px; padding: 10px 12px; border: 2px solid #E6EEF5; border-radius: 12px; font: 500 14px 'Plus Jakarta Sans', sans-serif; background: #F7FAFC; color: var(--ink); }
+  .pbtn { border: none; border-radius: 999px; padding: 10px 16px; background: var(--green); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; margin: 2px 4px 2px 0; }
+  .pbtn.alt { background: #E6EEF5; color: var(--ink); }
+  .big { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
+  .row { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid #EEF2F6; font-size: 13.5px; }
+  .row:last-child { border-bottom: none; }
+  .msgs { display: flex; flex-direction: column; gap: 6px; }
+  .msg { max-width: 80%; padding: 8px 12px; border-radius: 16px; background: #fff; font-size: 14px; color: var(--ink); word-wrap: break-word; }
+  .msg.me { align-self: flex-end; background: #DCFCE7; }
+  .msg b { display: block; font-size: 11.5px; color: var(--dim); }
+  .ptitle { color: #fff; font-size: 22px; font-weight: 800; margin: 6px 0 12px; }
+  .lock { font-size: 11.5px; color: #fff; opacity: .9; margin-bottom: 10px; }
 </style>
 </head>
 <body>
-<canvas id="c" aria-label="LAGOS ISLAND, the game board"></canvas>
+<canvas id="c" aria-label="Lagos Island, the game board"></canvas>
 <div id="top" class="pill">
-  <div id="title">🌴 LAGOS ISLAND</div>
+  <div id="title">🌴 Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
   <button id="talkTop" aria-label="Say something to people near you">Say</button>
 </div>
@@ -67,9 +110,13 @@
 <div id="stick" aria-hidden="true"><div id="knob"></div></div>
 <form id="say" class="pill"><input id="sayText" maxlength="140" placeholder="Say something to people near you" autocomplete="off"><button>Send</button></form>
 <div id="card"></div>
+<div id="phoneBtn" class="btn" role="button" aria-label="Open your phone"><b id="pbadge"></b></div>
+<div id="joins" aria-live="polite"><div class="cloud"></div></div>
+<button id="act"></button>
+<div id="phone" role="dialog" aria-label="Your phone"><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span>Lagos Island</span><span id="pnaira"></span></div><div id="pbody"></div><div id="pnav"><button id="pback">‹ Back</button><button id="phome">Home</button><button id="pclose">Close</button></div></div></div>
 <div id="hello">
   <div class="box">
-    <h1>🌴 LAGOS ISLAND</h1>
+    <h1>🌴 Lagos Island</h1>
     <p>Lagos Island, Ikoyi, VI, Eko Atlantic, Lekki and Ajah, and Ilashe across the water. Walk it, ride okada, meet the people on it.</p>
     <div class="crowd"><b id="crowd">Lagosians</b> on the island right now · free</div>
     <input id="name" maxlength="24" placeholder="Your name on the island" autocomplete="nickname">
@@ -84,7 +131,7 @@
   // on a grid of lots (1 tile = 10 units), cut by the lagoon and creeks, joined by bridges, each
   // landmark its own small model. Rows run north (top) to south; columns west to east.
   const T = 10; // a tile, in world units
-  const BOARD = { w: 50, h: 29 };
+  const BOARD = { w: 62, h: 30 };
   const SECTORS = [
     { id: 'lagos', name: 'Lagos Island', rect: [2, 4, 13, 15], rows: [6, 10, 14], cols: [4, 9], cam: { yaw: -0.32, pitch: 0.95, zoom: 1.0 } },
     { id: 'ikoyi', name: 'Ikoyi', rect: [16, 3, 25, 11], rows: [6, 9], cols: [19, 23], cam: { yaw: 0.35, pitch: 0.9, zoom: 1.0 } },
@@ -93,6 +140,10 @@
     { id: 'lekki', name: 'Lekki', rect: [30, 8, 41, 21], rows: [9, 15, 19], cols: [33, 37], cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
     { id: 'ajah', name: 'Ajah', rect: [44, 10, 49, 18], rows: [15], cols: [46], cam: { yaw: 0.55, pitch: 0.9, zoom: 1.05 } },
     { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
+    { id: 'ads', name: 'Ad Island', rect: [29, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
+    { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
+    { id: 'arena', name: 'The Arena', rect: [26, 23, 36, 28], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
+    { id: 'hqrow', name: 'HQ Row', rect: [44, 21, 51, 27], rows: [24], cols: [46], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
   ];
   // bridges and the ferry: [i0, j0, i1, j1, name]
   const BRIDGES = [
@@ -102,6 +153,10 @@
     [28, 19, 29, 19, 'Lekki Toll Road'],
     [23, 22, 23, 23, 'To Eko Atlantic'],
     [42, 15, 43, 15, 'Lekki-Ajah Bridge'],
+    [33, 6, 33, 7, 'To Ad Island'],
+    [25, 25, 25, 25, 'To the Arena'],
+    [50, 15, 51, 15, 'To the Free Zone'],
+    [46, 19, 46, 20, 'To HQ Row'],
   ];
   const FERRY = [4, 16, 4, 21]; // Lagos Island to Ilashe, by boat
   // the landmarks: [type, i, j, wi, dj, name, emoji]
@@ -151,13 +206,25 @@
     // Ilashe
     ['beach', 3, 22, 4, 2, 'Ilashe Beach', '🏝️'],
     ['huts', 7, 22, 4, 2, 'Ilashe beach houses', '🛖'],
+    // nights out and play money
+    ['club', 20, 17, 3, 2, 'Club Ozumba (open every night)', '🪩'],
+    ['club', 38, 20, 4, 2, 'Club Lekki (open every night)', '🪩'],
+    ['casino', 30, 16, 3, 3, 'Island Casino', '🎰'],
+    // the refinery, always running
+    ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
+    ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
+    // the arena: shows with tickets, and the biggest screens on the island
+    ['arena', 27, 23, 10, 6, 'The Arena (live shows)', '🎤'],
+    // Ad Island and HQ Row
+    ['screens', 29, 1, 4, 2, 'Ad Island (digital billboards)', '📺'],
+    ['hqgate', 47, 21, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
   ];
   const BILLBOARDS = [
     [13, 3.4, 'WYRD', 'Ask me anything'],
-    [27, 13.4, 'LAGOS ISLAND', 'Eko o ni baje'],
+    [27, 13.4, 'Lagos Island', 'Eko o ni baje'],
     [41, 7.4, 'WYRD', 'Lekki? I know the way'],
   ];
-  const WATER_NAMES = [['LAGOS LAGOON', 20, 1.2], ['ATLANTIC OCEAN', 36, 26], ['FIVE COWRIE CREEK', 14.6, 12.5], ['COMMODORE CHANNEL', 6, 19]];
+  const WATER_NAMES = [['LAGOS LAGOON', 20, 1.2], ['ATLANTIC OCEAN', 40, 29.2], ['FIVE COWRIE CREEK', 14.6, 12.5], ['COMMODORE CHANNEL', 6, 19]];
 
   // ---- the ground, tile by tile: water, land, sand, road, bridge, ferry
   const W0 = 0, LAND = 1, SAND = 2, ROAD = 3, BRIDGE = 4, FERRYLANE = 5;
@@ -501,7 +568,145 @@
       for (let k = 0; k < 3; k++) { const cx = a + 5 + k * 11, cz = b + 8; box(cx - 3, 0, cz - 3, cx + 3, 3.5, cz + 3, '#D6B98C'); pyramid(cx - 3.8, cz - 3.8, cx + 3.8, cz + 3.8, 3.5, 4, '#A16207'); }
       palm(c - 3, b + 3, 10);
     },
+    // ---- the refinery: tanks, columns, pipes, a flare that never goes out
+    refinery(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#C9CED6', C.plotEdge);
+      const big = d - b > 40;
+      const tanks = big ? [[a + 10, b + 12, 6], [a + 24, b + 12, 6], [a + 10, b + 28, 5], [a + 24, b + 28, 5]] : [];
+      if (!big) for (let k = 0; k < 6; k++) tanks.push([a + 8 + k * 14, (b + d) / 2, 5]);
+      for (const [tx, tz, r] of tanks) cyl(tx, tz, r, 7, '#F1F5F9');
+      if (big) {
+        for (const [px, h] of [[a + 40, 34], [a + 47, 44], [a + 54, 30]]) { cyl(px, b + 20, 2.2, h, '#B0B8C4'); for (let y = 6; y < h; y += 7) cyl(px, b + 20, 2.7, 0.6, '#64748B'); }
+        box(a + 36, 0, b + 34, c - 6, 9, d - 6, '#94A3B8', '#E2E8F0', 2); // the processing hall
+        for (let k = 0; k < 4; k++) box(a + 31, 2 + k * 1.6, b + 6 + k * 3, c - 4, 2.6 + k * 1.6, b + 6.8 + k * 3, ['#F59E0B', '#94A3B8', '#22B573', '#94A3B8'][k]); // pipe rack
+        const fx = c - 8, fz = b + 8;
+        box(fx - 0.6, 0, fz - 0.6, fx + 0.6, 46, fz + 0.6, '#E5E7EB');
+        for (let y = 8; y < 46; y += 9) box(fx - 1, y, fz - 1, fx + 1, y + 0.6, fz + 1, '#EF4444');
+        const f = () => flame(fx, 47, fz);
+        f(); glow.push(f);
+        smoke(a + 47, 45, b + 20);
+      }
+    },
+    // ---- a club: dark walls, a neon roof line, and the light show at night
+    club(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#2A2340');
+      box(a + 2, 0, b + 2, c - 2, 10, d - 3, '#2B2440', '#7C3AED', 2);
+      const t = performance.now() / 1000, hue = (t * 40 + a) % 360;
+      const neon = () => {
+        const e = [P(a + 2, 10.2, d - 3), P(c - 2, 10.2, d - 3), P(c - 2, 10.2, b + 2), P(a + 2, 10.2, b + 2)];
+        x.save(); x.shadowColor = `hsl(${hue},100%,60%)`; x.shadowBlur = 14; x.strokeStyle = `hsl(${hue},100%,65%)`; x.lineWidth = 2.5;
+        x.beginPath(); x.moveTo(e[0][0], e[0][1]); for (let i = 1; i < 4; i++) x.lineTo(e[i][0], e[i][1]); x.closePath(); x.stroke();
+        const sg = P((a + c) / 2, 6, d - 3);
+        x.font = `800 ${Math.max(9, K * 2.6)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+        x.fillStyle = `hsl(${(hue + 180) % 360},100%,70%)`; x.fillText('CLUB', sg[0], sg[1]); x.restore();
+        if (night > 0.3) { // the beams
+          const top = P((a + c) / 2, 11, (b + d) / 2);
+          x.save(); x.globalCompositeOperation = 'lighter';
+          for (let k = 0; k < 3; k++) {
+            const ang = Math.sin(t * 0.9 + k * 2.1) * 0.6 - Math.PI / 2 + (k - 1) * 0.35, L = H * 0.5;
+            const g = x.createLinearGradient(top[0], top[1], top[0] + Math.cos(ang) * L, top[1] + Math.sin(ang) * L);
+            g.addColorStop(0, `hsla(${(hue + k * 90) % 360},100%,65%,0.45)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+            x.fillStyle = g; x.beginPath(); x.moveTo(top[0], top[1]);
+            x.lineTo(top[0] + Math.cos(ang - 0.05) * L, top[1] + Math.sin(ang - 0.05) * L); x.lineTo(top[0] + Math.cos(ang + 0.05) * L, top[1] + Math.sin(ang + 0.05) * L); x.fill();
+          }
+          x.restore();
+        }
+      };
+      neon(); glow.push(neon);
+      for (let k = 0; k < 3; k++) box(a + 3 + k * 2.4, 0, d - 1.6, a + 3.9 + k * 2.4, 3, d - 0.8, ['#F472B6', '#22D3EE', '#FACC15'][k]); // the queue
+    },
+    // ---- the casino: a gold front, a dome, a sign of bulbs
+    casino(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#3F1D1D');
+      box(a + 2, 0, b + 4, c - 2, 13, d - 4, '#F5C542', '#7C2D12', 3);
+      dome((a + c) / 2, (b + d) / 2, 13, 6, '#FBBF24');
+      const sign = () => {
+        const t = performance.now() / 300, sg = P((a + c) / 2, 9, d - 4);
+        x.save(); x.font = `800 ${Math.max(9, K * 2.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+        x.shadowColor = '#FDE047'; x.shadowBlur = 12; x.fillStyle = '#FFF7CC'; x.fillText('CASINO', sg[0], sg[1]);
+        for (let k = 0; k < 10; k++) { const p = P(a + 2 + k * (c - a - 4) / 9, 13.2, d - 4); x.fillStyle = (k + Math.floor(t)) % 2 ? '#FDE047' : '#F97316'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill(); }
+        x.restore();
+      };
+      sign(); glow.push(sign);
+      palm(a + 1.5, d - 1.5, 9); palm(c - 1.5, d - 1.5, 9);
+    },
+    // ---- the arena: a white dome on a ring of yellow masts, with giant screens round it
+    arena(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#CBD5E1', C.plotEdge);
+      const cx = (a + c) / 2, cz = (b + d) / 2 + 4, r = 24;
+      const ctr = P(cx, 0, cz), rr = r * K;
+      x.fillStyle = '#9CA3AF'; x.beginPath(); x.ellipse(ctr[0], ctr[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
+      dome(cx, cz, 0, r, '#F1F5F9');
+      for (let k = 0; k < 12; k++) {
+        const ang = (k / 12) * Math.PI * 2, mx = cx + Math.cos(ang) * r * 0.82, mz = cz + Math.sin(ang) * r * 0.82;
+        const p0 = P(mx, 4, mz), p1 = P(mx + Math.cos(ang) * 3, 30, mz + Math.sin(ang) * 3);
+        x.strokeStyle = '#FACC15'; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
+      }
+      const sg = () => { const p = P(cx, 6, cz + r); x.save(); x.font = `800 ${Math.max(10, K * 3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#38BDF8'; x.shadowBlur = 12; x.fillStyle = '#0EA5E9'; x.fillText('THE ARENA', p[0], p[1]); x.restore(); };
+      sg(); glow.push(sg);
+      // the massive billboards, on the plaza in front
+      screen(a + 13, d - 4, 3, 1.6); screen(c - 13, d - 4, 5, 1.6);
+    },
+    screens(a, b, c, d) { flat(a, b, c, d, 0.05, '#1F2937'); for (let k = 0; k < 2; k++) screen(a + 10 + k * 20, b + 10, k + 7); },
+    hqgate(a, b, c, d) {
+      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
+      for (const px of [a + 4, c - 4]) box(px - 1, 0, b + 8, px + 1, 8, b + 10, '#F8FAFC');
+      box(a + 3, 8, b + 8, c - 3, 10, b + 10, '#A855F7');
+    },
   };
+  // ---- shapes for the industry and the screens
+  function cyl(cx, cz, r, h, col) {
+    const b0 = P(cx, 0, cz), t0 = P(cx, h, cz), rr = r * K;
+    x.fillStyle = shadeHex(col, 0.82); x.beginPath(); x.moveTo(b0[0] - rr, b0[1]); x.lineTo(t0[0] - rr, t0[1]); x.lineTo(t0[0] + rr, t0[1]); x.lineTo(b0[0] + rr, b0[1]); x.fill();
+    x.beginPath(); x.ellipse(b0[0], b0[1], rr, rr * sp, 0, 0, Math.PI); x.fill();
+    x.fillStyle = shadeHex(col, 1.05); x.beginPath(); x.ellipse(t0[0], t0[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
+  }
+  function flame(fx, fy, fz) {
+    const p = P(fx, fy, fz), t = performance.now() / 120, f = 1 + Math.sin(t) * 0.15 + Math.sin(t * 2.7) * 0.1, s = K * f;
+    x.save(); x.globalCompositeOperation = 'lighter';
+    const g = x.createRadialGradient(p[0], p[1] - s * 3, 0, p[0], p[1] - s * 3, s * 9);
+    g.addColorStop(0, 'rgba(255,200,80,0.55)'); g.addColorStop(1, 'rgba(255,120,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1] - s * 3, s * 9, 0, Math.PI * 2); x.fill();
+    x.restore();
+    x.fillStyle = '#F97316'; x.beginPath(); x.moveTo(p[0] - s * 1.3, p[1]); x.quadraticCurveTo(p[0] - s * 1.6, p[1] - s * 3, p[0] + Math.sin(t) * s * 0.5, p[1] - s * 6 * f); x.quadraticCurveTo(p[0] + s * 1.6, p[1] - s * 3, p[0] + s * 1.3, p[1]); x.fill();
+    x.fillStyle = '#FDE047'; x.beginPath(); x.moveTo(p[0] - s * 0.6, p[1]); x.quadraticCurveTo(p[0], p[1] - s * 3.5 * f, p[0] + s * 0.6, p[1]); x.fill();
+  }
+  function smoke(sx, sy, sz) {
+    const t = performance.now() / 1000;
+    for (let k = 0; k < 5; k++) {
+      const ph = (t * 0.25 + k / 5) % 1, p = P(sx + ph * 14, sy + ph * 22, sz - ph * 6), r = K * (2 + ph * 6);
+      x.fillStyle = `rgba(230,234,240,${0.55 * (1 - ph)})`; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
+    }
+  }
+  // a digital billboard: a big screen on two legs, its colour and its ad changing every few seconds
+  const ADS = [['WYRD', 'Ask me anything'], ['JOBS ON THE ISLAND', 'Real employers. Open your phone'], ['ISLAND CASINO', 'Play money. Play nice'], ['CLUB OZUMBA', 'Open every night'], ['YOUR HQ', 'Claim it on HQ Row'], ['LEKKI FREE ZONE', 'Shifts day and night'], ['EKO O NI BAJE', 'Lagos will not spoil'], ['ADVERTISE HERE', 'Ad Island · digital']];
+  function screen(sx, sz, seed, sc = 1) {
+    const draw1 = () => {
+      const t = performance.now() / 1000, slot = Math.floor(t / 5 + seed * 0.37), ad = ADS[(Math.floor(t / 5) + seed * 3) % ADS.length], hue = (slot * 67 + seed * 41) % 360;
+      for (const ox of [-5 * sc, 5 * sc]) box(sx + ox - 0.4 * sc, 0, sz - 0.4, sx + ox + 0.4 * sc, 9 * sc, sz + 0.4, '#374151');
+      const a = P(sx - 8 * sc, 9 * sc, sz), b = P(sx + 8 * sc, 9 * sc, sz), c = P(sx + 8 * sc, 19 * sc, sz), d = P(sx - 8 * sc, 19 * sc, sz);
+      quad([a, b, c, d], '#0B1020');
+      const ins = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
+      const g = x.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, `hsl(${hue},90%,55%)`); g.addColorStop(1, `hsl(${(hue + 60) % 360},90%,45%)`);
+      quad([ins(a, c, 0.05), ins(b, d, 0.05), ins(c, a, 0.05), ins(d, b, 0.05)], g);
+      const wpx = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (wpx < 30) return;
+      x.save(); x.translate((a[0] + c[0]) / 2, (a[1] + c[1]) / 2); x.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
+      x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.font = `800 ${Math.round(wpx * 0.085)}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[0], 0, -wpx * 0.05);
+      x.font = `600 ${Math.round(wpx * 0.055)}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[1], 0, wpx * 0.07); x.restore();
+    };
+    draw1(); glow.push(draw1);
+  }
+  // HQ Row: who owns which lot (filled in from the server for signed-in players)
+  let hqSlots = [];
+  function hqHouse(a, b, c, d, k) {
+    const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
+    flat(a + 0.6, b + 0.6, c - 0.6, d - 0.6, 0.04, hq && hq.mine ? '#FDE68A' : C.grassLot);
+    box(a + 2, 0, b + 2, c - 2, 6.5, d - 3, '#F8FAFC', '#94A3B8', 1);
+    gable(a + 1.7, b + 1.7, c - 1.7, d - 2.7, 6.5, 3, col);
+    box(a + 4, 0, d - 3, a + 6, 3.4, d - 2.8, hq && !hq.may ? '#475569' : col); // the door
+    if (hq && hq.mine) { const p = P(c - 2, 0, b + 2), tp = P(c - 2, 11, b + 2); x.strokeStyle = '#6B7280'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(tp[0], tp[1]); x.stroke(); x.fillStyle = col; x.fillRect(tp[0], tp[1], K * 2.6, K * 1.6); }
+  }
 
   // ---- the lots: each landmark takes its tiles; the rest of a sector's lots get a plot, a house or trees
   const placeAt = new Int16Array(BOARD.w * BOARD.h).fill(-1);
@@ -510,17 +715,31 @@
   for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) {
     const t = at(i, j);
     if ((t !== LAND && t !== SAND) || placeAt[j * BOARD.w + i] >= 0) continue;
-    const v = rnd(i * 97 + j * 131)();
+    const v = rnd(i * 97 + j * 131)(), sec = SECTORS[sectorAt[j * BOARD.w + i]];
+    if (sec && sec.fill) { lots.push({ i, j, kind: sec.fill }); continue; }
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   // the footprints you walk round
-  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
+  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
+  let glow = [], night = 0;
+  const hqIndex = new Map();
+  { let k = 0; for (const l of lots) if (l.kind === 'hq') hqIndex.set(l.i + ',' + l.j, k++); }
+  // the Lagos clock: night from 7.30 pm to 5.30 am, with an hour's dusk and dawn
+  const forcedNight = new URLSearchParams(location.search).get('night');
+  function nightNow() {
+    if (forcedNight) return Number(forcedNight);
+    const d = new Date(Date.now() + 3600e3), h = d.getUTCHours() + d.getUTCMinutes() / 60;
+    if (h >= 19.5 || h < 5.5) return 1;
+    if (h >= 18.5) return h - 18.5;
+    if (h < 6.5) return 6.5 - h;
+    return 0;
+  }
   function draw() {
-    setCam();
+    setCam(); glow = []; night = nightNow();
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
     x.fillStyle = C.water; x.fillRect(0, 0, W, H);
     x.fillStyle = 'rgba(255,255,255,0.05)';
@@ -582,6 +801,9 @@
         : l.kind === 'house' ? () => { flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.grassLot); const h = 4 + R() * 2; box(a + 2.5, 0, b + 2.5, c - 2.5, h, d - 2.5, ['#FFFFFF', '#FFF7E6', '#FDE68A'][Math.floor(R() * 3)]); gable(a + 2.2, b + 2.2, c - 2.2, d - 2.2, h, 2.6, ['#C2410C', '#9A3412', '#475569'][Math.floor(R() * 3)]); }
         : l.kind === 'trees' ? () => { tree(a + 3 + R() * 4, b + 3 + R() * 4, 2.3 + R(), R() < 0.5 ? C.tree : C.treeLight); if (R() < 0.5) tree(a + 2 + R() * 6, b + 2 + R() * 6, 1.8); }
         : l.kind === 'palm' ? () => palm(a + 5, b + 5, 8 + R() * 3)
+        : l.kind === 'ad' ? ((l.i + l.j) % 2 ? () => { flat(a, b, c, d, 0.04, '#334155'); screen(a + 5, b + 5, l.i * 3 + l.j); } : () => flat(a, b, c, d, 0.04, '#334155'))
+        : l.kind === 'plaza' ? () => flat(a, b, c, d, 0.04, '#D9DDE2', C.plotEdge)
+        : l.kind === 'hq' ? () => hqHouse(a, b, c, d, hqIndex.get(l.i + ',' + l.j))
         : null;
       if (f) items.push({ d: P(a + T / 2, 0, b + T / 2)[2], f });
     }
@@ -591,6 +813,13 @@
     items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true) });
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
+    // night: the town darkens; the clubs, the casino, the refinery's flare, the screens and the people stay lit
+    if (night > 0) {
+      x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
+      for (const g of glow) g();
+      for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false);
+      person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true);
+    }
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
@@ -730,6 +959,17 @@
     const t = await r.text(); if (!t) return null;
     const v = JSON.parse(t); return typeof v === 'string' ? JSON.parse(v) : v;
   }
+  // who just arrived: their name drops in under the phone and dissolves into the cloud
+  const everSeen = new Set(), joinsEl = document.getElementById('joins');
+  let ticked = false;
+  function showJoin(name, color) {
+    const d = document.createElement('div'), dot = document.createElement('i');
+    d.className = 'j'; dot.style.background = color || '#22B573';
+    d.append(dot, document.createTextNode(`${name || 'Someone'} joined`));
+    joinsEl.insertBefore(d, joinsEl.lastElementChild);
+    while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove();
+    setTimeout(() => d.remove(), 6200);
+  }
   async function tick() {
     try {
       const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since });
@@ -739,7 +979,11 @@
         seen.add(p.id);
         const o = others.get(p.id);
         if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color });
-        else others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z });
+        else {
+          others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z });
+          if (ticked && !everSeen.has(p.id)) showJoin(p.name, p.color);
+        }
+        everSeen.add(p.id);
       }
       for (const [k] of others) if (!seen.has(k)) others.delete(k);
       for (const l of r.chat) {
@@ -748,6 +992,7 @@
         if (since > 0 || l.id === id) addLog(l.id === id ? 'You' : l.name, l.color, l.text);
       }
       since = Math.max(since, r.seq);
+      ticked = true;
     } catch { /* offline for a moment: keep walking */ }
   }
   const sayForm = document.getElementById('say'), sayText = document.getElementById('sayText');
@@ -803,6 +1048,345 @@
   }
   requestAnimationFrame(frame);
   updateWhere();
+
+  // ================= the phone: your WYRD account on the island =================
+  // Signed in to WYRD on this site? The phone uses that session (the same sign-in as the app). Guests
+  // can walk and chat; the phone's apps need an account.
+  const TOK = 'wyrd_sp_access_token', RTOK = 'wyrd_sp_refresh_token';
+  const tokGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+  const signedIn = () => !!tokGet(TOK);
+  async function refresh() {
+    const rt = tokGet(RTOK); if (!rt) return false;
+    try {
+      const r = await fetch(`${API}/jwtRefresh/refreshAccessToken`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: rt }) });
+      if (!r.ok) return false;
+      const a = await r.json();
+      localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
+      return true;
+    } catch { return false; }
+  }
+  async function my(method, args = {}) {
+    const go = () => fetch(`${API}/islandMe/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) });
+    let r = await go();
+    if (r.status === 401 && await refresh()) r = await go();
+    if (r.status === 401) throw new Error('signin');
+    if (!r.ok) throw new Error('Something went wrong (' + r.status + ').');
+    const t = await r.text(); let v = JSON.parse(t); if (typeof v === 'string') v = JSON.parse(v);
+    if (v && v.error) throw new Error(v.error);
+    return v;
+  }
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const naira = (n) => '₦' + Number(n || 0).toLocaleString('en-NG');
+
+  // ---- end-to-end encryption, in this browser only (WebCrypto). Your private key never leaves it.
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  let myKeys = null; // { priv: CryptoKey, pubJwk: string }
+  async function keyPair() {
+    if (myKeys) return myKeys;
+    let saved = null; try { saved = JSON.parse(localStorage.getItem('li.keys') || 'null'); } catch {}
+    if (!saved) {
+      const kp = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+      saved = { priv: await crypto.subtle.exportKey('jwk', kp.privateKey), pub: await crypto.subtle.exportKey('jwk', kp.publicKey) };
+      try { localStorage.setItem('li.keys', JSON.stringify(saved)); } catch {}
+    }
+    const priv = await crypto.subtle.importKey('jwk', saved.priv, { name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveKey']);
+    const pub = { kty: saved.pub.kty, crv: saved.pub.crv, x: saved.pub.x, y: saved.pub.y };
+    myKeys = { priv, pubJwk: JSON.stringify(pub) };
+    return myKeys;
+  }
+  async function shared(theirPubJwk) {
+    const k = await keyPair();
+    const pub = await crypto.subtle.importKey('jwk', JSON.parse(theirPubJwk), { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+    return crypto.subtle.deriveKey({ name: 'ECDH', public: pub }, k.priv, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  async function seal(key, bytes) { const iv = crypto.getRandomValues(new Uint8Array(12)); return b64(iv) + '.' + b64(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes)); }
+  async function open(key, s) { const [iv, ct] = s.split('.'); return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(iv) }, key, unb64(ct))); }
+  const groupKeys = new Map(); // group id -> CryptoKey
+  async function groupKey(g) {
+    if (groupKeys.has(g.id)) return groupKeys.get(g.id);
+    const raw = await open(await shared(g.wrapperPub), g.wrappedKey);
+    const k = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+    groupKeys.set(g.id, k); return k;
+  }
+
+  // ---- the phone's screens
+  const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
+  let me$ = null, stack = [], chatTimer = 0;
+  const APPS = [
+    ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔒', 'Chats'], ['hq', '🏠', 'My HQ'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+  ];
+  function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
+  function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); render(app, arg); }
+  function back() { clearInterval(chatTimer); stack.pop(); const [a, g] = stack[stack.length - 1] || ['home']; if (!stack.length) stack.push(['home']); render(a, g); }
+  const $ = (id) => document.getElementById(id);
+  function fail(e) {
+    if (e.message === 'signin') { me$ = null; return render('signin'); }
+    const n = document.createElement('div'); n.className = 'pcard'; n.style.background = '#FEE2E2'; n.textContent = e.message; pbody.prepend(n); setTimeout(() => n.remove(), 4000);
+  }
+  async function loadMe() { me$ = await my('me'); pnaira.textContent = naira(me$.naira); myName = me$.handle; return me$; }
+  async function ensureKey() {
+    const k = await keyPair();
+    if (me$ && me$.pubKey !== k.pubJwk) { await my('setProfile', { handle: '', skills: me$.skills, openToWork: me$.openToWork, pubKey: k.pubJwk }); me$.pubKey = k.pubJwk; }
+  }
+  let keyed = false;
+  async function openPhone(app, arg) {
+    phone.style.display = 'block'; stack = [['home']];
+    if (!signedIn()) return render('signin');
+    try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { return fail(e); }
+    if (app) go(app, arg); else render('home');
+  }
+  async function render(app, arg) {
+    try {
+      if (app === 'signin') return show(`<div class="ptitle">Your phone</div><div class="pcard"><h3>Sign in to WYRD</h3><p class="dim">The phone holds your wallet, jobs, encrypted chats and your HQ. It uses your WYRD account. You can walk the island and chat nearby without one.</p><a class="pbtn" style="display:inline-block;text-decoration:none" href="/">Sign in on WYRD</a></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`), ($('gRide').onclick = () => go('ride'));
+      if (app === 'home') {
+        show(`<div class="ptitle">Hi, ${esc(me$.handle)}</div><div class="lock">🔒 Chats are end-to-end encrypted. WYRD can't read them.</div><div class="apps">${APPS.map(([k, i, n]) => `<button class="app" data-app="${k}"><i>${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`).join('')}</div>`);
+        pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
+        return;
+      }
+      if (app === 'wallet') {
+        await loadMe(); const r = await my('receipts');
+        show(`<div class="ptitle">Wallet</div><div class="pcard"><div class="dim">Your naira</div><div class="big">${naira(me$.naira)}</div><div class="dim">Earned from shifts today: ${naira(me$.earnedToday)} of ${naira(me$.dailyCap)}. Work at the refinery, the clubs (nights), the markets and the motor park.</div></div>
+          <div class="pcard"><h3>Send naira</h3><input id="sTo" placeholder="Their name on the island"><input id="sAmt" type="number" min="50" max="50000" placeholder="Amount (₦50 to ₦50,000)"><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">Send</button></div>
+          <div class="pcard"><h3>Receipts</h3>${r.map((e) => `<div class="row"><span>${esc(e.memo)}</span><b style="color:${e.amount < 0 ? '#DC2626' : '#16A34A'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</b></div>`).join('') || '<div class="dim">Nothing yet.</div>'}</div>`);
+        $('sGo').onclick = async () => { try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); render('wallet'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'jobs') {
+        const list = await my('jobs');
+        show(`<div class="ptitle">Jobs</div><div class="lock">Real jobs from real employers, checked before they show. ${me$.openToWork ? 'WYRD ranks them by your skills, privately.' : 'Turn on “open to work” in Profile and WYRD will rank them by your skills (only you see the ranking).'}</div>
+          <button class="pbtn" id="jPost">Post a job</button><button class="pbtn alt" id="jMine">My posts</button>${me$.operator ? '<button class="pbtn alt" id="jQueue">Check posts</button>' : ''}
+          ${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.location)} · ${esc(j.pay)}${j.match != null ? ` · <b style="color:#16A34A">${j.match}% match</b>` : ''}</div><p>${esc(j.about)}</p><div class="dim">Skills: ${esc(j.skills)}</div>${j.applied ? `<p><b>Applied.</b> Contact: ${esc(j.contact)}</p>` : `<textarea data-note="${j.id}" rows="2" placeholder="A short note to the employer (they'll see your name, your skills and this)"></textarea><button class="pbtn" data-apply="${j.id}">Apply</button>`}</div>`).join('') || '<div class="pcard dim">No jobs open yet. Employers: post one.</div>'}`);
+        $('jPost').onclick = () => go('postjob'); $('jMine').onclick = () => go('myjobs'); if ($('jQueue')) $('jQueue').onclick = () => go('queue');
+        pbody.querySelectorAll('[data-apply]').forEach((b) => (b.onclick = async () => { try { await my('apply', { jobId: Number(b.dataset.apply), note: pbody.querySelector(`[data-note="${b.dataset.apply}"]`).value }); render('jobs'); } catch (e) { fail(e); } }));
+        return;
+      }
+      if (app === 'postjob') {
+        const f = [['company', 'Company'], ['title', 'Job title'], ['pay', 'Pay (e.g. ₦250,000 a month)'], ['skills', 'Skills needed, comma separated'], ['location', 'Where (e.g. Victoria Island, Lagos)'], ['contact', 'How applicants reach you (email or phone)']];
+        show(`<div class="ptitle">Post a job</div><div class="pcard"><p class="dim">A real job. WYRD's team checks every post before it shows. Applicants share their island name, skills and a note; you share your contact only with people who apply.</p>${f.map(([k, l]) => `<input id="pj_${k}" placeholder="${l}">`).join('')}<textarea id="pj_about" rows="4" placeholder="About the job"></textarea><button class="pbtn" id="pjGo">Send for checking</button></div>`);
+        $('pjGo').onclick = async () => { try { const a = {}; for (const k of ['company', 'title', 'pay', 'skills', 'location', 'about', 'contact']) a[k] = $('pj_' + k).value; await my('postJob', a); show('<div class="ptitle">Sent</div><div class="pcard">Thanks. It shows on the board once it has been checked.</div>'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'myjobs') {
+        const list = await my('myJobs');
+        show(`<div class="ptitle">My posts</div>${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.status)}</div>${j.applicants.map((p) => `<div class="row"><span><b>${esc(p.handle)}</b><br><span class="dim">${esc(p.skills)}</span><br>${esc(p.note)}</span></div>`).join('') || '<div class="dim">No applicants yet.</div>'}${j.status === 'open' || j.status === 'pending' ? `<button class="pbtn alt" data-close="${j.id}">Close</button>` : ''}</div>`).join('') || '<div class="pcard dim">You haven\'t posted a job.</div>'}`);
+        pbody.querySelectorAll('[data-close]').forEach((b) => (b.onclick = async () => { await my('closeJob', { jobId: Number(b.dataset.close) }).catch(fail); render('myjobs'); }));
+        return;
+      }
+      if (app === 'queue') {
+        const list = await my('pendingJobs');
+        show(`<div class="ptitle">Check posts</div>${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.location)} · ${esc(j.pay)}</div><p>${esc(j.about)}</p><div class="dim">Contact: ${esc(j.contact)}</div><button class="pbtn" data-ok="${j.id}">Approve</button><button class="pbtn alt" data-no="${j.id}">Reject</button></div>`).join('') || '<div class="pcard dim">Nothing waiting.</div>'}`);
+        pbody.querySelectorAll('[data-ok],[data-no]').forEach((b) => (b.onclick = async () => { await my('reviewJob', { jobId: Number(b.dataset.ok || b.dataset.no), approve: !!b.dataset.ok }).catch(fail); render('queue'); }));
+        return;
+      }
+      if (app === 'chats') {
+        const gs = await my('groups');
+        const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return '🔒 (can\'t open on this device)'; } }));
+        show(`<div class="ptitle">Chats</div><div class="lock">🔒 End-to-end encrypted on your device. The server stores only scrambled text; WYRD can't read it.</div><button class="pbtn" id="cNew">New chat or group</button>
+          ${gs.map((g, i) => `<div class="pcard" data-g="${i}" style="cursor:pointer"><h3>${esc(names[i])}</h3><div class="dim">${g.members.map(esc).join(', ')}</div></div>`).join('') || '<div class="pcard dim">No chats yet.</div>'}`);
+        $('cNew').onclick = () => go('newchat');
+        pbody.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => go('thread', { ...gs[b.dataset.g], name: names[b.dataset.g] })));
+        return;
+      }
+      if (app === 'newchat') {
+        show(`<div class="ptitle">New chat</div><div class="pcard"><input id="nName" maxlength="40" placeholder="Name (encrypted too)"><input id="nWho" placeholder="Their island names, comma separated"><button class="pbtn" id="nGo">Start encrypted chat</button><p class="dim">Each person gets the chat's key locked to their own device key. Nobody else can open it, not even the server.</p></div>`);
+        $('nGo').onclick = async () => {
+          try {
+            const who = [...new Set($('nWho').value.split(',').map((s) => s.trim()).filter(Boolean))].filter((h) => h !== me$.handle);
+            if (!who.length) throw new Error('Add at least one person.');
+            const raw = crypto.getRandomValues(new Uint8Array(32)), gk = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+            const k = await keyPair(), members = [{ handle: me$.handle, wrappedKey: await seal(await shared(k.pubJwk), raw) }];
+            for (const h of who) { const p = await my('keyOf', { handle: h }); members.push({ handle: p.handle, wrappedKey: await seal(await shared(p.pubKey), raw) }); }
+            const name = $('nName').value.trim() || [me$.handle, ...who].join(', ');
+            const g = await my('createGroup', { nameCt: await seal(gk, enc.encode(name)), wrapperPub: k.pubJwk, members: JSON.stringify(members) });
+            groupKeys.set(g.id, gk); stack.pop(); go('chats');
+          } catch (e) { fail(e); }
+        };
+        return;
+      }
+      if (app === 'thread') {
+        const g = arg, key = await groupKey(g);
+        show(`<div class="ptitle">${esc(g.name)}</div><div class="lock">🔒 ${g.members.map(esc).join(', ')}</div><div class="msgs" id="tMsgs"></div><div class="pcard" style="margin-top:10px"><input id="tText" maxlength="2000" placeholder="Message"><button class="pbtn" id="tGo">Send</button><button class="pbtn alt" id="tAdd">Add someone</button><button class="pbtn alt" id="tLeave">Leave</button></div>`);
+        let since = 0;
+        const pull = async () => {
+          const ms = await my('messages', { groupId: g.id, since });
+          for (const m of ms) {
+            since = Math.max(since, m.id);
+            let t; try { t = JSON.parse(dec.decode(await open(key, m.ct))).t; } catch { t = '🔒 (can\'t open)'; }
+            const d = document.createElement('div'); d.className = 'msg' + (m.mine ? ' me' : ''); d.innerHTML = `<b>${esc(m.from)}</b>${esc(t)}`; $('tMsgs').append(d);
+          }
+          if (ms.length) pbody.scrollTop = pbody.scrollHeight;
+        };
+        await pull(); chatTimer = setInterval(() => pull().catch(() => {}), 3000);
+        const send = async () => { const t = $('tText').value.trim(); if (!t) return; $('tText').value = ''; try { await my('post', { groupId: g.id, ct: await seal(key, enc.encode(JSON.stringify({ t }))) }); await pull(); } catch (e) { fail(e); } };
+        $('tGo').onclick = send; $('tText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+        $('tAdd').onclick = async () => { const h = prompt('Their island name'); if (!h) return; try { const p = await my('keyOf', { handle: h.trim() }); const raw = await open(await shared(g.wrapperPub), g.wrappedKey); const k = await keyPair(); await my('addMember', { groupId: g.id, handle: p.handle, wrappedKey: await seal(await shared(p.pubKey), raw), wrapperPub: k.pubJwk }); g.members.push(p.handle); render('thread', g); } catch (e) { fail(e); } };
+        $('tLeave').onclick = async () => { if (!confirm('Leave this chat?')) return; await my('leaveGroup', { groupId: g.id }).catch(fail); back(); };
+        return;
+      }
+      if (app === 'hqin') {
+        const hq = arg;
+        return show(`<div class="ptitle">${esc(hq.name)}</div><div class="pcard" style="background:linear-gradient(160deg, ${esc(hq.color)}, #111827);color:#fff;min-height:220px"><h3>You're inside</h3><p>${hq.mine ? 'Your place. Only you, and the people you let in, can come through this door.' : `${esc(hq.owner)} let you in.`}</p><p style="font-size:40px">🛋️ 🪴 🎶 🖼️</p></div>${hq.mine ? '<button class="pbtn" id="hqSet">Settings and requests</button>' : ''}<button class="pbtn alt" id="hqChat">Message ${hq.mine ? 'someone' : esc(hq.owner)}</button>`), ($('hqSet') && ($('hqSet').onclick = () => go('hq'))), ($('hqChat').onclick = () => go('newchat'));
+      }
+      if (app === 'hq') {
+        await loadMe(); const h = me$.hq;
+        const reqs = await my('hqRequests');
+        show(`<div class="ptitle">My HQ</div><div class="lock">Your own place on HQ Row, for whatever you do. You can always go in; anyone else knocks and you decide. Nobody sees whose it is unless you let them in.</div>
+          ${reqs.length ? `<div class="pcard"><h3>🔔 Asking to come in</h3>${reqs.map((r) => `<div class="row"><b>${esc(r.handle)}</b><span><button class="pbtn" data-allow="${r.id}">Let in</button><button class="pbtn alt" data-deny="${r.id}">No</button></span></div>`).join('')}</div>` : ''}
+          <div class="pcard"><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour</label><input id="hCol" type="color" value="${esc(h.color)}"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button><button class="pbtn alt" id="hGo">Go to my HQ</button></div>`);
+        pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
+        $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
+        $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
+        return;
+      }
+      if (app === 'arena') {
+        await loadMe(); const list = await my('shows');
+        const when = (s) => new Date(s.startsAt).toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        show(`<div class="ptitle">The Arena</div><div class="lock">Live shows on Eko Atlantic. Buy a ticket with your naira; the artist gets nine tenths of it.</div>
+          <button class="pbtn" id="aHost">Host a show</button>${me$.operator ? '<button class="pbtn alt" id="aQueue">Check shows</button>' : ''}
+          ${list.map((s) => `<div class="pcard"><h3>${esc(s.artist)}</h3><div>${esc(s.title)}</div><div class="dim">${when(s)} · ${s.minutes} min · ${s.price ? naira(s.price) : 'Free'} · ${s.sold}/${s.capacity} sold${s.live ? ' · <b style="color:#DC2626">LIVE NOW</b>' : ''}${s.status !== 'on_sale' ? ' · ' + esc(s.status) : ''}</div>
+            ${s.mine ? `<button class="pbtn" data-stage="${s.id}">${s.live ? 'Take the stage' : 'Open the stage'}</button>` : s.ticket ? `<button class="pbtn" data-stage="${s.id}">🎟️ ${s.live ? 'Go in: it\'s live' : 'Your ticket: go in when it starts'}</button>` : `<button class="pbtn" data-buy="${s.id}">Buy ticket ${s.price ? naira(s.price) : ''}</button>`}</div>`).join('') || '<div class="pcard dim">No shows booked yet. Artists: host one.</div>'}`);
+        $('aHost').onclick = () => go('hostshow'); if ($('aQueue')) $('aQueue').onclick = () => go('showqueue');
+        pbody.querySelectorAll('[data-buy]').forEach((b) => (b.onclick = async () => { try { const v = await my('buyTicket', { showId: Number(b.dataset.buy) }); if (v.naira != null) pnaira.textContent = naira(v.naira); render('arena'); } catch (e) { fail(e); } }));
+        pbody.querySelectorAll('[data-stage]').forEach((b) => (b.onclick = () => go('stage', Number(b.dataset.stage))));
+        return;
+      }
+      if (app === 'hostshow') {
+        const t = new Date(Date.now() + 86400e3); t.setMinutes(0, 0, 0);
+        const local = new Date(t.getTime() - t.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        show(`<div class="ptitle">Host a show</div><div class="pcard"><p class="dim">Book the arena. WYRD's team checks it, then tickets go on sale. During the show, everything you type goes up on the arena's screens for your ticket holders.</p><input id="hsArtist" maxlength="60" placeholder="Artist name"><input id="hsTitle" maxlength="80" placeholder="Show title"><label class="dim">Starts</label><input id="hsAt" type="datetime-local" value="${local}"><input id="hsMin" type="number" value="60" min="15" max="240" placeholder="Minutes"><input id="hsPrice" type="number" value="2000" min="0" max="20000" placeholder="Ticket price (₦)"><button class="pbtn" id="hsGo">Book the arena</button></div>`);
+        $('hsGo').onclick = async () => { try { await my('hostShow', { artist: $('hsArtist').value, title: $('hsTitle').value, startsAt: new Date($('hsAt').value).toISOString(), minutes: Number($('hsMin').value), price: Number($('hsPrice').value) }); stack.pop(); render('arena'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'showqueue') {
+        const list = await my('pendingShows');
+        show(`<div class="ptitle">Check shows</div>${list.map((s) => `<div class="pcard"><h3>${esc(s.artist)}</h3><div>${esc(s.title)}</div><div class="dim">${new Date(s.startsAt).toLocaleString()} · ${naira(s.price)}</div><button class="pbtn" data-ok="${s.id}">Approve</button><button class="pbtn alt" data-no="${s.id}">Reject</button></div>`).join('') || '<div class="pcard dim">Nothing waiting.</div>'}`);
+        pbody.querySelectorAll('[data-ok],[data-no]').forEach((b) => (b.onclick = async () => { await my('reviewShow', { showId: Number(b.dataset.ok || b.dataset.no), approve: !!b.dataset.ok }).catch(fail); render('showqueue'); }));
+        return;
+      }
+      if (app === 'stage') {
+        const id = arg; let since = 0;
+        const v0 = await my('stage', { showId: id, since: 0 });
+        show(`<div class="ptitle">🎤 ${esc(v0.artist)}</div><div class="lock" id="stInfo"></div><div class="pcard" style="background:#0B1020;color:#fff;min-height:240px"><div class="msgs" id="stLines"></div></div>${v0.mine ? '<div class="pcard"><input id="stText" maxlength="400" placeholder="Perform: lyrics, shout-outs, announcements"><button class="pbtn" id="stGo">Send to the screens</button></div>' : ''}`);
+        const put = (v) => {
+          $('stInfo').textContent = `${v.title} · ${v.live ? 'LIVE' : 'not live yet'} · ${v.crowd} in the crowd`;
+          for (const l of v.lines) { since = Math.max(since, l.n); const d = document.createElement('div'); d.style.cssText = 'font-size:18px;font-weight:800;color:hsl(' + (l.n * 47 % 360) + ',90%,70%)'; d.textContent = l.text; $('stLines').append(d); }
+          if (v.lines.length) pbody.scrollTop = pbody.scrollHeight;
+        };
+        put(v0);
+        chatTimer = setInterval(async () => { try { put(await my('stage', { showId: id, since })); } catch {} }, 2000);
+        if (v0.mine) { const send = async () => { const t = $('stText').value.trim(); if (!t) return; $('stText').value = ''; try { await my('perform', { showId: id, text: t }); } catch (e) { fail(e); } }; $('stGo').onclick = send; $('stText').onkeydown = (e) => { if (e.key === 'Enter') send(); }; }
+        return;
+      }
+      if (app === 'casino') {
+        const inside = near('casino', 25);
+        if (!inside) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>Walk to the Island Casino in Lekki to play. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Ride there</button></div>`), ($('cRide').onclick = () => { ride(31.5, 19.5); closePhone(); });
+        await loadMe();
+        show(`<div class="ptitle">Island Casino</div><div class="pcard"><div class="dim">Your naira</div><div class="big" id="cBal">${naira(me$.naira)}</div><label class="dim">Stake</label><select id="cStake">${[100, 200, 500, 1000, 2000, 5000].map((v) => `<option value="${v}">${naira(v)}</option>`).join('')}</select></div>
+          <div class="pcard"><h3>Roulette</h3><button class="pbtn" style="background:#DC2626" data-bet="red">Red ×2</button><button class="pbtn" style="background:#111827" data-bet="black">Black ×2</button><button class="pbtn" style="background:#16A34A" data-bet="green">Green ×14</button></div>
+          <div class="pcard"><h3>Slots</h3><button class="pbtn" id="cSlots">Spin</button></div><div class="pcard" id="cOut"><span class="dim">Good luck. Play money only. You stop for the day after losing ₦10,000.</span></div>`);
+        const out = (v, txt) => { $('cOut').innerHTML = `<div class="big">${txt}</div><b style="color:${v.won >= 0 ? '#16A34A' : '#DC2626'}">${v.won >= 0 ? 'Won ' + naira(v.won) : 'Lost ' + naira(-v.won)}</b>`; $('cBal').textContent = naira(v.naira); pnaira.textContent = naira(v.naira); };
+        pbody.querySelectorAll('[data-bet]').forEach((b) => (b.onclick = async () => { try { const v = await my('casino', { game: 'roulette', bet: b.dataset.bet, stake: Number($('cStake').value) }); out(v, `${v.number} ${v.colour}`); } catch (e) { fail(e); } }));
+        $('cSlots').onclick = async () => { try { const v = await my('casino', { game: 'slots', bet: '', stake: Number($('cStake').value) }); out(v, v.reels.join(' ')); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'wyrd') {
+        show(`<div class="ptitle">WYRD</div><div class="lock">WYRD hears what you type here and the district you're in. It never sees your chats, your HQ or who you talk to.</div><div class="msgs" id="wMsgs"></div><div class="pcard" style="margin-top:10px"><input id="wText" maxlength="600" placeholder="Ask WYRD anything"><button class="pbtn" id="wGo">Ask</button></div>`);
+        const ask = async () => {
+          const t = $('wText').value.trim(); if (!t) return; $('wText').value = '';
+          const add = (who, s, mine) => { const d = document.createElement('div'); d.className = 'msg' + (mine ? ' me' : ''); d.innerHTML = `<b>${who}</b>${esc(s)}`; $('wMsgs').append(d); pbody.scrollTop = pbody.scrollHeight; };
+          add('You', t, true);
+          try { const v = await my('askWyrd', { text: t, district: sector.name }); add('WYRD', v.say || v.reply || v.text || '…'); } catch (e) { fail(e); }
+        };
+        $('wGo').onclick = ask; $('wText').onkeydown = (e) => { if (e.key === 'Enter') ask(); };
+        return;
+      }
+      if (app === 'ride') {
+        show(`<div class="ptitle">Ride</div><div class="lock">An okada to anywhere on the island.</div>${SECTORS.map((s, k) => `<button class="pcard" data-s="${k}" style="width:100%;text-align:left;border:none;cursor:pointer"><h3>${esc(s.name)}</h3></button>`).join('')}`);
+        pbody.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => { const s = SECTORS[b.dataset.s]; const j = s.rows[0] ?? s.rect[1], i = s.cols[0] ?? Math.round((s.rect[0] + s.rect[2]) / 2); ride(i + 0.5, j + 0.5); closePhone(); }));
+        return;
+      }
+      if (app === 'me') {
+        await loadMe();
+        show(`<div class="ptitle">Profile</div><div class="pcard"><label class="dim">Your name on the island</label><input id="pHandle" maxlength="20" value="${esc(me$.handle)}"><label class="dim">Your skills, comma separated (shown to employers only when you apply)</label><textarea id="pSkills" rows="3">${esc(me$.skills)}</textarea><label class="dim"><input id="pOpen" type="checkbox" style="width:auto" ${me$.openToWork ? 'checked' : ''}> Open to work: let WYRD match jobs to my skills (only I see the matches)</label><button class="pbtn" id="pSave">Save</button></div>`);
+        $('pSave').onclick = async () => { try { await my('setProfile', { handle: $('pHandle').value, skills: $('pSkills').value, openToWork: $('pOpen').checked, pubKey: '' }); await loadMe(); render('me'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'privacy') {
+        return show(`<div class="ptitle">Privacy</div><div class="pcard"><h3>What stays yours</h3>
+          <div class="row"><span>Chats and groups</span><b>Encrypted on your device</b></div>
+          <div class="row"><span>Chat names</span><b>Encrypted too</b></div>
+          <div class="row"><span>Your HQ</span><b>Invite-only by default</b></div>
+          <div class="row"><span>Your skills</span><b>Only to employers you apply to</b></div>
+          <div class="row"><span>Job matches</span><b>Only you see them</b></div>
+          <div class="row"><span>WYRD</span><b>Sees only what you ask it</b></div>
+          <p class="dim">Your chat key lives in this browser. Clear the site's data or use another device and older messages can't be opened there. That's the price of nobody else being able to read them.</p></div>`);
+      }
+    } catch (e) { fail(e); }
+  }
+  function closePhone() { clearInterval(chatTimer); phone.style.display = 'none'; }
+  document.getElementById('phoneBtn').onclick = () => (phone.style.display === 'block' ? closePhone() : openPhone());
+  document.getElementById('pclose').onclick = closePhone;
+  document.getElementById('phome').onclick = () => { stack = [['home']]; clearInterval(chatTimer); render(signedIn() && me$ ? 'home' : 'signin'); };
+  document.getElementById('pback').onclick = back;
+  setInterval(() => { const d = new Date(Date.now() + 3600e3); document.getElementById('pclock').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }, 1000);
+  function ride(i, j) { me.x = i * T; me.z = j * T; cam.follow = true; updateWhere(); }
+  function near(type, pad) { return PLACES.some((p) => p[0] === type && me.x > p[1] * T - pad && me.x < (p[1] + p[3]) * T + pad && me.z > p[2] * T - pad && me.z < (p[2] + p[4]) * T + pad); }
+  async function loadHqRow() { if (!signedIn()) return; try { hqSlots = await my('hqRow'); } catch {} }
+
+  // ---- work and play where you stand: a button appears near a workplace or the casino
+  const actBtn = document.getElementById('act');
+  const WORK = [['refinery', 'refinery', '🛢️ Work a refinery shift'], ['club', 'club', '🪩 Work a night shift'], ['market', 'market', '🧺 Help at a market stall'], ['motorpark', 'okada', '🛵 Do okada rides']];
+  let act = null;
+  function updateAct() {
+    let next = null;
+    if (near('arena', 12)) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
+    else if (near('casino', 15)) next = { label: '🎰 Play at the casino', run: () => openPhone('casino') };
+    else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
+    if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
+    // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
+    if (!next && sector.id === 'hqrow') {
+      const key = Math.floor(me.x / T) + ',' + Math.floor(me.z / T), k = hqIndex.get(key);
+      if (k != null) {
+        const hq = hqSlots[k];
+        if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
+        else if (!hq) next = { label: '🏚️ Unclaimed lot', run: () => {} };
+        else if (hq.mine) next = { label: `🏠 Enter ${hq.name}`, run: () => openPhone('hqin', hq) };
+        else if (hq.may) next = { label: `🚪 Enter ${hq.name}`, run: () => openPhone('hqin', hq) };
+        else if (hq.asked === 'pending') next = { label: '⏳ Waiting for the owner to let you in', run: () => {} };
+        else if (hq.asked === 'denied') next = { label: '⛔ The owner said no', run: () => askHq(hq) };
+        else next = { label: '🔔 Ask to enter', run: () => askHq(hq) };
+      }
+    }
+    act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
+  }
+  actBtn.onclick = () => act && act.run();
+  async function doWork(place) {
+    if (!signedIn()) return openPhone();
+    try { const v = await my('work', { place }); pnaira.textContent = naira(v.naira); bubbles.set('me', { text: `${v.memo}: +${naira(v.paid)}`, until: performance.now() + 5000 }); }
+    catch (e) { if (e.message === 'signin') return openPhone(); bubbles.set('me', { text: e.message, until: performance.now() + 6000 }); }
+  }
+  setInterval(updateAct, 400);
+  async function askHq(hq) {
+    try { const v = await my('askHq', { slot: hq.slot }); hq.asked = v.status; bubbles.set('me', { text: v.status === 'granted' ? 'Come in.' : 'Asked. The owner will see it on their phone.', until: performance.now() + 5000 }); }
+    catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 5000 }); }
+  }
+  // your phone buzzes when someone asks to enter your HQ; HQ Row refreshes so doors open once you're let in
+  const pbadge = document.getElementById('pbadge');
+  let lastReq = 0;
+  async function poll() {
+    if (!signedIn()) return;
+    try {
+      const v = await my('me'); me$ = me$ ? Object.assign(me$, v) : v; pnaira.textContent = naira(v.naira);
+      pbadge.textContent = v.requests; pbadge.style.display = v.requests ? 'block' : 'none';
+      if (v.requests > lastReq) showJoin('🔔 Someone asked to enter your HQ', '#EF4444');
+      lastReq = v.requests;
+      await loadHqRow();
+    } catch {}
+  }
+  poll(); setInterval(poll, 15000);
 
   // ---- the welcome: your name and colour, kept in this browser
   const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), colorsEl = document.getElementById('colors');

@@ -25,6 +25,7 @@ import '../drone/drone_endpoint.dart' as _iec5mi4p;
 import '../games/games_endpoint.dart' as _ittu6d2n;
 import '../greetings/greeting_endpoint.dart' as _il624ik7;
 import '../island/island_endpoint.dart' as _i1elbils;
+import '../island/island_me_endpoint.dart' as _ixszl6xq;
 import '../konnectly/konnectly_endpoint.dart' as _i79gaqir;
 import '../mind/account_endpoint.dart' as _i45717np;
 import '../mind/alerts_endpoint.dart' as _impqu952;
@@ -107,6 +108,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'island',
+          null,
+        ),
+      'islandMe': _ixszl6xq.IslandMeEndpoint()
+        ..initialize(
+          server,
+          'islandMe',
           null,
         ),
       'konnectly': _i79gaqir.KonnectlyEndpoint()
@@ -1266,6 +1273,753 @@ class Endpoints extends _is.EndpointDispatch {
                 params['id'],
                 params['text'],
               ),
+        ),
+      },
+    );
+    connectors['islandMe'] = _is.EndpointConnector(
+      name: 'islandMe',
+      endpoint: endpoints['islandMe']!,
+      methodConnectors: {
+        'me': _is.MethodConnector(
+          name: 'me',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .me(session),
+        ),
+        'setProfile': _is.MethodConnector(
+          name: 'setProfile',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'skills': _is.ParameterDescription(
+              name: 'skills',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'openToWork': _is.ParameterDescription(
+              name: 'openToWork',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'pubKey': _is.ParameterDescription(
+              name: 'pubKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .setProfile(
+                    session,
+                    params['handle'],
+                    params['skills'],
+                    params['openToWork'],
+                    params['pubKey'],
+                  ),
+        ),
+        'keyOf': _is.MethodConnector(
+          name: 'keyOf',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).keyOf(
+                    session,
+                    params['handle'],
+                  ),
+        ),
+        'work': _is.MethodConnector(
+          name: 'work',
+          params: {
+            'place': _is.ParameterDescription(
+              name: 'place',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).work(
+                    session,
+                    params['place'],
+                  ),
+        ),
+        'receipts': _is.MethodConnector(
+          name: 'receipts',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .receipts(session),
+        ),
+        'send': _is.MethodConnector(
+          name: 'send',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'amount': _is.ParameterDescription(
+              name: 'amount',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).send(
+                    session,
+                    params['handle'],
+                    params['amount'],
+                    params['note'],
+                  ),
+        ),
+        'casino': _is.MethodConnector(
+          name: 'casino',
+          params: {
+            'game': _is.ParameterDescription(
+              name: 'game',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'bet': _is.ParameterDescription(
+              name: 'bet',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'stake': _is.ParameterDescription(
+              name: 'stake',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).casino(
+                    session,
+                    params['game'],
+                    params['bet'],
+                    params['stake'],
+                  ),
+        ),
+        'jobs': _is.MethodConnector(
+          name: 'jobs',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .jobs(session),
+        ),
+        'postJob': _is.MethodConnector(
+          name: 'postJob',
+          params: {
+            'company': _is.ParameterDescription(
+              name: 'company',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'title': _is.ParameterDescription(
+              name: 'title',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'pay': _is.ParameterDescription(
+              name: 'pay',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'skills': _is.ParameterDescription(
+              name: 'skills',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'location': _is.ParameterDescription(
+              name: 'location',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'about': _is.ParameterDescription(
+              name: 'about',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'contact': _is.ParameterDescription(
+              name: 'contact',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).postJob(
+                    session,
+                    params['company'],
+                    params['title'],
+                    params['pay'],
+                    params['skills'],
+                    params['location'],
+                    params['about'],
+                    params['contact'],
+                  ),
+        ),
+        'apply': _is.MethodConnector(
+          name: 'apply',
+          params: {
+            'jobId': _is.ParameterDescription(
+              name: 'jobId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).apply(
+                    session,
+                    params['jobId'],
+                    params['note'],
+                  ),
+        ),
+        'myJobs': _is.MethodConnector(
+          name: 'myJobs',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .myJobs(session),
+        ),
+        'closeJob': _is.MethodConnector(
+          name: 'closeJob',
+          params: {
+            'jobId': _is.ParameterDescription(
+              name: 'jobId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .closeJob(
+                    session,
+                    params['jobId'],
+                  ),
+        ),
+        'pendingJobs': _is.MethodConnector(
+          name: 'pendingJobs',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .pendingJobs(session),
+        ),
+        'reviewJob': _is.MethodConnector(
+          name: 'reviewJob',
+          params: {
+            'jobId': _is.ParameterDescription(
+              name: 'jobId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'approve': _is.ParameterDescription(
+              name: 'approve',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .reviewJob(
+                    session,
+                    params['jobId'],
+                    params['approve'],
+                  ),
+        ),
+        'createGroup': _is.MethodConnector(
+          name: 'createGroup',
+          params: {
+            'nameCt': _is.ParameterDescription(
+              name: 'nameCt',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'wrapperPub': _is.ParameterDescription(
+              name: 'wrapperPub',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'members': _is.ParameterDescription(
+              name: 'members',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .createGroup(
+                    session,
+                    params['nameCt'],
+                    params['wrapperPub'],
+                    params['members'],
+                  ),
+        ),
+        'addMember': _is.MethodConnector(
+          name: 'addMember',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'wrappedKey': _is.ParameterDescription(
+              name: 'wrappedKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'wrapperPub': _is.ParameterDescription(
+              name: 'wrapperPub',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .addMember(
+                    session,
+                    params['groupId'],
+                    params['handle'],
+                    params['wrappedKey'],
+                    params['wrapperPub'],
+                  ),
+        ),
+        'leaveGroup': _is.MethodConnector(
+          name: 'leaveGroup',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .leaveGroup(
+                    session,
+                    params['groupId'],
+                  ),
+        ),
+        'groups': _is.MethodConnector(
+          name: 'groups',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .groups(session),
+        ),
+        'post': _is.MethodConnector(
+          name: 'post',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'ct': _is.ParameterDescription(
+              name: 'ct',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).post(
+                    session,
+                    params['groupId'],
+                    params['ct'],
+                  ),
+        ),
+        'messages': _is.MethodConnector(
+          name: 'messages',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'since': _is.ParameterDescription(
+              name: 'since',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .messages(
+                    session,
+                    params['groupId'],
+                    params['since'],
+                  ),
+        ),
+        'setHq': _is.MethodConnector(
+          name: 'setHq',
+          params: {
+            'name': _is.ParameterDescription(
+              name: 'name',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'color': _is.ParameterDescription(
+              name: 'color',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'locked': _is.ParameterDescription(
+              name: 'locked',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'invites': _is.ParameterDescription(
+              name: 'invites',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).setHq(
+                    session,
+                    params['name'],
+                    params['color'],
+                    params['locked'],
+                    params['invites'],
+                  ),
+        ),
+        'hqRow': _is.MethodConnector(
+          name: 'hqRow',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .hqRow(session),
+        ),
+        'askHq': _is.MethodConnector(
+          name: 'askHq',
+          params: {
+            'slot': _is.ParameterDescription(
+              name: 'slot',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).askHq(
+                    session,
+                    params['slot'],
+                  ),
+        ),
+        'hqRequests': _is.MethodConnector(
+          name: 'hqRequests',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .hqRequests(session),
+        ),
+        'answerHq': _is.MethodConnector(
+          name: 'answerHq',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'grant': _is.ParameterDescription(
+              name: 'grant',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .answerHq(
+                    session,
+                    params['id'],
+                    params['grant'],
+                  ),
+        ),
+        'shows': _is.MethodConnector(
+          name: 'shows',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .shows(session),
+        ),
+        'hostShow': _is.MethodConnector(
+          name: 'hostShow',
+          params: {
+            'artist': _is.ParameterDescription(
+              name: 'artist',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'title': _is.ParameterDescription(
+              name: 'title',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'startsAt': _is.ParameterDescription(
+              name: 'startsAt',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'minutes': _is.ParameterDescription(
+              name: 'minutes',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'price': _is.ParameterDescription(
+              name: 'price',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .hostShow(
+                    session,
+                    params['artist'],
+                    params['title'],
+                    params['startsAt'],
+                    params['minutes'],
+                    params['price'],
+                  ),
+        ),
+        'pendingShows': _is.MethodConnector(
+          name: 'pendingShows',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .pendingShows(session),
+        ),
+        'reviewShow': _is.MethodConnector(
+          name: 'reviewShow',
+          params: {
+            'showId': _is.ParameterDescription(
+              name: 'showId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'approve': _is.ParameterDescription(
+              name: 'approve',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .reviewShow(
+                    session,
+                    params['showId'],
+                    params['approve'],
+                  ),
+        ),
+        'buyTicket': _is.MethodConnector(
+          name: 'buyTicket',
+          params: {
+            'showId': _is.ParameterDescription(
+              name: 'showId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .buyTicket(
+                    session,
+                    params['showId'],
+                  ),
+        ),
+        'stage': _is.MethodConnector(
+          name: 'stage',
+          params: {
+            'showId': _is.ParameterDescription(
+              name: 'showId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'since': _is.ParameterDescription(
+              name: 'since',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).stage(
+                    session,
+                    params['showId'],
+                    params['since'],
+                  ),
+        ),
+        'perform': _is.MethodConnector(
+          name: 'perform',
+          params: {
+            'showId': _is.ParameterDescription(
+              name: 'showId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).perform(
+                    session,
+                    params['showId'],
+                    params['text'],
+                  ),
+        ),
+        'askWyrd': _is.MethodConnector(
+          name: 'askWyrd',
+          params: {
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'district': _is.ParameterDescription(
+              name: 'district',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).askWyrd(
+                    session,
+                    params['text'],
+                    params['district'],
+                  ),
         ),
       },
     );

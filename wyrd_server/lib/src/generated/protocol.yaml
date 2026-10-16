@@ -52,6 +52,40 @@ island:
   - tick:
   - online:
   - say:
+islandMe:
+  - me:
+  - setProfile:
+  - keyOf:
+  - work:
+  - receipts:
+  - send:
+  - casino:
+  - jobs:
+  - postJob:
+  - apply:
+  - myJobs:
+  - closeJob:
+  - pendingJobs:
+  - reviewJob:
+  - createGroup:
+  - addMember:
+  - leaveGroup:
+  - groups:
+  - post:
+  - messages:
+  - setHq:
+  - hqRow:
+  - askHq:
+  - hqRequests:
+  - answerHq:
+  - shows:
+  - hostShow:
+  - pendingShows:
+  - reviewShow:
+  - buyTicket:
+  - stage:
+  - perform:
+  - askWyrd:
 konnectly:
   - status:
   - writeListing:

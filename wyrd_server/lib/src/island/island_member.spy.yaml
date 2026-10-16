@@ -1,0 +1,18 @@
+### A member of an encrypted group, with their own wrapped copy of the group key.
+class: IslandMember
+table: island_member
+fields:
+  groupId: int
+  authUserId: UuidValue
+  ### the group key (AES-GCM) encrypted for this member: base64 iv.ciphertext, with the key agreed
+  ### between [wrapperPub] and the member's own key pair
+  wrappedKey: String
+  ### the public key (JWK) of whoever wrapped it
+  wrapperPub: String
+  addedAt: DateTime
+indexes:
+  island_member_idx:
+    fields: groupId, authUserId
+    unique: true
+  island_member_user_idx:
+    fields: authUserId

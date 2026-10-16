@@ -1,0 +1,26 @@
+### A WYRD user on LAGOS ISLAND: the name others see, the skills they choose to show employers, their
+### messaging public key (the private key never leaves their browser), and their personal HQ.
+class: IslandProfile
+table: island_profile
+fields:
+  authUserId: UuidValue
+  ### the name on the island, unique (letters, digits, _ . -)
+  handle: String
+  ### what they can do, comma separated, as they wrote it; used for job matching only when openToWork
+  skills: String, default=''
+  openToWork: bool, default=false
+  ### their ECDH P-256 public key (JWK, JSON); messages to them are encrypted with it in the browser
+  pubKey: String?
+  ### their HQ: its name, colour, whether anyone may walk in, and who is invited (JSON list of handles)
+  hqName: String?
+  hqColor: String, default='#A855F7'
+  hqLocked: bool, default=true
+  hqInvites: String, default='[]'
+  createdAt: DateTime
+indexes:
+  island_profile_user_idx:
+    fields: authUserId
+    unique: true
+  island_profile_handle_idx:
+    fields: handle
+    unique: true
