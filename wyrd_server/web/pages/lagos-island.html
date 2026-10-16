@@ -73,6 +73,11 @@
   #hello .pw button { position: absolute; right: 8px; top: 50%; transform: translateY(-40%); border: none; background: none; color: var(--green-dark); font: 800 12px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
   #hello .rules { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; text-align: left; font-size: 12px; color: var(--dim); }
   #hello .rules li::before { content: '○ '; }
+  #hello .meter { height: 7px; margin-top: 8px; border-radius: 999px; background: #EEF2F6; overflow: hidden; }
+  #hello .meter i { display: block; height: 100%; width: 0; border-radius: 999px; transition: width .35s cubic-bezier(.3,1.4,.5,1), background .3s; }
+  #hello .pwsay { margin-top: 5px; min-height: 17px; text-align: left; font-size: 12.5px; font-weight: 700; color: var(--dim); transition: color .2s; }
+  #hello .rules li.ok { animation: pop .3s ease; }
+  @keyframes pop { 50% { transform: scale(1.06); } }
   #hello .rules li.ok { color: var(--green-dark); }
   #hello .rules li.ok::before { content: '✓ '; }
   #hello .lookrow { display: flex; gap: 6px; margin-top: 6px; } #hello .lookrow button { flex: 1; padding: 9px 4px; border: 2px solid #E6EEF5; border-radius: 12px; background: #F7FAFC; font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; color: var(--ink); } #hello .lookrow button.on { border-color: var(--green); background: #E8FBF2; }
@@ -280,8 +285,9 @@
       <label class="fl" id="lEmail">Email<input id="email" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"></label>
       <label class="fl"><span id="lName">Username</span><input id="name" maxlength="120" placeholder="e.g. tunde.lagos" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
       <label class="fl">Password<span class="pw"><input id="pass" type="password" maxlength="128" placeholder="Create a password" autocomplete="new-password"><button type="button" id="peek" aria-label="Show password">Show</button></span></label>
-      <ul id="rules" class="rules"><li data-r="len">8+ characters</li><li data-r="up">An upper-case letter</li><li data-r="low">A lower-case letter</li><li data-r="num">A number</li></ul>
-      <label class="fl" id="lConfirm">Confirm password<input id="pass2" type="password" maxlength="128" placeholder="Type it again" autocomplete="new-password"></label>
+      <div id="pwMeter" class="meter"><i></i></div><div id="pwSay" class="pwsay">Make am strong like Third Mainland Bridge 🌉</div>
+      <ul id="rules" class="rules"><li data-r="len">8 or more characters (no shortcuts 😅)</li><li data-r="up">One BIG letter, like Lagos traffic 🚦</li><li data-r="low">Small letters too, abeg 🤏🏾</li><li data-r="num">A number, your lucky one 🎲</li></ul>
+      <label class="fl" id="lConfirm">Say it again, make we sure<input id="pass2" type="password" maxlength="128" placeholder="Same password, one more time" autocomplete="new-password"></label><div id="pwMatch" class="pwsay"></div>
       <div class="note" id="note">One account for Lagos Island and WYRD. Sign in to either with your username or email.</div>
       <a class="note forgot" id="forgot" href="/" style="display:none">Forgot your password? Reset it on WYRD</a>
     </div>
@@ -2733,9 +2739,27 @@
   const emailIn = document.getElementById('email'), pass2In = document.getElementById('pass2');
   const RULES = { len: (p) => p.length >= 8, up: (p) => /[A-Z]/.test(p), low: (p) => /[a-z]/.test(p), num: (p) => /[0-9]/.test(p) };
   const strong = (p) => Object.values(RULES).every((f) => f(p));
-  passIn.addEventListener('input', () => { for (const li of document.querySelectorAll('#rules li')) li.classList.toggle('ok', RULES[li.dataset.r](passIn.value)); });
+  // the strength meter talks back
+  const SAYS = [
+    ['#E5E7EB', 'Make am strong like Third Mainland Bridge 🌉'],
+    ['#EF4444', 'Omo, even a danfo conductor fit guess this one 😬'],
+    ['#F97316', 'E dey try… add small pepper 🌶️'],
+    ['#FACC15', 'Getting there! Almost Lekki-level 😎'],
+    ['#22B573', 'Correct! Eko o ni baje, and neither will this password 💪🏾'],
+  ];
+  const pwMatch = document.getElementById('pwMatch');
+  const checkMatch = () => { if (!pass2In.value) { pwMatch.textContent = ''; return; } const same = pass2In.value === passIn.value; pwMatch.textContent = same ? 'Twins! 👯 Perfect match.' : 'Hmm, these two no be family o 🤨'; pwMatch.style.color = same ? '#16A34A' : '#DC2626'; };
+  passIn.addEventListener('input', () => {
+    const p = passIn.value; let n = 0;
+    for (const li of document.querySelectorAll('#rules li')) { const ok = RULES[li.dataset.r](p); li.classList.toggle('ok', ok); n += ok; }
+    const lvl = !p ? 0 : n <= 1 ? 1 : n === 2 ? 2 : n === 3 ? 3 : 4, [col, say] = SAYS[lvl];
+    const bar = document.querySelector('#pwMeter i'); bar.style.width = (lvl * 25) + '%'; bar.style.background = col;
+    const ps = document.getElementById('pwSay'); ps.textContent = say; ps.style.color = lvl === 4 ? '#16A34A' : lvl ? '#374151' : '';
+    checkMatch();
+  });
+  pass2In.addEventListener('input', checkMatch);
   document.getElementById('peek').onclick = (e) => { const show = passIn.type === 'password'; passIn.type = pass2In.type = show ? 'text' : 'password'; e.target.textContent = show ? 'Hide' : 'Show'; };
-  const showFor = (n) => { for (const id of ['lEmail', 'rules', 'lConfirm']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lookPick').style.display = n ? '' : 'none'; document.getElementById('lName').textContent = n ? 'Username' : 'Username or email'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Username or email'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
+  const showFor = (n) => { for (const id of ['lEmail', 'rules', 'lConfirm', 'pwMeter', 'pwSay', 'pwMatch']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lookPick').style.display = n ? '' : 'none'; document.getElementById('lName').textContent = n ? 'Username' : 'Username or email'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Username or email'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
   let isNew = true;
   call('online', {}).then((n) => { if (typeof n === 'number') document.getElementById('crowd').textContent = n === 1 ? '1 Lagosian' : n + ' Lagosians'; }).catch(() => {});
   // the character picker: man or woman, and a new look (skin, hair, style, clothes) with each tap
@@ -2776,8 +2800,8 @@
     if (isNew) {
       if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { errEl.textContent = 'Enter a valid email address.'; emailIn.focus(); return; }
       if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(u)) { errEl.textContent = 'Usernames are 3 to 20 letters, digits, _ . or -.'; nameIn.focus(); return; }
-      if (!strong(p)) { errEl.textContent = 'Your password needs 8+ characters with an upper-case letter, a lower-case letter and a number.'; passIn.focus(); return; }
-      if (p !== pass2In.value) { errEl.textContent = 'The passwords don\'t match.'; pass2In.focus(); return; }
+      if (!strong(p)) { errEl.textContent = 'Your password still needs small work: tick all four boxes 😉'; passIn.focus(); return; }
+      if (p !== pass2In.value) { errEl.textContent = 'Your two passwords no match o 🤨'; pass2In.focus(); return; }
     } else if (!u || !p) { errEl.textContent = 'Enter your username (or email) and password.'; return; }
     const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = isNew ? 'Making your account…' : 'Signing in…';
     try {
