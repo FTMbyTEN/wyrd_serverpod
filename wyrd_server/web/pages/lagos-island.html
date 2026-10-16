@@ -55,15 +55,11 @@
   #phoneBtn::before { content: ''; position: absolute; inset: 4px; border-radius: 11px; background: linear-gradient(160deg, #22B573, #0EA5E9 55%, #6366F1); }
   #phoneBtn::after { content: ''; position: absolute; top: 7px; left: 50%; width: 14px; height: 4px; margin-left: -7px; border-radius: 4px; background: #0B0F19; }
   #phoneBtn b { position: absolute; right: -6px; top: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #EF4444; color: #fff; font: 800 11px/20px 'Plus Jakarta Sans', sans-serif; display: none; }
-  /* who just arrived: names drop in under the phone and dissolve into a white cloud */
+  /* who just arrived: names appear under the phone and float up as they fade */
   #joins { position: fixed; left: 10px; top: calc(204px + env(safe-area-inset-top)); width: 170px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; }
   #joins .j { align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 5px 11px 5px 6px; border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: var(--shadow); font-size: 12.5px; font-weight: 700; color: var(--ink); animation: joinFade 6s ease-in forwards; }
   #joins .j i { width: 16px; height: 16px; border-radius: 50%; }
-  #joins .cloud { position: relative; height: 46px; margin-top: -4px; }
-  #joins .cloud::before, #joins .cloud::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,.85); filter: blur(10px); }
-  #joins .cloud::before { left: 4px; top: 6px; width: 120px; height: 34px; }
-  #joins .cloud::after { left: 40px; top: 0; width: 80px; height: 40px; }
-  @keyframes joinFade { 0% { opacity: 0; transform: translateY(-8px); } 10% { opacity: 1; transform: none; } 60% { opacity: 1; filter: none; } 100% { opacity: 0; transform: translateY(46px) scale(1.15); filter: blur(8px); background: #fff; color: #fff; } }
+  @keyframes joinFade { 0% { opacity: 0; transform: translateY(14px); } 12% { opacity: 1; transform: none; } 65% { opacity: 1; transform: translateY(-6px); } 100% { opacity: 0; transform: translateY(-40px); } }
   #act { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(118px + env(safe-area-inset-bottom)); display: none; padding: 12px 20px; border-radius: 999px; border: none; background: var(--ink); color: #fff; font: 800 15px 'Plus Jakarta Sans', sans-serif; box-shadow: var(--shadow); cursor: pointer; }
   #phone { position: fixed; right: 16px; bottom: 16px; width: min(370px, calc(100vw - 16px)); height: min(720px, calc(100vh - 32px)); border-radius: 48px; background: linear-gradient(160deg, #4B5563, #111827 30%, #0B0F19); padding: 9px; box-shadow: 0 30px 80px rgba(5,15,35,.45), inset 0 0 0 1.5px rgba(255,255,255,.22); display: none; z-index: 20; animation: phoneIn .25s ease-out; }
   @keyframes phoneIn { from { transform: translateY(24px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -106,18 +102,17 @@
 <div id="log" aria-live="polite"></div>
 <div id="zoomin" class="btn" role="button" aria-label="Zoom in">+</div>
 <div id="zoomout" class="btn" role="button" aria-label="Zoom out">−</div>
-<div id="okada" class="btn" role="button" aria-label="Hold to ride an okada (faster)">🛵 OKADA</div>
 <div id="stick" aria-hidden="true"><div id="knob"></div></div>
 <form id="say" class="pill"><input id="sayText" maxlength="140" placeholder="Say something to people near you" autocomplete="off"><button>Send</button></form>
 <div id="card"></div>
 <div id="phoneBtn" class="btn" role="button" aria-label="Open your phone"><b id="pbadge"></b></div>
-<div id="joins" aria-live="polite"><div class="cloud"></div></div>
+<div id="joins" aria-live="polite"></div>
 <button id="act"></button>
 <div id="phone" role="dialog" aria-label="Your phone"><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span>Lagos Island</span><span id="pnaira"></span></div><div id="pbody"></div><div id="pnav"><button id="pback">‹ Back</button><button id="phome">Home</button><button id="pclose">Close</button></div></div></div>
 <div id="hello">
   <div class="box">
     <h1>🌴 Lagos Island</h1>
-    <p>Lagos Island, Ikoyi, VI, Eko Atlantic, Lekki and Ajah, and Ilashe across the water. Walk it, ride okada, meet the people on it.</p>
+    <p>Lagos Island, Ikoyi, VI, Eko Atlantic, Lekki and Ajah, and Ilashe across the water. Walk it, meet the people on it, and WYRD.</p>
     <div class="crowd"><b id="crowd">Lagosians</b> on the island right now · free</div>
     <input id="name" maxlength="24" placeholder="Your name on the island" autocomplete="nickname">
     <div id="colors"></div>
@@ -139,7 +134,7 @@
     { id: 'atlantic', name: 'Eko Atlantic', rect: [15, 24, 24, 27], rows: [25], cols: [19, 23], cam: { yaw: 0.15, pitch: 0.85, zoom: 0.95 } },
     { id: 'lekki', name: 'Lekki', rect: [30, 8, 41, 21], rows: [9, 15, 19], cols: [33, 37], cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
     { id: 'ajah', name: 'Ajah', rect: [44, 10, 49, 18], rows: [15], cols: [46], cam: { yaw: 0.55, pitch: 0.9, zoom: 1.05 } },
-    { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
+    { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [4], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
     { id: 'ads', name: 'Ad Island', rect: [29, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 23, 36, 28], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
@@ -153,6 +148,7 @@
     [28, 19, 29, 19, 'Lekki Toll Road'],
     [23, 22, 23, 23, 'To Eko Atlantic'],
     [42, 15, 43, 15, 'Lekki-Ajah Bridge'],
+    [4, 16, 4, 21, 'Ilashe Bridge'],
     [33, 6, 33, 7, 'To Ad Island'],
     [25, 25, 25, 25, 'To the Arena'],
     [50, 15, 51, 15, 'To the Free Zone'],
@@ -172,7 +168,7 @@
     ['towers', 10, 11, 4, 3, 'The Marina & NECOM House', '🏢'],
     ['park', 5, 15, 4, 1, 'Freedom Park', '🎷'],
     ['hospital', 10, 15, 4, 1, 'General Hospital', '🏥'],
-    ['jetty', 2, 15, 2, 1, 'Marina Jetty (boats to Ilashe)', '⛴️'],
+    ['jetty', 2, 15, 2, 1, 'Marina Jetty', '⛴️'],
     // Ikoyi
     ['golf', 24, 7, 2, 2, 'Ikoyi Club 1938', '⛳'],
     ['villas', 24, 3, 2, 3, 'Banana Island', '🏡'],
@@ -240,7 +236,6 @@
     }
   });
   for (const [i0, j0, i1, j1] of BRIDGES) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) tile[j * BOARD.w + i] = BRIDGE;
-  for (let j = FERRY[1]; j <= FERRY[3]; j++) tile[j * BOARD.w + FERRY[0]] = FERRYLANE;
   // the beaches' sand
   for (const p of PLACES) if (p[0] === 'beach') for (let j = p[2]; j < p[2] + p[4]; j++) for (let i = p[1]; i < p[1] + p[3]; i++) if (at(i, j) === LAND) tile[j * BOARD.w + i] = SAND;
   const blocked = []; // footprints you walk round: [x0, z0, x1, z1]
@@ -768,7 +763,7 @@
       const top = P(cx, 26, cz); x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 1;
       for (let k = -4; k <= 4; k++) { if (!k) continue; const e = P(cx + k * 4.5, 0.6, cz); x.beginPath(); x.moveTo(top[0], top[1]); x.lineTo(e[0], e[1]); x.stroke(); } }
     // the ferry lane, dashed across the water
-    { const a = P(FERRY[0] * T + T / 2, 0.1, FERRY[1] * T), b = P(FERRY[0] * T + T / 2, 0.1, (FERRY[3] + 1) * T);
+    if (false) { const a = P(FERRY[0] * T + T / 2, 0.1, FERRY[1] * T), b = P(FERRY[0] * T + T / 2, 0.1, (FERRY[3] + 1) * T);
       x.setLineDash([6, 6]); x.strokeStyle = 'rgba(255,255,255,0.7)'; x.lineWidth = 2; x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); x.setLineDash([]); }
     // roads, with a dashed centre line
     for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) {
@@ -811,6 +806,8 @@
     const now = performance.now();
     for (const [pid, o] of others) items.push({ d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false) });
     items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true) });
+    items.push({ d: P(wyrd.x, 0, wyrd.z)[2] + 0.02, f: () => drawWyrd(now) });
+    glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
     // night: the town darkens; the clubs, the casino, the refinery's flare, the screens and the people stay lit
@@ -873,6 +870,66 @@
     x.textBaseline = 'alphabetic';
   }
 
+  // ================= WYRD, on the island =================
+  // WYRD walks the streets from landmark to landmark, glowing, saying what it notices. Walk up to it
+  // and talk: what you ask goes to the real WYRD (signed in), and its answer shows over its head.
+  const wyrd = { x: 9.5 * T, z: 10.5 * T, path: [], wait: 2 };
+  const LINES = ['Eko o ni baje.', 'Ask me anything. I\'m listening.', 'The refinery never sleeps. Neither do I.', 'Jobs are on your phone. Real ones.', 'Your chats are yours. I can\'t read them.', 'Have you seen the arena tonight?', 'Balogun is busy today.', 'Every HQ is private until its owner says yes.', 'Lekki traffic? Not on this island.', 'I learn from every game you play with me.'];
+  const roadTiles = []; for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) if (at(i, j) === ROAD || at(i, j) === BRIDGE) roadTiles.push([i, j]);
+  function pathTo(i0, j0, i1, j1) { // the shortest way along roads and bridges
+    const prev = new Map(), q = [[i0, j0]], k = (i, j) => i + ',' + j; prev.set(k(i0, j0), null);
+    while (q.length) {
+      const [i, j] = q.shift(); if (i === i1 && j === j1) break;
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj, t = at(a, b); if ((t === ROAD || t === BRIDGE) && !prev.has(k(a, b))) { prev.set(k(a, b), [i, j]); q.push([a, b]); } }
+    }
+    const out = []; let c = [i1, j1]; if (!prev.has(k(i1, j1))) return out;
+    while (c) { out.unshift([c[0] * T + T / 2, c[1] * T + T / 2]); c = prev.get(k(c[0], c[1])); }
+    return out;
+  }
+  function wyrdStep(dt) {
+    const talking = Math.hypot(me.x - wyrd.x, me.z - wyrd.z) < 30;
+    if (talking) { if (!wyrd.met) { wyrd.met = true; bubbles.set('wyrd', { text: `Hello ${myName || 'friend'}. Talk to me.`, until: performance.now() + 5000 }); } return; }
+    wyrd.met = false;
+    if (!wyrd.path.length) {
+      if ((wyrd.wait -= dt) > 0) return;
+      // usually somewhere near, sometimes across the island
+      const here = [Math.floor(wyrd.x / T), Math.floor(wyrd.z / T)], near = roadTiles.filter(([i, j]) => Math.abs(i - here[0]) + Math.abs(j - here[1]) < 14);
+      const pool = Math.random() < 0.8 && near.length > 3 ? near : roadTiles, [ti, tj] = pool[Math.floor(Math.random() * pool.length)];
+      wyrd.path = pathTo(here[0], here[1], ti, tj); wyrd.wait = 3 + Math.random() * 4;
+      if (Math.random() < 0.5) bubbles.set('wyrd', { text: LINES[Math.floor(Math.random() * LINES.length)], until: performance.now() + 5000 });
+      return;
+    }
+    const [tx, tz] = wyrd.path[0], dx = tx - wyrd.x, dz = tz - wyrd.z, d = Math.hypot(dx, dz), v = 9 * dt;
+    if (d <= v) { wyrd.x = tx; wyrd.z = tz; wyrd.path.shift(); } else { wyrd.x += (dx / d) * v; wyrd.z += (dz / d) * v; }
+  }
+  function drawWyrd(now) {
+    const t = now / 1000, hover = 4 + Math.sin(t * 2) * 0.8, base = P(wyrd.x, 0, wyrd.z), c = P(wyrd.x, hover + 3, wyrd.z), s = Math.max(0.8, K / 4.6);
+    if (base[0] < -80 || base[0] > W + 80 || base[1] < -120 || base[1] > H + 80) return;
+    x.fillStyle = 'rgba(99,102,241,0.3)'; x.beginPath(); x.ellipse(base[0], base[1], 9 * s, 4 * s, 0, 0, Math.PI * 2); x.fill();
+    x.save(); x.globalCompositeOperation = 'lighter';
+    const g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], 22 * s); g.addColorStop(0, 'rgba(167,139,250,0.7)'); g.addColorStop(1, 'rgba(14,165,233,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], 22 * s, 0, Math.PI * 2); x.fill(); x.restore();
+    const orb = x.createRadialGradient(c[0] - 3 * s, c[1] - 3 * s, 1, c[0], c[1], 9 * s); orb.addColorStop(0, '#FFFFFF'); orb.addColorStop(0.4, '#A78BFA'); orb.addColorStop(1, '#0EA5E9');
+    x.fillStyle = orb; x.beginPath(); x.arc(c[0], c[1], 9 * s, 0, Math.PI * 2); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,0.8)'; x.lineWidth = 1.5; x.beginPath(); x.ellipse(c[0], c[1], 14 * s, 4 * s, Math.sin(t) * 0.3, 0, Math.PI * 2); x.stroke(); // the ring
+    x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '800 12px "Plus Jakarta Sans", sans-serif';
+    const ny = base[1] + 8 * s, nw = x.measureText('✨ WYRD').width + 16;
+    x.fillStyle = '#6366F1'; x.beginPath(); x.roundRect(base[0] - nw / 2, ny, nw, 19, 9.5); x.fill();
+    x.fillStyle = '#fff'; x.fillText('✨ WYRD', base[0], ny + 10);
+    const b = bubbles.get('wyrd');
+    if (b && b.until > now) {
+      x.font = '600 14px "Plus Jakarta Sans", sans-serif';
+      const words = b.text.split(' '), lines = []; let line = '';
+      for (const w of words) { if (x.measureText(line + ' ' + w).width > 230 && line) { lines.push(line); line = w; } else line = line ? line + ' ' + w : w; }
+      lines.push(line); const show = lines.slice(0, 4);
+      const w = Math.max(...show.map((l) => x.measureText(l).width)) + 24, h = show.length * 18 + 12, top = c[1] - 16 * s - h;
+      x.save(); x.shadowColor = 'rgba(99,102,241,0.35)'; x.shadowBlur = 12;
+      x.fillStyle = '#EEF2FF'; x.beginPath(); x.roundRect(base[0] - w / 2, top, w, h, 14); x.moveTo(base[0] - 6, top + h); x.lineTo(base[0], top + h + 7); x.lineTo(base[0] + 6, top + h); x.fill(); x.restore();
+      x.fillStyle = '#312E81'; show.forEach((l, k) => x.fillText(l, base[0], top + 15 + k * 18));
+    }
+    x.textBaseline = 'alphabetic';
+  }
+
   // ================= moving =================
   const onFerry = (px, pz) => at(Math.floor(px / T), Math.floor(pz / T)) === FERRYLANE;
   function walkable(px, pz) {
@@ -902,9 +959,6 @@
   });
   addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
   addEventListener('blur', () => keys.clear());
-  const okBtn = document.getElementById('okada');
-  okBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); okada = true; });
-  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) okBtn.addEventListener(ev, () => { okada = false; });
   const zoomBy = (f) => { cam.user = Math.max(0.45, Math.min(2.4, cam.user * f)); };
   document.getElementById('zoomin').onclick = () => zoomBy(1.25);
   document.getElementById('zoomout').onclick = () => zoomBy(1 / 1.25);
@@ -959,14 +1013,14 @@
     const t = await r.text(); if (!t) return null;
     const v = JSON.parse(t); return typeof v === 'string' ? JSON.parse(v) : v;
   }
-  // who just arrived: their name drops in under the phone and dissolves into the cloud
+  // who just arrived: their name drops in under the phone and floats up as it fades
   const everSeen = new Set(), joinsEl = document.getElementById('joins');
   let ticked = false;
   function showJoin(name, color) {
     const d = document.createElement('div'), dot = document.createElement('i');
     d.className = 'j'; dot.style.background = color || '#22B573';
     d.append(dot, document.createTextNode(`${name || 'Someone'} joined`));
-    joinsEl.insertBefore(d, joinsEl.lastElementChild);
+    joinsEl.append(d);
     while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove();
     setTimeout(() => d.remove(), 6200);
   }
@@ -1029,7 +1083,7 @@
       if (keys.has('s') || keys.has('arrowdown')) iz += 1;
       const L = Math.hypot(ix, iz);
       if (L > 0.08) {
-        const fast = okada || keys.has('shift'), speed = (fast ? 34 : 12) * Math.min(1, L);
+        const fast = Math.hypot(stick.x, stick.z) > 0.92 || keys.has('shift'), speed = (fast ? 34 : 12) * Math.min(1, L);
         const [wx, wz] = toWorldDir(ix / L, (iz / L) * sp), wl = Math.hypot(wx, wz) || 1;
         const nx = me.x + (wx / wl) * speed * dt, nz = me.z + (wz / wl) * speed * dt;
         if (walkable(nx, nz)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) me.x = nx; else if (walkable(me.x, nz)) me.z = nz;
@@ -1042,6 +1096,7 @@
     let dy = want.yaw - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     cam.yaw += dy * e2; cam.pitch += (want.pitch - cam.pitch) * e2; cam.zoom += (want.zoom - cam.zoom) * e2;
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
+    wyrdStep(dt);
     if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); }
     draw();
     requestAnimationFrame(frame);
@@ -1342,7 +1397,8 @@
   let act = null;
   function updateAct() {
     let next = null;
-    if (near('arena', 12)) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
+    if (Math.hypot(me.x - wyrd.x, me.z - wyrd.z) < 30) next = { label: '✨ Talk to WYRD', run: talkToWyrd };
+    else if (near('arena', 12)) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else if (near('casino', 15)) next = { label: '🎰 Play at the casino', run: () => openPhone('casino') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
@@ -1363,6 +1419,15 @@
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
   actBtn.onclick = () => act && act.run();
+  // talking to WYRD in the street: what you say shows over you, its answer over it
+  async function talkToWyrd() {
+    if (!signedIn()) { bubbles.set('wyrd', { text: 'Sign in to WYRD and I can really talk with you. Your phone shows how.', until: performance.now() + 6000 }); return; }
+    const t = prompt('Say something to WYRD'); if (!t || !t.trim()) return;
+    bubbles.set('me', { text: t.trim(), until: performance.now() + 6000 });
+    bubbles.set('wyrd', { text: '…', until: performance.now() + 30000 });
+    try { const v = await my('askWyrd', { text: t.trim(), district: sector.name }); bubbles.set('wyrd', { text: v.say || v.reply || v.text || 'Hmm.', until: performance.now() + 12000 }); }
+    catch (e) { bubbles.set('wyrd', { text: e.message === 'signin' ? 'Sign in to WYRD first.' : 'I lost the thread. Ask me again?', until: performance.now() + 6000 }); }
+  }
   async function doWork(place) {
     if (!signedIn()) return openPhone();
     try { const v = await my('work', { place }); pnaira.textContent = naira(v.naira); bubbles.set('me', { text: `${v.memo}: +${naira(v.paid)}`, until: performance.now() + 5000 }); }
