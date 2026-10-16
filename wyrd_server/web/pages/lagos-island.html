@@ -1276,7 +1276,7 @@
   function leaveRoom() {
     if (!inside) return;
     inside = null; deco = null; setDeco();
-    me.x = outside.x; me.z = outside.z; Object.assign(cam, outside.cam, { follow: true });
+    me.x = outside.x; me.z = outside.z; Object.assign(cam, outside.cam, { follow: false });
     others.clear(); updateWhere();
   }
   let stageTimer = 0;
@@ -1395,6 +1395,14 @@
     if (inside) return tapInside(sx, sy);
     let best = null, bd = 34;
     for (const p of PLACES) { const s = P((p[1] + p[3] / 2) * T, PIN_H[p[0]] ?? 16, (p[2] + p[4] / 2) * T); const d = Math.hypot(s[0] - sx, s[1] - 21 - sy); if (d < bd) { bd = d; best = p; } }
+    // a building you can go into opens straight away (no camera move): public places for anyone,
+    // an HQ for its owner and the people they've let in; anyone else knocks
+    const [fx, fz] = floorAt(sx, sy), i = Math.floor(fx / T), j = Math.floor(fz / T);
+    const under = PLACES.find((p) => i >= p[1] && i < p[1] + p[3] && j >= p[2] && j < p[2] + p[4]);
+    const target = best && ENTERABLE.has(best[0]) ? best : under && ENTERABLE.has(under[0]) ? under : null;
+    if (target) { card.style.display = 'none'; return enterPlace(target); }
+    const lot = hqIndex.get(i + ',' + j);
+    if (!best && lot != null) { card.style.display = 'none'; return enterHq(lot, i, j); }
     if (best) {
       card.innerHTML = ''; const b = document.createElement('b'); b.textContent = best[6] + ' ' + best[5]; const s = document.createElement('span'); s.textContent = (sectorOf((best[1] + 0.5) * T, (best[2] + 0.5) * T) || {}).name || '';
       const go = document.createElement('button'); go.className = 'drivebtn'; go.textContent = '🚗 Drive there'; const place = best;
@@ -1403,11 +1411,26 @@
       return;
     }
     card.style.display = 'none';
-    // the ground: drive to the nearest road to it; an HQ lot, to its door
-    const [fx, fz] = floorAt(sx, sy), i = Math.floor(fx / T), j = Math.floor(fz / T);
-    if (at(i, j) === W0) { cam.follow = true; return; }
-    const lot = hqIndex.get(i + ',' + j);
-    const t = nearestRoad(i + 0.5, j + 0.5); driveTo(t[0], t[1], lot != null ? [i * T + T / 2, j * T + T - 1] : null);
+  }
+  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena']);
+  function at$(p) { me.x = (p[1] + p[3] / 2) * T; me.z = (p[2] + p[4]) * T + 2; } // you're at its door (out of sight)
+  function enterPlace(p) {
+    if (p[0] === 'arena') { at$(p); return openPhone('arena'); }
+    at$(p);
+    if (p[0] === 'wyrdtower') return enterRoom('tower', 'place:tower', 'WYRD Tower');
+    if (p[0] === 'casino') return enterRoom('casino', 'place:casino', 'Island Casino');
+    const n = p[5].replace(' (open every night)', '');
+    return enterRoom('club', 'place:club:' + p[1], n);
+  }
+  function enterHq(k, i, j) {
+    const say = (t) => { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = t; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 3500); };
+    if (!signedIn()) return say('🔒 Sign in to visit HQs');
+    const hq = hqSlots[k];
+    if (!hq) return say('🏚️ Unclaimed lot');
+    me.x = i * T + T / 2; me.z = j * T + T - 1;
+    if (hq.mine || hq.may) return enterRoom('hq', 'hq:' + hq.slot, hq.name);
+    if (hq.asked === 'pending') return say('⏳ Waiting for the owner to let you in');
+    askHq(hq).then(() => say(hq.asked === 'granted' ? '🚪 Come in' : '🔔 Knocked. The owner sees it on their phone.'));
   }
 
   // ---- others and chat (the island endpoint)
