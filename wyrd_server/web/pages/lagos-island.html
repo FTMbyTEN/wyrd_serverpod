@@ -376,7 +376,7 @@
   if (isTouch) document.body.classList.add('touch');
   let W = 0, H = 0, DPR = 1;
   let quality = 1; // drops when frames run slow
-  function resize() { DPR = Math.min(1.5, devicePixelRatio || 1) * quality; W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
+  function resize() { DPR = Math.max(1, Math.min(2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
   let co = 1, si = 0, sp = 1, cp = 0, K = 1;
@@ -1029,7 +1029,7 @@
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
-      if (p[0] === 'club' || p[0] === 'welcome') continue;
+      if (p[0] === 'welcome') continue;
       const cx = (p[1] + p[3] / 2) * T, cz = (p[2] + p[4] / 2) * T, top = PIN_H[p[0]] ?? 16;
       const s = P(cx, top, cz);
       if (s[0] < -40 || s[0] > W + 40 || s[1] < -40 || s[1] > H + 40) continue;
@@ -1487,9 +1487,9 @@
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
     if (document.hidden) { requestAnimationFrame(frame); return; }
     // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
-    if (dt > 0.028) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
-    if (slow > 40 && quality > 0.6) { quality = Math.max(0.6, quality - 0.15); slow = 0; resize(); }
-    if (fast > 600 && quality < 1) { quality = Math.min(1, quality + 0.1); fast = 0; resize(); }
+    if (dt > 0.045) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    if (slow > 90 && quality > 0.85) { quality = Math.max(0.85, quality - 0.075); slow = 0; resize(); }
+    if (fast > 300 && quality < 1) { quality = Math.min(1, quality + 0.075); fast = 0; resize(); }
     if (playing) {
       let ix = stick.x, iz = stick.z;
       if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
