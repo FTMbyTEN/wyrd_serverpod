@@ -245,42 +245,54 @@
     }
   }
   function drawTown() {
-    const s = cam.scale;
+    const s = cam.scale * cam.zoom;
     if (s < 0.08) return; // far out, the island is its streets
-    const ox = W / 2 - cam.x * s, oz = H / 2 - cam.z * s, lift = 0.55 * s;
-    const vx0 = cam.x - W / 2 / s - 80, vx1 = cam.x + W / 2 / s + 80, vz0 = cam.z - H / 2 / s - 80, vz1 = cam.z + H / 2 / s + 120;
+    const up1 = s * lean() * 1.1; // screen pixels a metre of height stands
+    const reach = Math.hypot(W, H) / s / Math.min(1, cam.tilt) * 0.7 + 100;
+    const vx0 = cam.x - reach, vx1 = cam.x + reach, vz0 = cam.z - reach, vz1 = cam.z + reach;
     const P = [], Hs = [], T = [];
     for (let gx = Math.floor(vx0 / BG); gx <= Math.floor(vx1 / BG); gx++) for (let gz = Math.floor(vz0 / BG); gz <= Math.floor(vz1 / BG); gz++) {
       const g = grid.get(gx + ',' + gz); if (!g) continue;
-      for (const o of g.plots) if (o.x > vx0 && o.x < vx1 && o.z > vz0 && o.z < vz1) P.push(o);
-      for (const o of g.houses) if (o.x > vx0 && o.x < vx1 && o.z > vz0 && o.z < vz1) Hs.push(o);
-      for (const o of g.trees) if (o.x > vx0 && o.x < vx1 && o.z > vz0 && o.z < vz1) T.push(o);
+      for (const o of g.plots) P.push(o);
+      for (const o of g.houses) Hs.push(o);
+      for (const o of g.trees) T.push(o);
     }
+    const sx = (px, pz) => M.a * px + M.c * pz + M.e, sy = (px, pz) => M.b * px + M.d * pz + M.f;
+    const onScreen = (o) => { const X = sx(o.x, o.z), Y = sy(o.x, o.z); return X > -80 && X < W + 80 && Y > -120 && Y < H + 80; };
     // the plots, flat, in one go
     x.beginPath();
-    for (const o of P) { const p = o.p; x.moveTo(p[0] * s + ox, p[1] * s + oz); for (let i = 2; i < 8; i += 2) x.lineTo(p[i] * s + ox, p[i + 1] * s + oz); x.closePath(); }
+    for (const o of P) {
+      if (!onScreen(o)) continue;
+      const p = o.p; x.moveTo(sx(p[0], p[1]), sy(p[0], p[1]));
+      for (let i = 2; i < 8; i += 2) x.lineTo(sx(p[i], p[i + 1]), sy(p[i], p[i + 1]));
+      x.closePath();
+    }
     x.fillStyle = C.plot; x.fill(); x.strokeStyle = C.plotEdge; x.lineWidth = 1; x.stroke();
-    // trees and houses, back to front: soft shadow, the walls facing you, the roof
-    const all = [...Hs, ...T].sort((a, b) => a.z - b.z);
+    // trees and houses, far to near: soft shadow, the walls facing you, the roof
+    const all = [...Hs, ...T].filter(onScreen).sort((a, b) => sy(a.x, a.z) - sy(b.x, b.z));
     for (const o of all) {
-      if (o.r) { // a tree: a round crown on a little shadow
-        const tx = o.x * s + ox, ty = o.z * s + oz, r = Math.max(2.5, o.r * s);
-        x.fillStyle = 'rgba(31,60,40,0.18)'; x.beginPath(); x.ellipse(tx + r * 0.35, ty + r * 0.3, r, r * 0.6, 0, 0, Math.PI * 2); x.fill();
-        x.fillStyle = o.c; x.beginPath(); x.arc(tx, ty - r * 0.8, r, 0, Math.PI * 2); x.fill();
+      if (o.r) { // a tree: a round crown on a stem of shadow
+        const tx = sx(o.x, o.z), ty = sy(o.x, o.z), r = Math.max(2.5, o.r * s);
+        x.fillStyle = 'rgba(31,60,40,0.2)'; x.beginPath(); x.ellipse(tx + r * 0.3, ty, r, r * cam.tilt, 0, 0, Math.PI * 2); x.fill();
+        x.fillStyle = o.c; x.beginPath(); x.arc(tx, ty - r * 1.1, r, 0, Math.PI * 2); x.fill();
         continue;
       }
-      const p = o.p, up = o.h * lift;
+      const p = o.p, up = o.h * up1;
+      const bx = [], by = [];
+      for (let i = 0; i < 8; i += 2) { bx.push(sx(p[i], p[i + 1])); by.push(sy(p[i], p[i + 1])); }
+      const cy = (by[0] + by[1] + by[2] + by[3]) / 4;
       x.fillStyle = 'rgba(31,42,55,0.14)'; x.beginPath();
-      x.moveTo(p[0] * s + ox + up * 0.4, p[1] * s + oz + up * 0.15); for (let i = 2; i < 8; i += 2) x.lineTo(p[i] * s + ox + up * 0.4, p[i + 1] * s + oz + up * 0.15); x.fill();
+      x.moveTo(bx[0] + up * 0.4, by[0] + up * 0.1); for (let i = 1; i < 4; i++) x.lineTo(bx[i] + up * 0.4, by[i] + up * 0.1); x.fill();
+      // a wall shows when its middle sits nearer the bottom of the screen than the building's middle
       x.beginPath();
-      for (let i = 0; i < 8; i += 2) {
-        const j = (i + 2) % 8, ax = p[i] * s + ox, ay = p[i + 1] * s + oz, bx = p[j] * s + ox, by = p[j + 1] * s + oz;
-        if (bx - ax <= 0) continue;
-        x.moveTo(ax, ay); x.lineTo(bx, by); x.lineTo(bx, by - up); x.lineTo(ax, ay - up); x.closePath();
+      for (let i = 0; i < 4; i++) {
+        const j = (i + 1) % 4;
+        if ((by[i] + by[j]) / 2 <= cy) continue;
+        x.moveTo(bx[i], by[i]); x.lineTo(bx[j], by[j]); x.lineTo(bx[j], by[j] - up); x.lineTo(bx[i], by[i] - up); x.closePath();
       }
       x.fillStyle = o.side; x.fill();
       x.fillStyle = o.roof; x.beginPath();
-      x.moveTo(p[0] * s + ox, p[1] * s + oz - up); for (let i = 2; i < 8; i += 2) x.lineTo(p[i] * s + ox, p[i + 1] * s + oz - up); x.fill();
+      x.moveTo(bx[0], by[0] - up); for (let i = 1; i < 4; i++) x.lineTo(bx[i], by[i] - up); x.fill();
     }
   }
   // the big water's names, like a map's
@@ -303,7 +315,33 @@
   const id = store.get('li.id') || (() => { const v = 'p' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); store.set('li.id', v); return v; })();
   let myName = store.get('li.name') || '', myColor = store.get('li.color') || COLORS[Math.floor(Math.random() * COLORS.length)];
   const me = { x: 0, z: 0, vx: 0, vz: 0, heading: 0 };
-  const cam = { x: 0, z: 0, scale: isTouch ? 1.3 : 1.0, follow: true };
+  // The camera looks down at the island at a slant, turned to suit each sector -- as a game board seen
+  // from a seat at the table. Every sector has its own angle; crossing into one, the camera glides there.
+  const cam = { x: 0, z: 0, scale: isTouch ? 1.3 : 1.0, follow: true, yaw: -0.35, tilt: 0.55, zoom: 1 };
+  const SECTORS = {
+    'Lagos Island': { yaw: -0.35, tilt: 0.55, zoom: 1.1 },
+    'Ikoyi': { yaw: 0.3, tilt: 0.6, zoom: 0.95 },
+    'Victoria Island': { yaw: -0.12, tilt: 0.55, zoom: 1 },
+    'Eko Atlantic': { yaw: 0.5, tilt: 0.5, zoom: 0.9 },
+    'Lekki': { yaw: 0.18, tilt: 0.58, zoom: 0.95 },
+    'Lekki: Chevron and Ikota': { yaw: -0.28, tilt: 0.58, zoom: 0.95 },
+    'Ajah': { yaw: 0.38, tilt: 0.6, zoom: 1 },
+    'The barrier beach (by boat)': { yaw: 0.05, tilt: 0.5, zoom: 0.9 },
+  };
+  let sector = 'Lagos Island';
+  // world to screen: turn by yaw, then lean back (z squashed by tilt); one matrix for paths, the same for points
+  const M = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+  function project() {
+    const k = cam.scale * cam.zoom, co = Math.cos(cam.yaw), si = Math.sin(cam.yaw);
+    M.a = k * co; M.b = k * cam.tilt * si; M.c = -k * si; M.d = k * cam.tilt * co;
+    M.e = W / 2 - (M.a * cam.x + M.c * cam.z); M.f = H * 0.56 - (M.b * cam.x + M.d * cam.z);
+  }
+  const lean = () => Math.sqrt(Math.max(0, 1 - cam.tilt * cam.tilt)); // how tall a metre stands on screen
+  // screen direction to world direction (for the joystick and dragging)
+  function toWorldDir(dx, dy) {
+    const co = Math.cos(cam.yaw), si = Math.sin(cam.yaw), ry = dy / cam.tilt;
+    return [dx * co + ry * si, -dx * si + ry * co];
+  }
 
   // ---------- others and chat
   const others = new Map(); // id -> { name, color, x, z, tx, tz, seen }
@@ -389,7 +427,7 @@
     if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; cam.scale = Math.max(0.015, Math.min(3, scale0 * Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1))); return; }
     const dx = e.clientX - p.x, dy = e.clientY - p.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) dragged = true;
-    if (dragged) { cam.follow = false; cam.x -= dx / cam.scale; cam.z -= dy / cam.scale; }
+    if (dragged) { cam.follow = false; const k = cam.scale * cam.zoom, [wx, wz] = toWorldDir(dx / k, dy / k); cam.x -= wx; cam.z -= wz; }
     p.x = e.clientX; p.y = e.clientY;
   });
   const up = (e) => {
@@ -436,17 +474,19 @@
   function updateWhere() {
     let best = null, bd = 700;
     for (const ic of icons) { const d = Math.hypot(ic.x - me.x, ic.z - me.z); if (d < bd) { bd = d; best = ic; } }
+    sector = districtOf(me.x, me.z);
     whereEl.textContent = '📍 ' + (best ? `${best.name} · ${districtOf(me.x, me.z)}` : districtOf(me.x, me.z));
   }
 
   // ---------- drawing
-  const toScreen = (wx, wz) => [(wx - cam.x) * cam.scale + W / 2, (wz - cam.z) * cam.scale + H / 2];
+  const toScreen = (wx, wz) => [M.a * wx + M.c * wz + M.e, M.b * wx + M.d * wz + M.f];
   function draw() {
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
     x.fillStyle = C.sea; x.fillRect(0, 0, W, H);
     if (!map) return;
     const s = cam.scale;
-    x.setTransform(DPR * s, 0, 0, DPR * s, DPR * (W / 2 - cam.x * s), DPR * (H / 2 - cam.z * s));
+    project();
+    x.setTransform(DPR * M.a, DPR * M.b, DPR * M.c, DPR * M.d, DPR * M.e, DPR * M.f);
     // only the island: everything beyond it (the mainland too) is left as sea
     x.save(); x.clip(islandP);
     x.strokeStyle = C.shore; x.lineWidth = Math.max(4, 3 / s); x.lineJoin = 'round';
@@ -535,7 +575,8 @@
       if (L > 0.08) {
         const fast = okada || keys.has('shift');
         const speed = (fast ? 32 : 9) * Math.min(1, L);
-        const nx = me.x + (ix / L) * speed * dt, nz = me.z + (iz / L) * speed * dt;
+        const [wx, wz] = toWorldDir(ix / L, (iz / L) * cam.tilt), wl = Math.hypot(wx, wz) || 1;
+        const nx = me.x + (wx / wl) * speed * dt, nz = me.z + (wz / wl) * speed * dt;
         if (onLand(nx, nz)) { me.x = nx; me.z = nz; }
         else if (onLand(nx, me.z)) me.x = nx;
         else if (onLand(me.x, nz)) me.z = nz;
@@ -543,6 +584,11 @@
       }
     }
     if (cam.follow) { cam.x += (me.x - cam.x) * Math.min(1, dt * 6); cam.z += (me.z - cam.z) * Math.min(1, dt * 6); }
+    if (map) {
+      const want = SECTORS[sector] || SECTORS['Lagos Island'], ease = Math.min(1, dt * 1.6);
+      let dy = want.yaw - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      cam.yaw += dy * ease; cam.tilt += (want.tilt - cam.tilt) * ease; cam.zoom += (want.zoom - cam.zoom) * ease;
+    }
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
     if (map && (whereT += dt) > 0.5) { whereT = 0; updateWhere(); }
     draw();
