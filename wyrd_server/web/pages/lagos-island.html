@@ -1349,7 +1349,8 @@
   }
 
   // ---- others and chat (the island endpoint)
-  const API = new URLSearchParams(location.search).get('api') || location.origin.replace(/^(https?:\/\/)([^.]+)\./, '$1$2.api.');
+  // the live server's API; a copy opened locally (localhost) talks to the live one too
+  const API = new URLSearchParams(location.search).get('api') || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'https://wryd00.api.serverpod.space' : location.origin.replace(/^(https?:\/\/)([^.]+)\./, '$1$2.api.'));
   const others = new Map(), bubbles = new Map();
   let since = 0;
   const logEl = document.getElementById('log');
@@ -1917,7 +1918,16 @@
       if (isNew) {
         const ask = (m, b) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then((r) => r.ok ? r.text() : 'true');
         if ((await ask('available', { username: u })).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
-        if ((await ask('emailFree', { email: mail })).trim() === 'false') throw new Error('That email already has a WYRD account. Sign in instead.');
+        if ((await ask('emailFree', { email: mail })).trim() === 'false') {
+          // already on WYRD: sign in with that email and password, and take the username chosen here
+          const r0 = await fetch(`${API}/islandAuth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: mail, password: p }) });
+          if (!r0.ok) throw new Error('That email already has a WYRD account. Use your WYRD password, or tap "I have an account".');
+          const a0 = JSON.parse(await r0.text());
+          localStorage.setItem(TOK, a0.token); if (a0.refreshToken) localStorage.setItem(RTOK, a0.refreshToken);
+          me$ = null;
+          try { await my('setProfile', { handle: u, skills: '', openToWork: false, pubKey: '' }); myName = u; } catch { my('me').then((v) => { myName = v.handle; }).catch(() => {}); }
+          start(); return;
+        }
       }
       const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isNew ? { username: u, email: mail, password: p } : { username: u, password: p }) });
       const t = await r.text();
