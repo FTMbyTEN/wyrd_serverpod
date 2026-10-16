@@ -1553,8 +1553,8 @@
   }
 
   // ---- others and chat (the island endpoint)
-  // the live server's API; a copy opened locally (localhost) talks to the live one too
-  const API = new URLSearchParams(location.search).get('api') || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'https://wryd00.api.serverpod.space' : location.origin.replace(/^(https?:\/\/)([^.]+)\./, '$1$2.api.'));
+  // the server: on Serverpod Cloud, the same project's API host; anywhere else (Netlify, a local copy), the live one
+  const API = new URLSearchParams(location.search).get('api') || (/\.serverpod\.space$/.test(location.hostname) ? location.origin.replace(/^(https?:\/\/)([^.]+)\./, '$1$2.api.') : 'https://wryd00.api.serverpod.space');
   const others = new Map(), bubbles = new Map();
   let since = 0;
   const logEl = document.getElementById('log');
