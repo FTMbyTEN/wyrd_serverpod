@@ -49,6 +49,7 @@ games:
 greeting:
   - hello:
 islandAuth:
+  - available:
   - register:
   - login:
 island:

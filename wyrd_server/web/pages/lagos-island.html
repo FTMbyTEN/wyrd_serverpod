@@ -1748,6 +1748,7 @@
     if (p.length < 8) { errEl.textContent = 'Your password needs 8 or more characters.'; return; }
     const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = isNew ? 'Making your account…' : 'Signing in…';
     try {
+      if (isNew) { const av = await fetch(`${API}/islandAuth/available`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u }) }); if (av.ok && (await av.text()).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.'); }
       const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
       const t = await r.text();
       if (!r.ok) {

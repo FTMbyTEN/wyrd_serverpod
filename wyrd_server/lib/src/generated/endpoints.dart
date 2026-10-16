@@ -1199,6 +1199,26 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'islandAuth',
       endpoint: endpoints['islandAuth']!,
       methodConnectors: {
+        'available': _is.MethodConnector(
+          name: 'available',
+          params: {
+            'username': _is.ParameterDescription(
+              name: 'username',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandAuth'] as _ifhwc3xe.IslandAuthEndpoint)
+                      .available(
+                        session,
+                        params['username'],
+                      ),
+        ),
         'register': _is.MethodConnector(
           name: 'register',
           params: {

@@ -678,6 +678,14 @@ class EndpointIslandAuth extends _isc.EndpointRef {
   @override
   String get name => 'islandAuth';
 
+  /// Is this username free? (the door asks before making the account)
+  _ida.Future<bool> available(String username) =>
+      caller.callServerEndpoint<bool>(
+        'islandAuth',
+        'available',
+        {'username': username},
+      );
+
   /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
   _ida.Future<_iacc.AuthSuccess> register(
     String username,

@@ -26,6 +26,14 @@ class IslandAuthEndpoint extends Endpoint {
     list.add(now);
   }
 
+  /// Is this username free? (the door asks before making the account)
+  Future<bool> available(Session session, String username) async {
+    final name = username.trim();
+    if (!_ok.hasMatch(name)) return false;
+    final taken = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.ilike(_lit(name)));
+    return taken == null && await AuthServices.instance.emailIdp.admin.findAccount(session, email: emailOf(name)) == null;
+  }
+
   /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
   Future<AuthSuccess> register(Session session, String username, String password) async {
     final name = username.trim();
