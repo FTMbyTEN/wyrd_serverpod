@@ -955,14 +955,14 @@
       flat(a + 2, b + 2, c - 2, b + 34, 0.07, lux ? '#0C0A09' : '#F8FAFC');
       box(a + 3, 0, b + 3, c - 3, 1, b + 33, lux ? '#D4AF37' : '#1D4ED8');
       const glassH = 14, gc = lux ? 'rgba(212,175,55,0.18)' : 'rgba(125,211,252,0.28)';
-      list.slice(0, 3).forEach(([, v], k) => carModel(a + 22 + k * ((c - a - 44) / 2), b + 18, v[1], CAR_COLORS[(k * 3 + (lux ? 1 : 4)) % CAR_COLORS.length], true, 2.6));
+      list.slice(0, 3).forEach(([id], k) => drawCar(a + 22 + k * ((c - a - 44) / 2), b + 18, id, null, 0.35, 2.4));
       for (const [x0, z0, x1, z1] of [[a + 3, b + 33, c - 3, b + 33.3], [c - 3.3, b + 3, c - 3, b + 33]]) { const p0 = P(x0, 1, z0), p1 = P(x1, 1, z1), p2 = P(x1, glassH, z1), p3 = P(x0, glassH, z0); quad([p0, p1, p2, p3], gc, lux ? 'rgba(212,175,55,0.6)' : 'rgba(255,255,255,0.7)'); }
       { const r0 = P(a + 3, glassH, b + 3), r1 = P(c - 3, glassH, b + 3), r2 = P(c - 3, glassH, b + 33.3), r3 = P(a + 3, glassH, b + 33.3); quad([r0, r1, r2, r3], lux ? 'rgba(12,10,9,0.25)' : 'rgba(224,242,254,0.3)', lux ? '#D4AF37' : '#E5E7EB'); }
       box(a + 3, glassH, b + 32.6, c - 3, glassH + 1.4, b + 33.3, lux ? '#0C0A09' : '#F8FAFC'); // the fascia with the name
       const sign = () => { const sg = P((a + c) / 2, glassH + 3.6, b + 33.3); x.save(); x.font = `900 ${Math.max(9, K * 3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = lux ? '#FDE68A' : '#60A5FA'; x.shadowBlur = 12; x.fillStyle = lux ? '#FDE68A' : '#1D4ED8'; x.fillText(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', sg[0], sg[1]); x.restore(); };
       sign(); glow.push(sign);
       flat(a + 2, b + 38, c - 2, d - 2, 0.07, '#4B5563');
-      list.forEach(([, v], k) => { const cx = a + 16 + (k % 3) * ((c - a - 32) / 2), cz = b + 50 + Math.floor(k / 3) * 26; flat(cx - 9, cz - 5, cx + 9, cz + 5, 0.09, lux ? '#57534E' : '#6B7280'); carModel(cx, cz, v[1], CAR_COLORS[(k * 5 + (lux ? 2 : 0)) % CAR_COLORS.length], true, 2.2); });
+      list.forEach(([id], k) => { const cx = a + 16 + (k % 3) * ((c - a - 32) / 2), cz = b + 50 + Math.floor(k / 3) * 26; flat(cx - 9, cz - 5, cx + 9, cz + 5, 0.09, lux ? '#57534E' : '#6B7280'); drawCar(cx, cz, id, null, 0.5, 2.1); });
       for (let k = 0; k <= 10; k++) { const fx = a + 2 + k * (c - a - 4) / 10; box(fx - 0.12, 0, b + 37 - 0.12, fx + 0.12, 7, b + 37 + 0.12, '#D1D5DB'); }
       for (let k = 0; k < 30; k++) { const u = k / 30, fx = a + 2 + u * (c - a - 4), p = P(fx, 6.6 - Math.sin(u * Math.PI * 10) * 0.6, b + 37); x.fillStyle = ['#EF4444', '#FACC15', '#3B82F6', '#22C55E'][k % 4]; x.beginPath(); x.moveTo(p[0] - K * 0.5, p[1]); x.lineTo(p[0] + K * 0.5, p[1]); x.lineTo(p[0], p[1] + K * 1.2); x.fill(); }
     },
@@ -1059,33 +1059,69 @@
   };
   const CAR_COLORS = ['#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37'];
   // a car, by its body: sedan, SUV, big SUV, G-Wagon box, super SUV, supercar. [along]: lengthwise along x.
+  // each model drawn as itself, in metres (sc = world units per metre): length, width, body height, cabin height,
+  // where the cabin starts and ends along the car (0 = tail, 1 = nose), how much the glass slopes, its signature colour, its features
+  const CAR_SPEC = {
+    corolla:     { L: 4.6, W: 1.8, bh: 0.72, ch: 0.62, c0: 0.22, c1: 0.7, sf: 0.32, sr: 0.28, col: '#F8FAFC', f: ['chrome'] },
+    camry:       { L: 4.9, W: 1.84, bh: 0.74, ch: 0.62, c0: 0.2, c1: 0.7, sf: 0.34, sr: 0.3, col: '#9CA3AF', f: ['chrome'] },
+    highlander:  { L: 4.95, W: 1.93, bh: 0.95, ch: 0.74, c0: 0.12, c1: 0.74, sf: 0.22, sr: 0.08, col: '#7F1D1D', f: ['rails'] },
+    lexusrx:     { L: 4.9, W: 1.92, bh: 0.9, ch: 0.68, c0: 0.14, c1: 0.72, sf: 0.26, sr: 0.18, col: '#1E3A8A', f: ['spindle', 'rails'] },
+    landcruiser: { L: 4.98, W: 1.98, bh: 1.05, ch: 0.8, c0: 0.1, c1: 0.78, sf: 0.14, sr: 0.04, col: '#F8FAFC', f: ['rails', 'chrome'] },
+    rangerover:  { L: 5.0, W: 2.0, bh: 1.0, ch: 0.74, c0: 0.1, c1: 0.8, sf: 0.18, sr: 0.06, col: '#64748B', f: ['blackroof', 'slim'] },
+    gwagon:      { L: 4.85, W: 1.98, bh: 1.0, ch: 0.9, c0: 0.08, c1: 0.76, sf: 0.04, sr: 0.0, col: '#0B0B0F', f: ['spare', 'round', 'boxy'] },
+    urus:        { L: 5.1, W: 2.02, bh: 0.78, ch: 0.56, c0: 0.16, c1: 0.66, sf: 0.42, sr: 0.38, col: '#FACC15', f: ['vents', 'wedge'] },
+    ferrari:     { L: 4.65, W: 1.97, bh: 0.6, ch: 0.46, c0: 0.2, c1: 0.56, sf: 0.45, sr: 0.42, col: '#DC2626', f: ['longhood', 'lowlights'] },
+    cullinan:    { L: 5.34, W: 2.0, bh: 1.1, ch: 0.8, c0: 0.12, c1: 0.78, sf: 0.14, sr: 0.06, col: '#111827', f: ['grille', 'twotone', 'chrome'] },
+  };
+  // a car at (cx, cz), turned [ang] radians (0: nose towards +x), [sc] world units a metre
+  function drawCar(cx, cz, model, col, ang, sc = 1) {
+    const S = CAR_SPEC[model] || CAR_SPEC.corolla, color = col || S.col, co2 = Math.cos(ang), si2 = Math.sin(ang);
+    const hl = S.L / 2 * sc, hw = S.W / 2 * sc, y0 = 0.32 * sc, bh = S.bh * sc, ch = S.ch * sc, has = (k) => S.f.includes(k);
+    // local (l along the car, w across, y up) to the screen
+    const pt = (l, w, y) => P(cx + l * co2 - w * si2, y, cz + l * si2 + w * co2);
+    const face = (pts, nl, nw, ny, fill, stroke) => { const nx = nl * co2 - nw * si2, nz = nl * si2 + nw * co2; if (viewDot(nx, ny, nz) <= 0) return; quad(pts.map(([l, w, y]) => pt(l, w, y)), typeof fill === 'string' && fill[0] === '#' ? lit(fill, nx, ny, nz) : fill, stroke); };
+    // a prism from (l0..l1, w0..w1) on the floor to a top that can be narrower (t0..t1, tw)
+    const prism = (l0, l1, w0, y0p, y1p, t0, t1, tw, fill, sideFill, endFill, stroke) => {
+      face([[l1, -w0, y0p], [l1, w0, y0p], [t1, tw, y1p], [t1, -tw, y1p]], 1, 0, (l1 - t1) / Math.max(0.01, y1p - y0p) * 0.6, endFill || fill, stroke);
+      face([[l0, w0, y0p], [l0, -w0, y0p], [t0, -tw, y1p], [t0, tw, y1p]], -1, 0, (t0 - l0) / Math.max(0.01, y1p - y0p) * 0.6, endFill || fill, stroke);
+      face([[l0, w0, y0p], [l1, w0, y0p], [t1, tw, y1p], [t0, tw, y1p]], 0, 1, 0.15, sideFill || fill, stroke);
+      face([[l1, -w0, y0p], [l0, -w0, y0p], [t0, -tw, y1p], [t1, -tw, y1p]], 0, -1, 0.15, sideFill || fill, stroke);
+      face([[t0, -tw, y1p], [t1, -tw, y1p], [t1, tw, y1p], [t0, tw, y1p]], 0, 0, 1, fill, stroke);
+    };
+    // the shadow
+    x.fillStyle = 'rgba(10,20,35,0.32)'; x.beginPath(); { const q = [pt(-hl * 1.02, -hw * 1.1, 0), pt(hl * 1.02, -hw * 1.1, 0), pt(hl * 1.02, hw * 1.1, 0), pt(-hl * 1.02, hw * 1.1, 0)]; x.moveTo(q[0][0] + 3, q[0][1] + 2); for (const p of q.slice(1)) x.lineTo(p[0] + 3, p[1] + 2); x.fill(); }
+    // wheels (the far ones first)
+    const wheel = (l, w) => { const p = pt(l, w, 0.34 * sc); x.fillStyle = '#0A0A0D'; x.beginPath(); x.ellipse(p[0], p[1], 0.36 * sc * K, 0.36 * sc * K, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = has('longhood') || has('wedge') ? '#D1D5DB' : '#9CA3AF'; x.beginPath(); x.arc(p[0], p[1], 0.2 * sc * K, 0, Math.PI * 2); x.fill(); };
+    const wl = hl * 0.66;
+    for (const [l, w] of [[wl, -hw], [-wl, -hw], [wl, hw], [-wl, hw]].sort((a2, b2) => { const pa = pt(a2[0], a2[1], 0)[2], pb = pt(b2[0], b2[1], 0)[2]; return pa - pb; })) wheel(l, w);
+    // the body: a long box with the nose and tail eased in at the top
+    const noseIn = has('boxy') ? 0.02 * sc : (has('longhood') || has('wedge') ? 0.35 : 0.18) * sc;
+    prism(-hl, hl, hw, y0, y0 + bh, -hl + 0.12 * sc, hl - noseIn, hw * 0.97, color, color, color, 'rgba(0,0,0,0.18)');
+    if (has('twotone')) prism(-hl, hl, hw * 1.001, y0, y0 + bh * 0.42, -hl, hl, hw * 1.001, '#9CA3AF', '#9CA3AF', '#9CA3AF', 'rgba(0,0,0,0.15)');
+    // the cabin and glass: sloped windscreen and rear window by the model's own angles
+    const c0 = -hl + S.c0 * 2 * hl, c1 = -hl + S.c1 * 2 * hl, run = c1 - c0, t0 = c0 + run * S.sr, t1 = c1 - run * S.sf, cw = hw * (has('boxy') ? 0.96 : 0.9), tw = cw * (has('boxy') ? 0.96 : 0.86);
+    const roofCol = has('blackroof') ? '#111827' : color;
+    prism(c0, c1, cw, y0 + bh, y0 + bh + ch, t0, t1, tw, roofCol, '#1B2433', '#2B3A4F', 'rgba(0,0,0,0.25)');
+    // pillars on the side glass
+    x.strokeStyle = shadeHex(roofCol, 0.9); x.lineWidth = Math.max(1, 0.07 * sc * K);
+    for (const w of [cw, -cw]) for (const u of [0.45]) { const p0 = pt(c0 + run * u, w, y0 + bh), p1 = pt(t0 + (t1 - t0) * u, w * tw / cw, y0 + bh + ch); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+    // features
+    if (has('rails')) for (const w of [tw * 0.85, -tw * 0.85]) { const p0 = pt(t0, w, y0 + bh + ch + 0.08 * sc), p1 = pt(t1, w, y0 + bh + ch + 0.08 * sc); x.strokeStyle = '#D1D5DB'; x.lineWidth = Math.max(1, 0.06 * sc * K); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+    if (has('spare')) { const p = pt(-hl - 0.12 * sc, 0, y0 + bh * 0.6); x.fillStyle = '#111111'; x.beginPath(); x.arc(p[0], p[1], 0.36 * sc * K, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#D1D5DB'; x.lineWidth = Math.max(1, 0.05 * sc * K); x.stroke(); }
+    if (has('vents')) for (const w of [hw, -hw]) { const p0 = pt(hl * 0.25, w, y0 + bh * 0.35), p1 = pt(hl * 0.55, w, y0 + bh * 0.6); x.strokeStyle = '#111827'; x.lineWidth = Math.max(1.5, 0.12 * sc * K); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+    // the front: grille and lights
+    const nose = hl + 0.01 * sc, gy = y0 + bh * 0.45;
+    if (has('grille')) face([[nose, -hw * 0.32, y0 + bh * 0.15], [nose, hw * 0.32, y0 + bh * 0.15], [nose, hw * 0.32, y0 + bh * 0.92], [nose, -hw * 0.32, y0 + bh * 0.92]], 1, 0, 0, '#E5E7EB', '#9CA3AF');
+    else if (has('spindle')) face([[nose, -hw * 0.3, y0 + bh * 0.1], [nose, hw * 0.3, y0 + bh * 0.1], [nose, hw * 0.4, y0 + bh * 0.7], [nose, -hw * 0.4, y0 + bh * 0.7]], 1, 0, 0, '#111827', '#9CA3AF');
+    else if (!has('longhood')) face([[nose, -hw * 0.45, gy - 0.12 * sc], [nose, hw * 0.45, gy - 0.12 * sc], [nose, hw * 0.45, gy + 0.12 * sc], [nose, -hw * 0.45, gy + 0.12 * sc]], 1, 0, 0, has('chrome') ? '#CBD5E1' : '#111827');
+    const lightY = has('lowlights') ? y0 + bh * 0.55 : y0 + bh * 0.68;
+    for (const w of [hw * 0.72, -hw * 0.72]) { const p = pt(nose, w, lightY); x.fillStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.beginPath(); if (has('round')) x.arc(p[0], p[1], 0.15 * sc * K, 0, Math.PI * 2); else x.ellipse(p[0], p[1], 0.22 * sc * K, 0.08 * sc * K, 0, 0, Math.PI * 2); x.fill(); }
+    for (const w of [hw * 0.75, -hw * 0.75]) { const p = pt(-hl - 0.01 * sc, w, y0 + bh * 0.68); x.fillStyle = '#DC2626'; x.beginPath(); x.ellipse(p[0], p[1], 0.2 * sc * K, 0.07 * sc * K, 0, 0, Math.PI * 2); x.fill(); }
+  }
+  // the old call shape (body kinds) maps to a model of that kind
   function carModel(cx, cz, body, col, along, sc = 1) {
-    const D = { sedan: [2.3, 0.92, 0.72, 0.62, 0.42], suv: [2.35, 0.98, 0.95, 0.72, 0.55], bigsuv: [2.55, 1.04, 1.05, 0.8, 0.6], gwagon: [2.3, 1.0, 1.1, 0.9, 0.62], supersuv: [2.45, 1.05, 0.8, 0.55, 0.4], super: [2.3, 1.02, 0.58, 0.42, 0.32] }[body] || [2.3, 0.92, 0.72, 0.62, 0.42];
-    const [hl, hw, bh, ch, cabin] = D.map((v) => v * sc), a = along ? hl : hw, b = along ? hw : hl;
-    x.fillStyle = 'rgba(15,25,40,0.3)'; const sh = P(cx + 0.4 * sc, 0, cz + 0.3 * sc); x.beginPath(); x.ellipse(sh[0], sh[1], (a + 0.4 * sc) * K, (b + 0.4 * sc) * K * sp, 0, 0, Math.PI * 2); x.fill();
-    const wr = 0.42 * sc, y0 = 0.35 * sc;
-    for (const [wx, wz] of [[-0.62, -1], [0.62, -1], [-0.62, 1], [0.62, 1]]) { const px = along ? cx + wx * hl : cx + wz * hw, pz = along ? cz + wz * hw : cz + wx * hl; const p = P(px, wr, pz); x.fillStyle = '#0B0B0F'; x.beginPath(); x.arc(p[0], p[1], wr * K, 0, Math.PI * 2); x.fill(); x.fillStyle = '#9CA3AF'; x.beginPath(); x.arc(p[0], p[1], wr * K * 0.45, 0, Math.PI * 2); x.fill(); }
-    box(cx - a, y0, cz - b, cx + a, y0 + bh, cz + b, col);
-    const ca = along ? a * cabin : a * 0.86, cb = along ? b * 0.86 : b * cabin, off = body === 'super' || body === 'supersuv' ? -0.15 * sc : 0;
-    // the cabin: a sloped windscreen and rear window, a narrower roof, glass all round
-    const back = (body === 'super' || body === 'supersuv' ? -0.22 : -0.1) * hl, flatRoof = body === 'gwagon';
-    const L0 = -ca + back, L1 = ca + back, T0 = flatRoof ? L0 + 0.05 * hl : L0 + (L1 - L0) * 0.2, T1 = flatRoof ? L1 - 0.05 * hl : L1 - (L1 - L0) * 0.32, Wc = along ? cb : ca, yb = y0 + bh, yt = y0 + bh + ch;
-    const pt = (l, w, y) => along ? P(cx + l, y, cz + w) : P(cx + w, y, cz + l);
-    const glass = '#1E293B', roof = col;
-    const sideN = along ? [0, 0, 1] : [1, 0, 0];
-    // the near side window band
-    quad([pt(L0, Wc, yb), pt(L1, Wc, yb), pt(T1, Wc * 0.92, yt), pt(T0, Wc * 0.92, yt)], viewDot(...sideN) > 0 ? glass : shadeHex(col, 0.7));
-    quad([pt(L0, -Wc, yb), pt(L1, -Wc, yb), pt(T1, -Wc * 0.92, yt), pt(T0, -Wc * 0.92, yt)], viewDot(-sideN[0], 0, -sideN[2]) > 0 ? glass : shadeHex(col, 0.7));
-    // windscreen and rear window
-    quad([pt(L1, -Wc, yb), pt(L1, Wc, yb), pt(T1, Wc * 0.92, yt), pt(T1, -Wc * 0.92, yt)], '#334155');
-    quad([pt(L0, -Wc, yb), pt(L0, Wc, yb), pt(T0, Wc * 0.92, yt), pt(T0, -Wc * 0.92, yt)], '#1F2937');
-    // the roof
-    quad([pt(T0, -Wc * 0.92, yt), pt(T1, -Wc * 0.92, yt), pt(T1, Wc * 0.92, yt), pt(T0, Wc * 0.92, yt)], lit(roof, 0, 1, 0), 'rgba(0,0,0,0.25)');
-    // pillars between the windows
-    x.strokeStyle = shadeHex(col, 0.8); x.lineWidth = Math.max(1, K * 0.12 * sc);
-    for (const w of [Wc, -Wc]) { const p0 = pt((L0 + L1) / 2, w, yb), p1 = pt((T0 + T1) / 2, w * 0.92, yt); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
-    for (const sd of [-1, 1]) { const p = along ? P(cx + a, y0 + bh * 0.6, cz + sd * b * 0.65) : P(cx + sd * a * 0.65, y0 + bh * 0.6, cz + b); x.fillStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, 0.18 * sc * K), 0, Math.PI * 2); x.fill(); }
-    if (body === 'gwagon' || (body === 'bigsuv' && col === '#D4AF37')) box(along ? cx + a : cx - a * 0.5, y0 + bh * 0.2, along ? cz - b * 0.4 : cz + b, along ? cx + a + 0.05 : cx + a * 0.5, y0 + bh * 0.8, along ? cz + b * 0.4 : cz + b + 0.05, '#E5E7EB');
+    const m = { sedan: 'camry', suv: 'highlander', bigsuv: 'landcruiser', gwagon: 'gwagon', supersuv: 'urus', super: 'ferrari' }[body] || 'camry';
+    drawCar(cx, cz, m, col, along ? 0 : Math.PI / 2, sc * 0.45);
   }
   let parkedNow = {}; // building -> cars parked outside it (from the island feed)
   // a car park: asphalt, white bays, a P sign, and the cars of the people inside right now
@@ -1098,9 +1134,9 @@
       if (along) { const lx = x0 + k * bay, za = r ? z1 - 5 : z0, zb = r ? z1 : z0 + 5; const p = P(lx, 0.08, za), q = P(lx, 0.08, zb); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       else { const lz = z0 + k * bay, xa = r ? x1 - 5 : x0, xb = r ? x1 : x0 + 5; const p = P(xa, 0.08, lz), q = P(xb, 0.08, lz); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       if (k === n || ci >= cars.length) continue;
-      const [model, col] = cars[ci++].split(':'), body = (CARS[model] || [])[1] || 'sedan';
-      if (along) carModel(x0 + k * bay + bay / 2, r ? z1 - 2.5 : z0 + 2.5, body, col, false, 0.78);
-      else carModel(r ? x1 - 2.5 : x0 + 2.5, z0 + k * bay + bay / 2, body, col, true, 0.78);
+      const [model, col] = cars[ci++].split(':');
+      if (along) drawCar(x0 + k * bay + bay / 2, r ? z1 - 2.5 : z0 + 2.5, model, col, Math.PI / 2, 0.82);
+      else drawCar(r ? x1 - 2.5 : x0 + 2.5, z0 + k * bay + bay / 2, model, col, 0, 0.82);
     }
     const px = x1 - 0.8, pz = z0 + 0.8; box(px - 0.12, 0, pz - 0.12, px + 0.12, 4, pz + 0.12, '#9CA3AF');
     const p = P(px, 4.6, pz); x.fillStyle = '#1D4ED8'; x.fillRect(p[0] - K * 0.9, p[1] - K * 0.9, K * 1.8, K * 1.8); x.fillStyle = '#fff'; x.font = `900 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('P', p[0], p[1] + 0.5);
@@ -1858,23 +1894,42 @@
   // a showroom: polished floor, cars turning on lit platforms, price boards, the dealer's colours
   function showroomCars(R) {
     const list = Object.entries(CARS).filter(([, v]) => v[3] === R.dealer);
-    return list.map(([id, v], k) => ({ id, v, x: 22 + (k % 3) * 26, z: 18 + Math.floor(k / 3) * 26, col: CAR_COLORS[(k * 4 + (R.dealer === 'lekkiluxury' ? 1 : 3)) % CAR_COLORS.length] }));
+    return list.map(([id, v], k) => ({ id, v, k, x: 22 + (k % 3) * 26, z: 18 + Math.floor(k / 3) * 26, col: CAR_SPEC[id].col }));
   }
   function drawShowroom(R, now) {
-    const lux = R.dealer === 'lekkiluxury', t = now / 1000;
-    x.strokeStyle = lux ? 'rgba(212,175,55,0.18)' : 'rgba(148,163,184,0.3)'; x.lineWidth = 1;
-    for (let k = 6; k < R.w; k += 6) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
-    const sign = (txt, x0, y0, col, size) => { const o = P(x0, y0, 0.15), e = P(x0 + 1, y0, 0.15), u = P(x0, y0 + 1, 0.15); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 8; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
-    sign(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', 50, 13, lux ? '#D4AF37' : '#1D4ED8', 4);
+    const lux = R.dealer === 'lekkiluxury', t = now / 1000, gold = '#D4AF37', blue = '#1D4ED8', acc = lux ? gold : blue;
+    // the floor: black marble with gold veins (Lekki Luxury), white porcelain with a blue runner (Polanco)
+    if (lux) { x.strokeStyle = 'rgba(212,175,55,0.2)'; x.lineWidth = 1; for (let k = 0; k < 22; k++) { const R2 = rnd(k * 17 + 9); let px = R2() * R.w, pz = R2() * R.d; const p = P(px, 0.02, pz); x.beginPath(); x.moveTo(p[0], p[1]); for (let q = 0; q < 4; q++) { px += (R2() - 0.5) * 14; pz += (R2() - 0.5) * 9; const pp = P(px, 0.02, pz); x.lineTo(pp[0], pp[1]); } x.stroke(); } }
+    else { x.strokeStyle = 'rgba(148,163,184,0.35)'; x.lineWidth = 1; for (let k = 6; k < R.w; k += 6) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } for (let k = 6; k < R.d; k += 6) { const p = P(0, 0.02, k), q = P(R.w, 0.02, k); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } flat(R.w / 2 - 4, 30, R.w / 2 + 4, R.d, 0.03, 'rgba(29,78,216,0.18)'); }
+    // the back wall: floor-to-ceiling glass onto the lagoon and the skyline, the dealer's name across it
+    const g0 = P(26, 1.5, 0.1), g1 = P(R.w - 2, 1.5, 0.1), g2 = P(R.w - 2, 16, 0.1), g3 = P(26, 16, 0.1);
+    const sky = x.createLinearGradient(g3[0], g3[1], g0[0], g0[1]); sky.addColorStop(0, night > 0.5 ? '#0F172A' : '#7DD3FC'); sky.addColorStop(0.65, night > 0.5 ? '#1E1B4B' : '#BAE6FD'); sky.addColorStop(0.66, night > 0.5 ? '#0B3B5E' : '#3A86C8'); sky.addColorStop(1, night > 0.5 ? '#082F49' : '#1E6FAF');
+    quad([g0, g1, g2, g3], sky, acc);
+    for (let k = 0; k < 9; k++) { const bx = 28 + k * 6.6, bh = 3 + ((k * 7) % 5) * 1.3; const q0 = P(bx, 10, 0.12), q1 = P(bx + 4, 10, 0.12), q2 = P(bx + 4, 10 + bh, 0.12), q3 = P(bx, 10 + bh, 0.12); quad([q0, q1, q2, q3], night > 0.5 ? 'rgba(129,140,248,0.55)' : 'rgba(71,85,105,0.45)'); }
+    for (let k = 1; k < 6; k++) { const mx = 26 + k * (R.w - 28) / 6, p = P(mx, 1.5, 0.12), q = P(mx, 16, 0.12); x.strokeStyle = acc; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    const sign = (txt, x0, y0, z0, col, size) => { const o = P(x0, y0, z0), e = P(x0 + 1, y0, z0), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 10; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
+    sign(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', 58, 17, 0.15, acc, 3.6);
+    if (!lux) sign('DRIVE THE ISLAND', 58, 14.4, 0.15, '#0EA5E9', 1.8); else sign('EXCLUSIVE · CERTIFIED · DELIVERED', 58, 14.4, 0.15, '#FDE68A', 1.4);
+    // the left wall: a brand banner, and a sales consultant's desk with a screen
+    const b0 = P(0.15, 4, 30), b1 = P(0.15, 4, 50), b2 = P(0.15, 14, 50), b3 = P(0.15, 14, 30); quad([b0, b1, b2, b3], lux ? '#111827' : '#DBEAFE', acc);
+    { const o = P(0.15, 9, 40), e = P(0.15, 9, 41), u = P(0.15, 10, 40); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = '900 2.2px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = acc; x.fillText(lux ? 'BESPOKE' : 'TEST DRIVE', 0, -0.8); x.font = '700 1.2px "Plus Jakarta Sans", sans-serif'; x.fillStyle = lux ? '#FDE68A' : '#1E3A8A'; x.fillText(lux ? 'Your colour, your interior' : 'Book yours today', 0, 1.4); x.restore(); }
+    // the cars, each on a lit turntable with a spotlight from above and a reflection in the floor
     for (const c of showroomCars(R)) {
+      const top = c.k === showroomCars(R).length - 1; // the dearest car gets the raised, roped platform
       const p = P(c.x, 0.05, c.z), r = K * 10.5;
+      if (top) { const pr = P(c.x, 1.2, c.z); x.fillStyle = lux ? '#0C0A09' : '#F1F5F9'; x.beginPath(); x.ellipse(pr[0], pr[1], r * 1.05, r * 1.05 * sp, 0, 0, Math.PI * 2); x.fill(); for (let q = 0; q < 8; q++) { const a2 = q / 8 * Math.PI * 2, px = c.x + Math.cos(a2) * 12.5, pz = c.z + Math.sin(a2) * 12.5; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, gold); } }
       x.fillStyle = lux ? '#1C1917' : '#E2E8F0'; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill();
-      x.strokeStyle = lux ? '#D4AF37' : '#60A5FA'; x.lineWidth = Math.max(1.5, K * 0.3); x.stroke();
-      carModel(c.x, c.z, c.v[1], c.col, Math.floor(t / 4 + c.x) % 2 === 0, 2.7);
-      const tag = P(c.x, 14, c.z - 2); x.save(); x.font = '800 11px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-      const label = c.v[0] + ' · ' + naira(c.v[2]), w = x.measureText(label).width + 16;
-      x.fillStyle = lux ? 'rgba(12,10,9,0.9)' : 'rgba(255,255,255,0.95)'; x.beginPath(); x.roundRect(tag[0] - w / 2, tag[1] - 10, w, 20, 10); x.fill();
-      x.fillStyle = lux ? '#FDE68A' : '#1E3A8A'; x.fillText(label, tag[0], tag[1]); x.restore();
+      x.strokeStyle = acc; x.lineWidth = Math.max(1.5, K * 0.3); x.stroke();
+      x.save(); x.globalCompositeOperation = 'lighter'; const sl = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); sl.addColorStop(0, lux ? 'rgba(255,236,170,0.22)' : 'rgba(255,255,255,0.35)'); sl.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = sl; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore();
+      drawCar(c.x, c.z, c.id, c.col, t * 0.3 + c.k * 1.1, 3.1);
+      // the spotlight cone from the ceiling
+      x.save(); x.globalCompositeOperation = 'lighter'; const lp = P(c.x, 20, c.z); const cone = x.createLinearGradient(lp[0], lp[1], p[0], p[1]); cone.addColorStop(0, 'rgba(255,250,235,0.18)'); cone.addColorStop(1, 'rgba(255,250,235,0)'); x.fillStyle = cone; x.beginPath(); x.moveTo(lp[0] - K * 0.6, lp[1]); x.lineTo(lp[0] + K * 0.6, lp[1]); x.lineTo(p[0] + r * 0.9, p[1]); x.lineTo(p[0] - r * 0.9, p[1]); x.fill(); x.restore();
+      // the price board on a stand
+      const st = P(c.x + 9, 0, c.z + 9), sb = P(c.x + 9, 5, c.z + 9); x.strokeStyle = lux ? gold : '#94A3B8'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(st[0], st[1]); x.lineTo(sb[0], sb[1]); x.stroke();
+      x.save(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '800 11px "Plus Jakarta Sans", sans-serif';
+      const name = c.v[0], price = naira(c.v[2]), w = Math.max(x.measureText(name).width, x.measureText(price).width) + 18;
+      x.fillStyle = lux ? 'rgba(12,10,9,0.92)' : 'rgba(255,255,255,0.97)'; x.beginPath(); x.roundRect(sb[0] - w / 2, sb[1] - 30, w, 32, 8); x.fill(); x.strokeStyle = acc; x.lineWidth = 1; x.stroke();
+      x.fillStyle = lux ? '#F8FAFC' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 21); x.fillStyle = lux ? '#FDE68A' : blue; x.font = '900 11px "Plus Jakarta Sans", sans-serif'; x.fillText(price, sb[0], sb[1] - 7); x.restore();
     }
   }
   // an apartment: oak herringbone in the living room, carpet in the bedroom, marble in the kitchen,
@@ -2574,11 +2629,11 @@
       }
       if (app === 'buycar') {
         const id = arg, v = CARS[id]; if (!v) return show('<div class="pcard">That car is gone.</div>');
-        await loadMe(); let colr = CAR_COLORS[0];
+        await loadMe(); let colr = CAR_SPEC[id] ? CAR_SPEC[id].col : CAR_COLORS[0];
         const bodyName = { sedan: 'saloon', suv: 'SUV', bigsuv: 'full-size SUV', gwagon: 'off-roader', supersuv: 'super SUV', super: 'supercar' }[v[1]];
         show(`<div class="ptitle">${esc(v[0])}</div><div class="lock">${v[3] === 'lekkiluxury' ? 'Lekki Luxury Cars' : 'Polanco'} · ${bodyName}</div>
           <div class="pcard"><div class="big">${naira(v[2])}</div><div class="dim">Paid from your wallet. It becomes the car you drive, and it parks outside wherever you go in.</div>
-          <div class="dim" style="margin-top:10px">Colour</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${CAR_COLORS.map((c2, k) => `<button data-col="${c2}" style="width:30px;height:30px;border-radius:50%;border:3px solid ${k ? 'transparent' : '#FCEE0A'};background:${c2};cursor:pointer"></button>`).join('')}</div>
+          <div class="dim" style="margin-top:10px">Colour</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${[...new Set([colr, ...CAR_COLORS])].map((c2, k) => `<button data-col="${c2}" style="width:30px;height:30px;border-radius:50%;border:3px solid ${k ? 'transparent' : '#FCEE0A'};background:${c2};cursor:pointer"></button>`).join('')}</div>
           <button class="pbtn" id="bcGo">Buy it</button></div>`);
         pbody.querySelectorAll('[data-col]').forEach((b) => (b.onclick = () => { colr = b.dataset.col; pbody.querySelectorAll('[data-col]').forEach((o) => (o.style.borderColor = o === b ? '#FCEE0A' : 'transparent')); }));
         $('bcGo').onclick = async () => { try { const r = await my('buyCar', { model: id, color: colr }); myCar = id + ':' + colr; show(`<div class="ptitle">It's yours!</div><div class="pcard"><h3>🔑 ${esc(r.name)}</h3><p>Congratulations. It will wait outside wherever you go in.</p><button class="pbtn" id="bcG">Open Garage</button></div>`); $('bcG').onclick = () => go('garage'); } catch (e) { fail(e); } };

@@ -585,7 +585,7 @@ class IslandMeEndpoint extends Endpoint {
     'ferrari': (name: 'Ferrari Roma', body: 'super', price: 18000000, dealer: 'lekkiluxury'),
     'cullinan': (name: 'Rolls-Royce Cullinan', body: 'bigsuv', price: 30000000, dealer: 'lekkiluxury'),
   };
-  static const carColors = {'#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37'};
+  static const carColors = {'#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37', '#7F1D1D', '#1E3A8A', '#64748B', '#0B0B0F', '#FACC15', '#DC2626'};
 
   /// The catalogue (for the dealers' showrooms and the Garage app).
   Future<String> cars(Session session) async => jsonEncode([
