@@ -1,0 +1,15 @@
+### A car someone bought at a Lagos Island dealer. [active] is the one they drive (and park outside where they are).
+class: IslandCar
+table: island_car
+fields:
+  authUserId: UuidValue
+  ### a model id from the dealer catalogue
+  model: String
+  color: String
+  price: int
+  dealer: String
+  active: bool, default=false
+  boughtAt: DateTime
+indexes:
+  island_car_user_idx:
+    fields: authUserId

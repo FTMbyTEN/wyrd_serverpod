@@ -748,6 +748,7 @@ class EndpointIsland extends _isc.EndpointRef {
     int since,
     String room,
     String look,
+    String car,
   ) => caller.callServerEndpoint<String>(
     'island',
     'tick',
@@ -760,6 +761,7 @@ class EndpointIsland extends _isc.EndpointRef {
       'since': since,
       'room': room,
       'look': look,
+      'car': car,
     },
   );
 
@@ -1141,6 +1143,40 @@ class EndpointIslandMe extends _isc.EndpointRef {
         'cancelRide',
         {'id': id},
       );
+
+  /// The catalogue (for the dealers' showrooms and the Garage app).
+  _ida.Future<String> cars() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'cars',
+    {},
+  );
+
+  /// The cars I own.
+  _ida.Future<String> myCars() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myCars',
+    {},
+  );
+
+  /// Buy a car: the price comes out of my wallet; it becomes the car I drive.
+  _ida.Future<String> buyCar(
+    String model,
+    String color,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyCar',
+    {
+      'model': model,
+      'color': color,
+    },
+  );
+
+  /// Choose which of my cars I drive.
+  _ida.Future<String> driveCar(int carId) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'driveCar',
+    {'carId': carId},
+  );
 
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
   /// owner and the people they've let in.

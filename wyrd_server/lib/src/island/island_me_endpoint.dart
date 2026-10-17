@@ -571,6 +571,62 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'cancelled': true});
   }
 
+  // ---------------- cars: the dealers' catalogue, buying, your garage ----------------
+  /// model id -> (name, kind of body for drawing, price in naira, which dealer sells it)
+  static const carCatalog = {
+    'corolla': (name: 'Toyota Corolla', body: 'sedan', price: 450000, dealer: 'polanco'),
+    'camry': (name: 'Toyota Camry', body: 'sedan', price: 900000, dealer: 'polanco'),
+    'highlander': (name: 'Toyota Highlander', body: 'suv', price: 1500000, dealer: 'polanco'),
+    'lexusrx': (name: 'Lexus RX 350', body: 'suv', price: 2200000, dealer: 'polanco'),
+    'landcruiser': (name: 'Toyota Land Cruiser', body: 'bigsuv', price: 4000000, dealer: 'polanco'),
+    'rangerover': (name: 'Range Rover', body: 'bigsuv', price: 6500000, dealer: 'lekkiluxury'),
+    'gwagon': (name: 'Mercedes G-Wagon', body: 'gwagon', price: 9000000, dealer: 'lekkiluxury'),
+    'urus': (name: 'Lamborghini Urus', body: 'supersuv', price: 15000000, dealer: 'lekkiluxury'),
+    'ferrari': (name: 'Ferrari Roma', body: 'super', price: 18000000, dealer: 'lekkiluxury'),
+    'cullinan': (name: 'Rolls-Royce Cullinan', body: 'bigsuv', price: 30000000, dealer: 'lekkiluxury'),
+  };
+  static const carColors = {'#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37'};
+
+  /// The catalogue (for the dealers' showrooms and the Garage app).
+  Future<String> cars(Session session) async => jsonEncode([
+    for (final e in carCatalog.entries) {'id': e.key, 'name': e.value.name, 'body': e.value.body, 'price': e.value.price, 'dealer': e.value.dealer},
+  ]);
+
+  /// The cars I own.
+  Future<String> myCars(Session session) async {
+    final rows = await IslandCar.db.find(session, where: (t) => t.authUserId.equals(_user(session)), orderBy: (t) => t.boughtAt);
+    return jsonEncode([for (final c in rows) {'id': c.id, 'model': c.model, 'name': carCatalog[c.model]?.name ?? c.model, 'body': carCatalog[c.model]?.body ?? 'sedan', 'color': c.color, 'price': c.price, 'active': c.active}]);
+  }
+
+  /// Buy a car: the price comes out of my wallet; it becomes the car I drive.
+  Future<String> buyCar(Session session, String model, String color) => _money(session, (u) async {
+    final m = carCatalog[model];
+    if (m == null) return _err('That car is not for sale.');
+    if (!carColors.contains(color)) return _err('Pick one of the dealer colours.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < m.price) return _err('You need N${_n(m.price)} for the ${m.name}. You have N${_n(c.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:car:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -m.price, kind: 'fee', counter: 'city:market', memo: 'Bought a ${m.name}');
+    if (r.short != null) return _err('Not enough naira.');
+    final mine = await IslandCar.db.find(session, where: (t) => t.authUserId.equals(u));
+    for (final o in mine) {
+      if (o.active) await IslandCar.db.updateRow(session, o.copyWith(active: false));
+    }
+    final car = await IslandCar.db.insertRow(session, IslandCar(authUserId: u, model: model, color: color, price: m.price, dealer: m.dealer, active: true, boughtAt: DateTime.now().toUtc()));
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'id': car.id, 'name': m.name, 'naira': after.naira});
+  });
+
+  /// Choose which of my cars I drive.
+  Future<String> driveCar(Session session, int carId) async {
+    final u = _user(session);
+    final mine = await IslandCar.db.find(session, where: (t) => t.authUserId.equals(u));
+    if (!mine.any((c) => c.id == carId)) return _err('Not your car.');
+    for (final o in mine) {
+      if (o.active != (o.id == carId)) await IslandCar.db.updateRow(session, o.copyWith(active: o.id == carId));
+    }
+    return jsonEncode({'active': carId});
+  }
+
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {

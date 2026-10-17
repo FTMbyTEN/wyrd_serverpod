@@ -88,6 +88,10 @@ islandMe:
   - requestRide:
   - payRide:
   - cancelRide:
+  - cars:
+  - myCars:
+  - buyCar:
+  - driveCar:
   - room:
   - saveRoom:
   - shows:

@@ -324,8 +324,8 @@
     { id: 'fill4', name: 'Reclaimed land', rect: [54, 1, 60, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
     { id: 'fill5', name: 'Reclaimed land', rect: [11, 23, 13, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.2, pitch: 0.85, zoom: 1.0 } },
     { id: 'fill6', name: 'Reclaimed land', rect: [0, 0, 6, 2], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.3, pitch: 0.85, zoom: 1.0 } },
-    { id: 'fill7', name: 'Reclaimed land', rect: [64, 2, 73, 12], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'fill8', name: 'Reclaimed land', rect: [64, 16, 75, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
+    { id: 'polanco', name: 'Polanco', rect: [64, 2, 73, 12], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.9 } },
+    { id: 'lekkiluxury', name: 'Lekki Luxury Cars', rect: [64, 16, 75, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill9', name: 'Reclaimed land', rect: [1, 31, 13, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill11', name: 'Reclaimed land', rect: [40, 31, 58, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
@@ -407,8 +407,8 @@
     ['soon', 55, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 11, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 67, 6, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 68, 21, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['dealer', 64, 2, 10, 11, 'Polanco', '🚘'],
+    ['dealer', 64, 16, 12, 13, 'Lekki Luxury Cars', '🏎️'],
     ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 24, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 47, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -833,7 +833,7 @@
     club(a, b, c, d) {
       const lekki = a > 300, bx1 = a + (c - a) * 0.58; // the building on the left, the car park on the right
       flat(a, b, c, d, 0.05, lekki ? '#E9D5A1' : '#1C1917');
-      parking(bx1 + 1, b + 1, c - 1, d - 1, a);
+      parking(bx1 + 1, b + 1, c - 1, d - 1, 'place:club:' + Math.round(a / T));
       const t = performance.now() / 1000;
       if (lekki) {
         // Club Lekki: a beach house of a club, coral and teal, a thatched roof, palms at the door
@@ -870,7 +870,7 @@
     casino(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#3F1D1D');
       const bz1 = b + (d - b) * 0.58;
-      parking(a + 1, bz1 + 1.5, c - 1, d - 1, a + 7);
+      parking(a + 1, bz1 + 1.5, c - 1, d - 1, 'place:casino');
       box(a + 2, 0, b + 2, c - 2, 13, bz1 - 1, '#F5C542', '#7C2D12', 3);
       dome((a + c) / 2, (b + bz1) / 2, 13, 5.5, '#FBBF24');
       const sign = () => {
@@ -948,6 +948,23 @@
       let tx = null;
       if (ph < 0.25) tx = c + 10 - (ph / 0.25) * (c - a + 10 - L) ; else if (ph < 0.55) tx = a + L; else if (ph < 0.8) tx = a + L - ((ph - 0.55) / 0.25) * (L + 60);
       if (tx != null) for (let k = 0; k < 3; k++) { const x0 = tx - L + k * 11.5, x1 = x0 + 10.8; if (x1 < a - 2 || x0 > c + 2) continue; box(Math.max(a, x0), 0.4, tz[0] - 1.3, Math.min(c, x1), 4.4, tz[0] + 1.3, '#F8FAFC', '#1E3A8A', 1); box(Math.max(a, x0), 4.4, tz[0] - 1.1, Math.min(c, x1), 4.7, tz[0] + 1.1, '#1D4ED8'); }
+    },
+    dealer(a, b, c, d) {
+      const lux = b > 140, list = Object.entries(CARS).filter(([, v]) => v[3] === (lux ? 'lekkiluxury' : 'polanco'));
+      flat(a, b, c, d, 0.05, lux ? '#1C1917' : '#E5E7EB');
+      flat(a + 2, b + 2, c - 2, b + 34, 0.07, lux ? '#0C0A09' : '#F8FAFC');
+      box(a + 3, 0, b + 3, c - 3, 1, b + 33, lux ? '#D4AF37' : '#1D4ED8');
+      const glassH = 14, gc = lux ? 'rgba(212,175,55,0.18)' : 'rgba(125,211,252,0.28)';
+      list.slice(0, 3).forEach(([, v], k) => carModel(a + 22 + k * ((c - a - 44) / 2), b + 18, v[1], CAR_COLORS[(k * 3 + (lux ? 1 : 4)) % CAR_COLORS.length], true, 2.6));
+      for (const [x0, z0, x1, z1] of [[a + 3, b + 33, c - 3, b + 33.3], [c - 3.3, b + 3, c - 3, b + 33]]) { const p0 = P(x0, 1, z0), p1 = P(x1, 1, z1), p2 = P(x1, glassH, z1), p3 = P(x0, glassH, z0); quad([p0, p1, p2, p3], gc, lux ? 'rgba(212,175,55,0.6)' : 'rgba(255,255,255,0.7)'); }
+      { const r0 = P(a + 3, glassH, b + 3), r1 = P(c - 3, glassH, b + 3), r2 = P(c - 3, glassH, b + 33.3), r3 = P(a + 3, glassH, b + 33.3); quad([r0, r1, r2, r3], lux ? 'rgba(12,10,9,0.25)' : 'rgba(224,242,254,0.3)', lux ? '#D4AF37' : '#E5E7EB'); }
+      box(a + 3, glassH, b + 32.6, c - 3, glassH + 1.4, b + 33.3, lux ? '#0C0A09' : '#F8FAFC'); // the fascia with the name
+      const sign = () => { const sg = P((a + c) / 2, glassH + 3.6, b + 33.3); x.save(); x.font = `900 ${Math.max(9, K * 3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = lux ? '#FDE68A' : '#60A5FA'; x.shadowBlur = 12; x.fillStyle = lux ? '#FDE68A' : '#1D4ED8'; x.fillText(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', sg[0], sg[1]); x.restore(); };
+      sign(); glow.push(sign);
+      flat(a + 2, b + 38, c - 2, d - 2, 0.07, '#4B5563');
+      list.forEach(([, v], k) => { const cx = a + 16 + (k % 3) * ((c - a - 32) / 2), cz = b + 50 + Math.floor(k / 3) * 26; flat(cx - 9, cz - 5, cx + 9, cz + 5, 0.09, lux ? '#57534E' : '#6B7280'); carModel(cx, cz, v[1], CAR_COLORS[(k * 5 + (lux ? 2 : 0)) % CAR_COLORS.length], true, 2.2); });
+      for (let k = 0; k <= 10; k++) { const fx = a + 2 + k * (c - a - 4) / 10; box(fx - 0.12, 0, b + 37 - 0.12, fx + 0.12, 7, b + 37 + 0.12, '#D1D5DB'); }
+      for (let k = 0; k < 30; k++) { const u = k / 30, fx = a + 2 + u * (c - a - 4), p = P(fx, 6.6 - Math.sin(u * Math.PI * 10) * 0.6, b + 37); x.fillStyle = ['#EF4444', '#FACC15', '#3B82F6', '#22C55E'][k % 4]; x.beginPath(); x.moveTo(p[0] - K * 0.5, p[1]); x.lineTo(p[0] + K * 0.5, p[1]); x.lineTo(p[0], p[1] + K * 1.2); x.fill(); }
     },
     welcome(a, b, c, d) {
       const cx = (a + c) / 2, cz = (b + d) / 2;
@@ -1034,23 +1051,57 @@
     box(px - 9, y + 2.4, pz - 0.3, px - 6, y + 6.5, pz + 0.3, '#1D4ED8');
     box(px + 7.5, y + 1.4, pz - 1.25, px + 9, y + 2.2, pz + 1.25, '#1E3A8A');
   }
-  // a car park: asphalt, white bays, a P sign, cars parked (the same cars every time for a spot)
-  function parking(x0, z0, x1, z1, seed) {
+  const CARS = {
+    corolla: ['Toyota Corolla', 'sedan', 450000, 'polanco'], camry: ['Toyota Camry', 'sedan', 900000, 'polanco'], highlander: ['Toyota Highlander', 'suv', 1500000, 'polanco'],
+    lexusrx: ['Lexus RX 350', 'suv', 2200000, 'polanco'], landcruiser: ['Toyota Land Cruiser', 'bigsuv', 4000000, 'polanco'],
+    rangerover: ['Range Rover', 'bigsuv', 6500000, 'lekkiluxury'], gwagon: ['Mercedes G-Wagon', 'gwagon', 9000000, 'lekkiluxury'], urus: ['Lamborghini Urus', 'supersuv', 15000000, 'lekkiluxury'],
+    ferrari: ['Ferrari Roma', 'super', 18000000, 'lekkiluxury'], cullinan: ['Rolls-Royce Cullinan', 'bigsuv', 30000000, 'lekkiluxury'],
+  };
+  const CAR_COLORS = ['#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37'];
+  // a car, by its body: sedan, SUV, big SUV, G-Wagon box, super SUV, supercar. [along]: lengthwise along x.
+  function carModel(cx, cz, body, col, along, sc = 1) {
+    const D = { sedan: [2.3, 0.92, 0.72, 0.62, 0.42], suv: [2.35, 0.98, 0.95, 0.72, 0.55], bigsuv: [2.55, 1.04, 1.05, 0.8, 0.6], gwagon: [2.3, 1.0, 1.1, 0.9, 0.62], supersuv: [2.45, 1.05, 0.8, 0.55, 0.4], super: [2.3, 1.02, 0.58, 0.42, 0.32] }[body] || [2.3, 0.92, 0.72, 0.62, 0.42];
+    const [hl, hw, bh, ch, cabin] = D.map((v) => v * sc), a = along ? hl : hw, b = along ? hw : hl;
+    x.fillStyle = 'rgba(15,25,40,0.3)'; const sh = P(cx + 0.4 * sc, 0, cz + 0.3 * sc); x.beginPath(); x.ellipse(sh[0], sh[1], (a + 0.4 * sc) * K, (b + 0.4 * sc) * K * sp, 0, 0, Math.PI * 2); x.fill();
+    const wr = 0.42 * sc, y0 = 0.35 * sc;
+    for (const [wx, wz] of [[-0.62, -1], [0.62, -1], [-0.62, 1], [0.62, 1]]) { const px = along ? cx + wx * hl : cx + wz * hw, pz = along ? cz + wz * hw : cz + wx * hl; const p = P(px, wr, pz); x.fillStyle = '#0B0B0F'; x.beginPath(); x.arc(p[0], p[1], wr * K, 0, Math.PI * 2); x.fill(); x.fillStyle = '#9CA3AF'; x.beginPath(); x.arc(p[0], p[1], wr * K * 0.45, 0, Math.PI * 2); x.fill(); }
+    box(cx - a, y0, cz - b, cx + a, y0 + bh, cz + b, col);
+    const ca = along ? a * cabin : a * 0.86, cb = along ? b * 0.86 : b * cabin, off = body === 'super' || body === 'supersuv' ? -0.15 * sc : 0;
+    // the cabin: a sloped windscreen and rear window, a narrower roof, glass all round
+    const back = (body === 'super' || body === 'supersuv' ? -0.22 : -0.1) * hl, flatRoof = body === 'gwagon';
+    const L0 = -ca + back, L1 = ca + back, T0 = flatRoof ? L0 + 0.05 * hl : L0 + (L1 - L0) * 0.2, T1 = flatRoof ? L1 - 0.05 * hl : L1 - (L1 - L0) * 0.32, Wc = along ? cb : ca, yb = y0 + bh, yt = y0 + bh + ch;
+    const pt = (l, w, y) => along ? P(cx + l, y, cz + w) : P(cx + w, y, cz + l);
+    const glass = '#1E293B', roof = col;
+    const sideN = along ? [0, 0, 1] : [1, 0, 0];
+    // the near side window band
+    quad([pt(L0, Wc, yb), pt(L1, Wc, yb), pt(T1, Wc * 0.92, yt), pt(T0, Wc * 0.92, yt)], viewDot(...sideN) > 0 ? glass : shadeHex(col, 0.7));
+    quad([pt(L0, -Wc, yb), pt(L1, -Wc, yb), pt(T1, -Wc * 0.92, yt), pt(T0, -Wc * 0.92, yt)], viewDot(-sideN[0], 0, -sideN[2]) > 0 ? glass : shadeHex(col, 0.7));
+    // windscreen and rear window
+    quad([pt(L1, -Wc, yb), pt(L1, Wc, yb), pt(T1, Wc * 0.92, yt), pt(T1, -Wc * 0.92, yt)], '#334155');
+    quad([pt(L0, -Wc, yb), pt(L0, Wc, yb), pt(T0, Wc * 0.92, yt), pt(T0, -Wc * 0.92, yt)], '#1F2937');
+    // the roof
+    quad([pt(T0, -Wc * 0.92, yt), pt(T1, -Wc * 0.92, yt), pt(T1, Wc * 0.92, yt), pt(T0, Wc * 0.92, yt)], lit(roof, 0, 1, 0), 'rgba(0,0,0,0.25)');
+    // pillars between the windows
+    x.strokeStyle = shadeHex(col, 0.8); x.lineWidth = Math.max(1, K * 0.12 * sc);
+    for (const w of [Wc, -Wc]) { const p0 = pt((L0 + L1) / 2, w, yb), p1 = pt((T0 + T1) / 2, w * 0.92, yt); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+    for (const sd of [-1, 1]) { const p = along ? P(cx + a, y0 + bh * 0.6, cz + sd * b * 0.65) : P(cx + sd * a * 0.65, y0 + bh * 0.6, cz + b); x.fillStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, 0.18 * sc * K), 0, Math.PI * 2); x.fill(); }
+    if (body === 'gwagon' || (body === 'bigsuv' && col === '#D4AF37')) box(along ? cx + a : cx - a * 0.5, y0 + bh * 0.2, along ? cz - b * 0.4 : cz + b, along ? cx + a + 0.05 : cx + a * 0.5, y0 + bh * 0.8, along ? cz + b * 0.4 : cz + b + 0.05, '#E5E7EB');
+  }
+  let parkedNow = {}; // building -> cars parked outside it (from the island feed)
+  // a car park: asphalt, white bays, a P sign, and the cars of the people inside right now
+  function parking(x0, z0, x1, z1, roomKey) {
     flat(x0, z0, x1, z1, 0.06, '#3F3F46');
-    const R = rnd(Math.round(seed * 7) + 11), along = x1 - x0 >= z1 - z0, bay = 3.4;
-    const n = Math.floor((along ? x1 - x0 : z1 - z0) / bay), rows = 2;
-    const cols = ['#F8FAFC', '#111827', '#B91C1C', '#1D4ED8', '#9CA3AF', '#F59E0B', '#065F46', '#7C3AED'];
+    const along = x1 - x0 >= z1 - z0, bay = 3.4, n = Math.floor((along ? x1 - x0 : z1 - z0) / bay), rows = 2;
+    const cars = (parkedNow[roomKey] || []).slice(0, n * rows);
+    let ci = 0;
     for (let r = 0; r < rows; r++) for (let k = 0; k <= n; k++) {
-      // the bay lines
       if (along) { const lx = x0 + k * bay, za = r ? z1 - 5 : z0, zb = r ? z1 : z0 + 5; const p = P(lx, 0.08, za), q = P(lx, 0.08, zb); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       else { const lz = z0 + k * bay, xa = r ? x1 - 5 : x0, xb = r ? x1 : x0 + 5; const p = P(xa, 0.08, lz), q = P(xb, 0.08, lz); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
-      if (k === n || R() < 0.3) continue;
-      // a parked car, nose in
-      const col = cols[Math.floor(R() * cols.length)];
-      if (along) { const cx = x0 + k * bay + bay / 2, cz = r ? z1 - 2.5 : z0 + 2.5; box(cx - 1, 0.3, cz - 2, cx + 1, 1.5, cz + 2, col); box(cx - 0.9, 1.5, cz - 1, cx + 0.9, 2.4, cz + 1.1, '#1F2937', '#93C5FD', 1); }
-      else { const cz = z0 + k * bay + bay / 2, cx = r ? x1 - 2.5 : x0 + 2.5; box(cx - 2, 0.3, cz - 1, cx + 2, 1.5, cz + 1, col); box(cx - 1, 1.5, cz - 0.9, cx + 1.1, 2.4, cz + 0.9, '#1F2937', '#93C5FD', 1); }
+      if (k === n || ci >= cars.length) continue;
+      const [model, col] = cars[ci++].split(':'), body = (CARS[model] || [])[1] || 'sedan';
+      if (along) carModel(x0 + k * bay + bay / 2, r ? z1 - 2.5 : z0 + 2.5, body, col, false, 0.78);
+      else carModel(r ? x1 - 2.5 : x0 + 2.5, z0 + k * bay + bay / 2, body, col, true, 0.78);
     }
-    // the P sign
     const px = x1 - 0.8, pz = z0 + 0.8; box(px - 0.12, 0, pz - 0.12, px + 0.12, 4, pz + 0.12, '#9CA3AF');
     const p = P(px, 4.6, pz); x.fillStyle = '#1D4ED8'; x.fillRect(p[0] - K * 0.9, p[1] - K * 0.9, K * 1.8, K * 1.8); x.fillStyle = '#fff'; x.font = `900 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('P', p[0], p[1] + 0.5);
   }
@@ -1133,9 +1184,9 @@
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   // the footprints you walk round
-  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
+  for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -1556,6 +1607,7 @@
     club: { w: 96, d: 66, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     casino: { w: 96, d: 66, floor: '#4A1212', wall: '#2A0C0C', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
+    dealer: { w: 90, d: 62, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
   };
   const DEFAULTS = {
@@ -1604,6 +1656,7 @@
       { k: 'plant', x: 4, z: 48 }, { k: 'plant', x: 68, z: 48 }, { k: 'plant', x: 68, z: 4 }, { k: 'plant', x: 34, z: 48 }, { k: 'plant', x: 42, z: 48 },
     ],
     arena: [],
+    dealer: [{ k: 'reception', x: 14, z: 8 }, { k: 'couch2', x: 12, z: 50, c: '#1F2937' }, { k: 'coffee', x: 20, z: 50, c: '#111827' }, { k: 'plant', x: 86, z: 58 }, { k: 'plant', x: 4, z: 58 }],
   };
   let inside = null, outside = null, deco = null; // deco: the furnishing state { sel: kind | index, colour }
   function furnDraw(it, now) {
@@ -1662,6 +1715,7 @@
     if (R.kind === 'club') drawClubShell(R, now);
     if (R.kind === 'casino') drawCasinoShell(R, now);
     if (R.kind === 'tower') drawTowerShell(R, now);
+    if (R.kind === 'dealer') drawShowroom(R, now);
     if (R.kind === 'arena') drawStage(now);
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
@@ -1801,6 +1855,28 @@
     // the lifts on the right wall
     for (let k = 0; k < 2; k++) { const z0 = 10 + k * 10; box(R.w - 0.6, 0, z0, R.w, 10, z0 + 6, '#CBD5E1'); box(R.w - 0.7, 0, z0 + 2.9, R.w - 0.5, 10, z0 + 3.1, '#94A3B8'); }
   }
+  // a showroom: polished floor, cars turning on lit platforms, price boards, the dealer's colours
+  function showroomCars(R) {
+    const list = Object.entries(CARS).filter(([, v]) => v[3] === R.dealer);
+    return list.map(([id, v], k) => ({ id, v, x: 22 + (k % 3) * 26, z: 18 + Math.floor(k / 3) * 26, col: CAR_COLORS[(k * 4 + (R.dealer === 'lekkiluxury' ? 1 : 3)) % CAR_COLORS.length] }));
+  }
+  function drawShowroom(R, now) {
+    const lux = R.dealer === 'lekkiluxury', t = now / 1000;
+    x.strokeStyle = lux ? 'rgba(212,175,55,0.18)' : 'rgba(148,163,184,0.3)'; x.lineWidth = 1;
+    for (let k = 6; k < R.w; k += 6) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    const sign = (txt, x0, y0, col, size) => { const o = P(x0, y0, 0.15), e = P(x0 + 1, y0, 0.15), u = P(x0, y0 + 1, 0.15); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 8; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
+    sign(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', 50, 13, lux ? '#D4AF37' : '#1D4ED8', 4);
+    for (const c of showroomCars(R)) {
+      const p = P(c.x, 0.05, c.z), r = K * 10.5;
+      x.fillStyle = lux ? '#1C1917' : '#E2E8F0'; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill();
+      x.strokeStyle = lux ? '#D4AF37' : '#60A5FA'; x.lineWidth = Math.max(1.5, K * 0.3); x.stroke();
+      carModel(c.x, c.z, c.v[1], c.col, Math.floor(t / 4 + c.x) % 2 === 0, 2.7);
+      const tag = P(c.x, 14, c.z - 2); x.save(); x.font = '800 11px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      const label = c.v[0] + ' · ' + naira(c.v[2]), w = x.measureText(label).width + 16;
+      x.fillStyle = lux ? 'rgba(12,10,9,0.9)' : 'rgba(255,255,255,0.95)'; x.beginPath(); x.roundRect(tag[0] - w / 2, tag[1] - 10, w, 20, 10); x.fill();
+      x.fillStyle = lux ? '#FDE68A' : '#1E3A8A'; x.fillText(label, tag[0], tag[1]); x.restore();
+    }
+  }
   // an apartment: oak herringbone in the living room, carpet in the bedroom, marble in the kitchen,
   // tiles in the bathroom; low cut-away walls between the rooms; tall windows with the day coming in
   function drawApartment(R) {
@@ -1867,6 +1943,7 @@
   async function enterRoom(kind, key, title, extra = {}) {
     if (inside) return;
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
+    if (kind === 'dealer' && extra.dealer === 'lekkiluxury') { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
     if (kind === 'club') {
       R.theme = /lekki/i.test(title) ? 'lekki' : 'ozumba';
       const pal = R.theme === 'lekki' ? ['#0E7490', '#F43F5E', '#14B8A6', '#F59E0B'] : ['#111827', '#7F1D1D', '#1C1917', '#78350F'];
@@ -1959,6 +2036,7 @@
   const id = store.get('li.id') || (() => { const v = 'p' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); store.set('li.id', v); return v; })();
   let myLook = store.get('li.look') || [Math.random() < 0.5 ? 'm' : 'f', Math.floor(Math.random() * 6), Math.floor(Math.random() * 4), Math.floor(Math.random() * 4), Math.floor(Math.random() * 5)].join(',');
   let pose = null; // { kind: 'sit' | 'sleep', x, z } inside a building
+  let myCar = ''; // "model:#colour" of the car you drive ('' on foot)
   let myName = store.get('li.name') || '', myColor = store.get('li.color') || COLORS[Math.floor(Math.random() * COLORS.length)];
   const me = { x: 7.5 * T, z: 10.5 * T }; // on the road beside the Central Mosque
   let sector = SECTORS[0];
@@ -2020,7 +2098,7 @@
     if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
-  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena']);
+  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer']);
   // what each place offers when you tap its tag: a question, and what happens if you say yes (null: coming soon)
   const OFFERS = {
     airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets from the hangars.', null],
@@ -2040,6 +2118,7 @@
     refinery: ['🛢️ Work a shift?', 'The refinery pays ₦6,500 a shift.', (p) => { at$(p); doWork('refinery'); }],
     market: ['🧺 Help at a stall?', 'Market work pays ₦2,500 a turn.', (p) => { at$(p); doWork('market'); }],
     motorpark: ['🛵 Do okada rides?', 'Pays ₦1,800 a round.', (p) => { at$(p); doWork('okada'); }],
+    dealer: null,
     hqgate: ['🏠 Go to your HQ?', 'Your own place on HQ Row.', () => openPhone('hq')],
     screens: ['📺 Advertise here?', 'Your ad on Ad Island\'s digital billboards.', null],
     welcome: null, soon: ['🚧 Reclaimed land', 'Something new is coming here.', null],
@@ -2071,6 +2150,7 @@
     at$(p);
     if (p[0] === 'wyrdtower') return enterRoom('tower', 'place:tower', 'WYRD Tower');
     if (p[0] === 'casino') return enterRoom('casino', 'place:casino', 'Island Casino');
+    if (p[0] === 'dealer') { const dl = /lekki/i.test(p[5]) ? 'lekkiluxury' : 'polanco'; return enterRoom('dealer', 'place:dealer:' + dl, p[5], { dealer: dl }); }
     const n = p[5].replace(' (open every night)', '');
     return enterRoom('club', 'place:club:' + p[1], n);
   }
@@ -2117,7 +2197,7 @@
   }
   async function tick() {
     try {
-      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : '') });
+      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar });
       document.getElementById('count').textContent = r.online;
       const now = performance.now(), seen = new Set();
       for (const p of r.players) {
@@ -2137,6 +2217,7 @@
         if (since > 0 || l.id === id) addLog(l.id === id ? 'You' : l.name, l.color, l.text);
       }
       since = Math.max(since, r.seq);
+      parkedNow = r.parked || {};
       ticked = true;
     } catch { /* offline for a moment: keep walking */ }
   }
@@ -2275,10 +2356,10 @@
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
   let me$ = null, stack = [], chatTimer = 0;
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
   function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); render(app, arg); }
@@ -2491,6 +2572,24 @@
         if (v0.mine) { const send = async () => { const t = $('stText').value.trim(); if (!t) return; $('stText').value = ''; try { await my('perform', { showId: id, text: t }); } catch (e) { fail(e); } }; $('stGo').onclick = send; $('stText').onkeydown = (e) => { if (e.key === 'Enter') send(); }; }
         return;
       }
+      if (app === 'buycar') {
+        const id = arg, v = CARS[id]; if (!v) return show('<div class="pcard">That car is gone.</div>');
+        await loadMe(); let colr = CAR_COLORS[0];
+        const bodyName = { sedan: 'saloon', suv: 'SUV', bigsuv: 'full-size SUV', gwagon: 'off-roader', supersuv: 'super SUV', super: 'supercar' }[v[1]];
+        show(`<div class="ptitle">${esc(v[0])}</div><div class="lock">${v[3] === 'lekkiluxury' ? 'Lekki Luxury Cars' : 'Polanco'} · ${bodyName}</div>
+          <div class="pcard"><div class="big">${naira(v[2])}</div><div class="dim">Paid from your wallet. It becomes the car you drive, and it parks outside wherever you go in.</div>
+          <div class="dim" style="margin-top:10px">Colour</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${CAR_COLORS.map((c2, k) => `<button data-col="${c2}" style="width:30px;height:30px;border-radius:50%;border:3px solid ${k ? 'transparent' : '#FCEE0A'};background:${c2};cursor:pointer"></button>`).join('')}</div>
+          <button class="pbtn" id="bcGo">Buy it</button></div>`);
+        pbody.querySelectorAll('[data-col]').forEach((b) => (b.onclick = () => { colr = b.dataset.col; pbody.querySelectorAll('[data-col]').forEach((o) => (o.style.borderColor = o === b ? '#FCEE0A' : 'transparent')); }));
+        $('bcGo').onclick = async () => { try { const r = await my('buyCar', { model: id, color: colr }); myCar = id + ':' + colr; show(`<div class="ptitle">It's yours!</div><div class="pcard"><h3>🔑 ${esc(r.name)}</h3><p>Congratulations. It will wait outside wherever you go in.</p><button class="pbtn" id="bcG">Open Garage</button></div>`); $('bcG').onclick = () => go('garage'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'garage') {
+        const list = await my('myCars');
+        show(`<div class="ptitle">Garage</div><div class="lock">Your cars. The one you drive parks outside the clubs and the casino when you go in.</div>${list.map((c2) => `<div class="pcard" style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:26px;border-radius:50%;background:${esc(c2.color)};flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.3)"></span><span style="flex:1"><h3 style="margin:0">${esc(c2.name)}</h3><span class="dim">${naira(c2.price)}</span></span>${c2.active ? '<b style="color:#FCEE0A">DRIVING</b>' : `<button class="pbtn alt" data-drive="${c2.id}">Drive</button>`}</div>`).join('') || '<div class="pcard"><h3>No car yet</h3><p>Visit Polanco or Lekki Luxury Cars on the east side of the island. Tap them to walk in.</p></div>'}`);
+        pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
+        return;
+      }
       if (app === 'casino') {
         const atTable = (inside && inside.kind === 'casino') || near('casino', 25);
         if (!atTable) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>The Island Casino is in Lekki. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Go in</button></div>`), ($('cRide').onclick = () => { closePhone(); enterPlace(PLACES.find((p) => p[0] === 'casino')); });
@@ -2624,12 +2723,12 @@
   // ---- the car: from the road you're on to the one you want, along the roads and bridges
   let drive = null, trip = null;
   const DRIVERS = ['Tunde', 'Chiamaka', 'Ibrahim', 'Funmi', 'Emeka', 'Aisha', 'Segun', 'Ngozi', 'Kunle', 'Halima', 'Dayo', 'Bisi'];
-  const CARS = ['Toyota Corolla', 'Honda Accord', 'Kia Rio', 'Toyota Camry', 'Hyundai Elantra'];
+  const RIDE_CARS = ['Toyota Corolla', 'Honda Accord', 'Kia Rio', 'Toyota Camry', 'Hyundai Elantra'];
   function startTrip(r, dest, from, etaMin) {
     const R = rnd(Date.now() % 100000);
     const name = DRIVERS[Math.floor(R() * DRIVERS.length)], L = 'ABCDEFGHJKLMNPRSTUVWXYZ', plate = ['LND', 'KJA', 'EKY', 'APP'][Math.floor(R() * 4)] + '-' + (100 + Math.floor(R() * 899)) + L[Math.floor(R() * L.length)] + L[Math.floor(R() * L.length)];
     trip = { id: r.id, fare: r.fare, kind: r.kind, dest, from, phase: 'searching', until: performance.now() + 3000 + R() * 4000, eta: 0, legs: 1,
-      driver: { name, plate, rating: (4.6 + R() * 0.39).toFixed(2), vehicle: r.kind === 'okada' ? 'Bajaj Boxer · red' : CARS[Math.floor(R() * CARS.length)], color: r.kind === 'okada' ? '#DC2626' : ['#F8FAFC', '#111827', '#1D4ED8', '#9CA3AF', '#B91C1C'][Math.floor(R() * 5)] }, car: null };
+      driver: { name, plate, rating: (4.6 + R() * 0.39).toFixed(2), vehicle: r.kind === 'okada' ? 'Bajaj Boxer · red' : RIDE_CARS[Math.floor(R() * RIDE_CARS.length)], color: r.kind === 'okada' ? '#DC2626' : ['#F8FAFC', '#111827', '#1D4ED8', '#9CA3AF', '#B91C1C'][Math.floor(R() * 5)] }, car: null };
     if (inside) leaveRoom();
   }
   async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; stack = [['home']]; render('ride'); }
@@ -2728,7 +2827,8 @@
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep' };
       let near = null, nd = 5;
       for (const it of inside.layout) { const k = SEAT[it.k] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
-      if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
+      if (inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 ${c.v[0]} · ${naira(c.v[2])}`, run: () => openPhone('buycar', c.id) }; }
+      if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y }; me.x = pose.x; me.z = pose.z; } };
       else next = null;
@@ -2799,6 +2899,7 @@
     } catch {}
   }
   poll(); setInterval(poll, 15000);
+  if (signedIn()) my('myCars').then((l) => { const a = l.find((c2) => c2.active); if (a) myCar = a.model + ':' + a.color; }).catch(() => {});
 
   // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
   const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), errEl = document.getElementById('err');

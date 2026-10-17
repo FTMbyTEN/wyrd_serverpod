@@ -1346,6 +1346,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'car': _is.ParameterDescription(
+              name: 'car',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -1361,6 +1366,7 @@ class Endpoints extends _is.EndpointDispatch {
                 params['since'],
                 params['room'],
                 params['look'],
+                params['car'],
               ),
         ),
         'online': _is.MethodConnector(
@@ -2097,6 +2103,70 @@ class Endpoints extends _is.EndpointDispatch {
                   .cancelRide(
                     session,
                     params['id'],
+                  ),
+        ),
+        'cars': _is.MethodConnector(
+          name: 'cars',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .cars(session),
+        ),
+        'myCars': _is.MethodConnector(
+          name: 'myCars',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .myCars(session),
+        ),
+        'buyCar': _is.MethodConnector(
+          name: 'buyCar',
+          params: {
+            'model': _is.ParameterDescription(
+              name: 'model',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'color': _is.ParameterDescription(
+              name: 'color',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).buyCar(
+                    session,
+                    params['model'],
+                    params['color'],
+                  ),
+        ),
+        'driveCar': _is.MethodConnector(
+          name: 'driveCar',
+          params: {
+            'carId': _is.ParameterDescription(
+              name: 'carId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .driveCar(
+                    session,
+                    params['carId'],
                   ),
         ),
         'room': _is.MethodConnector(

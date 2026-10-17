@@ -43,6 +43,7 @@ class IslandEndpoint extends Endpoint {
     int since,
     String room,
     String look,
+    String car,
   ) async {
     final now = DateTime.now();
     _players.removeWhere((_, p) => now.difference(p.seen) > _fade);
@@ -57,6 +58,7 @@ class IslandEndpoint extends Endpoint {
       ..z = z.clamp(-60000, 60000).toDouble()
       ..room = _clean(room, 40)
       ..look = RegExp(r'^[a-z0-9,|.-]{0,40}$').hasMatch(look) ? look : ''
+      ..car = RegExp(r'^[a-z]{2,16}:#[0-9A-Fa-f]{6}$').hasMatch(car) ? car : ''
       ..seen = now;
     double dist(double ax, double az) => sqrt(pow(ax - me.x, 2) + pow(az - me.z, 2));
     final near = [
@@ -69,7 +71,13 @@ class IslandEndpoint extends Endpoint {
         if (l.seq > since && (l.id == id || (l.room == me.room && (me.room.isNotEmpty || dist(l.x, l.z) < _hear))))
           {'seq': l.seq, 'id': l.id, 'name': l.name, 'color': l.color, 'text': l.text},
     ];
+    // the cars parked outside each building: one per person inside who drove there
+    final parked = <String, List<String>>{};
+    for (final p in _players.values) {
+      if (p.room.isNotEmpty && p.car.isNotEmpty) (parked[p.room] ??= []).add(p.car);
+    }
     return jsonEncode({
+      'parked': parked,
       'online': _players.length,
       'players': near.take(60).toList(),
       'chat': heard,
@@ -106,6 +114,8 @@ class _Player {
   String room = '';
   /// how they look and what they're doing: "g,skin,hair,style,bottom|pose,x,z" (pose: sit, sleep)
   String look = '';
+  /// the car they drove here: "model:#colour" ('' on foot)
+  String car = '';
   DateTime seen = DateTime.now();
   DateTime lastSaid = DateTime.fromMillisecondsSinceEpoch(0);
   _Player(this.id);
