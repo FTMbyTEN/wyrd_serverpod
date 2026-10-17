@@ -1055,6 +1055,7 @@
     corolla: ['Toyota Corolla', 'sedan', 450000, 'polanco'], camry: ['Toyota Camry', 'sedan', 900000, 'polanco'], highlander: ['Toyota Highlander', 'suv', 1500000, 'polanco'],
     lexusrx: ['Lexus RX 350', 'suv', 2200000, 'polanco'], landcruiser: ['Toyota Land Cruiser', 'bigsuv', 4000000, 'polanco'],
     rangerover: ['Range Rover', 'bigsuv', 6500000, 'lekkiluxury'], gwagon: ['Mercedes G-Wagon', 'gwagon', 9000000, 'lekkiluxury'], urus: ['Lamborghini Urus', 'supersuv', 15000000, 'lekkiluxury'],
+    cybertruck: ['Tesla Cybertruck', 'cyber', 10000000, 'polanco'], porsche911: ['Porsche 911', 'super', 12000000, 'polanco'], huracan: ['Lamborghini Huracán', 'super', 20000000, 'polanco'],
     ferrari: ['Ferrari Roma', 'super', 18000000, 'lekkiluxury'], cullinan: ['Rolls-Royce Cullinan', 'bigsuv', 30000000, 'lekkiluxury'],
   };
   const CAR_COLORS = ['#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37'];
@@ -1071,6 +1072,9 @@
     gwagon:      { L: 4.85, W: 1.98, bh: 1.0, ch: 0.9, c0: 0.08, c1: 0.76, sf: 0.04, sr: 0.0, col: '#0B0B0F', f: ['spare', 'round', 'boxy'] },
     urus:        { L: 5.1, W: 2.02, bh: 0.78, ch: 0.56, c0: 0.16, c1: 0.66, sf: 0.42, sr: 0.38, col: '#FACC15', f: ['vents', 'wedge'] },
     ferrari:     { L: 4.65, W: 1.97, bh: 0.6, ch: 0.46, c0: 0.2, c1: 0.56, sf: 0.45, sr: 0.42, col: '#DC2626', f: ['longhood', 'lowlights'] },
+    cybertruck:  { L: 5.68, W: 2.03, bh: 0.95, ch: 0.62, c0: 0.04, c1: 0.97, sf: 0.6, sr: 0.0, col: '#C0C4CC', f: ['cyber', 'lightbar'] },
+    porsche911:  { L: 4.52, W: 1.85, bh: 0.62, ch: 0.5, c0: 0.22, c1: 0.62, sf: 0.4, sr: 0.55, col: '#E5E7EB', f: ['round', 'lowlights', 'fastback'] },
+    huracan:     { L: 4.52, W: 1.93, bh: 0.55, ch: 0.42, c0: 0.3, c1: 0.62, sf: 0.5, sr: 0.45, col: '#16A34A', f: ['vents', 'wedge', 'longhood'] },
     cullinan:    { L: 5.34, W: 2.0, bh: 1.1, ch: 0.8, c0: 0.12, c1: 0.78, sf: 0.14, sr: 0.06, col: '#111827', f: ['grille', 'twotone', 'chrome'] },
   };
   // a car at (cx, cz), turned [ang] radians (0: nose towards +x), [sc] world units a metre
@@ -1091,11 +1095,21 @@
     // the shadow
     x.fillStyle = 'rgba(10,20,35,0.32)'; x.beginPath(); { const q = [pt(-hl * 1.02, -hw * 1.1, 0), pt(hl * 1.02, -hw * 1.1, 0), pt(hl * 1.02, hw * 1.1, 0), pt(-hl * 1.02, hw * 1.1, 0)]; x.moveTo(q[0][0] + 3, q[0][1] + 2); for (const p of q.slice(1)) x.lineTo(p[0] + 3, p[1] + 2); x.fill(); }
     // wheels (the far ones first)
-    const wheel = (l, w) => { const p = pt(l, w, 0.34 * sc); x.fillStyle = '#0A0A0D'; x.beginPath(); x.ellipse(p[0], p[1], 0.36 * sc * K, 0.36 * sc * K, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = has('longhood') || has('wedge') ? '#D1D5DB' : '#9CA3AF'; x.beginPath(); x.arc(p[0], p[1], 0.2 * sc * K, 0, Math.PI * 2); x.fill(); };
+    // a wheel stands upright in the car's side: a circle in the plane of (along the car, up), with a tread and a rim
+    const wheel = (l, w) => {
+      const R0 = 0.36 * sc, ring = (r, ww) => { const out = []; for (let k = 0; k < 16; k++) { const th = k / 16 * Math.PI * 2; out.push(pt(l + Math.cos(th) * r, ww, R0 + Math.sin(th) * r)); } return out; };
+      const outer = ring(R0, w), inner = ring(R0, w - Math.sign(w) * 0.26 * sc);
+      const path = (pts, fill) => { x.fillStyle = fill; x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts) x.lineTo(p[0], p[1]); x.closePath(); x.fill(); };
+      path(inner, '#050507'); // the tyre's far edge, for depth
+      for (let k = 0; k < 16; k++) { const k2 = (k + 1) % 16; quad([outer[k], outer[k2], inner[k2], inner[k]], '#111114'); } // the tread
+      path(outer, '#0A0A0D'); // the tyre's face
+      path(ring(R0 * 0.58, w + Math.sign(w) * 0.01 * sc), has('longhood') || has('wedge') ? '#D1D5DB' : '#9CA3AF'); // the rim
+      path(ring(R0 * 0.16, w + Math.sign(w) * 0.02 * sc), '#4B5563'); // the hub
+    };
     const wl = hl * 0.66;
     for (const [l, w] of [[wl, -hw], [-wl, -hw], [wl, hw], [-wl, hw]].sort((a2, b2) => { const pa = pt(a2[0], a2[1], 0)[2], pb = pt(b2[0], b2[1], 0)[2]; return pa - pb; })) wheel(l, w);
     // the body: a long box with the nose and tail eased in at the top
-    const noseIn = has('boxy') ? 0.02 * sc : (has('longhood') || has('wedge') ? 0.35 : 0.18) * sc;
+    const noseIn = has('cyber') ? 0.0 : has('boxy') ? 0.02 * sc : (has('longhood') || has('wedge') ? 0.35 : 0.18) * sc;
     prism(-hl, hl, hw, y0, y0 + bh, -hl + 0.12 * sc, hl - noseIn, hw * 0.97, color, color, color, 'rgba(0,0,0,0.18)');
     if (has('twotone')) prism(-hl, hl, hw * 1.001, y0, y0 + bh * 0.42, -hl, hl, hw * 1.001, '#9CA3AF', '#9CA3AF', '#9CA3AF', 'rgba(0,0,0,0.15)');
     // the cabin and glass: sloped windscreen and rear window by the model's own angles
@@ -1114,7 +1128,9 @@
     if (has('grille')) face([[nose, -hw * 0.32, y0 + bh * 0.15], [nose, hw * 0.32, y0 + bh * 0.15], [nose, hw * 0.32, y0 + bh * 0.92], [nose, -hw * 0.32, y0 + bh * 0.92]], 1, 0, 0, '#E5E7EB', '#9CA3AF');
     else if (has('spindle')) face([[nose, -hw * 0.3, y0 + bh * 0.1], [nose, hw * 0.3, y0 + bh * 0.1], [nose, hw * 0.4, y0 + bh * 0.7], [nose, -hw * 0.4, y0 + bh * 0.7]], 1, 0, 0, '#111827', '#9CA3AF');
     else if (!has('longhood')) face([[nose, -hw * 0.45, gy - 0.12 * sc], [nose, hw * 0.45, gy - 0.12 * sc], [nose, hw * 0.45, gy + 0.12 * sc], [nose, -hw * 0.45, gy + 0.12 * sc]], 1, 0, 0, has('chrome') ? '#CBD5E1' : '#111827');
+    if (has('lightbar')) { const p0 = pt(hl + 0.01 * sc, -hw * 0.9, y0 + bh * 0.85), p1 = pt(hl + 0.01 * sc, hw * 0.9, y0 + bh * 0.85); x.strokeStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.lineWidth = Math.max(1.5, 0.08 * sc * K); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
     const lightY = has('lowlights') ? y0 + bh * 0.55 : y0 + bh * 0.68;
+    if (has('lightbar')) return;
     for (const w of [hw * 0.72, -hw * 0.72]) { const p = pt(nose, w, lightY); x.fillStyle = night > 0.3 ? '#FEF9C3' : '#F8FAFC'; x.beginPath(); if (has('round')) x.arc(p[0], p[1], 0.15 * sc * K, 0, Math.PI * 2); else x.ellipse(p[0], p[1], 0.22 * sc * K, 0.08 * sc * K, 0, 0, Math.PI * 2); x.fill(); }
     for (const w of [hw * 0.75, -hw * 0.75]) { const p = pt(-hl - 0.01 * sc, w, y0 + bh * 0.68); x.fillStyle = '#DC2626'; x.beginPath(); x.ellipse(p[0], p[1], 0.2 * sc * K, 0.07 * sc * K, 0, 0, Math.PI * 2); x.fill(); }
   }
@@ -1643,7 +1659,8 @@
     club: { w: 96, d: 66, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     casino: { w: 96, d: 66, floor: '#4A1212', wall: '#2A0C0C', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
-    dealer: { w: 90, d: 62, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
+    office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
+    dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
   };
   const DEFAULTS = {
@@ -1692,6 +1709,12 @@
       { k: 'plant', x: 4, z: 48 }, { k: 'plant', x: 68, z: 48 }, { k: 'plant', x: 68, z: 4 }, { k: 'plant', x: 34, z: 48 }, { k: 'plant', x: 42, z: 48 },
     ],
     arena: [],
+    office: [
+      { k: 'desk', x: 32, z: 12, c: '#1C1917' }, { k: 'armchair', x: 32, z: 7, c: '#111827' }, { k: 'chair', x: 28, z: 17 }, { k: 'chair', x: 36, z: 17 },
+      { k: 'rug', x: 14, z: 30, c: '#1E3A8A' }, { k: 'couch2', x: 8, z: 30, r: 1, c: '#1C1917' }, { k: 'couch2', x: 20, z: 30, r: 1, c: '#1C1917' }, { k: 'coffee', x: 14, z: 30, c: '#111827' },
+      { k: 'table', x: 48, z: 30, c: '#E5E7EB' }, { k: 'chair', x: 44, z: 30 }, { k: 'chair', x: 52, z: 30 }, { k: 'chair', x: 48, z: 26 }, { k: 'chair', x: 48, z: 34 },
+      { k: 'shelf', x: 54, z: 2 }, { k: 'plant', x: 61, z: 41 }, { k: 'plant', x: 3, z: 41 }, { k: 'plant', x: 61, z: 3 },
+    ],
     dealer: [{ k: 'reception', x: 14, z: 8 }, { k: 'couch2', x: 12, z: 50, c: '#1F2937' }, { k: 'coffee', x: 20, z: 50, c: '#111827' }, { k: 'plant', x: 86, z: 58 }, { k: 'plant', x: 4, z: 58 }],
   };
   let inside = null, outside = null, deco = null; // deco: the furnishing state { sel: kind | index, colour }
@@ -1751,7 +1774,8 @@
     if (R.kind === 'club') drawClubShell(R, now);
     if (R.kind === 'casino') drawCasinoShell(R, now);
     if (R.kind === 'tower') drawTowerShell(R, now);
-    if (R.kind === 'dealer') drawShowroom(R, now);
+    if (R.kind === 'dealer') { drawShowroom(R, now); if (R.dealer === 'polanco') drawMezzanine(R); }
+    if (R.kind === 'office') drawOffice(R, now);
     if (R.kind === 'arena') drawStage(now);
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
@@ -1894,7 +1918,7 @@
   // a showroom: polished floor, cars turning on lit platforms, price boards, the dealer's colours
   function showroomCars(R) {
     const list = Object.entries(CARS).filter(([, v]) => v[3] === R.dealer);
-    return list.map(([id, v], k) => ({ id, v, k, x: 22 + (k % 3) * 26, z: 18 + Math.floor(k / 3) * 26, col: CAR_SPEC[id].col }));
+    return list.map(([id, v], k) => ({ id, v, k, x: 18 + (k % 3) * 28, z: (R.dealer === 'polanco' ? 26 : 14) + Math.floor(k / 3) * 21, col: CAR_SPEC[id].col }));
   }
   function drawShowroom(R, now) {
     const lux = R.dealer === 'lekkiluxury', t = now / 1000, gold = '#D4AF37', blue = '#1D4ED8', acc = lux ? gold : blue;
@@ -1931,6 +1955,37 @@
       x.fillStyle = lux ? 'rgba(12,10,9,0.92)' : 'rgba(255,255,255,0.97)'; x.beginPath(); x.roundRect(sb[0] - w / 2, sb[1] - 30, w, 32, 8); x.fill(); x.strokeStyle = acc; x.lineWidth = 1; x.stroke();
       x.fillStyle = lux ? '#F8FAFC' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 21); x.fillStyle = lux ? '#FDE68A' : blue; x.font = '900 11px "Plus Jakarta Sans", sans-serif'; x.fillText(price, sb[0], sb[1] - 7); x.restore();
     }
+  }
+  // Polanco's mezzanine: a slab across the back at first-floor height, glass railings, a staircase up on the right
+  function drawMezzanine(R) {
+    const y = 10, z1 = 16;
+    box(0, y - 0.8, 0, R.w, y, z1, '#E5E7EB');
+    for (const px of [20, 50, 80]) box(px - 0.5, 0, z1 - 1, px + 0.5, y - 0.8, z1, '#CBD5E1'); // columns
+    const g0 = P(0, y, z1), g1 = P(R.w - 14, y, z1), g2 = P(R.w - 14, y + 3, z1), g3 = P(0, y + 3, z1); quad([g0, g1, g2, g3], 'rgba(186,230,253,0.35)', 'rgba(255,255,255,0.8)');
+    box(0, y + 3, z1 - 0.15, R.w - 14, y + 3.3, z1 + 0.15, '#1D4ED8'); // the handrail
+    // the office's glass front, with blinds
+    const o0 = P(8, y, 2), o1 = P(60, y, 2), o2 = P(60, y + 7, 2), o3 = P(8, y + 7, 2); quad([o0, o1, o2, o3], 'rgba(30,58,138,0.25)', '#1D4ED8');
+    { const o = P(34, y + 5, 2.1), e = P(35, y + 5, 2.1), u = P(34, y + 6, 2.1); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = '900 1.6px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#1D4ED8'; x.fillText('EXECUTIVE OFFICE', 0, 0); x.restore(); }
+    // the staircase: steps up from the floor to the mezzanine
+    for (let k = 0; k < 10; k++) { const sz = z1 + 10 - k * 1, sy = k * (y / 10); box(R.w - 13, 0, sz - 1, R.w - 4, sy + y / 10, sz, k % 2 ? '#F1F5F9' : '#E2E8F0'); }
+    box(R.w - 13.3, 0, z1, R.w - 13, y + 3, z1 + 10, 'rgba(0,0,0,0)' === '' ? '#000' : '#CBD5E1');
+  }
+  // the executive office upstairs: walnut floor, a glass wall over the showroom and the lagoon, the MD's desk, a meeting table, a lounge
+  function drawOffice(R, now) {
+    x.strokeStyle = 'rgba(0,0,0,0.12)'; x.lineWidth = 1;
+    for (let k = 2; k < R.w; k += 2) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    const g0 = P(16, 1.5, 0.1), g1 = P(R.w - 12, 1.5, 0.1), g2 = P(R.w - 12, 16, 0.1), g3 = P(16, 16, 0.1);
+    const sky = x.createLinearGradient(g3[0], g3[1], g0[0], g0[1]); sky.addColorStop(0, night > 0.5 ? '#0F172A' : '#7DD3FC'); sky.addColorStop(0.6, night > 0.5 ? '#1E1B4B' : '#BAE6FD'); sky.addColorStop(0.61, night > 0.5 ? '#0B3B5E' : '#3A86C8'); sky.addColorStop(1, night > 0.5 ? '#082F49' : '#1E6FAF');
+    quad([g0, g1, g2, g3], sky, '#1D4ED8');
+    // the wall screen with the month's sales
+    const s0 = P(0.15, 5, 16), s1 = P(0.15, 5, 30), s2 = P(0.15, 13, 30), s3 = P(0.15, 13, 16); quad([s0, s1, s2, s3], '#0B1020', '#1D4ED8');
+    for (let b = 0; b < 8; b++) { const h = 1.5 + ((b * 5) % 7) * 0.9, z = 17 + b * 1.6; const q0 = P(0.18, 6, z), q1 = P(0.18, 6, z + 1), q2 = P(0.18, 6 + h, z + 1), q3 = P(0.18, 6 + h, z); quad([q0, q1, q2, q3], b === 7 ? '#22C55E' : '#38BDF8'); }
+    { const o = P(0.18, 12, 23), e = P(0.18, 12, 24), u = P(0.18, 13, 23); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = '800 1.1px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#E0F2FE'; x.fillText('SALES THIS MONTH', 0, 0); x.restore(); }
+    // a scale model of the flagship on a plinth, and the company name
+    box(56, 0, 14, 62, 3, 20, '#F8FAFC'); drawCar(59, 17, 'huracan', null, now / 3000, 0.7);
+    { const o = P(40, 17.5, 0.15), e = P(41, 17.5, 0.15), u = P(40, 18.5, 0.15); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = '900 2px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#1D4ED8'; x.fillText('POLANCO', 0, 0); x.restore(); }
+    // the stairs down, top right
+    for (let k = 0; k < 4; k++) box(R.w - 8, 0, R.d - 12 + k * 2, R.w - 2, 0.3 + k * 0.05, R.d - 10 + k * 2, '#D6D3D1');
   }
   // an apartment: oak herringbone in the living room, carpet in the bedroom, marble in the kitchen,
   // tiles in the bathroom; low cut-away walls between the rooms; tall windows with the day coming in
@@ -1996,7 +2051,8 @@
     x.restore();
   }
   async function enterRoom(kind, key, title, extra = {}) {
-    if (inside) return;
+    if (inside && !extra.stairs) return;
+    const keepOutside = !!extra.stairs && outside; if (extra.stairs) { inside = null; deco = null; }
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
     if (kind === 'dealer' && extra.dealer === 'lekkiluxury') { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
     if (kind === 'club') {
@@ -2009,7 +2065,7 @@
       try { const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine; }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
-    outside = { x: me.x, z: me.z, cam: { ...cam } };
+    if (!keepOutside) outside = { x: me.x, z: me.z, cam: { ...cam } };
     inside = R; me.x = R.w / 2; me.z = R.d - 3; cam.x = R.w / 2; cam.z = R.d / 2; cam.user = 1; cam.follow = false;
     others.clear(); updateWhere(); setDeco();
     if (kind === 'arena') { stageLines = []; stagePoll(); }
@@ -2882,7 +2938,9 @@
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep' };
       let near = null, nd = 5;
       for (const it of inside.layout) { const k = SEAT[it.k] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
-      if (inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 ${c.v[0]} · ${naira(c.v[2])}`, run: () => openPhone('buycar', c.id) }; }
+      if (inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
+      else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
+      if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 ${c.v[0]} · ${naira(c.v[2])}`, run: () => openPhone('buycar', c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y }; me.x = pose.x; me.z = pose.z; } };

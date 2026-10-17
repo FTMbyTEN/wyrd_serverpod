@@ -579,13 +579,16 @@ class IslandMeEndpoint extends Endpoint {
     'highlander': (name: 'Toyota Highlander', body: 'suv', price: 1500000, dealer: 'polanco'),
     'lexusrx': (name: 'Lexus RX 350', body: 'suv', price: 2200000, dealer: 'polanco'),
     'landcruiser': (name: 'Toyota Land Cruiser', body: 'bigsuv', price: 4000000, dealer: 'polanco'),
+    'cybertruck': (name: 'Tesla Cybertruck', body: 'cyber', price: 10000000, dealer: 'polanco'),
+    'porsche911': (name: 'Porsche 911', body: 'super', price: 12000000, dealer: 'polanco'),
+    'huracan': (name: 'Lamborghini Huracan', body: 'super', price: 20000000, dealer: 'polanco'),
     'rangerover': (name: 'Range Rover', body: 'bigsuv', price: 6500000, dealer: 'lekkiluxury'),
     'gwagon': (name: 'Mercedes G-Wagon', body: 'gwagon', price: 9000000, dealer: 'lekkiluxury'),
     'urus': (name: 'Lamborghini Urus', body: 'supersuv', price: 15000000, dealer: 'lekkiluxury'),
     'ferrari': (name: 'Ferrari Roma', body: 'super', price: 18000000, dealer: 'lekkiluxury'),
     'cullinan': (name: 'Rolls-Royce Cullinan', body: 'bigsuv', price: 30000000, dealer: 'lekkiluxury'),
   };
-  static const carColors = {'#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37', '#7F1D1D', '#1E3A8A', '#64748B', '#0B0B0F', '#FACC15', '#DC2626'};
+  static const carColors = {'#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37', '#7F1D1D', '#1E3A8A', '#64748B', '#0B0B0F', '#FACC15', '#DC2626', '#C0C4CC', '#E5E7EB', '#16A34A'};
 
   /// The catalogue (for the dealers' showrooms and the Garage app).
   Future<String> cars(Session session) async => jsonEncode([
