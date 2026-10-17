@@ -288,7 +288,6 @@
       <div id="pwMeter" class="meter"><i></i></div><div id="pwSay" class="pwsay">Make am strong like Third Mainland Bridge 🌉</div>
       <ul id="rules" class="rules"><li data-r="len">8 or more characters (no shortcuts 😅)</li><li data-r="up">One BIG letter, like Lagos traffic 🚦</li><li data-r="low">Small letters too, abeg 🤏🏾</li><li data-r="num">A number, your lucky one 🎲</li></ul>
       <label class="fl" id="lConfirm">Say it again, make we sure<input id="pass2" type="password" maxlength="128" placeholder="Same password, one more time" autocomplete="new-password"></label><div id="pwMatch" class="pwsay"></div>
-      <div class="note" id="note">One account for Lagos Island and WYRD. Sign in to either with your username or email.</div>
       <a class="note forgot" id="forgot" href="/" style="display:none">Forgot your password? Reset it on WYRD</a>
     </div>
     <div id="lookPick"><div class="fl" style="margin-top:12px">Your character</div>
@@ -832,46 +831,57 @@
     },
     // ---- a club: dark walls, a neon roof line, and the light show at night
     club(a, b, c, d) {
-      flat(a, b, c, d, 0.05, '#2A2340');
-      box(a + 2, 0, b + 2, c - 2, 10, d - 3, '#2B2440', '#7C3AED', 2);
-      const t = performance.now() / 1000, hue = (t * 40 + a) % 360;
-      const neon = () => {
-        const e = [P(a + 2, 10.2, d - 3), P(c - 2, 10.2, d - 3), P(c - 2, 10.2, b + 2), P(a + 2, 10.2, b + 2)];
-        x.save(); x.shadowColor = `hsl(${hue},100%,60%)`; x.shadowBlur = 14; x.strokeStyle = `hsl(${hue},100%,65%)`; x.lineWidth = 2.5;
-        x.beginPath(); x.moveTo(e[0][0], e[0][1]); for (let i = 1; i < 4; i++) x.lineTo(e[i][0], e[i][1]); x.closePath(); x.stroke();
-        const sg = P((a + c) / 2, 6, d - 3);
-        x.font = `800 ${Math.max(9, K * 2.6)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.fillStyle = `hsl(${(hue + 180) % 360},100%,70%)`; x.fillText('CLUB', sg[0], sg[1]); x.restore();
-        if (night > 0.3) { // the beams
-          const top = P((a + c) / 2, 11, (b + d) / 2);
-          x.save(); x.globalCompositeOperation = 'lighter';
-          for (let k = 0; k < 3; k++) {
-            const ang = Math.sin(t * 0.9 + k * 2.1) * 0.6 - Math.PI / 2 + (k - 1) * 0.35, L = H * 0.5;
-            const g = x.createLinearGradient(top[0], top[1], top[0] + Math.cos(ang) * L, top[1] + Math.sin(ang) * L);
-            g.addColorStop(0, `hsla(${(hue + k * 90) % 360},100%,65%,0.45)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
-            x.fillStyle = g; x.beginPath(); x.moveTo(top[0], top[1]);
-            x.lineTo(top[0] + Math.cos(ang - 0.05) * L, top[1] + Math.sin(ang - 0.05) * L); x.lineTo(top[0] + Math.cos(ang + 0.05) * L, top[1] + Math.sin(ang + 0.05) * L); x.fill();
-          }
-          x.restore();
-        }
-      };
-      neon(); glow.push(neon);
-      for (let k = 0; k < 3; k++) box(a + 3 + k * 2.4, 0, d - 1.6, a + 3.9 + k * 2.4, 3, d - 0.8, ['#F472B6', '#22D3EE', '#FACC15'][k]); // the queue
+      const lekki = a > 300, bx1 = a + (c - a) * 0.58; // the building on the left, the car park on the right
+      flat(a, b, c, d, 0.05, lekki ? '#E9D5A1' : '#1C1917');
+      parking(bx1 + 1, b + 1, c - 1, d - 1, a);
+      const t = performance.now() / 1000;
+      if (lekki) {
+        // Club Lekki: a beach house of a club, coral and teal, a thatched roof, palms at the door
+        box(a + 2, 0, b + 2, bx1 - 1, 9, d - 4, '#0F766E', '#5EEAD4', 2);
+        pyramid(a + 1.2, b + 1.2, bx1 - 0.2, d - 3.2, 9, 5, '#A16207');
+        box(a + 2, 0, d - 4.2, bx1 - 1, 1, d - 3.6, '#FB7185');
+        palm(a + 1.5, d - 1.2, 10); palm(bx1 - 0.5, d - 1.2, 9);
+        const neon = () => {
+          const sg = P((a + bx1) / 2, 6.2, d - 4);
+          x.save(); x.font = `800 ${Math.max(8, K * 2.1)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+          x.shadowColor = '#22D3EE'; x.shadowBlur = 14; x.fillStyle = '#A5F3FC'; x.fillText('LEKKI', sg[0], sg[1] - K * 1.2);
+          x.shadowColor = '#FB7185'; x.fillStyle = '#FECDD3'; x.font = `700 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.fillText('beach club', sg[0], sg[1] + K * 1.2); x.restore();
+          if (night > 0.3) beams((a + bx1) / 2, 10, (b + d) / 2, 190, t);
+        };
+        neon(); glow.push(neon);
+      } else {
+        // Club Ozumba: black glass and gold, a marquee canopy and a red carpet
+        box(a + 2, 0, b + 2, bx1 - 1, 12, d - 4, '#0C0A09', '#B08A43', 3);
+        box(a + 2, 12, b + 2, bx1 - 1, 12.6, d - 4, '#D4AF37');
+        box(a + 3, 4, d - 4, bx1 - 2, 4.5, d - 1.5, '#D4AF37'); // the canopy
+        flat(a + 5, d - 4, bx1 - 5, d, 0.08, '#B91C1C'); // the red carpet
+        for (const px of [a + 4.5, bx1 - 4.5]) box(px - 0.15, 0, d - 1.8, px + 0.15, 3, d - 1.5, '#D4AF37');
+        const neon = () => {
+          const sg = P((a + bx1) / 2, 8, d - 4);
+          x.save(); x.font = `900 ${Math.max(8, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+          x.shadowColor = '#FDE68A'; x.shadowBlur = 14; x.fillStyle = '#FDE68A'; x.fillText('OZUMBA', sg[0], sg[1]); x.restore();
+          if (night > 0.3) beams((a + bx1) / 2, 13, (b + d) / 2, 45, t);
+        };
+        neon(); glow.push(neon);
+      }
+      for (let k = 0; k < 4; k++) box(a + 3 + k * 2, 0, d - 1.2, a + 3.8 + k * 2, 3, d - 0.4, ['#F472B6', '#22D3EE', '#FACC15', '#A78BFA'][k]); // the queue
     },
-    // ---- the casino: a gold front, a dome, a sign of bulbs
+    // ---- the casino: a gold front, a dome, a sign of bulbs, a car park out front
     casino(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#3F1D1D');
-      box(a + 2, 0, b + 4, c - 2, 13, d - 4, '#F5C542', '#7C2D12', 3);
-      dome((a + c) / 2, (b + d) / 2, 13, 6, '#FBBF24');
+      const bz1 = b + (d - b) * 0.58;
+      parking(a + 1, bz1 + 1.5, c - 1, d - 1, a + 7);
+      box(a + 2, 0, b + 2, c - 2, 13, bz1 - 1, '#F5C542', '#7C2D12', 3);
+      dome((a + c) / 2, (b + bz1) / 2, 13, 5.5, '#FBBF24');
       const sign = () => {
-        const t = performance.now() / 300, sg = P((a + c) / 2, 9, d - 4);
+        const t = performance.now() / 300, sg = P((a + c) / 2, 9, bz1 - 1);
         x.save(); x.font = `800 ${Math.max(9, K * 2.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
         x.shadowColor = '#FDE047'; x.shadowBlur = 12; x.fillStyle = '#FFF7CC'; x.fillText('CASINO', sg[0], sg[1]);
-        for (let k = 0; k < 10; k++) { const p = P(a + 2 + k * (c - a - 4) / 9, 13.2, d - 4); x.fillStyle = (k + Math.floor(t)) % 2 ? '#FDE047' : '#F97316'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill(); }
+        for (let k = 0; k < 10; k++) { const p = P(a + 2 + k * (c - a - 4) / 9, 13.2, bz1 - 1); x.fillStyle = (k + Math.floor(t)) % 2 ? '#FDE047' : '#F97316'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill(); }
         x.restore();
       };
       sign(); glow.push(sign);
-      palm(a + 1.5, d - 1.5, 9); palm(c - 1.5, d - 1.5, 9);
+      palm(a + 1.5, bz1, 9); palm(c - 1.5, bz1, 9);
     },
     // ---- the arena: a white dome on a ring of yellow masts, with giant screens round it
     arena(a, b, c, d) {
@@ -1023,6 +1033,39 @@
     quad([P(px - 2, y + 1.2, pz + 1), P(px + 3, y + 1.2, pz + 1), P(px - 1, y + 1.2, pz + 10), P(px - 4, y + 1.2, pz + 10)], '#E5E7EB', 'rgba(0,0,0,.15)');
     box(px - 9, y + 2.4, pz - 0.3, px - 6, y + 6.5, pz + 0.3, '#1D4ED8');
     box(px + 7.5, y + 1.4, pz - 1.25, px + 9, y + 2.2, pz + 1.25, '#1E3A8A');
+  }
+  // a car park: asphalt, white bays, a P sign, cars parked (the same cars every time for a spot)
+  function parking(x0, z0, x1, z1, seed) {
+    flat(x0, z0, x1, z1, 0.06, '#3F3F46');
+    const R = rnd(Math.round(seed * 7) + 11), along = x1 - x0 >= z1 - z0, bay = 3.4;
+    const n = Math.floor((along ? x1 - x0 : z1 - z0) / bay), rows = 2;
+    const cols = ['#F8FAFC', '#111827', '#B91C1C', '#1D4ED8', '#9CA3AF', '#F59E0B', '#065F46', '#7C3AED'];
+    for (let r = 0; r < rows; r++) for (let k = 0; k <= n; k++) {
+      // the bay lines
+      if (along) { const lx = x0 + k * bay, za = r ? z1 - 5 : z0, zb = r ? z1 : z0 + 5; const p = P(lx, 0.08, za), q = P(lx, 0.08, zb); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      else { const lz = z0 + k * bay, xa = r ? x1 - 5 : x0, xb = r ? x1 : x0 + 5; const p = P(xa, 0.08, lz), q = P(xb, 0.08, lz); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      if (k === n || R() < 0.3) continue;
+      // a parked car, nose in
+      const col = cols[Math.floor(R() * cols.length)];
+      if (along) { const cx = x0 + k * bay + bay / 2, cz = r ? z1 - 2.5 : z0 + 2.5; box(cx - 1, 0.3, cz - 2, cx + 1, 1.5, cz + 2, col); box(cx - 0.9, 1.5, cz - 1, cx + 0.9, 2.4, cz + 1.1, '#1F2937', '#93C5FD', 1); }
+      else { const cz = z0 + k * bay + bay / 2, cx = r ? x1 - 2.5 : x0 + 2.5; box(cx - 2, 0.3, cz - 1, cx + 2, 1.5, cz + 1, col); box(cx - 1, 1.5, cz - 0.9, cx + 1.1, 2.4, cz + 0.9, '#1F2937', '#93C5FD', 1); }
+    }
+    // the P sign
+    const px = x1 - 0.8, pz = z0 + 0.8; box(px - 0.12, 0, pz - 0.12, px + 0.12, 4, pz + 0.12, '#9CA3AF');
+    const p = P(px, 4.6, pz); x.fillStyle = '#1D4ED8'; x.fillRect(p[0] - K * 0.9, p[1] - K * 0.9, K * 1.8, K * 1.8); x.fillStyle = '#fff'; x.font = `900 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('P', p[0], p[1] + 0.5);
+  }
+  // searchlight beams from a club's roof, in its own colours
+  function beams(bx, by, bz, hue, t) {
+    const top = P(bx, by, bz);
+    x.save(); x.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 3; k++) {
+      const ang = Math.sin(t * 0.9 + k * 2.1) * 0.6 - Math.PI / 2 + (k - 1) * 0.35, L = H * 0.5;
+      const g = x.createLinearGradient(top[0], top[1], top[0] + Math.cos(ang) * L, top[1] + Math.sin(ang) * L);
+      g.addColorStop(0, `hsla(${(hue + k * 25) % 360},100%,65%,0.45)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+      x.fillStyle = g; x.beginPath(); x.moveTo(top[0], top[1]);
+      x.lineTo(top[0] + Math.cos(ang - 0.05) * L, top[1] + Math.sin(ang - 0.05) * L); x.lineTo(top[0] + Math.cos(ang + 0.05) * L, top[1] + Math.sin(ang + 0.05) * L); x.fill();
+    }
+    x.restore();
   }
   // ---- shapes for the industry and the screens
   function cyl(cx, cz, r, h, col) {
@@ -1637,9 +1680,20 @@
   // a club: a glossy black floor that catches the lights, LED strips round the walls, a raised DJ stage with an
   // LED wall behind it, a truss of moving heads above, a long bar with backlit bottles, neon signs, a VIP rope
   function drawClubShell(R, now) {
-    const t = now / 1000, hue = (t * 40) % 360, cx = R.w / 2;
+    const lekki = R.theme === 'lekki', t = now / 1000, cx = R.w / 2;
+    // Ozumba's lights stay warm gold and amber; Lekki's run through the ocean's blues and greens
+    const hue = lekki ? 165 + Math.sin(t * 0.6) * 35 : 35 + Math.sin(t * 0.5) * 15;
+    if (lekki) { // sand, a scatter of shells, palms in the corners, surfboards on the wall, a thatched bar roof
+      x.fillStyle = 'rgba(120,90,50,0.18)'; for (let k = 0; k < 40; k++) { const R2 = rnd(k * 13 + 5), p = P(R2() * R.w, 0.02, R2() * R.d); x.beginPath(); x.ellipse(p[0], p[1], K * 0.4, K * 0.25, 0, 0, Math.PI * 2); x.fill(); }
+      for (const [px, pz] of [[4, 4], [R.w - 4, 4], [R.w - 4, R.d - 4]]) palm(px, pz, 14);
+      for (let k = 0; k < 3; k++) { const z0 = 50 + k * 4; const p0 = P(0.2, 2, z0), p1 = P(0.2, 2, z0 + 2.2), p2 = P(0.2, 12, z0 + 2.2), p3 = P(0.2, 12, z0); quad([p0, p1, p2, p3], ['#F97316', '#22D3EE', '#F43F5E'][k], 'rgba(0,0,0,.2)'); }
+      pyramid(-0.5, 10, 10, 58, 13.5, 3.5, '#A16207');
+    } else { // black marble with gold veins, chandeliers
+      x.strokeStyle = 'rgba(212,175,55,0.22)'; x.lineWidth = 1;
+      for (let k = 0; k < 18; k++) { const R2 = rnd(k * 31 + 3); let px = R2() * R.w, pz = R2() * R.d; const p = P(px, 0.02, pz); x.beginPath(); x.moveTo(p[0], p[1]); for (let q = 0; q < 4; q++) { px += (R2() - 0.5) * 12; pz += (R2() - 0.5) * 8; const pp = P(px, 0.02, pz); x.lineTo(pp[0], pp[1]); } x.stroke(); }
+    }
     // the floor: dark and glossy, with the lights' colour pooled on it
-    for (let k = 0; k < 6; k++) { const p = P(24 + k * 10, 0.02, 30 + Math.sin(t + k) * 10), r = K * 16; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(hue + k * 60) % 360},90%,55%,0.2)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); }
+    for (let k = 0; k < 6; k++) { const p = P(24 + k * 10, 0.02, 30 + Math.sin(t + k) * 10), r = K * 16; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${hue + k * 8},90%,55%,0.2)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); }
     // zones on the floor: the VIP carpet, the lounge's darker wood, the entrance mat
     flat(80, 8, R.w, 60, 0.015, '#2A0F2E'); flat(12, 48, 40, R.d, 0.015, '#1A1220'); flat(cx - 8, R.d - 3, cx + 8, R.d, 0.02, '#3F3F46');
     // LED strips along the walls, low and high
@@ -1655,7 +1709,7 @@
       const u0 = i / cols, v0 = j / rows, lerp = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
       const pt = (u, v) => lerp(lerp(a0, a1, u), lerp(a3, a2, u), v);
       const wave = Math.sin(i * 0.5 + t * 3) * 0.5 + Math.cos(j * 0.9 - t * 2) * 0.5;
-      x.fillStyle = `hsla(${(hue + i * 10 + j * 20) % 360},95%,${45 + wave * 20}%,0.95)`;
+      x.fillStyle = `hsla(${hue + ((i * 7 + j * 11) % 44) - 22},95%,${45 + wave * 20}%,0.95)`;
       const q = [pt(u0 + 0.01, v0 + 0.02), pt(u0 + 1 / cols - 0.01, v0 + 0.02), pt(u0 + 1 / cols - 0.01, v0 + 1 / rows - 0.02), pt(u0 + 0.01, v0 + 1 / rows - 0.02)];
       x.beginPath(); x.moveTo(q[0][0], q[0][1]); for (let k = 1; k < 4; k++) x.lineTo(q[k][0], q[k][1]); x.closePath(); x.fill();
     }
@@ -1668,7 +1722,7 @@
       for (let k = 0; k < 8; k++) {
         const hx = 20 + k * 8, p = P(hx, 18, tz + 0.4), ang = t * (0.8 + k * 0.1) + k + tz;
         const q = P(hx + Math.sin(ang) * 16, 0, 30 + Math.cos(ang * 0.7) * 14);
-        const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(hue + k * 45) % 360},100%,70%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+        const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${hue + (k % 3) * 18 - 18},100%,70%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
         x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - K * 4, q[1]); x.lineTo(q[0] + K * 4, q[1]); x.fill();
         x.fillStyle = '#FFF'; x.beginPath(); x.arc(p[0], p[1] + 2, Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill();
       }
@@ -1686,9 +1740,15 @@
     for (const [dx, lbl] of [[62, 'WC'], [70, 'WC']]) { const p0 = P(dx, 0, 0.12), p1 = P(dx + 4, 0, 0.12), p2 = P(dx + 4, 9, 0.12), p3 = P(dx, 9, 0.12); quad([p0, p1, p2, p3], '#1F2937', '#A855F7'); const c0 = P(dx + 2, 10.5, 0.12); x.save(); x.font = `800 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.fillStyle = '#E9D5FF'; x.fillText(lbl, c0[0], c0[1]); x.restore(); }
     // neon signs
     const neon = (txt, x0, y0, z0, alongX, col, size) => { const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
-    neon('EKO NIGHTS', 86, 12, 0.15, true, `hsl(${(hue + 180) % 360},100%,70%)`, 3.4);
+    neon(lekki ? 'LEKKI VIBES' : 'OZUMBA', 86, 12, 0.15, true, lekki ? '#67E8F9' : '#FDE68A', 3.4);
     neon('BAR', 10, 10, 0.15, true, '#22D3EE');
-    neon('VIP', 0.15, 11, 36, false, '#F5C542');
+    neon(lekki ? 'BEACH VIP' : 'VIP', 0.15, 11, 36, false, lekki ? '#FDA4AF' : '#F5C542');
+    if (!lekki) { // the chandeliers over the floor
+      x.save(); x.globalCompositeOperation = 'lighter';
+      for (const [hx, hz] of [[40, 26], [56, 26], [48, 40]]) { const p = P(hx, 17, hz), r = K * 8; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,230,160,0.5)'); g.addColorStop(1, 'rgba(255,230,160,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
+        for (let k = 0; k < 10; k++) { const a2 = k / 10 * Math.PI * 2 + t * 0.3, q = P(hx + Math.cos(a2) * 2.8, 16 - (k % 2), hz + Math.sin(a2) * 2.8); x.fillStyle = (k + Math.floor(t * 3)) % 3 ? '#FFFBEB' : '#FDE68A'; x.beginPath(); x.arc(q[0], q[1], Math.max(1, K * 0.25), 0, Math.PI * 2); x.fill(); } }
+      x.restore();
+    }
     // the VIP rope along the edge of the VIP carpet
     for (let k = 0; k < 8; k++) { const px = 80, pz = 10 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
   }
@@ -1807,6 +1867,12 @@
   async function enterRoom(kind, key, title, extra = {}) {
     if (inside) return;
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
+    if (kind === 'club') {
+      R.theme = /lekki/i.test(title) ? 'lekki' : 'ozumba';
+      const pal = R.theme === 'lekki' ? ['#0E7490', '#F43F5E', '#14B8A6', '#F59E0B'] : ['#111827', '#7F1D1D', '#1C1917', '#78350F'];
+      let k = 0; for (const it of R.layout) if (it.k === 'booth') it.c = pal[k++ % pal.length]; else if (it.k === 'couch2') it.c = R.theme === 'lekki' ? '#0F766E' : '#1C1917';
+      if (R.theme === 'lekki') { R.floor = '#D6B98C'; R.wall = '#134E4A'; R.trim = '#22D3EE'; } else { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
+    }
     if (signedIn() && kind === 'hq') {
       try { const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine; }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
