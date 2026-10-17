@@ -77,6 +77,13 @@ void run(List<String> args) async {
     ),
     '/lagos-island/map.json',
   );
+  // Lagos Island's 3D car models (CC BY 3.0, credited in the game)
+  for (final car in ['range-rover', 'rolls-royce', 'cybertruck']) {
+    pod.webServer.addRoute(
+      StaticRoute.file(File(Uri(path: 'web/pages/cars/$car.glb').toFilePath())),
+      '/lagos-island/cars/$car.glb',
+    );
+  }
 
   // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.
   pod.webServer.addRoute(PartnerRoute(), '/partner/v1/**');

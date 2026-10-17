@@ -298,6 +298,13 @@
     <button id="guest" class="link">Look around as a guest</button>
   </div>
 </div>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+<script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+  window.__three = { THREE, GLTFLoader };
+  window.dispatchEvent(new Event('three-ready'));
+</script>
 <script>
 (() => {
   // ================= the board =================
@@ -1079,6 +1086,7 @@
   };
   // a car at (cx, cz), turned [ang] radians (0: nose towards +x), [sc] world units a metre
   function drawCar(cx, cz, model, col, ang, sc = 1) {
+    if (car3d(cx, cz, model, ang, sc)) return;
     const S = CAR_SPEC[model] || CAR_SPEC.corolla, color = col || S.col, co2 = Math.cos(ang), si2 = Math.sin(ang);
     const hl = S.L / 2 * sc, hw = S.W / 2 * sc, y0 = 0.32 * sc, bh = S.bh * sc, ch = S.ch * sc, has = (k) => S.f.includes(k);
     // local (l along the car, w across, y up) to the screen
@@ -1138,6 +1146,64 @@
   function carModel(cx, cz, body, col, along, sc = 1) {
     const m = { sedan: 'camry', suv: 'highlander', bigsuv: 'landcruiser', gwagon: 'gwagon', supersuv: 'urus', super: 'ferrari' }[body] || 'camry';
     drawCar(cx, cz, m, col, along ? 0 : Math.PI / 2, sc * 0.45);
+  }
+  // ---- real 3D car models (CC BY 3.0, credited in the phone's Credits)
+  const GLB_FOR = { rangerover: 'range-rover', cullinan: 'rolls-royce', cybertruck: 'cybertruck' };
+  const CAR_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/cars/' : 'cars/';
+  const G3 = { ok: false, queue: [], protos: {}, pool: {}, on: true };
+  function initThree() {
+    const T = window.__three; if (!T || G3.ok) return;
+    const { THREE, GLTFLoader } = T;
+    G3.T = THREE; G3.canvas = document.createElement('canvas');
+    G3.renderer = new THREE.WebGLRenderer({ canvas: G3.canvas, alpha: true, antialias: true, premultipliedAlpha: false });
+    G3.renderer.toneMapping = THREE.ACESFilmicToneMapping; G3.renderer.toneMappingExposure = 1.05;
+    G3.scene = new THREE.Scene();
+    G3.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6));
+    const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-0.5, 1, -0.35); G3.scene.add(sun);
+    G3.cam = new THREE.Camera(); G3.cam.matrixAutoUpdate = false;
+    const loader = new GLTFLoader();
+    for (const [model, file] of Object.entries(GLB_FOR)) {
+      loader.load(CAR_BASE + file + '.glb', (gltf) => {
+        // stand it on the ground, centred, its length along x, scaled to the real car's length in metres
+        const inner = gltf.scene, box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
+        inner.position.set(-ctr.x, -box.min.y, -ctr.z);
+        const pivot = new THREE.Group(); pivot.add(inner); if (size.z > size.x) pivot.rotation.y = Math.PI / 2;
+        const norm = new THREE.Group(); norm.add(pivot); norm.scale.setScalar((CAR_SPEC[model] || CAR_SPEC.corolla).L / Math.max(size.x, size.z));
+        G3.protos[model] = norm; G3.pool[model] = [];
+      }, undefined, () => {});
+    }
+    G3.ok = true;
+  }
+  window.addEventListener('three-ready', initThree); initThree();
+  // queue a car for this frame's 3D pass (false when there's no model for it, or 3D is off)
+  function car3d(cx, cz, model, ang, sc) {
+    if (!G3.on || !G3.ok || !G3.protos[model]) return false;
+    G3.queue.push({ cx, cz, model, ang, sc }); return true;
+  }
+  // render the queued cars with the game's camera and lay them into the picture
+  function flush3d() {
+    if (!G3.ok || !G3.queue.length) { G3.queue.length = 0; return; }
+    const THREE = G3.T, r = G3.renderer;
+    if (G3.w !== W || G3.h !== H || G3.dpr !== DPR) { r.setPixelRatio(DPR); r.setSize(W, H, false); G3.w = W; G3.h = H; G3.dpr = DPR; }
+    // world to clip space: the same projection as P(), as one matrix
+    const a = 2 * K / W, b = 2 * K / H, Dm = 4000, cx = cam.x, cz = cam.z;
+    G3.cam.projectionMatrix.set(
+      a * co, 0, -a * si, -a * (co * cx - si * cz),
+      -b * sp * si, b * cp, -b * sp * co, -0.1 + b * sp * (si * cx + co * cz),
+      -cp * si / Dm, -sp / Dm, -cp * co / Dm, (cp * si * cx + cp * co * cz) / Dm,
+      0, 0, 0, 1);
+    G3.cam.projectionMatrixInverse.copy(G3.cam.projectionMatrix).invert();
+    const used = {};
+    for (const q of G3.queue) {
+      const list = G3.pool[q.model], k = used[q.model] = (used[q.model] || 0);
+      if (!list[k]) { const root = new THREE.Group(); root.add(G3.protos[q.model].clone(true)); list[k] = root; G3.scene.add(root); }
+      const o = list[k]; used[q.model]++;
+      o.visible = true; o.position.set(q.cx, 0, q.cz); o.rotation.y = -q.ang; o.scale.setScalar(q.sc);
+    }
+    for (const [m, list] of Object.entries(G3.pool)) for (let k = used[m] || 0; k < list.length; k++) list[k].visible = false;
+    r.setClearColor(0x000000, 0); r.clear(); r.render(G3.scene, G3.cam);
+    x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(G3.canvas, 0, 0, W * DPR, H * DPR); x.restore();
+    G3.queue.length = 0;
   }
   let parkedNow = {}; // building -> cars parked outside it (from the island feed)
   // a car park: asphalt, white bays, a P sign, and the cars of the people inside right now
@@ -1358,6 +1424,7 @@
     glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
+    flush3d();
     // night: the town darkens; the clubs, the casino, the refinery's flare, the screens and the people stay lit
     if (night > 0) {
       x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
@@ -1785,6 +1852,8 @@
     if (R.kind === 'arena') drawStands(R, now);
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
+    flush3d();
+    for (const f of afterCars.splice(0)) f();
     if (false) { // the old light show (the shell has its own)
       x.save(); x.globalCompositeOperation = 'lighter'; const t = now / 1000;
       for (let k = 0; k < 4; k++) { const p = P(10 + k * 15, 17, 1), q = P(R.w / 2 + Math.sin(t + k) * 18, 0, R.d / 2 + Math.cos(t * 0.7 + k) * 10); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(k * 90 + t * 40) % 360},100%,65%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - 30, q[1]); x.lineTo(q[0] + 30, q[1]); x.fill(); }
@@ -1920,6 +1989,7 @@
     const list = Object.entries(CARS).filter(([, v]) => v[3] === R.dealer);
     return list.map(([id, v], k) => ({ id, v, k, x: 18 + (k % 3) * 28, z: (R.dealer === 'polanco' ? 26 : 14) + Math.floor(k / 3) * 21, col: CAR_SPEC[id].col }));
   }
+  const afterCars = []; // things to draw over the 3D cars (the showroom's price boards)
   function drawShowroom(R, now) {
     const lux = R.dealer === 'lekkiluxury', t = now / 1000, gold = '#D4AF37', blue = '#1D4ED8', acc = lux ? gold : blue;
     // the floor: black marble with gold veins (Lekki Luxury), white porcelain with a blue runner (Polanco)
@@ -1948,12 +2018,14 @@
       drawCar(c.x, c.z, c.id, c.col, t * 0.3 + c.k * 1.1, 3.1);
       // the spotlight cone from the ceiling
       x.save(); x.globalCompositeOperation = 'lighter'; const lp = P(c.x, 20, c.z); const cone = x.createLinearGradient(lp[0], lp[1], p[0], p[1]); cone.addColorStop(0, 'rgba(255,250,235,0.18)'); cone.addColorStop(1, 'rgba(255,250,235,0)'); x.fillStyle = cone; x.beginPath(); x.moveTo(lp[0] - K * 0.6, lp[1]); x.lineTo(lp[0] + K * 0.6, lp[1]); x.lineTo(p[0] + r * 0.9, p[1]); x.lineTo(p[0] - r * 0.9, p[1]); x.fill(); x.restore();
-      // the price board on a stand
+      // the price board on a stand (over the cars)
+      afterCars.push(() => {
       const st = P(c.x + 9, 0, c.z + 9), sb = P(c.x + 9, 5, c.z + 9); x.strokeStyle = lux ? gold : '#94A3B8'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(st[0], st[1]); x.lineTo(sb[0], sb[1]); x.stroke();
       x.save(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '800 11px "Plus Jakarta Sans", sans-serif';
       const name = c.v[0], price = naira(c.v[2]), w = Math.max(x.measureText(name).width, x.measureText(price).width) + 18;
       x.fillStyle = lux ? 'rgba(12,10,9,0.92)' : 'rgba(255,255,255,0.97)'; x.beginPath(); x.roundRect(sb[0] - w / 2, sb[1] - 30, w, 32, 8); x.fill(); x.strokeStyle = acc; x.lineWidth = 1; x.stroke();
       x.fillStyle = lux ? '#F8FAFC' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 21); x.fillStyle = lux ? '#FDE68A' : blue; x.font = '900 11px "Plus Jakarta Sans", sans-serif'; x.fillText(price, sb[0], sb[1] - 7); x.restore();
+      });
     }
   }
   // Polanco's mezzanine: a slab across the back at first-floor height, glass railings, a staircase up on the right
@@ -2470,7 +2542,7 @@
   const APP_AC = { garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
   function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); render(app, arg); }
@@ -2695,6 +2767,14 @@
         $('bcGo').onclick = async () => { try { const r = await my('buyCar', { model: id, color: colr }); myCar = id + ':' + colr; show(`<div class="ptitle">It's yours!</div><div class="pcard"><h3>🔑 ${esc(r.name)}</h3><p>Congratulations. It will wait outside wherever you go in.</p><button class="pbtn" id="bcG">Open Garage</button></div>`); $('bcG').onclick = () => go('garage'); } catch (e) { fail(e); } };
         return;
       }
+      if (app === 'credits') {
+        return show(`<div class="ptitle">Credits</div><div class="pcard"><h3>3D car models</h3>
+          <div class="row"><span>Range Rover</span><b>IvOfficial</b></div>
+          <div class="row"><span>Rolls-Royce</span><b>David Sirera</b></div>
+          <div class="row"><span>Tesla Cybertruck</span><b>Mobolaji</b></div>
+          <p class="dim">From Poly Pizza (poly.pizza), licensed under Creative Commons Attribution 3.0 (creativecommons.org/licenses/by/3.0). Car names and designs belong to their makers; this game is not affiliated with them.</p></div>
+          <div class="pcard"><h3>Lagos Island</h3><p class="dim">A WYRD game. Made with three.js and a lot of Lagos love.</p></div>`);
+      }
       if (app === 'garage') {
         const list = await my('myCars');
         show(`<div class="ptitle">Garage</div><div class="lock">Your cars. The one you drive parks outside the clubs and the casino when you go in.</div>${list.map((c2) => `<div class="pcard" style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:26px;border-radius:50%;background:${esc(c2.color)};flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.3)"></span><span style="flex:1"><h3 style="margin:0">${esc(c2.name)}</h3><span class="dim">${naira(c2.price)}</span></span>${c2.active ? '<b style="color:#FCEE0A">DRIVING</b>' : `<button class="pbtn alt" data-drive="${c2.id}">Drive</button>`}</div>`).join('') || '<div class="pcard"><h3>No car yet</h3><p>Visit Polanco or Lekki Luxury Cars on the east side of the island. Tap them to walk in.</p></div>'}`);
@@ -2815,12 +2895,12 @@
     else { const p = PLACES[k], s = sectorOf((p[1] + 0.5) * T, (p[2] + 0.5) * T) || SECTORS[0]; cx = (p[1] + p[3] / 2) * T; cz = (p[2] + p[4] / 2) * T + 8; cm = s.cam; zm = Math.min(1.3, 1.1 * 40 / Math.max(p[3], p[4]) / T * 2.2); }
     const save = { x, W, H, DPR, cam: { ...cam }, me: { x: me.x, z: me.z }, inside };
     try {
-      x = pc.getContext('2d'); W = pw; H = ph; DPR = 1; inside = null;
+      x = pc.getContext('2d'); W = pw; H = ph; DPR = 1; inside = null; G3.on = false;
       Object.assign(cam, { x: cx, z: cz, yaw: cm.yaw, pitch: cm.pitch, zoom: zm, user: 1 });
       me.x = -9999; me.z = -9999;
       draw();
     } finally {
-      x = save.x; W = save.W; H = save.H; DPR = save.DPR; Object.assign(cam, save.cam); me.x = save.me.x; me.z = save.me.z; inside = save.inside;
+      G3.on = true; G3.queue.length = 0; x = save.x; W = save.W; H = save.H; DPR = save.DPR; Object.assign(cam, save.cam); me.x = save.me.x; me.z = save.me.z; inside = save.inside;
     }
     const url = pc.toDataURL('image/jpeg', 0.8);
     peeks.set(id, url); return url;
