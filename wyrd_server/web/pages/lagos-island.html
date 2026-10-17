@@ -358,6 +358,16 @@
     [25, 25, 25, 25, 'To the Arena'],
     [50, 15, 51, 15, 'To the Free Zone'],
     [46, 19, 46, 20, 'To HQ Row'],
+    // the new links
+    [61, 15, 69, 15, 'Free Zone Bridge'],
+    [68, 13, 68, 14, 'To Polanco'],
+    [61, 24, 63, 24, 'Airport Link'],
+    [76, 22, 80, 22, 'East Bridge'],
+    [5, 18, 5, 18, 'To Welcome Point'],
+    [4, 27, 4, 40, 'Ilashe Causeway'],
+    [30, 29, 30, 40, 'Arena Causeway'],
+    [46, 28, 46, 40, 'HQ Row Causeway'],
+    [70, 29, 70, 40, 'Dealers Causeway'],
   ];
   const FERRY = [4, 16, 4, 21]; // Lagos Island to Ilashe, by boat
   // the landmarks: [type, i, j, wi, dj, name, emoji]
@@ -464,6 +474,13 @@
   });
   for (const [i0, j0, i1, j1] of BRIDGES) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) tile[j * BOARD.w + i] = BRIDGE;
   for (let i = COAST[0]; i <= COAST[1]; i++) if (tile[COAST[2] * BOARD.w + i] === W0) tile[COAST[2] * BOARD.w + i] = BRIDGE;
+  // where the new bridges land: a stretch of road on each side
+  for (const [i, j] of [[68, 12], [69, 16], [64, 24], [81, 22], [82, 22], [6, 18], [4, 41], [30, 41], [46, 41], [70, 28], [70, 41]]) tile[j * BOARD.w + i] = ROAD;
+  // lanes through the places the bridges reach (under the buildings: they carry rides, they don't show)
+  for (let i = 54; i <= 60; i++) tile[24 * BOARD.w + i] = ROAD;            // the airport, from its gate to the link
+  for (let j = 16; j <= 28; j++) tile[j * BOARD.w + 69] = ROAD;            // Lekki Luxury Cars, north to south
+  for (let i = 69; i <= 75; i++) tile[22 * BOARD.w + i] = ROAD;            // and across to the east bridge
+  for (let i = 27; i <= 30; i++) tile[28 * BOARD.w + i] = ROAD;            // the arena's front, to its causeway
   // the airport's and the station's gates onto the roads
   tile[24 * BOARD.w + 52] = BRIDGE; tile[24 * BOARD.w + 53] = ROAD; tile[23 * BOARD.w + 40] = ROAD;
   // the beaches' sand
