@@ -92,6 +92,14 @@ islandMe:
   - myCars:
   - buyCar:
   - driveCar:
+  - buyFurniture:
+  - myFurniture:
+  - homes:
+  - buyHome:
+  - startParty:
+  - endParty:
+  - parties:
+  - charterYacht:
   - room:
   - saveRoom:
   - shows:

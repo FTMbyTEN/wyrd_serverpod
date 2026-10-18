@@ -77,12 +77,16 @@ void run(List<String> args) async {
     ),
     '/lagos-island/map.json',
   );
-  // Lagos Island's 3D car models (CC BY 3.0, credited in the game)
-  for (final car in ['range-rover', 'rolls-royce', 'cybertruck']) {
-    pod.webServer.addRoute(
-      StaticRoute.file(File(Uri(path: 'web/pages/cars/$car.glb').toFilePath())),
-      '/lagos-island/cars/$car.glb',
-    );
+  // Lagos Island's 3D models: every car (CC BY, credited in the game) and every piece of furniture in the Eko
+  // Home Store (Kenney, CC0) with its store thumbnail. Whatever is in these folders is served.
+  for (final dir in ['cars', 'furniture', 'furniture/thumbs', 'people']) {
+    final d = Directory(Uri(path: 'web/pages/$dir').toFilePath());
+    if (!d.existsSync()) continue;
+    for (final f in d.listSync().whereType<File>()) {
+      final name = f.uri.pathSegments.last;
+      if (!name.endsWith('.glb') && !name.endsWith('.png')) continue;
+      pod.webServer.addRoute(StaticRoute.file(f), '/lagos-island/$dir/$name');
+    }
   }
 
   // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.

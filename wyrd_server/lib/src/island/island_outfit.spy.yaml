@@ -1,0 +1,12 @@
+### An outfit someone bought at a Lagos Island boutique (Idumota, Falomo, Circle Mall) or on the Fashion app. One row per
+### outfit; [item] is an id from IslandMeEndpoint.outfitCatalog. What they're wearing is the last field of their look.
+class: IslandOutfit
+table: island_outfit
+fields:
+  authUserId: UuidValue
+  item: String
+  price: int
+  boughtAt: DateTime
+indexes:
+  island_outfit_user_idx:
+    fields: authUserId

@@ -1,0 +1,12 @@
+### A piece of furniture someone bought at the Eko Home Store. One row per piece; [item] is a store id
+### (k:<model>) from IslandMeEndpoint.furnitureCatalog. Where it stands is in the room's layout.
+class: IslandFurniture
+table: island_furniture
+fields:
+  authUserId: UuidValue
+  item: String
+  price: int
+  boughtAt: DateTime
+indexes:
+  island_furniture_user_idx:
+    fields: authUserId

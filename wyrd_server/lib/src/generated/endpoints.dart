@@ -2169,6 +2169,164 @@ class Endpoints extends _is.EndpointDispatch {
                     params['carId'],
                   ),
         ),
+        'buyFurniture': _is.MethodConnector(
+          name: 'buyFurniture',
+          params: {
+            'item': _is.ParameterDescription(
+              name: 'item',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .buyFurniture(
+                    session,
+                    params['item'],
+                  ),
+        ),
+        'myFurniture': _is.MethodConnector(
+          name: 'myFurniture',
+          params: {
+            'room': _is.ParameterDescription(
+              name: 'room',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .myFurniture(
+                    session,
+                    params['room'],
+                  ),
+        ),
+        'homes': _is.MethodConnector(
+          name: 'homes',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .homes(session),
+        ),
+        'buyHome': _is.MethodConnector(
+          name: 'buyHome',
+          params: {
+            'plot': _is.ParameterDescription(
+              name: 'plot',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).buyHome(
+                    session,
+                    params['plot'],
+                  ),
+        ),
+        'startParty': _is.MethodConnector(
+          name: 'startParty',
+          params: {
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'theme': _is.ParameterDescription(
+              name: 'theme',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'minutes': _is.ParameterDescription(
+              name: 'minutes',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'open': _is.ParameterDescription(
+              name: 'open',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'guests': _is.ParameterDescription(
+              name: 'guests',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .startParty(
+                    session,
+                    params['key'],
+                    params['theme'],
+                    params['minutes'],
+                    params['open'],
+                    params['guests'],
+                  ),
+        ),
+        'endParty': _is.MethodConnector(
+          name: 'endParty',
+          params: {
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .endParty(
+                    session,
+                    params['key'],
+                  ),
+        ),
+        'parties': _is.MethodConnector(
+          name: 'parties',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .parties(session),
+        ),
+        'charterYacht': _is.MethodConnector(
+          name: 'charterYacht',
+          params: {
+            'kind': _is.ParameterDescription(
+              name: 'kind',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .charterYacht(
+                    session,
+                    params['kind'],
+                  ),
+        ),
         'room': _is.MethodConnector(
           name: 'room',
           params: {

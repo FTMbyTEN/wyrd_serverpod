@@ -29,7 +29,9 @@ class IslandMeEndpoint extends Endpoint {
       UuidValue.fromString(s.authenticated!.userIdentifier);
   static final _rnd = Random.secure();
   static String _clean(String s, int max) {
-    final t = s.replaceAll(RegExp(r'[\u0000-\u0008\u000b-\u001f<>]'), '').trim();
+    final t = s
+        .replaceAll(RegExp(r'[\u0000-\u0008\u000b-\u001f<>]'), '')
+        .trim();
     return t.length > max ? t.substring(0, max) : t;
   }
 
@@ -37,7 +39,10 @@ class IslandMeEndpoint extends Endpoint {
 
   // one money action at a time per person (as CityEndpoint)
   static final _queues = <String, Future<void>>{};
-  static Future<String> _money(Session s, Future<String> Function(UuidValue u) work) {
+  static Future<String> _money(
+    Session s,
+    Future<String> Function(UuidValue u) work,
+  ) {
     final u = _user(s);
     final before = _queues[u.uuid] ?? Future.value();
     final run = before.catchError((_) {}).then((_) => work(u));
@@ -51,12 +56,19 @@ class IslandMeEndpoint extends Endpoint {
 
   // ---------------- profile ----------------
   static Future<IslandProfile> _profile(Session s, UuidValue u) async {
-    final p = await IslandProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+    final p = await IslandProfile.db.findFirstRow(
+      s,
+      where: (t) => t.authUserId.equals(u),
+    );
     if (p != null) return p;
     final base = 'lagosian${u.uuid.replaceAll('-', '').substring(0, 6)}';
     return IslandProfile.db.insertRow(
       s,
-      IslandProfile(authUserId: u, handle: base, createdAt: DateTime.now().toUtc()),
+      IslandProfile(
+        authUserId: u,
+        handle: base,
+        createdAt: DateTime.now().toUtc(),
+      ),
     );
   }
 
@@ -85,18 +97,31 @@ class IslandMeEndpoint extends Endpoint {
       'earnedToday': await _earnedToday(session, u),
       'dailyCap': dailyCap,
       'operator': await DroneService.isOperator(session, u),
-      'requests': await IslandAccess.db.count(session, where: (t) => t.ownerId.equals(u) & t.status.equals('pending')),
+      'requests': await IslandAccess.db.count(
+        session,
+        where: (t) => t.ownerId.equals(u) & t.status.equals('pending'),
+      ),
     });
   }
 
   /// Change my handle, skills, open-to-work, or messaging key. Empty strings leave a field as it is.
-  Future<String> setProfile(Session session, String handle, String skills, bool openToWork, String pubKey) async {
+  Future<String> setProfile(
+    Session session,
+    String handle,
+    String skills,
+    bool openToWork,
+    String pubKey,
+  ) async {
     final u = _user(session);
     var p = await _profile(session, u);
     final h = handle.trim();
     if (h.isNotEmpty && h != p.handle) {
-      if (!RegExp(r'^[a-zA-Z0-9_.-]{3,20}$').hasMatch(h)) return _err('A name of 3 to 20 letters, digits, _ . or -.');
-      final taken = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.equals(h));
+      if (!RegExp(r'^[a-zA-Z0-9_.-]{3,20}$').hasMatch(h))
+        return _err('A name of 3 to 20 letters, digits, _ . or -.');
+      final taken = await IslandProfile.db.findFirstRow(
+        session,
+        where: (t) => t.handle.equals(h),
+      );
       if (taken != null) return _err('That name is taken.');
       p = p.copyWith(handle: h);
     }
@@ -105,7 +130,8 @@ class IslandMeEndpoint extends Endpoint {
       if (pubKey.length > 600) return _err('Key too large.');
       try {
         final k = jsonDecode(pubKey) as Map<String, dynamic>;
-        if (k['kty'] != 'EC' || k['crv'] != 'P-256' || k.containsKey('d')) return _err('Not a public P-256 key.');
+        if (k['kty'] != 'EC' || k['crv'] != 'P-256' || k.containsKey('d'))
+          return _err('Not a public P-256 key.');
       } catch (_) {
         return _err('Not a key.');
       }
@@ -117,7 +143,22 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Save how I look on the island (chosen when I joined; changeable in Profile).
   Future<String> setLook(Session session, String look) async {
-    if (!RegExp(r'^[mf](,[0-9]{1,2}){4}$').hasMatch(look)) return _err('Bad look.');
+    // g,skin,hair,style,bottom and, optionally, the outfit being worn: a free starter or one I've bought
+    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{1,30})?)?$').firstMatch(look);
+    if (m == null) return _err('Bad look.');
+    final outfit = m.group(3);
+    if (outfit != null) {
+      final o = outfitCatalog[outfit];
+      if (o == null) return _err('That outfit is not in any shop.');
+      if (o.price > 0 &&
+          await IslandOutfit.db.findFirstRow(
+                session,
+                where: (t) =>
+                    t.authUserId.equals(_user(session)) & t.item.equals(outfit),
+              ) ==
+              null)
+        return _err('Buy the ${o.name} first.');
+    }
     final p = await _profile(session, _user(session));
     await IslandProfile.db.updateRow(session, p.copyWith(look: look));
     return jsonEncode({'look': look});
@@ -125,9 +166,15 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Someone's public messaging key, by handle: {handle, pubKey} or {error}.
   Future<String> keyOf(Session session, String handle) async {
-    final p = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.equals(handle.trim()));
+    final p = await IslandProfile.db.findFirstRow(
+      session,
+      where: (t) => t.handle.equals(handle.trim()),
+    );
     if (p == null) return _err('Nobody on the island by that name.');
-    if (p.pubKey == null) return _err('${p.handle} hasn\'t opened their phone yet, so they can\'t receive encrypted messages.');
+    if (p.pubKey == null)
+      return _err(
+        '${p.handle} hasn\'t opened their phone yet, so they can\'t receive encrypted messages.',
+      );
     return jsonEncode({'handle': p.handle, 'pubKey': p.pubKey});
   }
 
@@ -143,27 +190,41 @@ class IslandMeEndpoint extends Endpoint {
 
   static Future<int> _earnedToday(Session s, UuidValue u) async {
     final day = DateTime.now().toUtc().add(const Duration(hours: 1));
-    final start = DateTime.utc(day.year, day.month, day.day).subtract(const Duration(hours: 1));
+    final start = DateTime.utc(
+      day.year,
+      day.month,
+      day.day,
+    ).subtract(const Duration(hours: 1));
     final rows = await NairaEntry.db.find(
       s,
-      where: (t) => t.authUserId.equals(u) & t.createdAt.between(start, start.add(const Duration(days: 1))) & t.key.like('island:shift:%'),
+      where: (t) =>
+          t.authUserId.equals(u) &
+          t.createdAt.between(start, start.add(const Duration(days: 1))) &
+          t.key.like('island:shift:%'),
     );
     return rows.fold<int>(0, (a, e) => a + e.amount);
   }
 
   /// Work a shift at [place] (refinery, club, market, okada). Paid at Lagos rates, capped each day.
-  Future<String> work(Session session, String place) => _money(session, (u) async {
+  Future<String> work(Session session, String place) => _money(session, (
+    u,
+  ) async {
     final sh = shifts[place];
     if (sh == null) return _err('Nobody is hiring for that here.');
     if (place == 'club') {
       final h = DateTime.now().toUtc().add(const Duration(hours: 1)).hour;
-      if (h >= 6 && h < 18) return _err('The clubs open at 6 pm. Come back tonight.');
+      if (h >= 6 && h < 18)
+        return _err('The clubs open at 6 pm. Come back tonight.');
     }
     await WorldAuthority.citizen(session, u);
     final earned = await _earnedToday(session, u);
-    if (earned >= dailyCap) return _err('You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.');
+    if (earned >= dailyCap)
+      return _err(
+        'You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.',
+      );
     final pay = min(sh.pay, dailyCap - earned);
-    final bucket = DateTime.now().millisecondsSinceEpoch ~/ (sh.minutes * 60000);
+    final bucket =
+        DateTime.now().millisecondsSinceEpoch ~/ (sh.minutes * 60000);
     final r = await Bank.post(
       session,
       u,
@@ -173,12 +234,18 @@ class IslandMeEndpoint extends Endpoint {
       counter: place == 'club' ? 'city:services' : 'city:market',
       memo: sh.memo,
     );
-    if (r.repeat) return _err('Your shift here is done. The next one starts in a few minutes.');
+    if (r.repeat)
+      return _err(
+        'Your shift here is done. The next one starts in a few minutes.',
+      );
     final c = await Bank.fresh(session, u);
     return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
   });
 
-  static String _n(int v) => v.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
+  static String _n(int v) => v.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
 
   /// My last receipts (JSON list).
   Future<String> receipts(Session session) async {
@@ -193,18 +260,44 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Send naira to another person by handle (at most ₦50,000 at a time).
-  Future<String> send(Session session, String handle, int amount, String note) => _money(session, (u) async {
-    if (amount < 50 || amount > 50000) return _err('Send between ₦50 and ₦50,000.');
-    final to = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.equals(handle.trim()));
+  Future<String> send(
+    Session session,
+    String handle,
+    int amount,
+    String note,
+  ) => _money(session, (u) async {
+    if (amount < 50 || amount > 50000)
+      return _err('Send between ₦50 and ₦50,000.');
+    final to = await IslandProfile.db.findFirstRow(
+      session,
+      where: (t) => t.handle.equals(handle.trim()),
+    );
     if (to == null) return _err('Nobody on the island by that name.');
     if (to.authUserId == u) return _err('That\'s you.');
     final me = await _profile(session, u);
     await WorldAuthority.citizen(session, to.authUserId);
-    final id = '${DateTime.now().microsecondsSinceEpoch}${_rnd.nextInt(1 << 16)}';
+    final id =
+        '${DateTime.now().microsecondsSinceEpoch}${_rnd.nextInt(1 << 16)}';
     final memo = _clean(note, 60);
-    final out = await Bank.post(session, u, key: 'island:send:$id:out', amount: -amount, kind: 'fee', counter: 'city:services', memo: 'To ${to.handle}${memo.isEmpty ? '' : ': $memo'}');
+    final out = await Bank.post(
+      session,
+      u,
+      key: 'island:send:$id:out',
+      amount: -amount,
+      kind: 'fee',
+      counter: 'city:services',
+      memo: 'To ${to.handle}${memo.isEmpty ? '' : ': $memo'}',
+    );
     if (out.short != null) return _err('You don\'t have that much.');
-    await Bank.post(session, to.authUserId, key: 'island:send:$id:in', amount: amount, kind: 'refund', counter: 'city:services', memo: 'From ${me.handle}${memo.isEmpty ? '' : ': $memo'}');
+    await Bank.post(
+      session,
+      to.authUserId,
+      key: 'island:send:$id:in',
+      amount: amount,
+      kind: 'refund',
+      counter: 'city:services',
+      memo: 'From ${me.handle}${memo.isEmpty ? '' : ': $memo'}',
+    );
     final c = await Bank.fresh(session, u);
     return jsonEncode({'sent': amount, 'to': to.handle, 'naira': c.naira});
   });
@@ -214,22 +307,64 @@ class IslandMeEndpoint extends Endpoint {
 
   /// One round. [game]: roulette (bet red | black | green) or slots. [stake]: ₦100 to ₦5,000.
   /// Play money only, with a daily loss limit.
-  Future<String> casino(Session session, String game, String bet, int stake) => _money(session, (u) async {
+  Future<String> casino(
+    Session session,
+    String game,
+    String bet,
+    int stake,
+  ) => _money(session, (u) async {
     if (stake < 100 || stake > 5000) return _err('Stakes are ₦100 to ₦5,000.');
     final c = await WorldAuthority.citizen(session, u);
     if (c.naira < stake) return _err('You don\'t have ₦${_n(stake)}.');
     final day = DateTime.now().toUtc().add(const Duration(hours: 1));
-    final start = DateTime.utc(day.year, day.month, day.day).subtract(const Duration(hours: 1));
-    final today = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.createdAt.between(start, start.add(const Duration(days: 1))) & t.key.like('island:casino:%'));
+    final start = DateTime.utc(
+      day.year,
+      day.month,
+      day.day,
+    ).subtract(const Duration(hours: 1));
+    final today = await NairaEntry.db.find(
+      session,
+      where: (t) =>
+          t.authUserId.equals(u) &
+          t.createdAt.between(start, start.add(const Duration(days: 1))) &
+          t.key.like('island:casino:%'),
+    );
     final net = today.fold<int>(0, (a, e) => a + e.amount);
-    if (-net >= _lossLimit) return _err('You\'ve hit today\'s limit (₦${_n(_lossLimit)} lost). The casino closes for you until tomorrow.');
+    if (-net >= _lossLimit)
+      return _err(
+        'You\'ve hit today\'s limit (₦${_n(_lossLimit)} lost). The casino closes for you until tomorrow.',
+      );
     int payout; // what comes back, stake included
     Map<String, dynamic> show;
     if (game == 'roulette') {
-      if (!{'red', 'black', 'green'}.contains(bet)) return _err('Bet red, black or green.');
+      if (!{'red', 'black', 'green'}.contains(bet))
+        return _err('Bet red, black or green.');
       final n = _rnd.nextInt(37); // 0 is green
-      const reds = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36};
-      final colour = n == 0 ? 'green' : reds.contains(n) ? 'red' : 'black';
+      const reds = {
+        1,
+        3,
+        5,
+        7,
+        9,
+        12,
+        14,
+        16,
+        18,
+        19,
+        21,
+        23,
+        25,
+        27,
+        30,
+        32,
+        34,
+        36,
+      };
+      final colour = n == 0
+          ? 'green'
+          : reds.contains(n)
+          ? 'red'
+          : 'black';
       payout = colour == bet ? (bet == 'green' ? stake * 14 : stake * 2) : 0;
       show = {'number': n, 'colour': colour};
     } else if (game == 'slots') {
@@ -237,25 +372,47 @@ class IslandMeEndpoint extends Endpoint {
       final r = [for (var i = 0; i < 3; i++) reel[_rnd.nextInt(reel.length)]];
       final three = r[0] == r[1] && r[1] == r[2];
       final two = !three && (r[0] == r[1] || r[1] == r[2] || r[0] == r[2]);
-      final mult = three ? {'💎': 30, '⭐': 15, '🥥': 8, '🛵': 6, '🌴': 4}[r[0]]! : two ? 1 : 0;
+      final mult = three
+          ? {'💎': 30, '⭐': 15, '🥥': 8, '🛵': 6, '🌴': 4}[r[0]]!
+          : two
+          ? 1
+          : 0;
       payout = stake * mult;
       show = {'reels': r};
     } else {
       return _err('No such table.');
     }
     final amount = payout - stake;
-    final key = 'island:casino:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}';
+    final key =
+        'island:casino:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}';
     if (amount != 0) {
-      await Bank.post(session, u, key: key, amount: amount, kind: amount > 0 ? 'place' : 'fee', counter: 'city:market', memo: game == 'roulette' ? 'Casino: roulette' : 'Casino: slots');
+      await Bank.post(
+        session,
+        u,
+        key: key,
+        amount: amount,
+        kind: amount > 0 ? 'place' : 'fee',
+        counter: 'city:market',
+        memo: game == 'roulette' ? 'Casino: roulette' : 'Casino: slots',
+      );
     }
     final after = await Bank.fresh(session, u);
     return jsonEncode({...show, 'won': amount, 'naira': after.naira});
   });
 
   // ---------------- jobs ----------------
-  static Set<String> _words(String s) => s.toLowerCase().split(RegExp(r'[,;/]+')).map((w) => w.trim()).where((w) => w.length > 1).toSet();
+  static Set<String> _words(String s) => s
+      .toLowerCase()
+      .split(RegExp(r'[,;/]+'))
+      .map((w) => w.trim())
+      .where((w) => w.length > 1)
+      .toSet();
 
-  static Map<String, dynamic> _jobJson(IslandJob j, {bool contact = false, int? match}) => {
+  static Map<String, dynamic> _jobJson(
+    IslandJob j, {
+    bool contact = false,
+    int? match,
+  }) => {
     'id': j.id,
     'company': j.company,
     'title': j.title,
@@ -274,29 +431,71 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> jobs(Session session) async {
     final u = _user(session);
     final p = await _profile(session, u);
-    final open = await IslandJob.db.find(session, where: (t) => t.status.equals('open'), orderBy: (t) => t.createdAt.desc(), limit: 100);
-    final mine = await IslandApplication.db.find(session, where: (t) => t.authUserId.equals(u));
+    final open = await IslandJob.db.find(
+      session,
+      where: (t) => t.status.equals('open'),
+      orderBy: (t) => t.createdAt.desc(),
+      limit: 100,
+    );
+    final mine = await IslandApplication.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
     final applied = {for (final a in mine) a.jobId};
     final have = p.openToWork ? _words(p.skills) : <String>{};
     final list = [
       for (final j in open)
         () {
           final need = _words(j.skills);
-          final hit = need.where((w) => have.any((h) => h.contains(w) || w.contains(h))).length;
-          final m = have.isEmpty || need.isEmpty ? null : (100 * hit / need.length).round();
-          return {..._jobJson(j, contact: applied.contains(j.id), match: m), 'applied': applied.contains(j.id)};
+          final hit = need
+              .where((w) => have.any((h) => h.contains(w) || w.contains(h)))
+              .length;
+          final m = have.isEmpty || need.isEmpty
+              ? null
+              : (100 * hit / need.length).round();
+          return {
+            ..._jobJson(j, contact: applied.contains(j.id), match: m),
+            'applied': applied.contains(j.id),
+          };
         }(),
     ];
-    if (have.isNotEmpty) list.sort((a, b) => ((b['match'] ?? 0) as int).compareTo((a['match'] ?? 0) as int));
+    if (have.isNotEmpty)
+      list.sort(
+        (a, b) =>
+            ((b['match'] ?? 0) as int).compareTo((a['match'] ?? 0) as int),
+      );
     return jsonEncode(list);
   }
 
   /// Post a real job. It shows once WYRD's operator has checked it.
-  Future<String> postJob(Session session, String company, String title, String pay, String skills, String location, String about, String contact) async {
+  Future<String> postJob(
+    Session session,
+    String company,
+    String title,
+    String pay,
+    String skills,
+    String location,
+    String about,
+    String contact,
+  ) async {
     final u = _user(session);
-    final f = [company, title, pay, skills, location, about, contact].map((v) => v.trim()).toList();
+    final f = [
+      company,
+      title,
+      pay,
+      skills,
+      location,
+      about,
+      contact,
+    ].map((v) => v.trim()).toList();
     if (f.any((v) => v.isEmpty)) return _err('Fill in every field.');
-    final recent = await IslandJob.db.count(session, where: (t) => t.employerUserId.equals(u) & (t.createdAt > DateTime.now().toUtc().subtract(const Duration(days: 1))));
+    final recent = await IslandJob.db.count(
+      session,
+      where: (t) =>
+          t.employerUserId.equals(u) &
+          (t.createdAt >
+              DateTime.now().toUtc().subtract(const Duration(days: 1))),
+    );
     if (recent >= 5) return _err('Five posts a day at most.');
     final j = await IslandJob.db.insertRow(
       session,
@@ -319,25 +518,50 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> apply(Session session, int jobId, String note) async {
     final u = _user(session);
     final j = await IslandJob.db.findById(session, jobId);
-    if (j == null || j.status != 'open') return _err('That job is no longer open.');
+    if (j == null || j.status != 'open')
+      return _err('That job is no longer open.');
     if (j.employerUserId == u) return _err('That\'s your own post.');
-    final had = await IslandApplication.db.findFirstRow(session, where: (t) => t.jobId.equals(jobId) & t.authUserId.equals(u));
+    final had = await IslandApplication.db.findFirstRow(
+      session,
+      where: (t) => t.jobId.equals(jobId) & t.authUserId.equals(u),
+    );
     if (had != null) return jsonEncode({'applied': true, 'contact': j.contact});
-    await IslandApplication.db.insertRow(session, IslandApplication(jobId: jobId, authUserId: u, note: _clean(note, 800), createdAt: DateTime.now().toUtc()));
+    await IslandApplication.db.insertRow(
+      session,
+      IslandApplication(
+        jobId: jobId,
+        authUserId: u,
+        note: _clean(note, 800),
+        createdAt: DateTime.now().toUtc(),
+      ),
+    );
     return jsonEncode({'applied': true, 'contact': j.contact});
   }
 
   /// My posts, each with who applied: their handle, skills and note.
   Future<String> myJobs(Session session) async {
     final u = _user(session);
-    final posts = await IslandJob.db.find(session, where: (t) => t.employerUserId.equals(u), orderBy: (t) => t.createdAt.desc());
+    final posts = await IslandJob.db.find(
+      session,
+      where: (t) => t.employerUserId.equals(u),
+      orderBy: (t) => t.createdAt.desc(),
+    );
     final out = [];
     for (final j in posts) {
-      final apps = await IslandApplication.db.find(session, where: (t) => t.jobId.equals(j.id!), orderBy: (t) => t.createdAt);
+      final apps = await IslandApplication.db.find(
+        session,
+        where: (t) => t.jobId.equals(j.id!),
+        orderBy: (t) => t.createdAt,
+      );
       final people = <Map<String, dynamic>>[];
       for (final a in apps) {
         final p = await _profile(session, a.authUserId);
-        people.add({'handle': p.handle, 'skills': p.skills, 'note': a.note, 'at': a.createdAt.toIso8601String()});
+        people.add({
+          'handle': p.handle,
+          'skills': p.skills,
+          'note': a.note,
+          'at': a.createdAt.toIso8601String(),
+        });
       }
       out.add({..._jobJson(j, contact: true), 'applicants': people});
     }
@@ -355,77 +579,160 @@ class IslandMeEndpoint extends Endpoint {
 
   /// The operator's queue: posts waiting to be checked.
   Future<String> pendingJobs(Session session) async {
-    if (!await DroneService.isOperator(session, _user(session))) return _err('Operators only.');
-    final rows = await IslandJob.db.find(session, where: (t) => t.status.equals('pending'), orderBy: (t) => t.createdAt);
+    if (!await DroneService.isOperator(session, _user(session)))
+      return _err('Operators only.');
+    final rows = await IslandJob.db.find(
+      session,
+      where: (t) => t.status.equals('pending'),
+      orderBy: (t) => t.createdAt,
+    );
     return jsonEncode([for (final j in rows) _jobJson(j, contact: true)]);
   }
 
   /// The operator approves (open) or rejects a post.
   Future<String> reviewJob(Session session, int jobId, bool approve) async {
-    if (!await DroneService.isOperator(session, _user(session))) return _err('Operators only.');
+    if (!await DroneService.isOperator(session, _user(session)))
+      return _err('Operators only.');
     final j = await IslandJob.db.findById(session, jobId);
     if (j == null) return _err('No such post.');
-    await IslandJob.db.updateRow(session, j.copyWith(status: approve ? 'open' : 'rejected'));
+    await IslandJob.db.updateRow(
+      session,
+      j.copyWith(status: approve ? 'open' : 'rejected'),
+    );
     return jsonEncode({'id': jobId, 'status': approve ? 'open' : 'rejected'});
   }
 
   // ---------------- encrypted chats ----------------
-  static bool _b64(String s, int max) => s.length <= max && RegExp(r'^[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+$').hasMatch(s);
+  static bool _b64(String s, int max) =>
+      s.length <= max &&
+      RegExp(r'^[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+$').hasMatch(s);
 
   /// Start a chat. [members]: JSON list of {handle, wrappedKey} -- me included -- each with the group
   /// key wrapped (in my browser) for that person, using my public key [wrapperPub].
-  Future<String> createGroup(Session session, String nameCt, String wrapperPub, String members) async {
+  Future<String> createGroup(
+    Session session,
+    String nameCt,
+    String wrapperPub,
+    String members,
+  ) async {
     final u = _user(session);
     if (!_b64(nameCt, 400)) return _err('Bad name.');
     final list = (jsonDecode(members) as List).cast<Map<String, dynamic>>();
-    if (list.length < 2 || list.length > 50) return _err('A chat has 2 to 50 people.');
+    if (list.length < 2 || list.length > 50)
+      return _err('A chat has 2 to 50 people.');
     final now = DateTime.now().toUtc();
     final rows = <IslandMember>[];
     var hasMe = false;
     for (final m in list) {
-      final p = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.equals('${m['handle']}'));
+      final p = await IslandProfile.db.findFirstRow(
+        session,
+        where: (t) => t.handle.equals('${m['handle']}'),
+      );
       final wk = '${m['wrappedKey']}';
-      if (p == null || !_b64(wk, 300)) return _err('Unknown member ${m['handle']}.');
+      if (p == null || !_b64(wk, 300))
+        return _err('Unknown member ${m['handle']}.');
       if (p.authUserId == u) hasMe = true;
-      rows.add(IslandMember(groupId: 0, authUserId: p.authUserId, wrappedKey: wk, wrapperPub: wrapperPub, addedAt: now));
+      rows.add(
+        IslandMember(
+          groupId: 0,
+          authUserId: p.authUserId,
+          wrappedKey: wk,
+          wrapperPub: wrapperPub,
+          addedAt: now,
+        ),
+      );
     }
     if (!hasMe) return _err('Include yourself.');
-    final g = await IslandGroup.db.insertRow(session, IslandGroup(createdBy: u, nameCt: nameCt, createdAt: now));
-    await IslandMember.db.insert(session, [for (final r in rows) r.copyWith(groupId: g.id!)]);
+    final g = await IslandGroup.db.insertRow(
+      session,
+      IslandGroup(createdBy: u, nameCt: nameCt, createdAt: now),
+    );
+    await IslandMember.db.insert(session, [
+      for (final r in rows) r.copyWith(groupId: g.id!),
+    ]);
     return jsonEncode({'id': g.id});
   }
 
   /// Add someone to a chat I'm in, with the group key wrapped for them.
-  Future<String> addMember(Session session, int groupId, String handle, String wrappedKey, String wrapperPub) async {
+  Future<String> addMember(
+    Session session,
+    int groupId,
+    String handle,
+    String wrappedKey,
+    String wrapperPub,
+  ) async {
     final u = _user(session);
-    if (await IslandMember.db.findFirstRow(session, where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u)) == null) return _err('Not your chat.');
-    final p = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.equals(handle));
+    if (await IslandMember.db.findFirstRow(
+          session,
+          where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
+        ) ==
+        null)
+      return _err('Not your chat.');
+    final p = await IslandProfile.db.findFirstRow(
+      session,
+      where: (t) => t.handle.equals(handle),
+    );
     if (p == null || !_b64(wrappedKey, 300)) return _err('Unknown person.');
-    if (await IslandMember.db.count(session, where: (t) => t.groupId.equals(groupId)) >= 50) return _err('The chat is full.');
-    await IslandMember.db.insertRow(session, IslandMember(groupId: groupId, authUserId: p.authUserId, wrappedKey: wrappedKey, wrapperPub: wrapperPub, addedAt: DateTime.now().toUtc()));
+    if (await IslandMember.db.count(
+          session,
+          where: (t) => t.groupId.equals(groupId),
+        ) >=
+        50)
+      return _err('The chat is full.');
+    await IslandMember.db.insertRow(
+      session,
+      IslandMember(
+        groupId: groupId,
+        authUserId: p.authUserId,
+        wrappedKey: wrappedKey,
+        wrapperPub: wrapperPub,
+        addedAt: DateTime.now().toUtc(),
+      ),
+    );
     return jsonEncode({'added': p.handle});
   }
 
   /// Leave a chat.
   Future<String> leaveGroup(Session session, int groupId) async {
     final u = _user(session);
-    await IslandMember.db.deleteWhere(session, where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u));
+    await IslandMember.db.deleteWhere(
+      session,
+      where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
+    );
     return jsonEncode({'left': groupId});
   }
 
   /// My chats: each with its encrypted name, my wrapped key, who's in it, and the last message's id.
   Future<String> groups(Session session) async {
     final u = _user(session);
-    final mine = await IslandMember.db.find(session, where: (t) => t.authUserId.equals(u));
+    final mine = await IslandMember.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
     final out = [];
     for (final m in mine) {
       final g = await IslandGroup.db.findById(session, m.groupId);
       if (g == null) continue;
-      final members = await IslandMember.db.find(session, where: (t) => t.groupId.equals(g.id!));
+      final members = await IslandMember.db.find(
+        session,
+        where: (t) => t.groupId.equals(g.id!),
+      );
       final handles = <String>[];
-      for (final x in members) handles.add((await _profile(session, x.authUserId)).handle);
-      final last = await IslandMessage.db.findFirstRow(session, where: (t) => t.groupId.equals(g.id!), orderBy: (t) => t.id.desc());
-      out.add({'id': g.id, 'nameCt': g.nameCt, 'wrappedKey': m.wrappedKey, 'wrapperPub': m.wrapperPub, 'members': handles, 'last': last?.id ?? 0});
+      for (final x in members)
+        handles.add((await _profile(session, x.authUserId)).handle);
+      final last = await IslandMessage.db.findFirstRow(
+        session,
+        where: (t) => t.groupId.equals(g.id!),
+        orderBy: (t) => t.id.desc(),
+      );
+      out.add({
+        'id': g.id,
+        'nameCt': g.nameCt,
+        'wrappedKey': m.wrappedKey,
+        'wrapperPub': m.wrapperPub,
+        'members': handles,
+        'last': last?.id ?? 0,
+      });
     }
     out.sort((a, b) => (b['last'] as int).compareTo(a['last'] as int));
     return jsonEncode(out);
@@ -435,34 +742,82 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> post(Session session, int groupId, String ct) async {
     final u = _user(session);
     if (!_b64(ct, 8000)) return _err('Bad message.');
-    if (await IslandMember.db.findFirstRow(session, where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u)) == null) return _err('Not your chat.');
-    final m = await IslandMessage.db.insertRow(session, IslandMessage(groupId: groupId, senderId: u, ct: ct, createdAt: DateTime.now().toUtc()));
+    if (await IslandMember.db.findFirstRow(
+          session,
+          where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
+        ) ==
+        null)
+      return _err('Not your chat.');
+    final m = await IslandMessage.db.insertRow(
+      session,
+      IslandMessage(
+        groupId: groupId,
+        senderId: u,
+        ct: ct,
+        createdAt: DateTime.now().toUtc(),
+      ),
+    );
     return jsonEncode({'id': m.id});
   }
 
   /// A chat's messages after [since] (at most 100), as ciphertext with the sender's handle.
   Future<String> messages(Session session, int groupId, int since) async {
     final u = _user(session);
-    if (await IslandMember.db.findFirstRow(session, where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u)) == null) return _err('Not your chat.');
-    final rows = await IslandMessage.db.find(session, where: (t) => t.groupId.equals(groupId) & (t.id > since), orderBy: (t) => since == 0 ? t.id.desc() : t.id.asc(), limit: 100);
+    if (await IslandMember.db.findFirstRow(
+          session,
+          where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
+        ) ==
+        null)
+      return _err('Not your chat.');
+    final rows = await IslandMessage.db.find(
+      session,
+      where: (t) => t.groupId.equals(groupId) & (t.id > since),
+      orderBy: (t) => since == 0 ? t.id.desc() : t.id.asc(),
+      limit: 100,
+    );
     final list = since == 0 ? rows.reversed.toList() : rows;
     final names = <String, String>{};
     final out = [];
     for (final m in list) {
       names[m.senderId.uuid] ??= (await _profile(session, m.senderId)).handle;
-      out.add({'id': m.id, 'from': names[m.senderId.uuid], 'mine': m.senderId == u, 'ct': m.ct, 'at': m.createdAt.toIso8601String()});
+      out.add({
+        'id': m.id,
+        'from': names[m.senderId.uuid],
+        'mine': m.senderId == u,
+        'ct': m.ct,
+        'at': m.createdAt.toIso8601String(),
+      });
     }
     return jsonEncode(out);
   }
 
   // ---------------- HQ ----------------
   /// Set up my HQ: its name, colour, whether it's locked, and who's invited (JSON list of handles).
-  Future<String> setHq(Session session, String name, String color, bool locked, String invites) async {
+  Future<String> setHq(
+    Session session,
+    String name,
+    String color,
+    bool locked,
+    String invites,
+  ) async {
     final u = _user(session);
     final p = await _profile(session, u);
-    if (!RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(color)) return _err('Bad colour.');
-    final list = (jsonDecode(invites) as List).map((e) => '$e'.trim()).where((e) => e.isNotEmpty).take(40).toList();
-    final saved = await IslandProfile.db.updateRow(session, p.copyWith(hqName: _clean(name, 40), hqColor: color, hqLocked: locked, hqInvites: jsonEncode(list)));
+    if (!RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(color))
+      return _err('Bad colour.');
+    final list = (jsonDecode(invites) as List)
+        .map((e) => '$e'.trim())
+        .where((e) => e.isNotEmpty)
+        .take(40)
+        .toList();
+    final saved = await IslandProfile.db.updateRow(
+      session,
+      p.copyWith(
+        hqName: _clean(name, 40),
+        hqColor: color,
+        hqLocked: locked,
+        hqInvites: jsonEncode(list),
+      ),
+    );
     return jsonEncode(_profileJson(saved)['hq']);
   }
 
@@ -471,15 +826,36 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> hqRow(Session session) async {
     final u = _user(session);
     final me = await _profile(session, u);
-    final all = await IslandProfile.db.find(session, orderBy: (t) => t.id, limit: 300);
-    final asked = {for (final a in await IslandAccess.db.find(session, where: (t) => t.requesterId.equals(u))) a.ownerId.uuid: a.status};
+    final all = await IslandProfile.db.find(
+      session,
+      orderBy: (t) => t.id,
+      limit: 300,
+    );
+    final asked = {
+      for (final a in await IslandAccess.db.find(
+        session,
+        where: (t) => t.requesterId.equals(u),
+      ))
+        a.ownerId.uuid: a.status,
+    };
     return jsonEncode([
       for (final p in all)
         () {
           final mine = p.authUserId == u;
-          final may = mine || !p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle);
+          final may =
+              mine ||
+              !p.hqLocked ||
+              (jsonDecode(p.hqInvites) as List).contains(me.handle);
           final req = asked[p.authUserId.uuid];
-          return {'slot': p.id, 'color': p.hqColor, 'mine': mine, 'may': may, if (!may && req != null) 'asked': req, if (may) 'name': p.hqName ?? "${p.handle}'s HQ", if (may) 'owner': p.handle};
+          return {
+            'slot': p.id,
+            'color': p.hqColor,
+            'mine': mine,
+            'may': may,
+            if (!may && req != null) 'asked': req,
+            if (may) 'name': p.hqName ?? "${p.handle}'s HQ",
+            if (may) 'owner': p.handle,
+          };
         }(),
     ]);
   }
@@ -490,24 +866,48 @@ class IslandMeEndpoint extends Endpoint {
     final owner = await IslandProfile.db.findById(session, slot);
     if (owner == null) return _err('No HQ there.');
     if (owner.authUserId == u) return jsonEncode({'status': 'granted'});
-    final had = await IslandAccess.db.findFirstRow(session, where: (t) => t.ownerId.equals(owner.authUserId) & t.requesterId.equals(u));
+    final had = await IslandAccess.db.findFirstRow(
+      session,
+      where: (t) =>
+          t.ownerId.equals(owner.authUserId) & t.requesterId.equals(u),
+    );
     if (had != null) {
-      if (had.status == 'denied' && DateTime.now().toUtc().difference(had.createdAt).inHours >= 24) {
-        await IslandAccess.db.updateRow(session, had.copyWith(status: 'pending', createdAt: DateTime.now().toUtc()));
+      if (had.status == 'denied' &&
+          DateTime.now().toUtc().difference(had.createdAt).inHours >= 24) {
+        await IslandAccess.db.updateRow(
+          session,
+          had.copyWith(status: 'pending', createdAt: DateTime.now().toUtc()),
+        );
         return jsonEncode({'status': 'pending'});
       }
       return jsonEncode({'status': had.status});
     }
-    await IslandAccess.db.insertRow(session, IslandAccess(ownerId: owner.authUserId, requesterId: u, createdAt: DateTime.now().toUtc()));
+    await IslandAccess.db.insertRow(
+      session,
+      IslandAccess(
+        ownerId: owner.authUserId,
+        requesterId: u,
+        createdAt: DateTime.now().toUtc(),
+      ),
+    );
     return jsonEncode({'status': 'pending'});
   }
 
   /// Requests to enter my HQ, waiting for my answer.
   Future<String> hqRequests(Session session) async {
     final u = _user(session);
-    final rows = await IslandAccess.db.find(session, where: (t) => t.ownerId.equals(u) & t.status.equals('pending'), orderBy: (t) => t.createdAt);
+    final rows = await IslandAccess.db.find(
+      session,
+      where: (t) => t.ownerId.equals(u) & t.status.equals('pending'),
+      orderBy: (t) => t.createdAt,
+    );
     return jsonEncode([
-      for (final r in rows) {'id': r.id, 'handle': (await _profile(session, r.requesterId)).handle, 'at': r.createdAt.toIso8601String()},
+      for (final r in rows)
+        {
+          'id': r.id,
+          'handle': (await _profile(session, r.requesterId)).handle,
+          'at': r.createdAt.toIso8601String(),
+        },
     ]);
   }
 
@@ -516,11 +916,22 @@ class IslandMeEndpoint extends Endpoint {
     final u = _user(session);
     final r = await IslandAccess.db.findById(session, id);
     if (r == null || r.ownerId != u) return _err('Not your request.');
-    await IslandAccess.db.updateRow(session, r.copyWith(status: grant ? 'granted' : 'denied', createdAt: DateTime.now().toUtc()));
+    await IslandAccess.db.updateRow(
+      session,
+      r.copyWith(
+        status: grant ? 'granted' : 'denied',
+        createdAt: DateTime.now().toUtc(),
+      ),
+    );
     if (grant) {
-      final p = await _profile(session, u), who = (await _profile(session, r.requesterId)).handle;
+      final p = await _profile(session, u),
+          who = (await _profile(session, r.requesterId)).handle;
       final inv = (jsonDecode(p.hqInvites) as List).map((e) => '$e').toList();
-      if (!inv.contains(who)) await IslandProfile.db.updateRow(session, p.copyWith(hqInvites: jsonEncode([...inv, who])));
+      if (!inv.contains(who))
+        await IslandProfile.db.updateRow(
+          session,
+          p.copyWith(hqInvites: jsonEncode([...inv, who])),
+        );
     }
     return jsonEncode({'id': id, 'status': grant ? 'granted' : 'denied'});
   }
@@ -532,37 +943,69 @@ class IslandMeEndpoint extends Endpoint {
     return {'okada': min(6000, 400 + d * 22), 'car': min(15000, 1000 + d * 48)};
   }
 
-  static final _rides = <String, ({String user, int fare, String kind, DateTime at})>{};
+  static final _rides =
+      <String, ({String user, int fare, String kind, DateTime at})>{};
 
   /// What a trip would cost, and roughly how long until a rider reaches you.
-  Future<String> rideQuote(Session session, int fi, int fj, int ti, int tj) async {
+  Future<String> rideQuote(
+    Session session,
+    int fi,
+    int fj,
+    int ti,
+    int tj,
+  ) async {
     final f = _fares(fi, fj, ti, tj), d = (fi - ti).abs() + (tj - fj).abs();
-    return jsonEncode({...f, 'tiles': d, 'okadaEta': 2 + _rnd.nextInt(3), 'carEta': 3 + _rnd.nextInt(4)});
+    return jsonEncode({
+      ...f,
+      'tiles': d,
+      'okadaEta': 2 + _rnd.nextInt(3),
+      'carEta': 3 + _rnd.nextInt(4),
+    });
   }
 
   /// Book a ride: the fare is fixed now (and must be affordable); it's charged when you arrive.
-  Future<String> requestRide(Session session, int fi, int fj, int ti, int tj, String kind) async {
+  Future<String> requestRide(
+    Session session,
+    int fi,
+    int fj,
+    int ti,
+    int tj,
+    String kind,
+  ) async {
     final u = _user(session);
     final f = _fares(fi, fj, ti, tj)[kind];
     if (f == null) return _err('Okada or car.');
     final c = await WorldAuthority.citizen(session, u);
-    if (c.naira < f) return _err('This ride costs ₦${_n(f)} and you have ₦${_n(c.naira)}. Work a shift first.');
+    if (c.naira < f)
+      return _err(
+        'This ride costs ₦${_n(f)} and you have ₦${_n(c.naira)}. Work a shift first.',
+      );
     _rides.removeWhere((_, r) => DateTime.now().difference(r.at).inHours >= 2);
-    final id = '${DateTime.now().millisecondsSinceEpoch}${_rnd.nextInt(1 << 20)}';
+    final id =
+        '${DateTime.now().millisecondsSinceEpoch}${_rnd.nextInt(1 << 20)}';
     _rides[id] = (user: u.uuid, fare: f, kind: kind, at: DateTime.now());
     return jsonEncode({'id': id, 'fare': f, 'kind': kind});
   }
 
   /// You've arrived: pay the fare (once).
-  Future<String> payRide(Session session, String id) => _money(session, (u) async {
-    final r = _rides[id];
-    if (r == null || r.user != u.uuid) return _err('No such ride.');
-    final res = await Bank.post(session, u, key: 'island:ride:$id', amount: -r.fare, kind: 'ride', counter: 'city:transport', memo: r.kind == 'okada' ? 'Okada ride' : 'Car ride');
-    if (res.short != null) return _err('Not enough naira for the fare.');
-    _rides.remove(id);
-    final c = await Bank.fresh(session, u);
-    return jsonEncode({'paid': r.fare, 'naira': c.naira});
-  });
+  Future<String> payRide(Session session, String id) =>
+      _money(session, (u) async {
+        final r = _rides[id];
+        if (r == null || r.user != u.uuid) return _err('No such ride.');
+        final res = await Bank.post(
+          session,
+          u,
+          key: 'island:ride:$id',
+          amount: -r.fare,
+          kind: 'ride',
+          counter: 'city:transport',
+          memo: r.kind == 'okada' ? 'Okada ride' : 'Car ride',
+        );
+        if (res.short != null) return _err('Not enough naira for the fare.');
+        _rides.remove(id);
+        final c = await Bank.fresh(session, u);
+        return jsonEncode({'paid': r.fare, 'naira': c.naira});
+      });
 
   /// Cancel before the trip starts: nothing is charged.
   Future<String> cancelRide(Session session, String id) async {
@@ -574,47 +1017,184 @@ class IslandMeEndpoint extends Endpoint {
   // ---------------- cars: the dealers' catalogue, buying, your garage ----------------
   /// model id -> (name, kind of body for drawing, price in naira, which dealer sells it)
   static const carCatalog = {
-    'corolla': (name: 'Toyota Corolla', body: 'sedan', price: 450000, dealer: 'polanco'),
-    'camry': (name: 'Toyota Camry', body: 'sedan', price: 900000, dealer: 'polanco'),
-    'highlander': (name: 'Toyota Highlander', body: 'suv', price: 1500000, dealer: 'polanco'),
-    'lexusrx': (name: 'Lexus RX 350', body: 'suv', price: 2200000, dealer: 'polanco'),
-    'landcruiser': (name: 'Toyota Land Cruiser', body: 'bigsuv', price: 4000000, dealer: 'polanco'),
-    'cybertruck': (name: 'Tesla Cybertruck', body: 'cyber', price: 10000000, dealer: 'polanco'),
-    'porsche911': (name: 'Porsche 911', body: 'super', price: 12000000, dealer: 'polanco'),
-    'huracan': (name: 'Lamborghini Huracan', body: 'super', price: 20000000, dealer: 'polanco'),
-    'rangerover': (name: 'Range Rover', body: 'bigsuv', price: 6500000, dealer: 'lekkiluxury'),
-    'gwagon': (name: 'Mercedes G-Wagon', body: 'gwagon', price: 9000000, dealer: 'lekkiluxury'),
-    'urus': (name: 'Lamborghini Urus', body: 'supersuv', price: 15000000, dealer: 'lekkiluxury'),
-    'ferrari': (name: 'Ferrari Roma', body: 'super', price: 18000000, dealer: 'lekkiluxury'),
-    'cullinan': (name: 'Rolls-Royce Cullinan', body: 'bigsuv', price: 30000000, dealer: 'lekkiluxury'),
+    'corolla': (
+      name: 'Toyota Corolla',
+      body: 'sedan',
+      price: 450000,
+      dealer: 'polanco',
+    ),
+    'camry': (
+      name: 'Toyota Camry',
+      body: 'sedan',
+      price: 900000,
+      dealer: 'polanco',
+    ),
+    'highlander': (
+      name: 'Toyota Highlander',
+      body: 'suv',
+      price: 1500000,
+      dealer: 'polanco',
+    ),
+    'lexusrx': (
+      name: 'Lexus RX 350',
+      body: 'suv',
+      price: 2200000,
+      dealer: 'polanco',
+    ),
+    'landcruiser': (
+      name: 'Toyota Land Cruiser',
+      body: 'bigsuv',
+      price: 4000000,
+      dealer: 'polanco',
+    ),
+    'cybertruck': (
+      name: 'Tesla Cybertruck',
+      body: 'cyber',
+      price: 10000000,
+      dealer: 'polanco',
+    ),
+    'porsche911': (
+      name: 'Porsche 911',
+      body: 'super',
+      price: 12000000,
+      dealer: 'polanco',
+    ),
+    'huracan': (
+      name: 'Lamborghini Huracan',
+      body: 'super',
+      price: 20000000,
+      dealer: 'polanco',
+    ),
+    'rangerover': (
+      name: 'Range Rover',
+      body: 'bigsuv',
+      price: 6500000,
+      dealer: 'lekkiluxury',
+    ),
+    'gwagon': (
+      name: 'Mercedes G-Wagon',
+      body: 'gwagon',
+      price: 9000000,
+      dealer: 'lekkiluxury',
+    ),
+    'urus': (
+      name: 'Lamborghini Urus',
+      body: 'supersuv',
+      price: 15000000,
+      dealer: 'lekkiluxury',
+    ),
+    'ferrari': (
+      name: 'Ferrari Roma',
+      body: 'super',
+      price: 18000000,
+      dealer: 'lekkiluxury',
+    ),
+    'cullinan': (
+      name: 'Rolls-Royce Cullinan',
+      body: 'bigsuv',
+      price: 30000000,
+      dealer: 'lekkiluxury',
+    ),
   };
-  static const carColors = {'#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#D4AF37', '#7F1D1D', '#1E3A8A', '#64748B', '#0B0B0F', '#FACC15', '#DC2626', '#C0C4CC', '#E5E7EB', '#16A34A'};
+  static const carColors = {
+    '#F8FAFC',
+    '#111827',
+    '#9CA3AF',
+    '#B91C1C',
+    '#1D4ED8',
+    '#065F46',
+    '#F59E0B',
+    '#7C3AED',
+    '#D4AF37',
+    '#7F1D1D',
+    '#1E3A8A',
+    '#64748B',
+    '#0B0B0F',
+    '#FACC15',
+    '#DC2626',
+    '#C0C4CC',
+    '#E5E7EB',
+    '#16A34A',
+  };
 
   /// The catalogue (for the dealers' showrooms and the Garage app).
   Future<String> cars(Session session) async => jsonEncode([
-    for (final e in carCatalog.entries) {'id': e.key, 'name': e.value.name, 'body': e.value.body, 'price': e.value.price, 'dealer': e.value.dealer},
+    for (final e in carCatalog.entries)
+      {
+        'id': e.key,
+        'name': e.value.name,
+        'body': e.value.body,
+        'price': e.value.price,
+        'dealer': e.value.dealer,
+      },
   ]);
 
   /// The cars I own.
   Future<String> myCars(Session session) async {
-    final rows = await IslandCar.db.find(session, where: (t) => t.authUserId.equals(_user(session)), orderBy: (t) => t.boughtAt);
-    return jsonEncode([for (final c in rows) {'id': c.id, 'model': c.model, 'name': carCatalog[c.model]?.name ?? c.model, 'body': carCatalog[c.model]?.body ?? 'sedan', 'color': c.color, 'price': c.price, 'active': c.active}]);
+    final rows = await IslandCar.db.find(
+      session,
+      where: (t) => t.authUserId.equals(_user(session)),
+      orderBy: (t) => t.boughtAt,
+    );
+    return jsonEncode([
+      for (final c in rows)
+        {
+          'id': c.id,
+          'model': c.model,
+          'name': carCatalog[c.model]?.name ?? c.model,
+          'body': carCatalog[c.model]?.body ?? 'sedan',
+          'color': c.color,
+          'price': c.price,
+          'active': c.active,
+        },
+    ]);
   }
 
   /// Buy a car: the price comes out of my wallet; it becomes the car I drive.
-  Future<String> buyCar(Session session, String model, String color) => _money(session, (u) async {
+  Future<String> buyCar(
+    Session session,
+    String model,
+    String color,
+  ) => _money(session, (u) async {
     final m = carCatalog[model];
     if (m == null) return _err('That car is not for sale.');
-    if (!carColors.contains(color)) return _err('Pick one of the dealer colours.');
+    if (!carColors.contains(color))
+      return _err('Pick one of the dealer colours.');
     final c = await WorldAuthority.citizen(session, u);
-    if (c.naira < m.price) return _err('You need N${_n(m.price)} for the ${m.name}. You have N${_n(c.naira)}.');
-    final r = await Bank.post(session, u, key: 'island:car:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -m.price, kind: 'fee', counter: 'city:market', memo: 'Bought a ${m.name}');
+    if (c.naira < m.price)
+      return _err(
+        'You need N${_n(m.price)} for the ${m.name}. You have N${_n(c.naira)}.',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:car:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+      amount: -m.price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Bought a ${m.name}',
+    );
     if (r.short != null) return _err('Not enough naira.');
-    final mine = await IslandCar.db.find(session, where: (t) => t.authUserId.equals(u));
+    final mine = await IslandCar.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
     for (final o in mine) {
-      if (o.active) await IslandCar.db.updateRow(session, o.copyWith(active: false));
+      if (o.active)
+        await IslandCar.db.updateRow(session, o.copyWith(active: false));
     }
-    final car = await IslandCar.db.insertRow(session, IslandCar(authUserId: u, model: model, color: color, price: m.price, dealer: m.dealer, active: true, boughtAt: DateTime.now().toUtc()));
+    final car = await IslandCar.db.insertRow(
+      session,
+      IslandCar(
+        authUserId: u,
+        model: model,
+        color: color,
+        price: m.price,
+        dealer: m.dealer,
+        active: true,
+        boughtAt: DateTime.now().toUtc(),
+      ),
+    );
     final after = await Bank.fresh(session, u);
     return jsonEncode({'id': car.id, 'name': m.name, 'naira': after.naira});
   });
@@ -622,66 +1202,733 @@ class IslandMeEndpoint extends Endpoint {
   /// Choose which of my cars I drive.
   Future<String> driveCar(Session session, int carId) async {
     final u = _user(session);
-    final mine = await IslandCar.db.find(session, where: (t) => t.authUserId.equals(u));
+    final mine = await IslandCar.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
     if (!mine.any((c) => c.id == carId)) return _err('Not your car.');
     for (final o in mine) {
-      if (o.active != (o.id == carId)) await IslandCar.db.updateRow(session, o.copyWith(active: o.id == carId));
+      if (o.active != (o.id == carId))
+        await IslandCar.db.updateRow(
+          session,
+          o.copyWith(active: o.id == carId),
+        );
     }
     return jsonEncode({'active': carId});
   }
+
+  // ---------------- fashion: outfits from the boutiques ----------------
+  /// outfit id -> (name, price in naira). The same list as OUTFIT_LIST in web/index.html. Price 0: a free starter.
+  /// Brand names only (no logos); not affiliated with the brands.
+  static const outfitCatalog = {
+    'st_tee': (name: 'White tee & jeans', price: 0),
+    'st_polo': (name: 'Polo & chinos', price: 0),
+    'st_ankara': (name: 'Ankara shirt & trousers', price: 0),
+    'st_sport': (name: 'Sports set', price: 0),
+    'puma_run': (name: 'Puma Running set', price: 28000),
+    'nike_dri': (name: 'Nike Dri-FIT tee & shorts', price: 35000),
+    'adidas_jersey': (name: 'Adidas Green and white football kit', price: 45000),
+    'adidas_track': (name: 'Adidas Track suit', price: 75000),
+    'nike_tech': (name: 'Nike Tech Fleece tracksuit', price: 85000),
+    'hm_hoodie': (name: 'H&M Hoodie & joggers', price: 30000),
+    'zara_linen': (name: 'Zara Linen shirt & trousers', price: 55000),
+    'levis_denim': (name: 'Levi\'s Denim jacket & jeans', price: 65000),
+    'zara_dress': (name: 'Zara Summer dress', price: 48000),
+    'offwhite_set': (name: 'Off-White Striped tee & cargos', price: 180000),
+    'lanre_buba': (name: 'Lanre Da Silva Buba & sokoto', price: 150000),
+    'orange_kaftan': (name: 'Orange Culture Kaftan', price: 220000),
+    'folawiyo_ankara': (name: 'Lisa Folawiyo Ankara two-piece', price: 260000),
+    'ize_asooke': (name: 'Kenneth Ize Aso-oke set', price: 380000),
+    'atafo_agbada': (name: 'Mai Atafo Bespoke agbada', price: 950000),
+    'ralph_suit': (name: 'Ralph Lauren Navy suit', price: 420000),
+    'balenciaga_set': (name: 'Balenciaga Oversized hoodie set', price: 950000),
+    'gucci_track': (name: 'Gucci Tracksuit', price: 1200000),
+    'versace_silk': (name: 'Versace Baroque silk shirt', price: 1400000),
+    'fendi_set': (name: 'Fendi Monogram set', price: 1800000),
+    'lv_jacket': (name: 'Louis Vuitton Monogram jacket', price: 2400000),
+    'dior_gown': (name: 'Dior Evening gown', price: 3000000),
+  };
+
+  /// Buy an outfit: the price comes out of my wallet; it's in my wardrobe to wear whenever I like.
+  Future<String> buyOutfit(Session session, String item) => _money(session, (
+    u,
+  ) async {
+    final o = outfitCatalog[item];
+    if (o == null || o.price == 0) return _err('That outfit is not for sale.');
+    if (await IslandOutfit.db.findFirstRow(
+          session,
+          where: (t) => t.authUserId.equals(u) & t.item.equals(item),
+        ) !=
+        null)
+      return _err('It\'s already in your wardrobe.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < o.price)
+      return _err(
+        'The ${o.name} costs N${_n(o.price)}. You have N${_n(c.naira)}.',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:outfit:${u.uuid}:$item',
+      amount: -o.price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Bought: ${o.name}',
+    );
+    if (r.short != null) return _err('Not enough naira.');
+    await IslandOutfit.db.insertRow(
+      session,
+      IslandOutfit(
+        authUserId: u,
+        item: item,
+        price: o.price,
+        boughtAt: DateTime.now().toUtc(),
+      ),
+    );
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'item': item, 'name': o.name, 'naira': after.naira});
+  });
+
+  /// The outfits in my wardrobe (the free starters are everyone's and aren't listed).
+  Future<String> myOutfits(Session session) async {
+    final rows = await IslandOutfit.db.find(
+      session,
+      where: (t) => t.authUserId.equals(_user(session)),
+    );
+    return jsonEncode([for (final o in rows) o.item]);
+  }
+
+  // ---------------- the Eko Home Store: furniture, cheap to luxury ----------------
+  /// store id -> (name, price in naira). The same list as STORE_ITEMS in web/index.html.
+  static const furnitureCatalog = {
+    'k:rugDoormat': (name: 'Doormat', price: 2000),
+    'k:trashcan': (name: 'Bin', price: 2500),
+    'k:plantSmall1': (name: 'Small plant', price: 3500),
+    'k:plantSmall3': (name: 'Cactus', price: 4000),
+    'k:pottedPlant': (name: 'Potted palm', price: 9000),
+    'k:rugRectangle': (name: 'Rug', price: 10000),
+    'k:rugSquare': (name: 'Square rug', price: 18000),
+    'k:rugRound': (name: 'Round rug', price: 30000),
+    'k:rugRounded': (name: 'Wool rug', price: 55000),
+    'k:coatRackStanding': (name: 'Coat stand', price: 9000),
+    'k:bench': (name: 'Bench', price: 15000),
+    'k:benchCushion': (name: 'Cushioned bench', price: 32000),
+    'k:lampRoundFloor': (name: 'Floor lamp', price: 14000),
+    'k:lampSquareFloor': (name: 'Designer floor lamp', price: 72000),
+    'k:loungeChair': (name: 'Armchair', price: 18000),
+    'k:loungeSofa': (name: 'Two-seater sofa', price: 45000),
+    'k:loungeChairRelax': (name: 'Recliner', price: 65000),
+    'k:loungeSofaLong': (name: 'Three-seater sofa', price: 120000),
+    'k:loungeDesignChair': (name: 'Designer armchair', price: 240000),
+    'k:loungeSofaOttoman': (name: 'Sofa and ottoman', price: 280000),
+    'k:loungeSofaCorner': (name: 'Corner sofa', price: 420000),
+    'k:loungeDesignSofa': (name: 'Designer sofa', price: 750000),
+    'k:loungeDesignSofaCorner': (name: 'Designer corner suite', price: 1500000),
+    'k:tableCoffee': (name: 'Coffee table', price: 12000),
+    'k:tableCoffeeSquare': (name: 'Square coffee table', price: 20000),
+    'k:tableCoffeeGlass': (name: 'Glass coffee table', price: 85000),
+    'k:tableCoffeeGlassSquare': (name: 'Glass cube table', price: 110000),
+    'k:televisionVintage': (name: 'Old TV', price: 15000),
+    'k:cabinetTelevision': (name: 'TV stand', price: 35000),
+    'k:cabinetTelevisionDoors': (name: 'TV cabinet', price: 60000),
+    'k:televisionModern': (name: 'Flat-screen TV', price: 350000),
+    'k:speakerSmall': (name: 'Bookshelf speaker', price: 25000),
+    'k:speaker': (name: 'Tower speaker', price: 180000),
+    'k:bookcaseOpenLow': (name: 'Low bookcase', price: 15000),
+    'k:bookcaseOpen': (name: 'Bookcase', price: 28000),
+    'k:bookcaseClosedWide': (name: 'Wide cabinet', price: 90000),
+    'k:bedSingle': (name: 'Single bed', price: 30000),
+    'k:bedBunk': (name: 'Bunk bed', price: 55000),
+    'k:bedDouble': (name: 'Double bed', price: 180000),
+    'k:cabinetBed': (name: 'Bedside table', price: 12000),
+    'k:cabinetBedDrawerTable': (name: 'Bedside drawers', price: 40000),
+    'k:bookcaseClosedDoors': (name: 'Wardrobe', price: 95000),
+    'k:kitchenCabinet': (name: 'Kitchen cabinet', price: 25000),
+    'k:kitchenCabinetDrawer': (name: 'Drawer unit', price: 32000),
+    'k:kitchenSink': (name: 'Kitchen sink', price: 40000),
+    'k:kitchenStove': (name: 'Gas cooker', price: 60000),
+    'k:kitchenStoveElectric': (name: 'Electric cooker', price: 150000),
+    'k:kitchenFridgeSmall': (name: 'Small fridge', price: 70000),
+    'k:kitchenFridge': (name: 'Fridge', price: 220000),
+    'k:kitchenFridgeLarge': (name: 'American fridge', price: 650000),
+    'k:kitchenBar': (name: 'Kitchen bar', price: 90000),
+    'k:stoolBar': (name: 'Bar stool', price: 12000),
+    'k:stoolBarSquare': (name: 'Square bar stool', price: 20000),
+    'k:chair': (name: 'Wooden chair', price: 6000),
+    'k:chairCushion': (name: 'Cushioned chair', price: 12000),
+    'k:chairRounded': (name: 'Rounded chair', price: 25000),
+    'k:chairModernCushion': (name: 'Modern chair', price: 45000),
+    'k:chairModernFrameCushion': (name: 'Designer chair', price: 95000),
+    'k:table': (name: 'Dining table', price: 35000),
+    'k:tableRound': (name: 'Round table', price: 45000),
+    'k:tableCloth': (name: 'Table with cloth', price: 55000),
+    'k:tableCross': (name: 'Farmhouse table', price: 140000),
+    'k:tableGlass': (name: 'Glass dining table', price: 260000),
+    'k:toilet': (name: 'Toilet', price: 30000),
+    'k:bathroomSink': (name: 'Basin', price: 25000),
+    'k:bathroomCabinetDrawer': (name: 'Vanity unit', price: 35000),
+    'k:shower': (name: 'Shower', price: 60000),
+    'k:toiletSquare': (name: 'Designer toilet', price: 85000),
+    'k:bathroomSinkSquare': (name: 'Designer basin', price: 70000),
+    'k:showerRound': (name: 'Rain shower', price: 150000),
+    'k:bathtub': (name: 'Bathtub', price: 240000),
+    'k:washer': (name: 'Washing machine', price: 190000),
+    'k:washerDryerStacked': (name: 'Washer-dryer tower', price: 420000),
+    'k:desk': (name: 'Desk', price: 30000),
+    'k:chairDesk': (name: 'Office chair', price: 28000),
+    'k:deskCorner': (name: 'Corner desk', price: 110000),
+  };
+
+  /// Buy one piece: the price comes out of my wallet; I place it from my home's "Arrange furniture".
+  Future<String> buyFurniture(Session session, String item) => _money(session, (
+    u,
+  ) async {
+    final f = furnitureCatalog[item];
+    if (f == null) return _err('That piece is not for sale.');
+    if (await IslandFurniture.db.count(
+          session,
+          where: (t) => t.authUserId.equals(u),
+        ) >=
+        400)
+      return _err('Your homes are full: 400 pieces at most.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < f.price)
+      return _err(
+        'You need N${_n(f.price)} for the ${f.name}. You have N${_n(c.naira)}.',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:furn:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+      amount: -f.price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Eko Home Store: ${f.name}',
+    );
+    if (r.short != null) return _err('Not enough naira.');
+    await IslandFurniture.db.insertRow(
+      session,
+      IslandFurniture(
+        authUserId: u,
+        item: item,
+        price: f.price,
+        boughtAt: DateTime.now().toUtc(),
+      ),
+    );
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'item': item, 'name': f.name, 'naira': after.naira});
+  });
+
+  /// What I own: {items: {id: count}}, and how many of each already stand in my homes other than [room] ('' for all).
+  Future<String> myFurniture(Session session, String room) async {
+    final u = _user(session);
+    final elsewhere = <String, int>{};
+    for (final k in await _myRoomKeys(session, u)) {
+      if (k == room) continue;
+      _countInto(elsewhere, await _layoutOf(session, k));
+    }
+    return jsonEncode({
+      'items': await _owned(session, u),
+      'elsewhere': elsewhere,
+    });
+  }
+
+  static Future<Map<String, int>> _owned(Session s, UuidValue u) async {
+    final out = <String, int>{};
+    for (final f in await IslandFurniture.db.find(
+      s,
+      where: (t) => t.authUserId.equals(u),
+    )) {
+      out[f.item] = (out[f.item] ?? 0) + 1;
+    }
+    return out;
+  }
+
+  static void _countInto(
+    Map<String, int> into,
+    List layout, {
+    bool storeOnly = true,
+  }) {
+    for (final it in layout) {
+      final k = it is Map ? it['k'] : null;
+      if (k is String && (!storeOnly || k.startsWith('k:')))
+        into[k] = (into[k] ?? 0) + 1;
+    }
+  }
+
+  static Future<List> _layoutOf(Session s, String key) async {
+    final r = await IslandRoom.db.findFirstRow(
+      s,
+      where: (t) => t.key.equals(key),
+    );
+    if (r == null) return const [];
+    final v = jsonDecode(r.layout);
+    return v is List ? v : const [];
+  }
+
+  /// The rooms I furnish: my free BQ on HQ Row and every home I've bought.
+  static Future<List<String>> _myRoomKeys(Session s, UuidValue u) async {
+    final p = await _profile(s, u);
+    return [
+      'hq:${p.id}',
+      for (final h in await IslandHome.db.find(
+        s,
+        where: (t) => t.authUserId.equals(u),
+      ))
+        'home:${h.plot}',
+    ];
+  }
+
+  // ---------------- homes: a free BQ for everyone, and plots to buy, Ajah to Banana Island ----------------
+  /// style -> (name, price in naira). The same list as HOME_STYLES in web/index.html.
+  static const homeStyles = {
+    'flat': (name: 'Mini flat', price: 800000),
+    'bungalow': (name: 'Bungalow', price: 2500000),
+    'terrace': (name: 'Terrace house', price: 6000000),
+    'duplex': (name: 'Duplex', price: 15000000),
+    'townhouse': (name: 'Townhouse', price: 18000000),
+    'loft': (name: 'Loft', price: 25000000),
+    'mansion': (name: 'Mansion with BQ', price: 40000000),
+    'villa': (name: 'Waterfront villa', price: 120000000),
+  };
+
+  /// estate -> the style of each plot, in order (plot `<estate>:<n>`). The same list as ESTATES in web/index.html.
+  static const estates = {
+    'vgc': [
+      'bungalow',
+      'flat',
+      'duplex',
+      'flat',
+      'bungalow',
+      'flat',
+      'bungalow',
+      'duplex',
+      'flat',
+    ],
+    'lekki1': [
+      'duplex',
+      'terrace',
+      'duplex',
+      'terrace',
+      'duplex',
+      'terrace',
+      'loft',
+      'duplex',
+      'terrace',
+    ],
+    'lekkiest': [
+      'terrace',
+      'terrace',
+      'duplex',
+      'terrace',
+      'bungalow',
+      'terrace',
+      'duplex',
+      'terrace',
+      'terrace',
+    ],
+    'ikoyihomes': [
+      'loft',
+      'townhouse',
+      'loft',
+      'townhouse',
+      'loft',
+      'townhouse',
+    ],
+    'oldikoyi': [
+      'mansion',
+      'mansion',
+      'loft',
+      'mansion',
+      'townhouse',
+      'mansion',
+      'loft',
+      'mansion',
+      'mansion',
+    ],
+    'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+  };
+
+  static String? _styleOf(String plot) {
+    final m = RegExp(r'^([a-z0-9]+):(\d+)$').firstMatch(plot);
+    final list = m == null ? null : estates[m.group(1)];
+    final n = m == null ? -1 : int.parse(m.group(2)!);
+    return list != null && n >= 0 && n < list.length ? list[n] : null;
+  }
+
+  /// Every bought plot: who owns it (when I may know), and whether I may go in.
+  Future<String> homes(Session session) async {
+    final u = _user(session);
+    final me = await _profile(session, u);
+    final rows = await IslandHome.db.find(session, limit: 500);
+    final out = [];
+    for (final h in rows) {
+      final owner = await IslandProfile.db.findFirstRow(
+        session,
+        where: (t) => t.authUserId.equals(h.authUserId),
+      );
+      if (owner == null) continue;
+      final mine = h.authUserId == u;
+      final may =
+          mine ||
+          !owner.hqLocked ||
+          (jsonDecode(owner.hqInvites) as List).contains(me.handle);
+      out.add({
+        'plot': h.plot,
+        'style': h.style,
+        'mine': mine,
+        'may': may,
+        'slot': owner.id,
+        'color': owner.hqColor,
+        if (may) 'owner': owner.handle,
+      });
+    }
+    return jsonEncode(out);
+  }
+
+  /// Buy the home on [plot]: it's mine to furnish, and it's where my HQ settings (name, colour, who may enter) apply too.
+  Future<String> buyHome(Session session, String plot) =>
+      _money(session, (u) async {
+        final style = _styleOf(plot);
+        if (style == null) return _err('There is no home there.');
+        final h = homeStyles[style]!;
+        if (await IslandHome.db.findFirstRow(
+              session,
+              where: (t) => t.plot.equals(plot),
+            ) !=
+            null)
+          return _err('Someone already lives there.');
+        if (await IslandHome.db.count(
+              session,
+              where: (t) => t.authUserId.equals(u),
+            ) >=
+            3)
+          return _err('Three homes is the limit.');
+        final c = await WorldAuthority.citizen(session, u);
+        if (c.naira < h.price)
+          return _err(
+            'This ${h.name} costs N${_n(h.price)}. You have N${_n(c.naira)}.',
+          );
+        final r = await Bank.post(
+          session,
+          u,
+          key: 'island:home:$plot',
+          amount: -h.price,
+          kind: 'fee',
+          counter: 'city:market',
+          memo: 'Bought a ${h.name} ($plot)',
+        );
+        if (r.short != null) return _err('Not enough naira.');
+        await IslandHome.db.insertRow(
+          session,
+          IslandHome(
+            authUserId: u,
+            plot: plot,
+            style: style,
+            price: h.price,
+            boughtAt: DateTime.now().toUtc(),
+          ),
+        );
+        final after = await Bank.fresh(session, u);
+        return jsonEncode({
+          'plot': plot,
+          'style': style,
+          'name': h.name,
+          'naira': after.naira,
+        });
+      });
+
+  // ---------------- house parties ----------------
+  /// Parties going on now, by room key (`hq:<slot>` or `home:<plot>`). Kept in memory: a party lasts a few hours at most.
+  static final _parties =
+      <
+        String,
+        ({
+          UuidValue host,
+          String hostHandle,
+          String theme,
+          bool open,
+          List<String> guests,
+          DateTime until,
+          String place,
+        })
+      >{};
+  static const partyThemes = {'afro', 'piano', 'owambe'};
+
+  static ({
+    UuidValue host,
+    String hostHandle,
+    String theme,
+    bool open,
+    List<String> guests,
+    DateTime until,
+    String place,
+  })?
+  _liveParty(String key) {
+    final p = _parties[key];
+    if (p == null) return null;
+    if (DateTime.now().toUtc().isAfter(p.until)) {
+      _parties.remove(key);
+      return null;
+    }
+    return p;
+  }
+
+  /// Throw a party in one of my homes for [minutes] (30 to 180). [open]: anyone may walk in; otherwise the people on my
+  /// invite list (my HQ settings) and [guests] (handles, JSON list). Those invited see it on their phones.
+  Future<String> startParty(
+    Session session,
+    String key,
+    String theme,
+    int minutes,
+    bool open,
+    String guests,
+  ) async {
+    final u = _user(session);
+    if (!await _mayArrange(session, u, key))
+      return _err('You can only throw a party in your own home.');
+    if (!partyThemes.contains(theme)) return _err('Pick a vibe.');
+    final me = await _profile(session, u);
+    final list = {
+      ...(jsonDecode(me.hqInvites) as List).map((e) => '$e'),
+      ...(jsonDecode(guests) as List).map((e) => '$e'.trim()),
+    }.where((e) => e.isNotEmpty).take(60).toList();
+    final until = DateTime.now().toUtc().add(
+      Duration(minutes: minutes.clamp(30, 180)),
+    );
+    _parties[key] = (
+      host: u,
+      hostHandle: me.handle,
+      theme: theme,
+      open: open,
+      guests: list,
+      until: until,
+      place: me.hqName ?? "${me.handle}'s place",
+    );
+    return jsonEncode({
+      'key': key,
+      'until': until.toIso8601String(),
+      'guests': list.length,
+    });
+  }
+
+  /// End my party early.
+  Future<String> endParty(Session session, String key) async {
+    final p = _liveParty(key);
+    if (p == null || p.host != _user(session))
+      return _err('No party of yours there.');
+    _parties.remove(key);
+    return jsonEncode({'ended': key});
+  }
+
+  /// The parties I can go to right now: open ones, ones I'm invited to, and my own.
+  Future<String> parties(Session session) async {
+    final u = _user(session);
+    final me = await _profile(session, u);
+    final out = [];
+    for (final k in _parties.keys.toList()) {
+      final p = _liveParty(k);
+      if (p == null) continue;
+      final mine = p.host == u, invited = p.guests.contains(me.handle);
+      if (!mine && !invited && !p.open) continue;
+      out.add({
+        'key': k,
+        'host': p.hostHandle,
+        'theme': p.theme,
+        'open': p.open,
+        'until': p.until.toIso8601String(),
+        'place': p.place,
+        'mine': mine,
+        'invited': invited,
+        'guests': p.guests.length,
+      });
+    }
+    return jsonEncode(out);
+  }
+
+  // ---------------- Banana Island Marina: yacht charters ----------------
+  /// kind -> (name, price in naira). The same list as CHARTERS in web/index.html (the harbour tour is free and needs no call).
+  static const charters = {
+    'cruise': (name: 'Lagoon cruise', price: 15000),
+    'sunset': (name: 'Sunset party', price: 30000),
+    'private': (name: 'Private charter', price: 250000),
+  };
+
+  /// Pay for a charter; the trip itself runs in the game.
+  Future<String> charterYacht(Session session, String kind) => _money(session, (
+    u,
+  ) async {
+    final c = charters[kind];
+    if (c == null) return _err('That charter isn\'t running.');
+    final w = await WorldAuthority.citizen(session, u);
+    if (w.naira < c.price)
+      return _err(
+        'The ${c.name} costs N${_n(c.price)}. You have N${_n(w.naira)}.',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:yacht:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+      amount: -c.price,
+      kind: 'fee',
+      counter: 'city:services',
+      memo: 'Banana Island Marina: ${c.name}',
+    );
+    if (r.short != null) return _err('Not enough naira.');
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'kind': kind, 'name': c.name, 'naira': after.naira});
+  });
 
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {
     if (key.startsWith('hq:')) {
-      final p = await IslandProfile.db.findById(s, int.tryParse(key.substring(3)) ?? -1);
+      final p = await IslandProfile.db.findById(
+        s,
+        int.tryParse(key.substring(3)) ?? -1,
+      );
       return p != null && p.authUserId == u;
     }
-    return false; // only HQs are arranged by players; every other building keeps its design
+    if (key.startsWith('home:')) {
+      final h = await IslandHome.db.findFirstRow(
+        s,
+        where: (t) => t.plot.equals(key.substring(5)),
+      );
+      return h != null && h.authUserId == u;
+    }
+    return false; // only homes are arranged by players; every other building keeps its design
   }
 
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
   /// owner and the people they've let in.
   Future<String> room(Session session, String key) async {
     final u = _user(session);
+    // a party that's on lets in its guests (everyone, for an open party)
+    final party = _liveParty(key);
+    bool partyLetsIn(String handle) =>
+        party != null && (party.open || party.guests.contains(handle));
     if (key.startsWith('hq:')) {
-      final p = await IslandProfile.db.findById(session, int.tryParse(key.substring(3)) ?? -1);
+      final p = await IslandProfile.db.findById(
+        session,
+        int.tryParse(key.substring(3)) ?? -1,
+      );
       if (p == null) return _err('No HQ there.');
       final me = await _profile(session, u);
-      final may = p.authUserId == u || !p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle);
+      final may =
+          p.authUserId == u ||
+          !p.hqLocked ||
+          (jsonDecode(p.hqInvites) as List).contains(me.handle) ||
+          partyLetsIn(me.handle);
       if (!may) return _err('Knock first: the owner lets people in.');
     }
-    final r = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));
-    return jsonEncode({'key': key, 'layout': r == null ? null : jsonDecode(r.layout), 'mine': await _mayArrange(session, u, key)});
+    if (key.startsWith('home:')) {
+      final h = await IslandHome.db.findFirstRow(
+        session,
+        where: (t) => t.plot.equals(key.substring(5)),
+      );
+      if (h == null) return _err('Nobody lives there yet.');
+      final p = await IslandProfile.db.findFirstRow(
+        session,
+        where: (t) => t.authUserId.equals(h.authUserId),
+      );
+      final me = await _profile(session, u);
+      final may =
+          h.authUserId == u ||
+          (p != null &&
+              (!p.hqLocked ||
+                  (jsonDecode(p.hqInvites) as List).contains(me.handle))) ||
+          partyLetsIn(me.handle);
+      if (!may) return _err('Knock first: the owner lets people in.');
+    }
+    final r = await IslandRoom.db.findFirstRow(
+      session,
+      where: (t) => t.key.equals(key),
+    );
+    return jsonEncode({
+      'key': key,
+      'layout': r == null ? null : jsonDecode(r.layout),
+      'mine': await _mayArrange(session, u, key),
+    });
   }
 
   /// Save a room's furniture.
   Future<String> saveRoom(Session session, String key, String layout) async {
     final u = _user(session);
-    if (!await _mayArrange(session, u, key)) return _err('Only the owner can arrange this room.');
+    if (!await _mayArrange(session, u, key))
+      return _err('Only the owner can arrange this room.');
     if (layout.length > 24000) return _err('Too much furniture.');
     final list = jsonDecode(layout);
     if (list is! List || list.length > 200) return _err('At most 200 pieces.');
     for (final it in list) {
-      if (it is! Map || it['k'] is! String || it['x'] is! num || it['z'] is! num) return _err('Bad furniture.');
+      if (it is! Map ||
+          it['k'] is! String ||
+          it['x'] is! num ||
+          it['z'] is! num)
+        return _err('Bad furniture.');
     }
-    final had = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));
+    final had = await IslandRoom.db.findFirstRow(
+      session,
+      where: (t) => t.key.equals(key),
+    );
+    // a home holds only what its owner bought (counting what stands in their other homes), plus the
+    // old built-in pieces it already had (those can be moved or removed, not added)
+    final placed = <String, int>{},
+        old = <String, int>{},
+        elsewhere = <String, int>{};
+    _countInto(placed, list, storeOnly: false);
+    if (had != null)
+      _countInto(old, jsonDecode(had.layout) as List, storeOnly: false);
+    for (final k in await _myRoomKeys(session, u)) {
+      if (k != key) _countInto(elsewhere, await _layoutOf(session, k));
+    }
+    final owned = await _owned(session, u);
+    for (final e in placed.entries) {
+      if (e.key.startsWith('k:')) {
+        if (e.value + (elsewhere[e.key] ?? 0) > (owned[e.key] ?? 0))
+          return _err('Buy that piece at the Eko Home Store first.');
+      } else if (e.value > (old[e.key] ?? 0)) {
+        return _err('New furniture comes from the Eko Home Store.');
+      }
+    }
     final now = DateTime.now().toUtc();
     if (had == null) {
-      await IslandRoom.db.insertRow(session, IslandRoom(key: key, layout: layout, updatedAt: now));
+      await IslandRoom.db.insertRow(
+        session,
+        IslandRoom(key: key, layout: layout, updatedAt: now),
+      );
     } else {
-      await IslandRoom.db.updateRow(session, had.copyWith(layout: layout, updatedAt: now));
+      await IslandRoom.db.updateRow(
+        session,
+        had.copyWith(layout: layout, updatedAt: now),
+      );
     }
     return jsonEncode({'saved': list.length});
   }
 
   // ---------------- the arena ----------------
-  static Map<String, dynamic> _showJson(IslandShow s, {int sold = 0, bool mine = false, bool ticket = false}) {
+  static Map<String, dynamic> _showJson(
+    IslandShow s, {
+    int sold = 0,
+    bool mine = false,
+    bool ticket = false,
+  }) {
     final now = DateTime.now().toUtc();
     return {
-      'id': s.id, 'artist': s.artist, 'title': s.title, 'startsAt': s.startsAt.toIso8601String(), 'minutes': s.minutes,
-      'price': s.price, 'capacity': s.capacity, 'sold': sold, 'status': s.status, 'mine': mine, 'ticket': ticket,
-      'live': s.status == 'on_sale' && !now.isBefore(s.startsAt) && now.isBefore(s.startsAt.add(Duration(minutes: s.minutes))),
+      'id': s.id,
+      'artist': s.artist,
+      'title': s.title,
+      'startsAt': s.startsAt.toIso8601String(),
+      'minutes': s.minutes,
+      'price': s.price,
+      'capacity': s.capacity,
+      'sold': sold,
+      'status': s.status,
+      'mine': mine,
+      'ticket': ticket,
+      'live':
+          s.status == 'on_sale' &&
+          !now.isBefore(s.startsAt) &&
+          now.isBefore(s.startsAt.add(Duration(minutes: s.minutes))),
     };
   }
 
@@ -689,63 +1936,163 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> shows(Session session) async {
     final u = _user(session);
     final from = DateTime.now().toUtc().subtract(const Duration(hours: 4));
-    final rows = await IslandShow.db.find(session, where: (t) => (t.status.equals('on_sale') | t.hostUserId.equals(u)) & (t.startsAt > from), orderBy: (t) => t.startsAt, limit: 50);
-    final mine = {for (final k in await IslandTicket.db.find(session, where: (t) => t.authUserId.equals(u))) k.showId};
+    final rows = await IslandShow.db.find(
+      session,
+      where: (t) =>
+          (t.status.equals('on_sale') | t.hostUserId.equals(u)) &
+          (t.startsAt > from),
+      orderBy: (t) => t.startsAt,
+      limit: 50,
+    );
+    final mine = {
+      for (final k in await IslandTicket.db.find(
+        session,
+        where: (t) => t.authUserId.equals(u),
+      ))
+        k.showId,
+    };
     return jsonEncode([
       for (final s in rows)
-        _showJson(s, sold: await IslandTicket.db.count(session, where: (t) => t.showId.equals(s.id!)), mine: s.hostUserId == u, ticket: mine.contains(s.id)),
+        _showJson(
+          s,
+          sold: await IslandTicket.db.count(
+            session,
+            where: (t) => t.showId.equals(s.id!),
+          ),
+          mine: s.hostUserId == u,
+          ticket: mine.contains(s.id),
+        ),
     ]);
   }
 
   /// An artist books the arena. Tickets go on sale once WYRD's operator has checked it.
-  Future<String> hostShow(Session session, String artist, String title, String startsAt, int minutes, int price) async {
+  Future<String> hostShow(
+    Session session,
+    String artist,
+    String title,
+    String startsAt,
+    int minutes,
+    int price,
+  ) async {
     final u = _user(session);
     final at = DateTime.tryParse(startsAt)?.toUtc();
-    if (artist.trim().isEmpty || title.trim().isEmpty) return _err('Give the artist and the show a name.');
-    if (at == null || at.isBefore(DateTime.now().toUtc())) return _err('Pick a time in the future.');
-    if (minutes < 15 || minutes > 240) return _err('A show runs 15 minutes to 4 hours.');
+    if (artist.trim().isEmpty || title.trim().isEmpty)
+      return _err('Give the artist and the show a name.');
+    if (at == null || at.isBefore(DateTime.now().toUtc()))
+      return _err('Pick a time in the future.');
+    if (minutes < 15 || minutes > 240)
+      return _err('A show runs 15 minutes to 4 hours.');
     if (price < 0 || price > 20000) return _err('Tickets cost ₦0 to ₦20,000.');
-    final clash = await IslandShow.db.findFirstRow(session, where: (t) => t.status.equals('on_sale') & (t.startsAt > at.subtract(const Duration(hours: 4))) & (t.startsAt < at.add(Duration(minutes: minutes))));
-    if (clash != null && clash.startsAt.add(Duration(minutes: clash.minutes)).isAfter(at)) return _err('The arena is booked then. Pick another time.');
-    final s = await IslandShow.db.insertRow(session, IslandShow(hostUserId: u, artist: _clean(artist, 60), title: _clean(title, 80), startsAt: at, minutes: minutes, price: price, createdAt: DateTime.now().toUtc()));
+    final clash = await IslandShow.db.findFirstRow(
+      session,
+      where: (t) =>
+          t.status.equals('on_sale') &
+          (t.startsAt > at.subtract(const Duration(hours: 4))) &
+          (t.startsAt < at.add(Duration(minutes: minutes))),
+    );
+    if (clash != null &&
+        clash.startsAt.add(Duration(minutes: clash.minutes)).isAfter(at))
+      return _err('The arena is booked then. Pick another time.');
+    final s = await IslandShow.db.insertRow(
+      session,
+      IslandShow(
+        hostUserId: u,
+        artist: _clean(artist, 60),
+        title: _clean(title, 80),
+        startsAt: at,
+        minutes: minutes,
+        price: price,
+        createdAt: DateTime.now().toUtc(),
+      ),
+    );
     return jsonEncode(_showJson(s, mine: true));
   }
 
   /// The operator's queue of shows to check, and the decision.
   Future<String> pendingShows(Session session) async {
-    if (!await DroneService.isOperator(session, _user(session))) return _err('Operators only.');
-    final rows = await IslandShow.db.find(session, where: (t) => t.status.equals('pending'), orderBy: (t) => t.startsAt);
+    if (!await DroneService.isOperator(session, _user(session)))
+      return _err('Operators only.');
+    final rows = await IslandShow.db.find(
+      session,
+      where: (t) => t.status.equals('pending'),
+      orderBy: (t) => t.startsAt,
+    );
     return jsonEncode([for (final s in rows) _showJson(s)]);
   }
 
   Future<String> reviewShow(Session session, int showId, bool approve) async {
-    if (!await DroneService.isOperator(session, _user(session))) return _err('Operators only.');
+    if (!await DroneService.isOperator(session, _user(session)))
+      return _err('Operators only.');
     final s = await IslandShow.db.findById(session, showId);
     if (s == null) return _err('No such show.');
-    await IslandShow.db.updateRow(session, s.copyWith(status: approve ? 'on_sale' : 'rejected'));
-    return jsonEncode({'id': showId, 'status': approve ? 'on_sale' : 'rejected'});
+    await IslandShow.db.updateRow(
+      session,
+      s.copyWith(status: approve ? 'on_sale' : 'rejected'),
+    );
+    return jsonEncode({
+      'id': showId,
+      'status': approve ? 'on_sale' : 'rejected',
+    });
   }
 
   /// Buy a ticket with naira. Nine tenths goes to the artist who hosts the show.
-  Future<String> buyTicket(Session session, int showId) => _money(session, (u) async {
-    final s = await IslandShow.db.findById(session, showId);
-    if (s == null || s.status != 'on_sale') return _err('That show isn\'t on sale.');
-    if (DateTime.now().toUtc().isAfter(s.startsAt.add(Duration(minutes: s.minutes)))) return _err('That show is over.');
-    if (await IslandTicket.db.findFirstRow(session, where: (t) => t.showId.equals(showId) & t.authUserId.equals(u)) != null) return jsonEncode({'ticket': true});
-    if (await IslandTicket.db.count(session, where: (t) => t.showId.equals(showId)) >= s.capacity) return _err('Sold out.');
-    await WorldAuthority.citizen(session, u);
-    if (s.price > 0) {
-      final r = await Bank.post(session, u, key: 'island:ticket:$showId:${u.uuid}', amount: -s.price, kind: 'fee', counter: 'city:services', memo: 'Ticket: ${s.artist}');
-      if (r.short != null) return _err('You need ${'₦'}${_n(s.price)}.');
-      if (s.hostUserId != u) {
-        await WorldAuthority.citizen(session, s.hostUserId);
-        await Bank.post(session, s.hostUserId, key: 'island:ticket:$showId:${u.uuid}:artist', amount: s.price * 9 ~/ 10, kind: 'job', counter: 'city:services', memo: 'Ticket sold: ${s.title}');
-      }
-    }
-    await IslandTicket.db.insertRow(session, IslandTicket(showId: showId, authUserId: u, createdAt: DateTime.now().toUtc()));
-    final c = await Bank.fresh(session, u);
-    return jsonEncode({'ticket': true, 'naira': c.naira});
-  });
+  Future<String> buyTicket(Session session, int showId) =>
+      _money(session, (u) async {
+        final s = await IslandShow.db.findById(session, showId);
+        if (s == null || s.status != 'on_sale')
+          return _err('That show isn\'t on sale.');
+        if (DateTime.now().toUtc().isAfter(
+          s.startsAt.add(Duration(minutes: s.minutes)),
+        ))
+          return _err('That show is over.');
+        if (await IslandTicket.db.findFirstRow(
+              session,
+              where: (t) => t.showId.equals(showId) & t.authUserId.equals(u),
+            ) !=
+            null)
+          return jsonEncode({'ticket': true});
+        if (await IslandTicket.db.count(
+              session,
+              where: (t) => t.showId.equals(showId),
+            ) >=
+            s.capacity)
+          return _err('Sold out.');
+        await WorldAuthority.citizen(session, u);
+        if (s.price > 0) {
+          final r = await Bank.post(
+            session,
+            u,
+            key: 'island:ticket:$showId:${u.uuid}',
+            amount: -s.price,
+            kind: 'fee',
+            counter: 'city:services',
+            memo: 'Ticket: ${s.artist}',
+          );
+          if (r.short != null) return _err('You need ${'₦'}${_n(s.price)}.');
+          if (s.hostUserId != u) {
+            await WorldAuthority.citizen(session, s.hostUserId);
+            await Bank.post(
+              session,
+              s.hostUserId,
+              key: 'island:ticket:$showId:${u.uuid}:artist',
+              amount: s.price * 9 ~/ 10,
+              kind: 'job',
+              counter: 'city:services',
+              memo: 'Ticket sold: ${s.title}',
+            );
+          }
+        }
+        await IslandTicket.db.insertRow(
+          session,
+          IslandTicket(
+            showId: showId,
+            authUserId: u,
+            createdAt: DateTime.now().toUtc(),
+          ),
+        );
+        final c = await Bank.fresh(session, u);
+        return jsonEncode({'ticket': true, 'naira': c.naira});
+      });
 
   /// What the artist has performed (said, sung, announced) so far, live -- for ticket holders and the artist.
   static final _stage = <int, List<Map<String, dynamic>>>{};
@@ -754,18 +2101,38 @@ class IslandMeEndpoint extends Endpoint {
     final s = await IslandShow.db.findById(session, showId);
     if (s == null) return _err('No such show.');
     final host = s.hostUserId == u;
-    if (!host && await IslandTicket.db.findFirstRow(session, where: (t) => t.showId.equals(showId) & t.authUserId.equals(u)) == null) return _err('You need a ticket.');
-    final lines = (_stage[showId] ?? const []).where((l) => (l['n'] as int) > since).toList();
-    return jsonEncode({..._showJson(s, mine: host, ticket: !host), 'crowd': await IslandTicket.db.count(session, where: (t) => t.showId.equals(showId)), 'lines': lines});
+    if (!host &&
+        await IslandTicket.db.findFirstRow(
+              session,
+              where: (t) => t.showId.equals(showId) & t.authUserId.equals(u),
+            ) ==
+            null)
+      return _err('You need a ticket.');
+    final lines = (_stage[showId] ?? const [])
+        .where((l) => (l['n'] as int) > since)
+        .toList();
+    return jsonEncode({
+      ..._showJson(s, mine: host, ticket: !host),
+      'crowd': await IslandTicket.db.count(
+        session,
+        where: (t) => t.showId.equals(showId),
+      ),
+      'lines': lines,
+    });
   }
 
   /// The artist performs: a line onto the arena's screens, for everyone with a ticket.
   Future<String> perform(Session session, int showId, String text) async {
     final u = _user(session);
     final s = await IslandShow.db.findById(session, showId);
-    if (s == null || s.hostUserId != u) return _err('Only the artist can take the stage.');
+    if (s == null || s.hostUserId != u)
+      return _err('Only the artist can take the stage.');
     final now = DateTime.now().toUtc();
-    if (now.isBefore(s.startsAt.subtract(const Duration(minutes: 10))) || now.isAfter(s.startsAt.add(Duration(minutes: s.minutes)))) return _err('The stage is yours from 10 minutes before the show until it ends.');
+    if (now.isBefore(s.startsAt.subtract(const Duration(minutes: 10))) ||
+        now.isAfter(s.startsAt.add(Duration(minutes: s.minutes))))
+      return _err(
+        'The stage is yours from 10 minutes before the show until it ends.',
+      );
     final list = _stage.putIfAbsent(showId, () => []);
     final n = list.isEmpty ? 1 : (list.last['n'] as int) + 1;
     list.add({'n': n, 'text': _clean(text, 400), 'at': now.toIso8601String()});
@@ -802,6 +2169,12 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> askWyrd(Session session, String text, String district) async {
     final u = _user(session);
     final d = _clean(district, 40);
-    return WorldAuthority.address(session, u, 'speak', text, '$_islandBrief\nRight now the player is in $d.');
+    return WorldAuthority.address(
+      session,
+      u,
+      'speak',
+      text,
+      '$_islandBrief\nRight now the player is in $d.',
+    );
   }
 }

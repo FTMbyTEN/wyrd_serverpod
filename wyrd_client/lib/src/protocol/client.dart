@@ -1178,6 +1178,78 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {'carId': carId},
   );
 
+  /// Buy one piece: the price comes out of my wallet; I place it from my home's "Arrange furniture".
+  _ida.Future<String> buyFurniture(String item) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'buyFurniture',
+        {'item': item},
+      );
+
+  /// What I own: {items: {id: count}}, and how many of each already stand in my homes other than [room] ('' for all).
+  _ida.Future<String> myFurniture(String room) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'myFurniture',
+        {'room': room},
+      );
+
+  /// Every bought plot: who owns it (when I may know), and whether I may go in.
+  _ida.Future<String> homes() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'homes',
+    {},
+  );
+
+  /// Buy the home on [plot]: it's mine to furnish, and it's where my HQ settings (name, colour, who may enter) apply too.
+  _ida.Future<String> buyHome(String plot) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyHome',
+    {'plot': plot},
+  );
+
+  /// Throw a party in one of my homes for [minutes] (30 to 180). [open]: anyone may walk in; otherwise the people on my
+  /// invite list (my HQ settings) and [guests] (handles, JSON list). Those invited see it on their phones.
+  _ida.Future<String> startParty(
+    String key,
+    String theme,
+    int minutes,
+    bool open,
+    String guests,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'startParty',
+    {
+      'key': key,
+      'theme': theme,
+      'minutes': minutes,
+      'open': open,
+      'guests': guests,
+    },
+  );
+
+  /// End my party early.
+  _ida.Future<String> endParty(String key) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'endParty',
+    {'key': key},
+  );
+
+  /// The parties I can go to right now: open ones, ones I'm invited to, and my own.
+  _ida.Future<String> parties() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'parties',
+    {},
+  );
+
+  /// Pay for a charter; the trip itself runs in the game.
+  _ida.Future<String> charterYacht(String kind) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'charterYacht',
+        {'kind': kind},
+      );
+
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
   /// owner and the people they've let in.
   _ida.Future<String> room(String key) => caller.callServerEndpoint<String>(

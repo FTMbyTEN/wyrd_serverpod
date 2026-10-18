@@ -1,0 +1,17 @@
+### A home someone bought on a plot in one of the island's estates (Ajah, Lekki, Ikoyi, Banana Island).
+### [plot] is <estate>:<n> from IslandMeEndpoint.estates; its [style] (bungalow, duplex, loft, mansion,
+### villa...) comes from there too. Everyone also keeps their free starter BQ on HQ Row (their profile).
+class: IslandHome
+table: island_home
+fields:
+  authUserId: UuidValue
+  plot: String
+  style: String
+  price: int
+  boughtAt: DateTime
+indexes:
+  island_home_plot_idx:
+    fields: plot
+    unique: true
+  island_home_user_idx:
+    fields: authUserId
