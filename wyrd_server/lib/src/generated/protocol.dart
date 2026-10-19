@@ -65,6 +65,7 @@ import 'island/island_home.dart' as _ii0e1z5r;
 import 'island/island_job.dart' as _ifd0cm6h;
 import 'island/island_member.dart' as _inkhm4mi;
 import 'island/island_message.dart' as _i4pfszr3;
+import 'island/island_outfit.dart' as _i6w7urys;
 import 'island/island_profile.dart' as _ii1l0ai6;
 import 'island/island_room.dart' as _i4c46r6a;
 import 'island/island_show.dart' as _ivo4faiv;
@@ -173,6 +174,7 @@ export 'island/island_home.dart';
 export 'island/island_job.dart';
 export 'island/island_member.dart';
 export 'island/island_message.dart';
+export 'island/island_outfit.dart';
 export 'island/island_profile.dart';
 export 'island/island_room.dart';
 export 'island/island_show.dart';
@@ -2775,6 +2777,62 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_outfit',
+      dartName: 'IslandOutfit',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'item',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'price',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'boughtAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_outfit_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
             ),
           ],
           type: 'btree',
@@ -6148,6 +6206,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i4pfszr3.IslandMessage) {
       return _i4pfszr3.IslandMessage.fromJson(data) as T;
     }
+    if (t == _i6w7urys.IslandOutfit) {
+      return _i6w7urys.IslandOutfit.fromJson(data) as T;
+    }
     if (t == _ii1l0ai6.IslandProfile) {
       return _ii1l0ai6.IslandProfile.fromJson(data) as T;
     }
@@ -6475,6 +6536,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_i4pfszr3.IslandMessage?>()) {
       return (data != null ? _i4pfszr3.IslandMessage.fromJson(data) : null)
           as T;
+    }
+    if (t == _is.getType<_i6w7urys.IslandOutfit?>()) {
+      return (data != null ? _i6w7urys.IslandOutfit.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ii1l0ai6.IslandProfile?>()) {
       return (data != null ? _ii1l0ai6.IslandProfile.fromJson(data) : null)
@@ -7126,6 +7190,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ifd0cm6h.IslandJob => 'IslandJob',
       _inkhm4mi.IslandMember => 'IslandMember',
       _i4pfszr3.IslandMessage => 'IslandMessage',
+      _i6w7urys.IslandOutfit => 'IslandOutfit',
       _ii1l0ai6.IslandProfile => 'IslandProfile',
       _i4c46r6a.IslandRoom => 'IslandRoom',
       _ivo4faiv.IslandShow => 'IslandShow',
@@ -7266,6 +7331,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'IslandMember';
       case _i4pfszr3.IslandMessage():
         return 'IslandMessage';
+      case _i6w7urys.IslandOutfit():
+        return 'IslandOutfit';
       case _ii1l0ai6.IslandProfile():
         return 'IslandProfile';
       case _i4c46r6a.IslandRoom():
@@ -7525,6 +7592,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'IslandMessage') {
       return deserialize<_i4pfszr3.IslandMessage>(data['data']);
+    }
+    if (dataClassName == 'IslandOutfit') {
+      return deserialize<_i6w7urys.IslandOutfit>(data['data']);
     }
     if (dataClassName == 'IslandProfile') {
       return deserialize<_ii1l0ai6.IslandProfile>(data['data']);
@@ -7869,6 +7939,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _inkhm4mi.IslandMember.t;
       case _i4pfszr3.IslandMessage:
         return _i4pfszr3.IslandMessage.t;
+      case _i6w7urys.IslandOutfit:
+        return _i6w7urys.IslandOutfit.t;
       case _ii1l0ai6.IslandProfile:
         return _ii1l0ai6.IslandProfile.t;
       case _i4c46r6a.IslandRoom:

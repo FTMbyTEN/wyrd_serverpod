@@ -78,8 +78,8 @@ void run(List<String> args) async {
     '/lagos-island/map.json',
   );
   // Lagos Island's 3D models: every car (CC BY, credited in the game) and every piece of furniture in the Eko
-  // Home Store (Kenney, CC0) with its store thumbnail. Whatever is in these folders is served.
-  for (final dir in ['cars', 'furniture', 'furniture/thumbs', 'people']) {
+  // Home Store (Kenney, CC0) with its store thumbnail, the accessories (Sketchfab, CC BY) and the private jet. Whatever is in these folders is served.
+  for (final dir in ['cars', 'furniture', 'furniture/thumbs', 'people', 'people/acc', 'jets']) {
     final d = Directory(Uri(path: 'web/pages/$dir').toFilePath());
     if (!d.existsSync()) continue;
     for (final f in d.listSync().whereType<File>()) {

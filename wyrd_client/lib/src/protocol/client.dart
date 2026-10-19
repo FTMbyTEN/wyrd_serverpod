@@ -738,6 +738,12 @@ class EndpointIsland extends _isc.EndpointRef {
   @override
   String get name => 'island';
 
+  _ida.Future<String> housing() => caller.callServerEndpoint<String>(
+    'island',
+    'housing',
+    {},
+  );
+
   /// Here I am; who's around? [since]: the last chat line already seen (0 the first time).
   _ida.Future<String> tick(
     String id,
@@ -770,6 +776,28 @@ class EndpointIsland extends _isc.EndpointRef {
     'island',
     'online',
     {},
+  );
+
+  /// Take the decks: the DJ, standing in a club, plays a song on its speakers for everyone. [url] must be a stream from
+  /// the two catalogues Island Music uses (Audius, Deezer previews). An empty [url] hands the decks back.
+  _ida.Future<bool> spin(
+    String id,
+    String club,
+    String url,
+    String title,
+    String artist,
+    String art,
+  ) => caller.callServerEndpoint<bool>(
+    'island',
+    'spin',
+    {
+      'id': id,
+      'club': club,
+      'url': url,
+      'title': title,
+      'artist': artist,
+      'art': art,
+    },
   );
 
   /// A line of chat, heard by the people near the speaker.
@@ -1041,6 +1069,42 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Wait (up to 20 s) for anything new in a chat after [since] / version [ver]; returns the new messages, who's typing
+  /// (and for how much longer), how far each other member has read, and the chat's version now.
+  _ida.Future<String> live(
+    int groupId,
+    int since,
+    int ver,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'live',
+    {
+      'groupId': groupId,
+      'since': since,
+      'ver': ver,
+    },
+  );
+
+  /// I'm typing in a chat (sent every few seconds while I type; it lapses on its own).
+  _ida.Future<String> typing(int groupId) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'typing',
+    {'groupId': groupId},
+  );
+
+  /// I've read a chat up to message [upTo].
+  _ida.Future<String> read(
+    int groupId,
+    int upTo,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'read',
+    {
+      'groupId': groupId,
+      'upTo': upTo,
+    },
+  );
+
   /// Set up my HQ: its name, colour, whether it's locked, and who's invited (JSON list of handles).
   _ida.Future<String> setHq(
     String name,
@@ -1176,6 +1240,21 @@ class EndpointIslandMe extends _isc.EndpointRef {
     'islandMe',
     'driveCar',
     {'carId': carId},
+  );
+
+  /// Buy an outfit: the price comes out of my wallet; it's in my wardrobe to wear whenever I like.
+  _ida.Future<String> buyOutfit(String item) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'buyOutfit',
+        {'item': item},
+      );
+
+  /// The outfits in my wardrobe (the free starters are everyone's and aren't listed).
+  _ida.Future<String> myOutfits() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myOutfits',
+    {},
   );
 
   /// Buy one piece: the price comes out of my wallet; I place it from my home's "Arrange furniture".

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -143,13 +144,25 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Save how I look on the island (chosen when I joined; changeable in Profile).
   Future<String> setLook(Session session, String look) async {
-    // g,skin,hair,style,bottom and, optionally, the outfit being worn: a free starter or one I've bought
-    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{1,30})?)?$').firstMatch(look);
+    // g,skin,hair,style,bottom and, optionally, the outfit being worn (a free starter or one I've bought) and the
+    // accessories worn on top, joined by + (each bought, one per slot)
+    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{0,30}))?(,([a-z0-9_+]{0,200}))?$').firstMatch(look);
     if (m == null) return _err('Bad look.');
-    final outfit = m.group(3);
+    final outfit = (m.group(3) ?? '').isEmpty ? null : m.group(3);
+    final accs = (m.group(5) ?? '').split('+').where((a) => a.isNotEmpty).toList();
+    if (accs.length > 5) return _err('Five accessories at most.');
+    final slots = <String>{};
+    for (final a in accs) {
+      final slot = accessorySlot(a), o = outfitCatalog[a];
+      if (slot == null || o == null) return _err('That accessory is not in any shop.');
+      if (!slots.add(slot)) return _err('One accessory per slot.');
+      if (await IslandOutfit.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)) & t.item.equals(a)) == null) {
+        return _err('Buy the ${o.name} first.');
+      }
+    }
     if (outfit != null) {
       final o = outfitCatalog[outfit];
-      if (o == null) return _err('That outfit is not in any shop.');
+      if (o == null || outfit.startsWith('acc_')) return _err('That outfit is not in any shop.');
       if (o.price > 0 &&
           await IslandOutfit.db.findFirstRow(
                 session,
@@ -757,6 +770,10 @@ class IslandMeEndpoint extends Endpoint {
         createdAt: DateTime.now().toUtc(),
       ),
     );
+    // a message ends the sender's typing and wakes everyone waiting on the chat
+    final h = (await _profile(session, u)).handle;
+    _typing[groupId]?.remove(h);
+    _bump(groupId);
     return jsonEncode({'id': m.id});
   }
 
@@ -789,6 +806,86 @@ class IslandMeEndpoint extends Endpoint {
       });
     }
     return jsonEncode(out);
+  }
+
+
+  // ---------------- live chat: instant delivery, typing, read receipts ----------------
+  // Each chat has a version that goes up whenever something happens in it (a message, someone typing, someone reading).
+  // A phone with the chat open asks [live] with the version it has; the server holds the request until the version moves
+  // (or 20 seconds pass) and answers at once, so a message lands the moment it's sent. Typing and read marks are kept in
+  // memory: they're about now, and say nothing about what's in a message.
+  static final _ver = <int, int>{};
+  static final _waiters = <int, List<Completer<void>>>{};
+  static final _typing = <int, Map<String, DateTime>>{}; // group -> handle -> typing until
+  static final _reads = <int, Map<String, int>>{}; // group -> handle -> last message id read
+  static void _bump(int groupId) {
+    _ver[groupId] = (_ver[groupId] ?? 0) + 1;
+    final ws = _waiters.remove(groupId) ?? [];
+    for (final c in ws) {
+      if (!c.isCompleted) c.complete();
+    }
+  }
+
+  Future<bool> _member(Session session, int groupId, UuidValue u) async =>
+      await IslandMember.db.findFirstRow(
+        session,
+        where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
+      ) !=
+      null;
+
+  /// Wait (up to 20 s) for anything new in a chat after [since] / version [ver]; returns the new messages, who's typing
+  /// (and for how much longer), how far each other member has read, and the chat's version now.
+  Future<String> live(Session session, int groupId, int since, int ver) async {
+    final u = _user(session);
+    if (!await _member(session, groupId, u)) return _err('Not your chat.');
+    final me = (await _profile(session, u)).handle;
+    final end = DateTime.now().add(const Duration(seconds: 20));
+    while ((_ver[groupId] ?? 0) == ver && DateTime.now().isBefore(end)) {
+      final c = Completer<void>();
+      (_waiters[groupId] ??= []).add(c);
+      await c.future.timeout(end.difference(DateTime.now()), onTimeout: () {});
+      _waiters[groupId]?.remove(c);
+    }
+    final msgs = jsonDecode(await messages(session, groupId, since));
+    final now = DateTime.now();
+    final typing = [
+      for (final e in (_typing[groupId] ?? {}).entries)
+        if (e.key != me && e.value.isAfter(now))
+          {'h': e.key, 'ms': e.value.difference(now).inMilliseconds},
+    ];
+    final reads = {
+      for (final e in (_reads[groupId] ?? {}).entries)
+        if (e.key != me) e.key: e.value,
+    };
+    return jsonEncode({
+      'messages': msgs,
+      'typing': typing,
+      'reads': reads,
+      'ver': _ver[groupId] ?? 0,
+    });
+  }
+
+  /// I'm typing in a chat (sent every few seconds while I type; it lapses on its own).
+  Future<String> typing(Session session, int groupId) async {
+    final u = _user(session);
+    if (!await _member(session, groupId, u)) return _err('Not your chat.');
+    final me = (await _profile(session, u)).handle;
+    (_typing[groupId] ??= {})[me] =
+        DateTime.now().add(const Duration(seconds: 5));
+    _bump(groupId);
+    return jsonEncode({'ok': true});
+  }
+
+  /// I've read a chat up to message [upTo].
+  Future<String> read(Session session, int groupId, int upTo) async {
+    final u = _user(session);
+    if (!await _member(session, groupId, u)) return _err('Not your chat.');
+    final me = (await _profile(session, u)).handle;
+    final m = _reads[groupId] ??= {};
+    if ((m[me] ?? 0) >= upTo) return jsonEncode({'ok': true});
+    m[me] = upTo;
+    _bump(groupId);
+    return jsonEncode({'ok': true});
   }
 
   // ---------------- HQ ----------------
@@ -1247,7 +1344,37 @@ class IslandMeEndpoint extends Endpoint {
     'fendi_set': (name: 'Fendi Monogram set', price: 1800000),
     'lv_jacket': (name: 'Louis Vuitton Monogram jacket', price: 2400000),
     'dior_gown': (name: 'Dior Evening gown', price: 3000000),
+    // accessories (worn on top of an outfit, one per slot; see accessorySlot)
+    'acc_shades': (name: 'Balogun Classic shades', price: 12000),
+    'acc_aviators': (name: 'Ray-Ban Aviator sunglasses', price: 85000),
+    'acc_cap_green': (name: 'Naija Green cap', price: 18000),
+    'acc_cap_black': (name: 'New Era Black cap', price: 25000),
+    'acc_cap_white': (name: 'New Era White cap', price: 25000),
+    'acc_beanie': (name: 'Carhartt Beanie', price: 30000),
+    'acc_bucket': (name: 'Kangol White bucket hat', price: 45000),
+    'acc_bucket_black': (name: 'Kangol Black bucket hat', price: 45000),
+    'acc_fedora': (name: 'Borsalino Fedora', price: 180000),
+    'acc_chain_silver': (name: 'Idumota Silver chain', price: 60000),
+    'acc_chain_gold': (name: 'Jacob & Co Gold Cuban chain', price: 1500000),
+    'acc_watch': (name: 'Casio Digital watch', price: 40000),
+    'acc_watch_gold': (name: 'Rolex Gold watch', price: 4500000),
+    'acc_backpack': (name: 'The North Face Backpack', price: 60000),
   };
+
+  /// Where each accessory is worn: one per slot (ACC_LIST in web/index.html).
+  static String? accessorySlot(String id) => !id.startsWith('acc_')
+      ? null
+      : id.startsWith('acc_shades') || id.startsWith('acc_aviators')
+      ? 'eyes'
+      : id.startsWith('acc_cap') || id.startsWith('acc_beanie') || id.startsWith('acc_bucket') || id.startsWith('acc_fedora')
+      ? 'head'
+      : id.startsWith('acc_chain')
+      ? 'neck'
+      : id.startsWith('acc_watch')
+      ? 'wrist'
+      : id.startsWith('acc_backpack')
+      ? 'back'
+      : null;
 
   /// Buy an outfit: the price comes out of my wallet; it's in my wardrobe to wear whenever I like.
   Future<String> buyOutfit(Session session, String item) => _money(session, (
@@ -1527,26 +1654,14 @@ class IslandMeEndpoint extends Endpoint {
       'terrace',
       'terrace',
     ],
-    'ikoyihomes': [
-      'loft',
-      'townhouse',
-      'loft',
-      'townhouse',
-      'loft',
-      'townhouse',
-    ],
-    'oldikoyi': [
-      'mansion',
-      'mansion',
-      'loft',
-      'mansion',
-      'townhouse',
-      'mansion',
-      'loft',
-      'mansion',
-      'mansion',
-    ],
-    'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+    'ikoyihomes': ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'duplex', 'loft'],
+    'oldikoyi': ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
+    'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa', 'villa', 'loft', 'villa', 'villa', 'mansion', 'villa'],
+    // the new estates on the reclaimed land, 12 homes each
+    'atlantic': ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
+    'oceancrest': ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
+    'marinacourt': ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow', 'flat', 'terrace'],
+    'harbourview': ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa', 'duplex', 'loft', 'townhouse', 'mansion', 'loft', 'duplex', 'villa', 'townhouse', 'loft', 'mansion', 'duplex', 'villa'],
   };
 
   static String? _styleOf(String plot) {

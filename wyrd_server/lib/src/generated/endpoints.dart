@@ -1303,6 +1303,16 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'island',
       endpoint: endpoints['island']!,
       methodConnectors: {
+        'housing': _is.MethodConnector(
+          name: 'housing',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['island'] as _i1elbils.IslandEndpoint)
+                  .housing(session),
+        ),
         'tick': _is.MethodConnector(
           name: 'tick',
           params: {
@@ -1378,6 +1388,54 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['island'] as _i1elbils.IslandEndpoint)
                   .online(session),
+        ),
+        'spin': _is.MethodConnector(
+          name: 'spin',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'club': _is.ParameterDescription(
+              name: 'club',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'url': _is.ParameterDescription(
+              name: 'url',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'title': _is.ParameterDescription(
+              name: 'title',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'artist': _is.ParameterDescription(
+              name: 'artist',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'art': _is.ParameterDescription(
+              name: 'art',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['island'] as _i1elbils.IslandEndpoint).spin(
+                session,
+                params['id'],
+                params['club'],
+                params['url'],
+                params['title'],
+                params['artist'],
+                params['art'],
+              ),
         ),
         'say': _is.MethodConnector(
           name: 'say',
@@ -1886,6 +1944,81 @@ class Endpoints extends _is.EndpointDispatch {
                     params['since'],
                   ),
         ),
+        'live': _is.MethodConnector(
+          name: 'live',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'since': _is.ParameterDescription(
+              name: 'since',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'ver': _is.ParameterDescription(
+              name: 'ver',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).live(
+                    session,
+                    params['groupId'],
+                    params['since'],
+                    params['ver'],
+                  ),
+        ),
+        'typing': _is.MethodConnector(
+          name: 'typing',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).typing(
+                    session,
+                    params['groupId'],
+                  ),
+        ),
+        'read': _is.MethodConnector(
+          name: 'read',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'upTo': _is.ParameterDescription(
+              name: 'upTo',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).read(
+                    session,
+                    params['groupId'],
+                    params['upTo'],
+                  ),
+        ),
         'setHq': _is.MethodConnector(
           name: 'setHq',
           params: {
@@ -2168,6 +2301,35 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['carId'],
                   ),
+        ),
+        'buyOutfit': _is.MethodConnector(
+          name: 'buyOutfit',
+          params: {
+            'item': _is.ParameterDescription(
+              name: 'item',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .buyOutfit(
+                    session,
+                    params['item'],
+                  ),
+        ),
+        'myOutfits': _is.MethodConnector(
+          name: 'myOutfits',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .myOutfits(session),
         ),
         'buyFurniture': _is.MethodConnector(
           name: 'buyFurniture',

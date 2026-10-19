@@ -54,8 +54,10 @@ islandAuth:
   - emailFree:
   - login:
 island:
+  - housing:
   - tick:
   - online:
+  - spin:
   - say:
 islandMe:
   - me:
@@ -79,6 +81,9 @@ islandMe:
   - groups:
   - post:
   - messages:
+  - live:
+  - typing:
+  - read:
   - setHq:
   - hqRow:
   - askHq:
@@ -92,6 +97,8 @@ islandMe:
   - myCars:
   - buyCar:
   - driveCar:
+  - buyOutfit:
+  - myOutfits:
   - buyFurniture:
   - myFurniture:
   - homes:
