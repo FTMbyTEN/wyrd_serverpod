@@ -1,0 +1,29 @@
+### A job a player can accept. Its rewards are fixed when the offer is made (the reward snapshot) and copied onto every
+### acceptance; a later policy never changes them.
+class: JobOffer
+table: job_offer
+fields:
+  ### ORDINARY_GAME_JOB | FUNDED_SPLIT_JOB
+  type: String
+  campaignId: int?
+  title: String
+  ### what the task is (delivery), checked by the server on completion
+  task: String
+  ### the reward basis (naira) the split was worked out from
+  basis: int
+  ### Game Naira paid on completion
+  gameReward: int
+  ### real cash reward, kobo (0 for ordinary jobs)
+  cashKobo: int
+  ### payout-cost allowance reserved with it, kobo
+  feeKobo: int
+  policyVersion: int?
+  ### how many players may accept it (null: no limit beyond funding)
+  places: int?
+  closesAt: DateTime
+  ### minutes an accepted job has to be completed
+  completeMinutes: int
+  ### open | closed
+  status: String
+  createdBy: String
+  createdAt: DateTime

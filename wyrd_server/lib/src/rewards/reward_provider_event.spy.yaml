@@ -1,0 +1,17 @@
+### A payout provider's callback or status report, kept once per provider event id (duplicates are ignored).
+class: RewardProviderEvent
+table: reward_provider_event
+fields:
+  provider: String
+  eventId: String
+  payoutRef: String
+  ### submitted | pending | paid | failed | returned
+  status: String
+  signatureOk: bool
+  ### applied | ignored_duplicate | ignored_out_of_order | rejected_signature | unknown_payout
+  outcome: String
+  receivedAt: DateTime
+indexes:
+  reward_provider_event_idx:
+    fields: provider, eventId
+    unique: true

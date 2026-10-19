@@ -1,0 +1,25 @@
+### One account in the rewards ledger. [unit] is GN (Game Naira, whole naira) or NGN (real naira, in kobo); a journal
+### only ever moves one unit. [balance] is a cache of the account's entries, updated in the same transaction as them
+### and checked by the reconciliation report. System accounts have a fixed [code] (e.g. ngn:fund:uncommitted,
+### gn:treasury); a player's real earnings live in ngn:earn:pending:{user}, ngn:earn:available:{user} and
+### ngn:payout:inflight:{user}.
+class: RewardAccount
+table: reward_account
+fields:
+  code: String
+  ### GN | NGN
+  unit: String
+  ### fund | reserve | earnings | payout | treasury | source | sink
+  kind: String
+  ownerUserId: UuidValue?
+  ### in the unit's minor units (GN: naira, NGN: kobo)
+  balance: int, default=0
+  ### only source accounts (external money in, authorised issuance) may go below zero
+  mayGoNegative: bool, default=false
+  updatedAt: DateTime
+indexes:
+  reward_account_code_idx:
+    fields: code
+    unique: true
+  reward_account_owner_idx:
+    fields: ownerUserId

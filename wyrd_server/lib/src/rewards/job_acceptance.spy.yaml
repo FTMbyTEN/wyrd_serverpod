@@ -1,0 +1,30 @@
+### A player's accepted job, with the reward snapshot agreed at acceptance and (funded) the reservation's journal.
+class: JobAcceptance
+table: job_acceptance
+fields:
+  offerId: int
+  authUserId: UuidValue
+  idemKey: String
+  ### accepted | completed | review | expired | cancelled | rejected
+  status: String
+  ### the server's task parameters, JSON (e.g. the delivery distance and time limit)
+  taskSpec: String
+  gameReward: int
+  cashKobo: int
+  feeKobo: int
+  holdHours: int
+  acceptedAt: DateTime
+  deadline: DateTime
+  reserveRef: String?
+  completedAt: DateTime?
+  ### why it went to review, or was rejected or cancelled
+  note: String?
+indexes:
+  job_acceptance_idem_idx:
+    fields: idemKey
+    unique: true
+  job_acceptance_once_idx:
+    fields: offerId, authUserId
+    unique: true
+  job_acceptance_user_idx:
+    fields: authUserId, acceptedAt

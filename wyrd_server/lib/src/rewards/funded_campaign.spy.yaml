@@ -1,0 +1,9 @@
+### A funded-jobs campaign: offers belong to it; pausing it stops new acceptances only (earned rewards are untouched).
+class: FundedCampaign
+table: funded_campaign
+fields:
+  name: String
+  ### active | paused | closed
+  status: String
+  createdBy: String
+  createdAt: DateTime

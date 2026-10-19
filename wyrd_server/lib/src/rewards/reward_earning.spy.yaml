@@ -1,0 +1,18 @@
+### The cash a completed funded job earned: one per acceptance (the unique entitlement). pending until the hold ends,
+### then available; held while under review.
+class: RewardEarning
+table: reward_earning
+fields:
+  acceptanceId: int
+  authUserId: UuidValue
+  cashKobo: int
+  ### pending | available | held
+  status: String
+  availableAt: DateTime
+  createdAt: DateTime
+indexes:
+  reward_earning_acceptance_idx:
+    fields: acceptanceId
+    unique: true
+  reward_earning_user_idx:
+    fields: authUserId, status

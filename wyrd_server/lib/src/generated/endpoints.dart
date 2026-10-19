@@ -56,6 +56,7 @@ import '../mind/topic_endpoint.dart' as _i2t0sh8b;
 import '../mind/training_endpoint.dart' as _igyenhzn;
 import '../mind/world_endpoint.dart' as _iaj95ngr;
 import '../partner/partner_admin_endpoint.dart' as _iaek1pkr;
+import '../rewards/rewards_endpoint.dart' as _i4hn2z2u;
 import '../world/city_endpoint.dart' as _ifkdhb4n;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
@@ -295,6 +296,18 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'partnerAdmin',
+          null,
+        ),
+      'rewards': _i4hn2z2u.RewardsEndpoint()
+        ..initialize(
+          server,
+          'rewards',
+          null,
+        ),
+      'rewardsAdmin': _i4hn2z2u.RewardsAdminEndpoint()
+        ..initialize(
+          server,
+          'rewardsAdmin',
           null,
         ),
       'city': _ifkdhb4n.CityEndpoint()
@@ -4291,6 +4304,407 @@ class Endpoints extends _is.EndpointDispatch {
                         session,
                         params['partner'],
                       ),
+        ),
+      },
+    );
+    connectors['rewards'] = _is.EndpointConnector(
+      name: 'rewards',
+      endpoint: endpoints['rewards']!,
+      methodConnectors: {
+        'jobs': _is.MethodConnector(
+          name: 'jobs',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint)
+                  .jobs(session),
+        ),
+        'accept': _is.MethodConnector(
+          name: 'accept',
+          params: {
+            'offerId': _is.ParameterDescription(
+              name: 'offerId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'requestKey': _is.ParameterDescription(
+              name: 'requestKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint).accept(
+                    session,
+                    params['offerId'],
+                    params['requestKey'],
+                  ),
+        ),
+        'complete': _is.MethodConnector(
+          name: 'complete',
+          params: {
+            'acceptanceId': _is.ParameterDescription(
+              name: 'acceptanceId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'delivered': _is.ParameterDescription(
+              name: 'delivered',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint).complete(
+                    session,
+                    params['acceptanceId'],
+                    params['delivered'],
+                  ),
+        ),
+        'cancel': _is.MethodConnector(
+          name: 'cancel',
+          params: {
+            'acceptanceId': _is.ParameterDescription(
+              name: 'acceptanceId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint).cancel(
+                    session,
+                    params['acceptanceId'],
+                  ),
+        ),
+        'earnings': _is.MethodConnector(
+          name: 'earnings',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint)
+                  .earnings(session),
+        ),
+        'withdraw': _is.MethodConnector(
+          name: 'withdraw',
+          params: {
+            'amountKobo': _is.ParameterDescription(
+              name: 'amountKobo',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'beneficiary': _is.ParameterDescription(
+              name: 'beneficiary',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'requestKey': _is.ParameterDescription(
+              name: 'requestKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint).withdraw(
+                    session,
+                    params['amountKobo'],
+                    params['beneficiary'],
+                    params['requestKey'],
+                  ),
+        ),
+      },
+    );
+    connectors['rewardsAdmin'] = _is.EndpointConnector(
+      name: 'rewardsAdmin',
+      endpoint: endpoints['rewardsAdmin']!,
+      methodConnectors: {
+        'dashboard': _is.MethodConnector(
+          name: 'dashboard',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .dashboard(session),
+        ),
+        'setRole': _is.MethodConnector(
+          name: 'setRole',
+          params: {
+            'userId': _is.ParameterDescription(
+              name: 'userId',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'role': _is.ParameterDescription(
+              name: 'role',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'grant': _is.ParameterDescription(
+              name: 'grant',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .setRole(
+                        session,
+                        params['userId'],
+                        params['role'],
+                        params['grant'],
+                      ),
+        ),
+        'proposeFunding': _is.MethodConnector(
+          name: 'proposeFunding',
+          params: {
+            'unit': _is.ParameterDescription(
+              name: 'unit',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'amount': _is.ParameterDescription(
+              name: 'amount',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'evidence': _is.ParameterDescription(
+              name: 'evidence',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .proposeFunding(
+                        session,
+                        params['unit'],
+                        params['amount'],
+                        params['evidence'],
+                      ),
+        ),
+        'decideFunding': _is.MethodConnector(
+          name: 'decideFunding',
+          params: {
+            'fundingId': _is.ParameterDescription(
+              name: 'fundingId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'approve': _is.ParameterDescription(
+              name: 'approve',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .decideFunding(
+                        session,
+                        params['fundingId'],
+                        params['approve'],
+                      ),
+        ),
+        'setSwitch': _is.MethodConnector(
+          name: 'setSwitch',
+          params: {
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'on': _is.ParameterDescription(
+              name: 'on',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .setSwitch(
+                        session,
+                        params['key'],
+                        params['on'],
+                      ),
+        ),
+        'newPolicy': _is.MethodConnector(
+          name: 'newPolicy',
+          params: {
+            'cashShareBp': _is.ParameterDescription(
+              name: 'cashShareBp',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'feeAllowanceKobo': _is.ParameterDescription(
+              name: 'feeAllowanceKobo',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'holdHours': _is.ParameterDescription(
+              name: 'holdHours',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .newPolicy(
+                        session,
+                        params['cashShareBp'],
+                        params['feeAllowanceKobo'],
+                        params['holdHours'],
+                      ),
+        ),
+        'createOffer': _is.MethodConnector(
+          name: 'createOffer',
+          params: {
+            'type': _is.ParameterDescription(
+              name: 'type',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'title': _is.ParameterDescription(
+              name: 'title',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'basis': _is.ParameterDescription(
+              name: 'basis',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'closesInHours': _is.ParameterDescription(
+              name: 'closesInHours',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'campaignId': _is.ParameterDescription(
+              name: 'campaignId',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+            'policyVersion': _is.ParameterDescription(
+              name: 'policyVersion',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+            'places': _is.ParameterDescription(
+              name: 'places',
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .createOffer(
+                        session,
+                        params['type'],
+                        params['title'],
+                        params['basis'],
+                        params['closesInHours'],
+                        params['campaignId'],
+                        params['policyVersion'],
+                        params['places'],
+                      ),
+        ),
+        'reviews': _is.MethodConnector(
+          name: 'reviews',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .reviews(session),
+        ),
+        'decideReview': _is.MethodConnector(
+          name: 'decideReview',
+          params: {
+            'acceptanceId': _is.ParameterDescription(
+              name: 'acceptanceId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'confirm': _is.ParameterDescription(
+              name: 'confirm',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .decideReview(
+                        session,
+                        params['acceptanceId'],
+                        params['confirm'],
+                        params['note'],
+                      ),
+        ),
+        'exportCsv': _is.MethodConnector(
+          name: 'exportCsv',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .exportCsv(session),
         ),
       },
     );

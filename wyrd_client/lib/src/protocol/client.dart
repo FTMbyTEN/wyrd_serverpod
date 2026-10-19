@@ -2498,6 +2498,205 @@ class EndpointPartnerAdmin extends _isc.EndpointRef {
   );
 }
 
+/// The player's side of jobs and real earnings. Every amount comes from the server; the client only chooses.
+/// {@category Endpoint}
+class EndpointRewards extends _isc.EndpointRef {
+  EndpointRewards(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'rewards';
+
+  /// The job board: ordinary and (when open) funded jobs, each with its reward line and funding availability.
+  _ida.Future<String> jobs() => caller.callServerEndpoint<String>(
+    'rewards',
+    'jobs',
+    {},
+  );
+
+  /// Accept a job; [requestKey] makes a repeat of the same tap harmless.
+  _ida.Future<String> accept(
+    int offerId,
+    String requestKey,
+  ) => caller.callServerEndpoint<String>(
+    'rewards',
+    'accept',
+    {
+      'offerId': offerId,
+      'requestKey': requestKey,
+    },
+  );
+
+  /// Report a job done. The server times it and checks it; it pays once.
+  _ida.Future<String> complete(
+    int acceptanceId,
+    bool delivered,
+  ) => caller.callServerEndpoint<String>(
+    'rewards',
+    'complete',
+    {
+      'acceptanceId': acceptanceId,
+      'delivered': delivered,
+    },
+  );
+
+  _ida.Future<String> cancel(int acceptanceId) =>
+      caller.callServerEndpoint<String>(
+        'rewards',
+        'cancel',
+        {'acceptanceId': acceptanceId},
+      );
+
+  /// Real earnings: pending, available, in flight, withdrawals, and whether a withdrawal is possible.
+  _ida.Future<String> earnings() => caller.callServerEndpoint<String>(
+    'rewards',
+    'earnings',
+    {},
+  );
+
+  _ida.Future<String> withdraw(
+    int amountKobo,
+    String beneficiary,
+    String requestKey,
+  ) => caller.callServerEndpoint<String>(
+    'rewards',
+    'withdraw',
+    {
+      'amountKobo': amountKobo,
+      'beneficiary': beneficiary,
+      'requestKey': requestKey,
+    },
+  );
+}
+
+/// The treasury's side: roles, funding, switches, policies, offers, reviews, reports. Admins only, all audited.
+/// {@category Endpoint}
+class EndpointRewardsAdmin extends _isc.EndpointRef {
+  EndpointRewardsAdmin(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'rewardsAdmin';
+
+  _ida.Future<String> dashboard() => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'dashboard',
+    {},
+  );
+
+  _ida.Future<String> setRole(
+    String userId,
+    String role,
+    bool grant,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'setRole',
+    {
+      'userId': userId,
+      'role': role,
+      'grant': grant,
+    },
+  );
+
+  _ida.Future<String> proposeFunding(
+    String unit,
+    int amount,
+    String evidence,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'proposeFunding',
+    {
+      'unit': unit,
+      'amount': amount,
+      'evidence': evidence,
+    },
+  );
+
+  _ida.Future<String> decideFunding(
+    int fundingId,
+    bool approve,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'decideFunding',
+    {
+      'fundingId': fundingId,
+      'approve': approve,
+    },
+  );
+
+  _ida.Future<String> setSwitch(
+    String key,
+    bool on,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'setSwitch',
+    {
+      'key': key,
+      'on': on,
+    },
+  );
+
+  _ida.Future<String> newPolicy(
+    int cashShareBp,
+    int feeAllowanceKobo,
+    int holdHours,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'newPolicy',
+    {
+      'cashShareBp': cashShareBp,
+      'feeAllowanceKobo': feeAllowanceKobo,
+      'holdHours': holdHours,
+    },
+  );
+
+  _ida.Future<String> createOffer(
+    String type,
+    String title,
+    int basis,
+    int closesInHours,
+    int? campaignId,
+    int? policyVersion,
+    int? places,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'createOffer',
+    {
+      'type': type,
+      'title': title,
+      'basis': basis,
+      'closesInHours': closesInHours,
+      'campaignId': campaignId,
+      'policyVersion': policyVersion,
+      'places': places,
+    },
+  );
+
+  _ida.Future<String> reviews() => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'reviews',
+    {},
+  );
+
+  _ida.Future<String> decideReview(
+    int acceptanceId,
+    bool confirm,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'decideReview',
+    {
+      'acceptanceId': acceptanceId,
+      'confirm': confirm,
+      'note': note,
+    },
+  );
+
+  _ida.Future<String> exportCsv() => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'exportCsv',
+    {},
+  );
+}
+
 /// The open world's line to WYRD, its Authority.
 /// {@category Endpoint}
 class EndpointCity extends _isc.EndpointRef {
@@ -2927,6 +3126,8 @@ class Client extends _isc.ServerpodClientShared {
     training = EndpointTraining(this);
     world = EndpointWorld(this);
     partnerAdmin = EndpointPartnerAdmin(this);
+    rewards = EndpointRewards(this);
+    rewardsAdmin = EndpointRewardsAdmin(this);
     city = EndpointCity(this);
     modules = Modules(this);
   }
@@ -3009,6 +3210,10 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointPartnerAdmin partnerAdmin;
 
+  late final EndpointRewards rewards;
+
+  late final EndpointRewardsAdmin rewardsAdmin;
+
   late final EndpointCity city;
 
   late final Modules modules;
@@ -3054,6 +3259,8 @@ class Client extends _isc.ServerpodClientShared {
     'training': training,
     'world': world,
     'partnerAdmin': partnerAdmin,
+    'rewards': rewards,
+    'rewardsAdmin': rewardsAdmin,
     'city': city,
   };
 

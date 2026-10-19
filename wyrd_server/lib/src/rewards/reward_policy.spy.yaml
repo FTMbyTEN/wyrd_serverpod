@@ -1,0 +1,18 @@
+### A versioned reward policy. Once a job offer uses a version it is never changed; a new policy is a new version.
+### The cash share is in basis points of the reward basis (1 basis unit = 1 naira), the cash rounded down to the whole naira.
+class: RewardPolicy
+table: reward_policy
+fields:
+  version: int
+  ### 167 = 1.67%
+  cashShareBp: int
+  ### payout-cost allowance reserved with each cash reward, in kobo
+  feeAllowanceKobo: int
+  ### how long a cash reward stays pending (the verification hold) before it can be withdrawn
+  holdHours: int
+  createdBy: String
+  createdAt: DateTime
+indexes:
+  reward_policy_version_idx:
+    fields: version
+    unique: true

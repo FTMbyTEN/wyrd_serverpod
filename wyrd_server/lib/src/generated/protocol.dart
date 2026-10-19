@@ -145,6 +145,20 @@ import 'partner/partner_idem.dart' as _iao0fru0;
 import 'partner/partner_key.dart' as _igpr6wl9;
 import 'partner/partner_message.dart' as _i2alchov;
 import 'partner/partner_usage.dart' as _ibg0xksq;
+import 'rewards/funded_campaign.dart' as _ifasatn3;
+import 'rewards/job_acceptance.dart' as _itsgvhxa;
+import 'rewards/job_offer.dart' as _ijxfqzfv;
+import 'rewards/reward_account.dart' as _i0uvk1zt;
+import 'rewards/reward_audit.dart' as _inflhq3h;
+import 'rewards/reward_earning.dart' as _ifqfgb6o;
+import 'rewards/reward_entry.dart' as _idooo8l9;
+import 'rewards/reward_funding.dart' as _is52ih5v;
+import 'rewards/reward_journal.dart' as _ivy0s0du;
+import 'rewards/reward_policy.dart' as _icucn9nh;
+import 'rewards/reward_provider_event.dart' as _i5d6pt07;
+import 'rewards/reward_role.dart' as _ip518xu0;
+import 'rewards/reward_switch.dart' as _itl5ws64;
+import 'rewards/reward_withdrawal.dart' as _id4shfj0;
 import 'world/city_charter.dart' as _i1wlu2l5;
 import 'world/city_design_note.dart' as _iovwbeu0;
 import 'world/city_flag.dart' as _il4e48h1;
@@ -254,6 +268,20 @@ export 'partner/partner_idem.dart';
 export 'partner/partner_key.dart';
 export 'partner/partner_message.dart';
 export 'partner/partner_usage.dart';
+export 'rewards/funded_campaign.dart';
+export 'rewards/job_acceptance.dart';
+export 'rewards/job_offer.dart';
+export 'rewards/reward_account.dart';
+export 'rewards/reward_audit.dart';
+export 'rewards/reward_earning.dart';
+export 'rewards/reward_entry.dart';
+export 'rewards/reward_funding.dart';
+export 'rewards/reward_journal.dart';
+export 'rewards/reward_policy.dart';
+export 'rewards/reward_provider_event.dart';
+export 'rewards/reward_role.dart';
+export 'rewards/reward_switch.dart';
+export 'rewards/reward_withdrawal.dart';
 export 'world/city_charter.dart';
 export 'world/city_design_note.dart';
 export 'world/city_flag.dart';
@@ -1775,6 +1803,48 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'funded_campaign',
+      dartName: 'FundedCampaign',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'game_exchange',
       dartName: 'GameExchange',
       schema: 'public',
@@ -3153,6 +3223,264 @@ class Protocol extends _is.DatabaseSerializationManager {
           isPrimary: false,
         ),
       ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'job_acceptance',
+      dartName: 'JobAcceptance',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'offerId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'idemKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'taskSpec',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'gameReward',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'cashKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'feeKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'holdHours',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'acceptedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'deadline',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reserveRef',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'completedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'note',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'job_acceptance_idem_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'idemKey',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'job_acceptance_once_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'offerId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'job_acceptance_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'acceptedAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'job_offer',
+      dartName: 'JobOffer',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'type',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'campaignId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'title',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'task',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'basis',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'gameReward',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'cashKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'feeKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'policyVersion',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'places',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'closesAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'completeMinutes',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
       managed: true,
     ),
     _isp.TableDefinition(
@@ -5333,6 +5661,879 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'reward_account',
+      dartName: 'RewardAccount',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'code',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'unit',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ownerUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'balance',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'mayGoNegative',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_account_code_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'code',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_account_owner_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'ownerUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_audit',
+      dartName: 'RewardAudit',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'actor',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'action',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'details',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_audit_created_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_earning',
+      dartName: 'RewardEarning',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'acceptanceId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'cashKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'availableAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_earning_acceptance_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'acceptanceId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_earning_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_entry',
+      dartName: 'RewardEntry',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'journalId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'accountId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'amount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_entry_journal_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'journalId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_entry_account_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'accountId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_funding',
+      dartName: 'RewardFunding',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'unit',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'amount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'evidence',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'proposedBy',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'approvedBy',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'journalRef',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'decidedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_journal',
+      dartName: 'RewardJournal',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ref',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'idemKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'unit',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'memo',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'linkRef',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'actor',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_journal_ref_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'ref',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_journal_idem_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'idemKey',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_journal_link_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'linkRef',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_policy',
+      dartName: 'RewardPolicy',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'version',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'cashShareBp',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'feeAllowanceKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'holdHours',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_policy_version_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'version',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_provider_event',
+      dartName: 'RewardProviderEvent',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'provider',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'eventId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'payoutRef',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'signatureOk',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'outcome',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'receivedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_provider_event_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'provider',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'eventId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_role',
+      dartName: 'RewardRole',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'role',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'grantedBy',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_role_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'role',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_switch',
+      dartName: 'RewardSwitch',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'key',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'enabled',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedBy',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_switch_key_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'key',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'reward_withdrawal',
+      dartName: 'RewardWithdrawal',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'amountKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'feeKobo',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'feePayer',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'ref',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'idemKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'provider',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'providerRef',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'beneficiary',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'reward_withdrawal_ref_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'ref',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_withdrawal_idem_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'idemKey',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'reward_withdrawal_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'self_config',
       dartName: 'SelfConfig',
       schema: 'public',
@@ -6446,6 +7647,48 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ibg0xksq.PartnerUsage) {
       return _ibg0xksq.PartnerUsage.fromJson(data) as T;
     }
+    if (t == _ifasatn3.FundedCampaign) {
+      return _ifasatn3.FundedCampaign.fromJson(data) as T;
+    }
+    if (t == _itsgvhxa.JobAcceptance) {
+      return _itsgvhxa.JobAcceptance.fromJson(data) as T;
+    }
+    if (t == _ijxfqzfv.JobOffer) {
+      return _ijxfqzfv.JobOffer.fromJson(data) as T;
+    }
+    if (t == _i0uvk1zt.RewardAccount) {
+      return _i0uvk1zt.RewardAccount.fromJson(data) as T;
+    }
+    if (t == _inflhq3h.RewardAudit) {
+      return _inflhq3h.RewardAudit.fromJson(data) as T;
+    }
+    if (t == _ifqfgb6o.RewardEarning) {
+      return _ifqfgb6o.RewardEarning.fromJson(data) as T;
+    }
+    if (t == _idooo8l9.RewardEntry) {
+      return _idooo8l9.RewardEntry.fromJson(data) as T;
+    }
+    if (t == _is52ih5v.RewardFunding) {
+      return _is52ih5v.RewardFunding.fromJson(data) as T;
+    }
+    if (t == _ivy0s0du.RewardJournal) {
+      return _ivy0s0du.RewardJournal.fromJson(data) as T;
+    }
+    if (t == _icucn9nh.RewardPolicy) {
+      return _icucn9nh.RewardPolicy.fromJson(data) as T;
+    }
+    if (t == _i5d6pt07.RewardProviderEvent) {
+      return _i5d6pt07.RewardProviderEvent.fromJson(data) as T;
+    }
+    if (t == _ip518xu0.RewardRole) {
+      return _ip518xu0.RewardRole.fromJson(data) as T;
+    }
+    if (t == _itl5ws64.RewardSwitch) {
+      return _itl5ws64.RewardSwitch.fromJson(data) as T;
+    }
+    if (t == _id4shfj0.RewardWithdrawal) {
+      return _id4shfj0.RewardWithdrawal.fromJson(data) as T;
+    }
     if (t == _i1wlu2l5.CityCharter) {
       return _i1wlu2l5.CityCharter.fromJson(data) as T;
     }
@@ -6802,6 +8045,58 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_ibg0xksq.PartnerUsage?>()) {
       return (data != null ? _ibg0xksq.PartnerUsage.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ifasatn3.FundedCampaign?>()) {
+      return (data != null ? _ifasatn3.FundedCampaign.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_itsgvhxa.JobAcceptance?>()) {
+      return (data != null ? _itsgvhxa.JobAcceptance.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ijxfqzfv.JobOffer?>()) {
+      return (data != null ? _ijxfqzfv.JobOffer.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i0uvk1zt.RewardAccount?>()) {
+      return (data != null ? _i0uvk1zt.RewardAccount.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_inflhq3h.RewardAudit?>()) {
+      return (data != null ? _inflhq3h.RewardAudit.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ifqfgb6o.RewardEarning?>()) {
+      return (data != null ? _ifqfgb6o.RewardEarning.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_idooo8l9.RewardEntry?>()) {
+      return (data != null ? _idooo8l9.RewardEntry.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_is52ih5v.RewardFunding?>()) {
+      return (data != null ? _is52ih5v.RewardFunding.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ivy0s0du.RewardJournal?>()) {
+      return (data != null ? _ivy0s0du.RewardJournal.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_icucn9nh.RewardPolicy?>()) {
+      return (data != null ? _icucn9nh.RewardPolicy.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_i5d6pt07.RewardProviderEvent?>()) {
+      return (data != null
+              ? _i5d6pt07.RewardProviderEvent.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_ip518xu0.RewardRole?>()) {
+      return (data != null ? _ip518xu0.RewardRole.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_itl5ws64.RewardSwitch?>()) {
+      return (data != null ? _itl5ws64.RewardSwitch.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_id4shfj0.RewardWithdrawal?>()) {
+      return (data != null ? _id4shfj0.RewardWithdrawal.fromJson(data) : null)
+          as T;
     }
     if (t == _is.getType<_i1wlu2l5.CityCharter?>()) {
       return (data != null ? _i1wlu2l5.CityCharter.fromJson(data) : null) as T;
@@ -7270,6 +8565,20 @@ class Protocol extends _is.DatabaseSerializationManager {
       _igpr6wl9.PartnerKey => 'PartnerKey',
       _i2alchov.PartnerMessage => 'PartnerMessage',
       _ibg0xksq.PartnerUsage => 'PartnerUsage',
+      _ifasatn3.FundedCampaign => 'FundedCampaign',
+      _itsgvhxa.JobAcceptance => 'JobAcceptance',
+      _ijxfqzfv.JobOffer => 'JobOffer',
+      _i0uvk1zt.RewardAccount => 'RewardAccount',
+      _inflhq3h.RewardAudit => 'RewardAudit',
+      _ifqfgb6o.RewardEarning => 'RewardEarning',
+      _idooo8l9.RewardEntry => 'RewardEntry',
+      _is52ih5v.RewardFunding => 'RewardFunding',
+      _ivy0s0du.RewardJournal => 'RewardJournal',
+      _icucn9nh.RewardPolicy => 'RewardPolicy',
+      _i5d6pt07.RewardProviderEvent => 'RewardProviderEvent',
+      _ip518xu0.RewardRole => 'RewardRole',
+      _itl5ws64.RewardSwitch => 'RewardSwitch',
+      _id4shfj0.RewardWithdrawal => 'RewardWithdrawal',
       _i1wlu2l5.CityCharter => 'CityCharter',
       _iovwbeu0.CityDesignNote => 'CityDesignNote',
       _il4e48h1.CityFlag => 'CityFlag',
@@ -7491,6 +8800,34 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'PartnerMessage';
       case _ibg0xksq.PartnerUsage():
         return 'PartnerUsage';
+      case _ifasatn3.FundedCampaign():
+        return 'FundedCampaign';
+      case _itsgvhxa.JobAcceptance():
+        return 'JobAcceptance';
+      case _ijxfqzfv.JobOffer():
+        return 'JobOffer';
+      case _i0uvk1zt.RewardAccount():
+        return 'RewardAccount';
+      case _inflhq3h.RewardAudit():
+        return 'RewardAudit';
+      case _ifqfgb6o.RewardEarning():
+        return 'RewardEarning';
+      case _idooo8l9.RewardEntry():
+        return 'RewardEntry';
+      case _is52ih5v.RewardFunding():
+        return 'RewardFunding';
+      case _ivy0s0du.RewardJournal():
+        return 'RewardJournal';
+      case _icucn9nh.RewardPolicy():
+        return 'RewardPolicy';
+      case _i5d6pt07.RewardProviderEvent():
+        return 'RewardProviderEvent';
+      case _ip518xu0.RewardRole():
+        return 'RewardRole';
+      case _itl5ws64.RewardSwitch():
+        return 'RewardSwitch';
+      case _id4shfj0.RewardWithdrawal():
+        return 'RewardWithdrawal';
       case _i1wlu2l5.CityCharter():
         return 'CityCharter';
       case _iovwbeu0.CityDesignNote():
@@ -7833,6 +9170,48 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'PartnerUsage') {
       return deserialize<_ibg0xksq.PartnerUsage>(data['data']);
     }
+    if (dataClassName == 'FundedCampaign') {
+      return deserialize<_ifasatn3.FundedCampaign>(data['data']);
+    }
+    if (dataClassName == 'JobAcceptance') {
+      return deserialize<_itsgvhxa.JobAcceptance>(data['data']);
+    }
+    if (dataClassName == 'JobOffer') {
+      return deserialize<_ijxfqzfv.JobOffer>(data['data']);
+    }
+    if (dataClassName == 'RewardAccount') {
+      return deserialize<_i0uvk1zt.RewardAccount>(data['data']);
+    }
+    if (dataClassName == 'RewardAudit') {
+      return deserialize<_inflhq3h.RewardAudit>(data['data']);
+    }
+    if (dataClassName == 'RewardEarning') {
+      return deserialize<_ifqfgb6o.RewardEarning>(data['data']);
+    }
+    if (dataClassName == 'RewardEntry') {
+      return deserialize<_idooo8l9.RewardEntry>(data['data']);
+    }
+    if (dataClassName == 'RewardFunding') {
+      return deserialize<_is52ih5v.RewardFunding>(data['data']);
+    }
+    if (dataClassName == 'RewardJournal') {
+      return deserialize<_ivy0s0du.RewardJournal>(data['data']);
+    }
+    if (dataClassName == 'RewardPolicy') {
+      return deserialize<_icucn9nh.RewardPolicy>(data['data']);
+    }
+    if (dataClassName == 'RewardProviderEvent') {
+      return deserialize<_i5d6pt07.RewardProviderEvent>(data['data']);
+    }
+    if (dataClassName == 'RewardRole') {
+      return deserialize<_ip518xu0.RewardRole>(data['data']);
+    }
+    if (dataClassName == 'RewardSwitch') {
+      return deserialize<_itl5ws64.RewardSwitch>(data['data']);
+    }
+    if (dataClassName == 'RewardWithdrawal') {
+      return deserialize<_id4shfj0.RewardWithdrawal>(data['data']);
+    }
     if (dataClassName == 'CityCharter') {
       return deserialize<_i1wlu2l5.CityCharter>(data['data']);
     }
@@ -8025,6 +9404,34 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i2alchov.PartnerMessage.t;
       case _ibg0xksq.PartnerUsage:
         return _ibg0xksq.PartnerUsage.t;
+      case _ifasatn3.FundedCampaign:
+        return _ifasatn3.FundedCampaign.t;
+      case _itsgvhxa.JobAcceptance:
+        return _itsgvhxa.JobAcceptance.t;
+      case _ijxfqzfv.JobOffer:
+        return _ijxfqzfv.JobOffer.t;
+      case _i0uvk1zt.RewardAccount:
+        return _i0uvk1zt.RewardAccount.t;
+      case _inflhq3h.RewardAudit:
+        return _inflhq3h.RewardAudit.t;
+      case _ifqfgb6o.RewardEarning:
+        return _ifqfgb6o.RewardEarning.t;
+      case _idooo8l9.RewardEntry:
+        return _idooo8l9.RewardEntry.t;
+      case _is52ih5v.RewardFunding:
+        return _is52ih5v.RewardFunding.t;
+      case _ivy0s0du.RewardJournal:
+        return _ivy0s0du.RewardJournal.t;
+      case _icucn9nh.RewardPolicy:
+        return _icucn9nh.RewardPolicy.t;
+      case _i5d6pt07.RewardProviderEvent:
+        return _i5d6pt07.RewardProviderEvent.t;
+      case _ip518xu0.RewardRole:
+        return _ip518xu0.RewardRole.t;
+      case _itl5ws64.RewardSwitch:
+        return _itl5ws64.RewardSwitch.t;
+      case _id4shfj0.RewardWithdrawal:
+        return _id4shfj0.RewardWithdrawal.t;
       case _i1wlu2l5.CityCharter:
         return _i1wlu2l5.CityCharter.t;
       case _iovwbeu0.CityDesignNote:

@@ -1,0 +1,16 @@
+### Money added to the Real Rewards Fund (NGN) or Game Naira issued to the City Treasury (GN): proposed by one admin
+### with its evidence (e.g. the bank statement line), approved by a different one. Only an approved record posts.
+class: RewardFunding
+table: reward_funding
+fields:
+  ### GN | NGN
+  unit: String
+  amount: int
+  evidence: String
+  ### proposed | approved | rejected
+  status: String
+  proposedBy: UuidValue
+  approvedBy: UuidValue?
+  journalRef: String?
+  createdAt: DateTime
+  decidedAt: DateTime?

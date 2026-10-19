@@ -1,0 +1,13 @@
+### Operational switches, changed by admins (audited): funded_jobs_paused (no new acceptances), payouts_paused (no new
+### payout submissions). Pausing never deletes or reduces a liability.
+class: RewardSwitch
+table: reward_switch
+fields:
+  key: String
+  enabled: bool
+  updatedBy: UuidValue?
+  updatedAt: DateTime
+indexes:
+  reward_switch_key_idx:
+    fields: key
+    unique: true

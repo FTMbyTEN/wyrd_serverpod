@@ -1,0 +1,13 @@
+### One line of a RewardJournal: [amount] in the journal's unit (+ into the account, - out of it). Append-only.
+class: RewardEntry
+table: reward_entry
+fields:
+  journalId: int
+  accountId: int
+  amount: int
+  createdAt: DateTime
+indexes:
+  reward_entry_journal_idx:
+    fields: journalId
+  reward_entry_account_idx:
+    fields: accountId

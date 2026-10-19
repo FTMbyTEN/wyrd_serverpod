@@ -1,0 +1,28 @@
+### A withdrawal of available real earnings. [amountKobo] leaves the available earnings (the gross debit); [feeKobo]
+### is the provider fee; [feePayer] says who bears it (player: they receive amount - fee; house: paid from the fee
+### allowance). An unknown outcome stays in flight until reconciled -- never retried under a new ref.
+class: RewardWithdrawal
+table: reward_withdrawal
+fields:
+  authUserId: UuidValue
+  amountKobo: int
+  feeKobo: int
+  feePayer: String
+  ref: String
+  idemKey: String
+  ### requested | submitted | pending | paid | failed | returned | unknown
+  status: String
+  provider: String
+  providerRef: String?
+  beneficiary: String
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  reward_withdrawal_ref_idx:
+    fields: ref
+    unique: true
+  reward_withdrawal_idem_idx:
+    fields: idemKey
+    unique: true
+  reward_withdrawal_user_idx:
+    fields: authUserId, createdAt

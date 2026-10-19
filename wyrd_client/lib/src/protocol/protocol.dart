@@ -140,6 +140,20 @@ import 'partner/partner_idem.dart' as _iao0fru0;
 import 'partner/partner_key.dart' as _igpr6wl9;
 import 'partner/partner_message.dart' as _i2alchov;
 import 'partner/partner_usage.dart' as _ibg0xksq;
+import 'rewards/funded_campaign.dart' as _ifasatn3;
+import 'rewards/job_acceptance.dart' as _itsgvhxa;
+import 'rewards/job_offer.dart' as _ijxfqzfv;
+import 'rewards/reward_account.dart' as _i0uvk1zt;
+import 'rewards/reward_audit.dart' as _inflhq3h;
+import 'rewards/reward_earning.dart' as _ifqfgb6o;
+import 'rewards/reward_entry.dart' as _idooo8l9;
+import 'rewards/reward_funding.dart' as _is52ih5v;
+import 'rewards/reward_journal.dart' as _ivy0s0du;
+import 'rewards/reward_policy.dart' as _icucn9nh;
+import 'rewards/reward_provider_event.dart' as _i5d6pt07;
+import 'rewards/reward_role.dart' as _ip518xu0;
+import 'rewards/reward_switch.dart' as _itl5ws64;
+import 'rewards/reward_withdrawal.dart' as _id4shfj0;
 import 'world/city_charter.dart' as _i1wlu2l5;
 import 'world/city_design_note.dart' as _iovwbeu0;
 import 'world/city_flag.dart' as _il4e48h1;
@@ -249,6 +263,20 @@ export 'partner/partner_idem.dart';
 export 'partner/partner_key.dart';
 export 'partner/partner_message.dart';
 export 'partner/partner_usage.dart';
+export 'rewards/funded_campaign.dart';
+export 'rewards/job_acceptance.dart';
+export 'rewards/job_offer.dart';
+export 'rewards/reward_account.dart';
+export 'rewards/reward_audit.dart';
+export 'rewards/reward_earning.dart';
+export 'rewards/reward_entry.dart';
+export 'rewards/reward_funding.dart';
+export 'rewards/reward_journal.dart';
+export 'rewards/reward_policy.dart';
+export 'rewards/reward_provider_event.dart';
+export 'rewards/reward_role.dart';
+export 'rewards/reward_switch.dart';
+export 'rewards/reward_withdrawal.dart';
 export 'world/city_charter.dart';
 export 'world/city_design_note.dart';
 export 'world/city_flag.dart';
@@ -589,6 +617,48 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ibg0xksq.PartnerUsage) {
       return _ibg0xksq.PartnerUsage.fromJson(data) as T;
+    }
+    if (t == _ifasatn3.FundedCampaign) {
+      return _ifasatn3.FundedCampaign.fromJson(data) as T;
+    }
+    if (t == _itsgvhxa.JobAcceptance) {
+      return _itsgvhxa.JobAcceptance.fromJson(data) as T;
+    }
+    if (t == _ijxfqzfv.JobOffer) {
+      return _ijxfqzfv.JobOffer.fromJson(data) as T;
+    }
+    if (t == _i0uvk1zt.RewardAccount) {
+      return _i0uvk1zt.RewardAccount.fromJson(data) as T;
+    }
+    if (t == _inflhq3h.RewardAudit) {
+      return _inflhq3h.RewardAudit.fromJson(data) as T;
+    }
+    if (t == _ifqfgb6o.RewardEarning) {
+      return _ifqfgb6o.RewardEarning.fromJson(data) as T;
+    }
+    if (t == _idooo8l9.RewardEntry) {
+      return _idooo8l9.RewardEntry.fromJson(data) as T;
+    }
+    if (t == _is52ih5v.RewardFunding) {
+      return _is52ih5v.RewardFunding.fromJson(data) as T;
+    }
+    if (t == _ivy0s0du.RewardJournal) {
+      return _ivy0s0du.RewardJournal.fromJson(data) as T;
+    }
+    if (t == _icucn9nh.RewardPolicy) {
+      return _icucn9nh.RewardPolicy.fromJson(data) as T;
+    }
+    if (t == _i5d6pt07.RewardProviderEvent) {
+      return _i5d6pt07.RewardProviderEvent.fromJson(data) as T;
+    }
+    if (t == _ip518xu0.RewardRole) {
+      return _ip518xu0.RewardRole.fromJson(data) as T;
+    }
+    if (t == _itl5ws64.RewardSwitch) {
+      return _itl5ws64.RewardSwitch.fromJson(data) as T;
+    }
+    if (t == _id4shfj0.RewardWithdrawal) {
+      return _id4shfj0.RewardWithdrawal.fromJson(data) as T;
     }
     if (t == _i1wlu2l5.CityCharter) {
       return _i1wlu2l5.CityCharter.fromJson(data) as T;
@@ -946,6 +1016,58 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ibg0xksq.PartnerUsage?>()) {
       return (data != null ? _ibg0xksq.PartnerUsage.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ifasatn3.FundedCampaign?>()) {
+      return (data != null ? _ifasatn3.FundedCampaign.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_itsgvhxa.JobAcceptance?>()) {
+      return (data != null ? _itsgvhxa.JobAcceptance.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ijxfqzfv.JobOffer?>()) {
+      return (data != null ? _ijxfqzfv.JobOffer.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i0uvk1zt.RewardAccount?>()) {
+      return (data != null ? _i0uvk1zt.RewardAccount.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_inflhq3h.RewardAudit?>()) {
+      return (data != null ? _inflhq3h.RewardAudit.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ifqfgb6o.RewardEarning?>()) {
+      return (data != null ? _ifqfgb6o.RewardEarning.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_idooo8l9.RewardEntry?>()) {
+      return (data != null ? _idooo8l9.RewardEntry.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_is52ih5v.RewardFunding?>()) {
+      return (data != null ? _is52ih5v.RewardFunding.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ivy0s0du.RewardJournal?>()) {
+      return (data != null ? _ivy0s0du.RewardJournal.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_icucn9nh.RewardPolicy?>()) {
+      return (data != null ? _icucn9nh.RewardPolicy.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i5d6pt07.RewardProviderEvent?>()) {
+      return (data != null
+              ? _i5d6pt07.RewardProviderEvent.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ip518xu0.RewardRole?>()) {
+      return (data != null ? _ip518xu0.RewardRole.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_itl5ws64.RewardSwitch?>()) {
+      return (data != null ? _itl5ws64.RewardSwitch.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_id4shfj0.RewardWithdrawal?>()) {
+      return (data != null ? _id4shfj0.RewardWithdrawal.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_i1wlu2l5.CityCharter?>()) {
       return (data != null ? _i1wlu2l5.CityCharter.fromJson(data) : null) as T;
@@ -1411,6 +1533,20 @@ class Protocol extends _isc.SerializationManager {
       _igpr6wl9.PartnerKey => 'PartnerKey',
       _i2alchov.PartnerMessage => 'PartnerMessage',
       _ibg0xksq.PartnerUsage => 'PartnerUsage',
+      _ifasatn3.FundedCampaign => 'FundedCampaign',
+      _itsgvhxa.JobAcceptance => 'JobAcceptance',
+      _ijxfqzfv.JobOffer => 'JobOffer',
+      _i0uvk1zt.RewardAccount => 'RewardAccount',
+      _inflhq3h.RewardAudit => 'RewardAudit',
+      _ifqfgb6o.RewardEarning => 'RewardEarning',
+      _idooo8l9.RewardEntry => 'RewardEntry',
+      _is52ih5v.RewardFunding => 'RewardFunding',
+      _ivy0s0du.RewardJournal => 'RewardJournal',
+      _icucn9nh.RewardPolicy => 'RewardPolicy',
+      _i5d6pt07.RewardProviderEvent => 'RewardProviderEvent',
+      _ip518xu0.RewardRole => 'RewardRole',
+      _itl5ws64.RewardSwitch => 'RewardSwitch',
+      _id4shfj0.RewardWithdrawal => 'RewardWithdrawal',
       _i1wlu2l5.CityCharter => 'CityCharter',
       _iovwbeu0.CityDesignNote => 'CityDesignNote',
       _il4e48h1.CityFlag => 'CityFlag',
@@ -1632,6 +1768,34 @@ class Protocol extends _isc.SerializationManager {
         return 'PartnerMessage';
       case _ibg0xksq.PartnerUsage():
         return 'PartnerUsage';
+      case _ifasatn3.FundedCampaign():
+        return 'FundedCampaign';
+      case _itsgvhxa.JobAcceptance():
+        return 'JobAcceptance';
+      case _ijxfqzfv.JobOffer():
+        return 'JobOffer';
+      case _i0uvk1zt.RewardAccount():
+        return 'RewardAccount';
+      case _inflhq3h.RewardAudit():
+        return 'RewardAudit';
+      case _ifqfgb6o.RewardEarning():
+        return 'RewardEarning';
+      case _idooo8l9.RewardEntry():
+        return 'RewardEntry';
+      case _is52ih5v.RewardFunding():
+        return 'RewardFunding';
+      case _ivy0s0du.RewardJournal():
+        return 'RewardJournal';
+      case _icucn9nh.RewardPolicy():
+        return 'RewardPolicy';
+      case _i5d6pt07.RewardProviderEvent():
+        return 'RewardProviderEvent';
+      case _ip518xu0.RewardRole():
+        return 'RewardRole';
+      case _itl5ws64.RewardSwitch():
+        return 'RewardSwitch';
+      case _id4shfj0.RewardWithdrawal():
+        return 'RewardWithdrawal';
       case _i1wlu2l5.CityCharter():
         return 'CityCharter';
       case _iovwbeu0.CityDesignNote():
@@ -1969,6 +2133,48 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'PartnerUsage') {
       return deserialize<_ibg0xksq.PartnerUsage>(data['data']);
+    }
+    if (dataClassName == 'FundedCampaign') {
+      return deserialize<_ifasatn3.FundedCampaign>(data['data']);
+    }
+    if (dataClassName == 'JobAcceptance') {
+      return deserialize<_itsgvhxa.JobAcceptance>(data['data']);
+    }
+    if (dataClassName == 'JobOffer') {
+      return deserialize<_ijxfqzfv.JobOffer>(data['data']);
+    }
+    if (dataClassName == 'RewardAccount') {
+      return deserialize<_i0uvk1zt.RewardAccount>(data['data']);
+    }
+    if (dataClassName == 'RewardAudit') {
+      return deserialize<_inflhq3h.RewardAudit>(data['data']);
+    }
+    if (dataClassName == 'RewardEarning') {
+      return deserialize<_ifqfgb6o.RewardEarning>(data['data']);
+    }
+    if (dataClassName == 'RewardEntry') {
+      return deserialize<_idooo8l9.RewardEntry>(data['data']);
+    }
+    if (dataClassName == 'RewardFunding') {
+      return deserialize<_is52ih5v.RewardFunding>(data['data']);
+    }
+    if (dataClassName == 'RewardJournal') {
+      return deserialize<_ivy0s0du.RewardJournal>(data['data']);
+    }
+    if (dataClassName == 'RewardPolicy') {
+      return deserialize<_icucn9nh.RewardPolicy>(data['data']);
+    }
+    if (dataClassName == 'RewardProviderEvent') {
+      return deserialize<_i5d6pt07.RewardProviderEvent>(data['data']);
+    }
+    if (dataClassName == 'RewardRole') {
+      return deserialize<_ip518xu0.RewardRole>(data['data']);
+    }
+    if (dataClassName == 'RewardSwitch') {
+      return deserialize<_itl5ws64.RewardSwitch>(data['data']);
+    }
+    if (dataClassName == 'RewardWithdrawal') {
+      return deserialize<_id4shfj0.RewardWithdrawal>(data['data']);
     }
     if (dataClassName == 'CityCharter') {
       return deserialize<_i1wlu2l5.CityCharter>(data['data']);

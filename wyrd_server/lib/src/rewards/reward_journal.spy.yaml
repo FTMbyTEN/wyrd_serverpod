@@ -1,0 +1,28 @@
+### One business transaction in the rewards ledger: its entries (RewardEntry) always sum to zero, in one unit. Never
+### edited or deleted (a database trigger refuses it); a mistake is put right by a new, linked journal.
+class: RewardJournal
+table: reward_journal
+fields:
+  ### unique human reference, e.g. FJ-ACC-123
+  ref: String
+  ### the caller's idempotency key: the same key never posts twice
+  idemKey: String
+  ### GN | NGN
+  unit: String
+  ### fund | issue | reserve | release | earn | mature | withdraw | payout_paid | payout_fee | payout_failed | payout_returned | game_reward | levy | adjust
+  kind: String
+  memo: String
+  ### the business record this belongs to (e.g. acc:12, wd:FJW-...)
+  linkRef: String?
+  ### who posted it: system, or a user / admin id
+  actor: String
+  createdAt: DateTime
+indexes:
+  reward_journal_ref_idx:
+    fields: ref
+    unique: true
+  reward_journal_idem_idx:
+    fields: idemKey
+    unique: true
+  reward_journal_link_idx:
+    fields: linkRef

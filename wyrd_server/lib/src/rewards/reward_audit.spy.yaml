@@ -1,0 +1,11 @@
+### Every administrative action on the rewards system, kept for good.
+class: RewardAudit
+table: reward_audit
+fields:
+  actor: UuidValue?
+  action: String
+  details: String
+  createdAt: DateTime
+indexes:
+  reward_audit_created_idx:
+    fields: createdAt

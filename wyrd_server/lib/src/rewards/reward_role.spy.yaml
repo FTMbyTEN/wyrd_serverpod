@@ -1,0 +1,13 @@
+### Who may do what with the rewards treasury: viewer (read the reports), operator (offers, reviews, proposals, pauses),
+### approver (approve another admin's proposal). Granted by the owner (the drone operator).
+class: RewardRole
+table: reward_role
+fields:
+  authUserId: UuidValue
+  role: String
+  grantedBy: UuidValue
+  createdAt: DateTime
+indexes:
+  reward_role_idx:
+    fields: authUserId, role
+    unique: true
