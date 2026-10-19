@@ -3025,6 +3025,114 @@
     }
     p.accKey = key; return true;
   }
+  // ---- clothes: real 3D garments from Sketchfab (CC BY, credited in the phone's Credits), fitted onto the body at
+  // runtime: the arms are lowered to the garment's pose, each garment vertex is weighted to its two nearest bones and
+  // moved back to the body's rest pose, and the skin under it is hidden. Done once per body and garment, then cached.
+  // The painted outfit stays underneath, so the forearms and shoes keep the outfit's colours.
+  // garment: [file, which meshes to keep, scale, offset (m), turn (deg), the arm angle it was modelled in, skin hidden within (m)]
+  const WEAR_FIT = {
+    m_tee: ['m_tee', null, 1.07, [0, -0.04, 0.005], null, 45, 0.09], m_longsleeve: ['m_longsleeve', null, 1.06, [0, -0.04, 0.005], null, 45, 0.08],
+    m_cargo: ['m_cargo', null, 1, [0, 0, 0], null, 45, 0.06], m_hoodie: ['hoodiejeans', [0], 0.0108, [0.002, 0, 0.01], null, 47, 0.06],
+    m_jeans: ['hoodiejeans', [1], 0.0108, [0.002, 0, 0.01], null, 47, 0.06], suit_jacket: ['suit_jacket', null, 0.54, [0, 1.19, 0.005], null, 45, 0.09],
+    leather_jacket: ['leather_jacket', null, 0.54, [0, 1.19, 0.005], null, 45, 0.09],
+    f_jeanstank: ['f_jeanstank', null, 0.00115, [0, -0.1, 0], null, 45, 0.06], f_knitskirt: ['f_knitskirt', null, 1, [0, 0, 0], null, 45, 0.06, [-0.4, 0.3]],
+    f_sweatshirt: ['f_sweatshirt', null, 121, [0, -0.18, 0], null, 45, 0.06], f_sweatpants: ['f_sweatpants', [0], 105, [0.19, -0.09, 0], null, 45, 0.06],
+    f_cargo: ['f_cargo', [0], 0.135, [0, 0, 0], null, 45, 0.08], f_dress: ['f_dress', null, 0.0105, [0, 0, 0], null, 20, 0.06],
+    f_longdress: ['f_longdress', null, 0.0108, [0, 0, 0], null, 45, 0.06],
+  };
+  // what each outfit is made of, for a man and for a woman: [garment, tint]
+  const WEAR = {
+    _: { m: [['m_tee'], ['m_jeans']], f: [['f_jeanstank']] },
+    st_tee: { m: [['m_tee'], ['m_jeans']], f: [['f_jeanstank']] }, st_polo: { m: [['m_longsleeve'], ['m_cargo']], f: [['f_knitskirt']] },
+    st_ankara: { m: [['m_tee', '#F59E0B'], ['m_cargo']], f: [['f_knitskirt', '#FBBF24']] }, st_sport: { m: [['m_tee', '#EF4444'], ['m_cargo']], f: [['f_sweatshirt'], ['f_sweatpants']] },
+    puma_run: { m: [['m_tee', '#EF4444'], ['m_cargo']], f: [['f_sweatshirt', '#FCA5A5'], ['f_sweatpants']] }, nike_dri: { m: [['m_tee', '#60A5FA'], ['m_cargo']], f: [['f_sweatshirt', '#93C5FD'], ['f_sweatpants']] },
+    adidas_jersey: { m: [['m_tee', '#22C55E'], ['m_cargo']], f: [['f_sweatshirt', '#86EFAC'], ['f_sweatpants']] }, adidas_track: { m: [['m_longsleeve'], ['m_cargo']], f: [['f_sweatshirt'], ['f_sweatpants']] },
+    nike_tech: { m: [['m_hoodie'], ['m_cargo']], f: [['f_sweatshirt', '#D1D5DB'], ['f_sweatpants']] }, hm_hoodie: { m: [['m_hoodie'], ['m_cargo']], f: [['f_cargo']] },
+    zara_dress: { m: [['m_tee', '#F9A8D4'], ['m_jeans']], f: [['f_knitskirt', '#F9A8D4']] }, zara_linen: { m: [['m_longsleeve'], ['m_cargo']], f: [['f_knitskirt']] },
+    levis_denim: { m: [['m_hoodie'], ['m_jeans']], f: [['f_jeanstank']] }, offwhite_set: { m: [['m_tee'], ['m_cargo']], f: [['f_cargo']] },
+    lanre_buba: { m: [['m_longsleeve'], ['m_cargo']], f: [['f_longdress']] }, orange_kaftan: { m: [['m_longsleeve'], ['m_cargo']], f: [['f_longdress']] },
+    folawiyo_ankara: { m: [['m_tee', '#F59E0B'], ['m_cargo']], f: [['f_knitskirt', '#FBBF24']] }, ize_asooke: { m: [['m_longsleeve'], ['m_cargo']], f: [['f_dress']] },
+    atafo_agbada: { m: [['suit_jacket'], ['m_cargo']], f: [['f_longdress']] }, ralph_suit: { m: [['suit_jacket'], ['m_cargo']], f: [['f_dress']] },
+    balenciaga_set: { m: [['m_hoodie'], ['m_jeans']], f: [['f_cargo']] }, gucci_track: { m: [['m_hoodie'], ['m_cargo']], f: [['f_sweatshirt', '#86EFAC'], ['f_sweatpants']] },
+    versace_silk: { m: [['suit_jacket'], ['m_cargo']], f: [['f_dress']] }, fendi_set: { m: [['leather_jacket'], ['m_cargo']], f: [['f_knitskirt', '#D6A15C']] },
+    lv_jacket: { m: [['leather_jacket'], ['m_jeans']], f: [['f_jeanstank']] }, dior_gown: { m: [['suit_jacket'], ['m_cargo']], f: [['f_longdress']] },
+  };
+  const WEAR_SRC = {}, WEAR_LOADING = {}, WEAR_FITTED = {}, WEAR_HIDE = {};
+  function wearLoad(file) {
+    if (WEAR_SRC[file] || WEAR_LOADING[file]) return; WEAR_LOADING[file] = 1;
+    const L = new window.__three.GLTFLoader(); if (window.__three.MeshoptDecoder) L.setMeshoptDecoder(window.__three.MeshoptDecoder);
+    L.load(PEOPLE_BASE + 'wear/' + file + '.glb', (g) => { WEAR_SRC[file] = g.scene; }, undefined, () => { WEAR_LOADING[file] = 0; });
+  }
+  const WEAR_SKIP = /^(root|ik_|index|middle|ring|pinky|thumb|.*_end$|eye|jaw|tongue|teeth|lip|brow|cheek|ear|nose)/i;
+  // fit one garment to a body (cached): its skinned geometry and materials in the body's rest pose, and the skin it hides
+  function wearFit(g, gk) {
+    const key = g + ':' + gk; if (WEAR_FITTED[key]) return WEAR_FITTED[key];
+    const THREE = G3.T, SU = window.__three.SkeletonUtils, [file, keep, s, off, rot, arm, hide, clip] = WEAR_FIT[gk];
+    const body = SU.clone(PEOPLE.base[g].scene); body.updateMatrixWorld(true);
+    let bm = null; body.traverse((o) => { if (o.isSkinnedMesh && o.name === PEOPLE.base[g].bodyName) bm = o; });
+    const bones = {}; body.traverse((o) => { if (o.isBone) bones[o.name] = o; });
+    for (const [n, sgn] of [['upperarm_l', -1], ['upperarm_r', 1]]) { const b = bones[n]; if (!b) continue; const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), sgn * arm * Math.PI / 180), wq = b.getWorldQuaternion(new THREE.Quaternion()), pq = b.parent.getWorldQuaternion(new THREE.Quaternion()); b.quaternion.copy(pq.invert().multiply(q.multiply(wq))); }
+    body.updateMatrixWorld(true); bm.skeleton.update();
+    const toLocal = new THREE.Matrix4().copy(bm.matrixWorld).invert(), sk = bm.skeleton.bones, segs = [];
+    sk.forEach((b, i) => { if (WEAR_SKIP.test(b.name)) return; const kid = b.children.find((c) => c.isBone && !WEAR_SKIP.test(c.name)); const a = b.getWorldPosition(new THREE.Vector3()).applyMatrix4(toLocal), e = kid ? kid.getWorldPosition(new THREE.Vector3()).applyMatrix4(toLocal) : a.clone().add(new THREE.Vector3(0, 0.08, 0)); segs.push({ k: i, a, e }); });
+    const seg = new THREE.Line3(), cp = new THREE.Vector3(), boneMats = sk.map((b, i) => new THREE.Matrix4().multiplyMatrices(b.matrixWorld, bm.skeleton.boneInverses[i]));
+    const gs = WEAR_SRC[file].clone(true), w = new THREE.Group(), r = new THREE.Group(); r.add(gs); if (rot) r.rotation.set(...rot.map((d) => d * Math.PI / 180)); w.add(r); w.scale.setScalar(s); w.position.set(...off); w.updateMatrixWorld(true);
+    const ms = []; gs.traverse((m) => { if (m.isMesh) ms.push(m); });
+    const parts = [], pts = [];
+    ms.forEach((m, mi) => {
+      if (keep && !keep.includes(mi)) return;
+      const src = m.geometry, n = src.attributes.position.count, pos = new Float32Array(n * 3), wpos = new THREE.Vector3();
+      for (let i = 0; i < n; i++) { wpos.set(src.attributes.position.getX(i), src.attributes.position.getY(i), src.attributes.position.getZ(i)).applyMatrix4(m.matrixWorld).applyMatrix4(toLocal); pos[i * 3] = wpos.x; pos[i * 3 + 1] = wpos.y; pos[i * 3 + 2] = wpos.z; }
+      let idx = src.index ? Array.from(src.index.array) : [...Array(n).keys()];
+      if (clip) { const kept = []; for (let t = 0; t < idx.length; t += 3) { const wx = (i) => new THREE.Vector3(src.attributes.position.getX(i), src.attributes.position.getY(i), src.attributes.position.getZ(i)).applyMatrix4(m.matrixWorld).x; const cx = (wx(idx[t]) + wx(idx[t + 1]) + wx(idx[t + 2])) / 3; if (cx >= clip[0] && cx <= clip[1]) kept.push(idx[t], idx[t + 1], idx[t + 2]); } idx = kept; }
+      const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), q = new THREE.Vector3(), S = new THREE.Matrix4(), M2 = new THREE.Matrix4();
+      for (let i = 0; i < n; i++) {
+        q.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); pts.push(q.x, q.y, q.z);
+        let d1 = 1e9, d2 = 1e9, k1 = 0, k2 = 0;
+        for (const sg of segs) { seg.set(sg.a, sg.e); seg.closestPointToPoint(q, true, cp); const d = cp.distanceTo(q); if (d < d1) { d2 = d1; k2 = k1; d1 = d; k1 = sg.k; } else if (d < d2) { d2 = d; k2 = sg.k; } }
+        const w1 = 1 / Math.pow(d1 + 0.01, 4), w2 = 1 / Math.pow(d2 + 0.01, 4), tt = w1 + w2; si[i * 4] = k1; sw[i * 4] = w1 / tt; si[i * 4 + 1] = k2; sw[i * 4 + 1] = w2 / tt;
+        S.elements.fill(0); for (let c = 0; c < 2; c++) { const e = boneMats[si[i * 4 + c]].elements; for (let z = 0; z < 16; z++) S.elements[z] += sw[i * 4 + c] * e[z]; }
+        q.applyMatrix4(M2.multiplyMatrices(bm.bindMatrixInverse, S).multiply(bm.bindMatrix).invert()); pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z;
+      }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      if (src.attributes.uv) { const uv = new Float32Array(n * 2); for (let i = 0; i < n; i++) { uv[i * 2] = src.attributes.uv.getX(i); uv[i * 2 + 1] = src.attributes.uv.getY(i); } geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); }
+      geo.setIndex(idx); geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)); geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4)); geo.computeVertexNormals();
+      parts.push({ geo, mat: m.material });
+    });
+    // the skin under it: hidden (the head, neck, hands and forearms never)
+    const bg = bm.geometry, v = new THREE.Vector3(), R2 = hide * hide, cell = 0.05, grid = new Map(), gk3 = (x, y, z) => (Math.floor(x / cell) * 73856093) ^ (Math.floor(y / cell) * 19349663) ^ (Math.floor(z / cell) * 83492791);
+    for (let i = 0; i < pts.length / 3; i++) { const kk = gk3(pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2]); let a = grid.get(kk); if (!a) grid.set(kk, (a = [])); a.push(i); }
+    const rc = Math.ceil(hide / cell), hid = new Uint8Array(bg.attributes.position.count);
+    for (let i = 0; i < hid.length; i++) {
+      if (/head|neck|hand|lowerarm|index|middle|ring|pinky|thumb|eye|jaw/i.test(sk[bg.attributes.skinIndex.getX(i)].name)) continue;
+      v.fromBufferAttribute(bg.attributes.position, i); bm.applyBoneTransform(i, v); let hit = false;
+      for (let dx = -rc; dx <= rc && !hit; dx++) for (let dy = -rc; dy <= rc && !hit; dy++) for (let dz = -rc; dz <= rc && !hit; dz++) { const a = grid.get(gk3(v.x + dx * cell, v.y + dy * cell, v.z + dz * cell)); if (a) for (const j of a) { const ex = pts[j * 3] - v.x, ey = pts[j * 3 + 1] - v.y, ez = pts[j * 3 + 2] - v.z; if (ex * ex + ey * ey + ez * ez < R2) { hit = true; break; } } }
+      if (hit) hid[i] = 1;
+    }
+    return (WEAR_FITTED[key] = { parts, hid });
+  }
+  // dress someone in an outfit's garments (or take them off); false while a garment is still loading
+  function dressWear(p, outfit) {
+    const w = (WEAR[outfit] || WEAR._)[p.g], key = outfit + '|' + p.g; if (p.wearKey === key) return true;
+    for (const [gk] of w) wearLoad(WEAR_FIT[gk][0]);
+    if (!w.every(([gk]) => WEAR_SRC[WEAR_FIT[gk][0]])) return false;
+    let bm = null; p.body.traverse((o) => { if (o.isSkinnedMesh && o.name === PEOPLE.base[p.g].bodyName) bm = o; }); if (!bm) return true;
+    for (const m of p.wear || []) m.removeFromParent();
+    p.wear = [];
+    if (!p.bodyGeo) p.bodyGeo = bm.geometry;
+    const hk = p.g + '|' + w.map(([gk]) => gk).join('+');
+    if (!WEAR_HIDE[hk]) { // the body's triangles, minus the skin every garment in the outfit covers
+      const hid = new Uint8Array(p.bodyGeo.attributes.position.count); for (const [gk] of w) { const f = wearFit(p.g, gk); for (let i = 0; i < hid.length; i++) if (f.hid[i]) hid[i] = 1; }
+      const g2 = p.bodyGeo.clone(), idx = g2.index.array, keepT = []; for (let t = 0; t < idx.length; t += 3) if (!(hid[idx[t]] && hid[idx[t + 1]] && hid[idx[t + 2]])) keepT.push(idx[t], idx[t + 1], idx[t + 2]); g2.setIndex(keepT); WEAR_HIDE[hk] = g2;
+    }
+    bm.geometry = WEAR_HIDE[hk];
+    for (const [gk, tint] of w) for (const part of wearFit(p.g, gk).parts) {
+      const one = (m) => { const c = m.clone(); if (tint) c.color.set(tint); return c; };
+      const mesh = new G3.T.SkinnedMesh(part.geo, Array.isArray(part.mat) ? part.mat.map(one) : one(part.mat)); mesh.frustumCulled = false;
+      bm.parent.add(mesh); mesh.bind(bm.skeleton, bm.bindMatrix); p.wear.push(mesh);
+    }
+    p.wearKey = key; return true;
+  }
   // draw someone as a 3D person (false: not ready, draw them flat): place, face, dress and animate, then render in turn
   function person3d(px, pz, color, name, now, L, pose, seatY, standY = 0) { // standY: standing on something (a stage)
     if (!PEOPLE.ok) { initPeople(); return false; }
@@ -3032,6 +3140,7 @@
     const hairKey = (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4], key = name, THREE = G3.T;
     let p = PEOPLE.inst.get(key);
     if (!p || p.hairKey !== hairKey || p.g !== L.g) { if (p) p.root.removeFromParent(); p = makePerson(L.g, hairKey); PEOPLE.inst.set(key, p); }
+    dressWear(p, L.outfit); // their clothes: real 3D garments (on once they've loaded)
     dressAcc(p, L.acc || []); // their accessories (on once the models have loaded)
     // facing: the way they're moving
     const dx = p.x == null ? 0 : px - p.x, dz = p.z == null ? 0 : pz - p.z, dt = p.t ? Math.min(0.1, (now - p.t) / 1000) : 0, speed = dt ? Math.hypot(dx, dz) / dt : 0;
@@ -6677,7 +6786,7 @@
         return;
       }
       if (app === 'credits') {
-        return show(`${ahead('credits', 'Credits', 'The people whose work is in the game')}<div class="pcard"><h3>3D people</h3><div class="row"><span>Universal Base Characters, Universal Animation Library</span><b>Quaternius · CC0</b></div></div><div class="pcard"><h3>3D private jet</h3><div class="row"><span>Jet</span><b>Poly by Google · CC BY 3.0</b></div></div><div class="pcard"><h3>3D accessories</h3><div class="row"><span>Aviator Sunglasses</span><b>mikethornley</b></div><div class="row"><span>Sunglasses</span><b>Pacheco2099</b></div><div class="row"><span>Baseball Cap Pack</span><b>Pegasus's</b></div><div class="row"><span>Bucket Hat</span><b>lovef1st_</b></div><div class="row"><span>Beanie</span><b>oscarherry3d</b></div><div class="row"><span>Fedora Hat</span><b>alexnoiseless</b></div><div class="row"><span>Digital Watch</span><b>SpatialNeglect</b></div><div class="row"><span>Military Tactical Backpack</span><b>Liam3D</b></div><p class="dim">From Sketchfab (sketchfab.com), Creative Commons Attribution 4.0 (creativecommons.org/licenses/by/4.0). Recoloured and resized for the game. Brand names in the shop are names only; not affiliated.</p></div><div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
+        return show(`${ahead('credits', 'Credits', 'The people whose work is in the game')}<div class="pcard"><h3>3D people</h3><div class="row"><span>Universal Base Characters, Universal Animation Library</span><b>Quaternius · CC0</b></div></div><div class="pcard"><h3>3D private jet</h3><div class="row"><span>Jet</span><b>Poly by Google · CC BY 3.0</b></div></div><div class="pcard"><h3>3D clothes</h3><div class="row"><span>Hoodie and Jeans</span><b>lizhiqiang</b></div><div class="row"><span>T-shirt, long-sleeve, cargo pants; women's jeans and tank top, knitted top and skirt, sweatshirt, sweatpants, cargo outfit</span><b>Alexander Kurmanin</b></div><div class="row"><span>Suit Jacket</span><b>ExposedLeaf</b></div><div class="row"><span>Leather Jacket</span><b>Commissar_Hal</b></div><div class="row"><span>Dress</span><b>ZahraAmini</b></div><div class="row"><span>Black Long Dress</span><b>eutha</b></div><p class="dim">From Sketchfab (sketchfab.com), Creative Commons Attribution 4.0 (creativecommons.org/licenses/by/4.0). Refitted to the game's bodies and recoloured.</p></div><div class="pcard"><h3>3D accessories</h3><div class="row"><span>Aviator Sunglasses</span><b>mikethornley</b></div><div class="row"><span>Sunglasses</span><b>Pacheco2099</b></div><div class="row"><span>Baseball Cap Pack</span><b>Pegasus's</b></div><div class="row"><span>Bucket Hat</span><b>lovef1st_</b></div><div class="row"><span>Beanie</span><b>oscarherry3d</b></div><div class="row"><span>Fedora Hat</span><b>alexnoiseless</b></div><div class="row"><span>Digital Watch</span><b>SpatialNeglect</b></div><div class="row"><span>Military Tactical Backpack</span><b>Liam3D</b></div><p class="dim">From Sketchfab (sketchfab.com), Creative Commons Attribution 4.0 (creativecommons.org/licenses/by/4.0). Recoloured and resized for the game. Brand names in the shop are names only; not affiliated.</p></div><div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
           <div class="row"><span>Range Rover</span><b>IvOfficial</b></div>
           <div class="row"><span>Rolls-Royce</span><b>David Sirera</b></div>
           <div class="row"><span>Tesla Cybertruck</span><b>Mobolaji</b></div>
@@ -7495,7 +7604,8 @@
     const o = (OUTFITS[id] && OUTFITS[id].look) || outfitOf(L, myColor), u = p.dress.u;
     applyOutfit(u, o); if (p.dress.textured) u.uSkin.value.setScalar(0.62 + 0.9 * (L.skin / (SKINS.length - 1))); else u.uSkin.value.set(SKINS[L.skin] || SKINS[0]);
     p.body.traverse((m) => { if (m.userData.hair) m.material.color.set(HAIRS[L.hair] || HAIRS[0]).multiplyScalar(2.2); });
-    p.accReady = dressAcc(p, ACCS[id] ? [...L.acc.filter((v) => ACCS[v].slot !== ACCS[id].slot), id] : L.acc);
+    const wearReady = dressWear(p, OUTFITS[id] ? id : L.outfit);
+    p.accReady = dressAcc(p, ACCS[id] ? [...L.acc.filter((v) => ACCS[v].slot !== ACCS[id].slot), id] : L.acc) && wearReady;
     return p;
   }
   function fitShot(id, lookStr = myLook) {
