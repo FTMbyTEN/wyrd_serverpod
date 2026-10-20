@@ -720,6 +720,23 @@
   .gpapron .gpjet { position: absolute; font-size: 26px; transform: translate(-50%, -50%) rotate(-45deg); transition: left .3s, top .3s; }
   .gpstrips { display: grid; gap: 6px; } .gpstrips button { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.18); background: rgba(15,23,42,.6); color: #E2E8F0; font: 700 13px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; text-align: left; }
   .gpstrips button span { color: #FDE68A; } .gpstrips button em { color: #4ADE80; font-style: normal; } .gpstrips button.dn { opacity: .5; }
+  /* on a phone, WYRD OS is the phone: full screen, edge to edge, no handset drawn round it. It keeps clear of the
+     notch and the home bar (safe areas); the power button stays as a slim tab on the right edge (it puts the phone
+     away, locked or not). */
+  @media (max-width: 600px), (pointer: coarse) and (max-height: 500px) {
+    #phone, .touch #phone { inset: 0 !important; left: 0 !important; right: 0 !important; top: 0 !important; bottom: 0 !important; margin: 0 !important; width: 100vw !important; width: 100dvw !important; height: 100vh !important; height: 100dvh !important; scale: 1 !important; transform: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; background: #07070D !important; animation: phoneUp .22s ease-out !important; }
+    @keyframes phoneUp { from { transform: translateY(100%); } to { transform: none; } } /* slides up, solid all the way (the island never shows through) */
+    #screen { border-radius: 0 !important; box-shadow: none !important; height: 100% !important; }
+    #phone .btnL1, #phone .btnL2 { display: none !important; }
+    #phone .btnR { display: block !important; position: absolute !important; right: 0 !important; top: 38% !important; width: 6px !important; height: 72px !important; border-radius: 6px 0 0 6px !important; background: rgba(255,255,255,.28) !important; z-index: 30 !important; }
+    #phone .btnR::before { content: ''; position: absolute; inset: -10px -4px -10px -18px; } /* a bigger finger target than it looks */
+    #pbar { padding-top: env(safe-area-inset-top) !important; }
+    #pnav { margin-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }
+    #phone .hbar { display: none !important; } /* the device draws its own home bar */
+    #lockscr { padding-top: calc(70px + env(safe-area-inset-top)) !important; padding-bottom: calc(104px + env(safe-area-inset-bottom)) !important; }
+  }
+  /* locked: whatever app was open stays hidden under the lock screen (it is private until you unlock) */
+  #phone.locked #pbody, #phone.locked #shade { visibility: hidden !important; }
 </style>
 </head>
 <body>
