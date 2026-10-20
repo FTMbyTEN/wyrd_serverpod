@@ -106,9 +106,13 @@ abstract final class Withdrawals {
         );
         await RewardLedger.post(s, unit: RewardUnit.ngn, idemKey: 'withdraw:$ref', ref: '$ref-OUT', kind: 'withdraw', memo: 'Withdrawal $ref requested',
             actor: u.uuid, linkRef: 'wd:$ref', transaction: tx, lines: [(RewardLedger.available(u), -amountKobo), (RewardLedger.inflight(u), amountKobo)]);
+        if (payer == 'house' && fee > 0) {
+          await RewardLedger.post(s, unit: RewardUnit.ngn, idemKey: 'feehold:$ref', ref: '$ref-FEEHOLD', kind: 'withdraw', memo: 'Provider fee for $ref set aside from the fee allowance',
+              actor: u.uuid, linkRef: 'wd:$ref', transaction: tx, lines: [('ngn:fund:fee_reserved', -fee), ('ngn:payout:fees_inflight', fee)]);
+        }
       });
-    } on LedgerRefused {
-      throw JobRefused('You do not have that much available to withdraw.');
+    } on LedgerRefused catch (e) {
+      throw JobRefused(e.code == 'ngn:fund:fee_reserved' ? 'Withdrawals are briefly unavailable. Your earnings are safe.' : 'You do not have that much available to withdraw.');
     } catch (e) {
       final raced = await RewardWithdrawal.db.findFirstRow(s, where: (t) => t.idemKey.equals(idemKey));
       if (raced != null && raced.authUserId == u) return raced;
@@ -184,11 +188,15 @@ abstract final class Withdrawals {
         ]);
         if (w0.feePayer == 'house' && w0.feeKobo > 0) {
           await RewardLedger.post(s, unit: RewardUnit.ngn, idemKey: 'fee:$ref', ref: '$ref-FEE', kind: 'payout_fee', memo: 'Provider fee for $ref, from the fee allowance',
-              actor: actor, linkRef: 'wd:$ref', transaction: tx, lines: [('ngn:fund:fee_reserved', -w0.feeKobo), ('ngn:provider_fees', w0.feeKobo)]);
+              actor: actor, linkRef: 'wd:$ref', transaction: tx, lines: [('ngn:payout:fees_inflight', -w0.feeKobo), ('ngn:provider_fees', w0.feeKobo)]);
         }
       } else if (to == PayoutState.failed) {
         await RewardLedger.post(s, unit: RewardUnit.ngn, idemKey: 'failed:$ref', ref: '$ref-FAIL', kind: 'payout_failed', memo: 'Withdrawal $ref failed: earnings restored',
             actor: actor, linkRef: 'wd:$ref', transaction: tx, lines: [(RewardLedger.inflight(u), -w0.amountKobo), (RewardLedger.available(u), w0.amountKobo)]);
+        if (w0.feePayer == 'house' && w0.feeKobo > 0) {
+          await RewardLedger.post(s, unit: RewardUnit.ngn, idemKey: 'feeback:$ref', ref: '$ref-FEEBACK', kind: 'payout_failed', memo: 'Fee for $ref back to the allowance',
+              actor: actor, linkRef: 'wd:$ref', transaction: tx, lines: [('ngn:payout:fees_inflight', -w0.feeKobo), ('ngn:fund:fee_reserved', w0.feeKobo)]);
+        }
       } else if (to == PayoutState.returned) {
         final net = w0.feePayer == 'player' ? w0.amountKobo - w0.feeKobo : w0.amountKobo;
         // the money came back: the payout is undone; the fee the provider kept stays spent

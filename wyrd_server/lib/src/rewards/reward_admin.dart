@@ -98,7 +98,7 @@ abstract final class RewardAdmin {
   }
 
   static Future<int> _sumLike(Session s, String prefix) async {
-    final r = await s.db.unsafeQuery('SELECT COALESCE(SUM("balance"),0) FROM "reward_account" WHERE "code" LIKE @p', parameters: QueryParameters.named({'p': '$prefix%'}));
+    final r = await s.db.unsafeQuery('SELECT COALESCE(SUM("balance"),0)::bigint FROM "reward_account" WHERE "code" LIKE @p', parameters: QueryParameters.named({'p': '$prefix%'}));
     return (r.first[0] as num).toInt();
   }
 
@@ -115,12 +115,13 @@ abstract final class RewardAdmin {
       'pendingEarnings': await _sumLike(s, 'ngn:earn:pending:'),
       'availableUnpaidEarnings': await _sumLike(s, 'ngn:earn:available:'),
       'inFlightPayouts': await _sumLike(s, 'ngn:payout:inflight:'),
+      'feesInFlight': await b('ngn:payout:fees_inflight'),
       'confirmedPaid': await b('ngn:paid'),
       'providerFees': await b('ngn:provider_fees'),
     };
     // every naira received is in exactly one place
     final placed = ngn['uncommitted']! + ngn['reservedAcceptedJobs']! + ngn['feeAllowanceReserved']! + ngn['pendingEarnings']! + ngn['availableUnpaidEarnings']! +
-        ngn['inFlightPayouts']! + ngn['confirmedPaid']! + ngn['providerFees']!;
+        ngn['inFlightPayouts']! + ngn['feesInFlight']! + ngn['confirmedPaid']! + ngn['providerFees']!;
     final gn = {'issued': -(await b('gn:issued')), 'treasury': await b('gn:treasury'), 'reserved': await b('gn:reserved'), 'paidToPlayers': await b('gn:paid_players')};
     final review = await JobAcceptance.db.count(s, where: (t) => t.status.equals('review'));
     final switches = {for (final w in await RewardSwitch.db.find(s)) w.key: w.enabled};
