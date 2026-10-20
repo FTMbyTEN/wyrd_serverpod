@@ -713,6 +713,13 @@
   #lockscr.unlocking .lbot .lu { opacity: 0 !important; transition: opacity .1s !important; } /* WYRD ID speaks instead */
   /* the jet colour picker */
   .jsw { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; } .jsw button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); cursor: pointer; padding: 0; } .jsw button.on { border-color: #FACC15; box-shadow: 0 0 0 2px rgba(250,204,21,.4); }
+  /* airport jobs: the apron for marshalling, the tower's flight strips */
+  .gpapron { position: relative; height: 120px; margin: 6px 0 10px; border-radius: 12px; background: #4B5563; overflow: hidden; }
+  .gpapron .gpline { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: #FACC15; }
+  .gpapron .gpbar { position: absolute; left: 30%; right: 30%; top: 92%; height: 4px; background: #F8FAFC; }
+  .gpapron .gpjet { position: absolute; font-size: 26px; transform: translate(-50%, -50%) rotate(-45deg); transition: left .3s, top .3s; }
+  .gpstrips { display: grid; gap: 6px; } .gpstrips button { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.18); background: rgba(15,23,42,.6); color: #E2E8F0; font: 700 13px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; text-align: left; }
+  .gpstrips button span { color: #FDE68A; } .gpstrips button em { color: #4ADE80; font-style: normal; } .gpstrips button.dn { opacity: .5; }
 </style>
 </head>
 <body>
@@ -3934,7 +3941,7 @@
     if (rain > 0.3) feed.push([now - 600e3, '🌧️', 'Heavy rain: Works has crews on the VI drains. Avoid Ahmadu Bello Way if you can.']);
     if (typeof hqBoard !== 'undefined') for (const v of hqBoard.arrivals) feed.push([v.at, '🏠', `A new Lagosian moved into BQ #${v.k + 1} on HQ Row. Welcome home.`]);
     for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) if (p.until > now) feed.push([p.at || now - 1200e3, '🎉', `${p.host || 'A Lagosian'} is hosting a party${p.open ? ': everyone is welcome' : ''}.`]);
-    for (const s2 of (typeof GJ !== 'undefined' ? GJ.shifts : []).slice(0, 2)) feed.push([s2.at, '🔧', `A ${GRID_TRACKS[s2.track].name.toLowerCase()} finished a shift at the National Grid: ${s2.score}/100.`]);
+    for (const s2 of (typeof GJ !== 'undefined' ? GJ.shifts : []).slice(0, 2)) feed.push([s2.at, GRID_TRACKS[s2.track].place === 'airport' ? '✈️' : '🔧', `A ${GRID_TRACKS[s2.track].name.toLowerCase()} ${GRID_TRACKS[s2.track].place === 'airport' ? 'worker' : ''} finished a shift at ${GRID_TRACKS[s2.track].place === 'airport' ? 'Lagos Island Airport' : 'the National Grid'}: ${s2.score}/100.`.replace('  ', ' ')]);
     for (const w of works) if (w.p >= 1) feed.push([GOV_EPOCH + GOV_WORKS.findIndex((g) => g[0] === w.nm) * 5 * 864e5 + GOV_WORKS.find((g) => g[0] === w.nm)[2] * GOV_WEEK, '🏗️', `Completed: ${w.nm}.`]);
     feed.push([GOV_EPOCH + wk * GOV_WEEK, '🗳️', `New bill before the island: "${bill[0]}". Vote in the Government app.`]);
     feed.push([GOV_EPOCH + wk * GOV_WEEK - 3600e3, lastYes >= 0.5 ? '✅' : '❌', `Last week's bill, "${last[0]}", ${lastYes >= 0.5 ? 'passed' : 'failed'} with ${Math.round(lastYes * 100)}% yes.`]);
@@ -5993,6 +6000,10 @@
   let sector = SECTORS[0];
   { const in0 = new URLSearchParams(location.search).get('in'); if (in0) setTimeout(() => { const p = PLACES.find((v) => v[0] === in0); if (p && ENTERABLE.has(in0)) enterPlace(p); }, 1200); } // ?in=mall opens a building straight away
   { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
+  // testing on a local copy: ?task=marshal | turnaround | atc opens that airport task with sample data (nothing is paid)
+  { const t0 = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('task') : null;
+    const S0 = { marshal: { type: 'marshal', title: 'Bring in the arrival', cues: ['far', 'left', 'far', 'right', 'close', 'bar'] }, turnaround: { type: 'turnaround', title: 'Turnaround on the apron', steps: ['Refuel', 'Chocks in', 'Close the doors', 'Open the doors', 'Ground power off', 'Unload the bags', 'Chocks out', 'Load the bags', 'Ground power on'] }, atc: { type: 'atc', title: 'The busy hour', items: [{ cs: 'EKO412', kind: 'arr', t: 90 }, { cs: 'WYR230', kind: 'arr', t: 40 }, { cs: 'LIA118', kind: 'dep', t: 90 }, { cs: 'ISL771', kind: 'dep', t: 150 }] } };
+    if (t0 && S0[t0]) setTimeout(() => gridDo({ ...S0[t0], done: false, score: 0 }), 2500); }
   // testing on a local copy: ?fly=dubai (or any destination, or island) puts you straight in the cabin, nothing paid
   { const f0 = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('fly') : null; const d0 = f0 && AIR.find(f0); if (d0) setTimeout(() => enterRoom('jetcabin', 'place:flight:test:' + d0[0], '✈️ Test flight: ' + d0[1], { flight: d0[0], from: Date.now(), until: Date.now() + d0[5] * 1000 }), 1500); }
 
@@ -6174,6 +6185,21 @@
   hangarsLoad(); setInterval(hangarsLoad, 60000);
   const JETS = { light: ['Light jet', 6, 60000000, 'Six seats, Abuja and Accra in comfort'], midsize: ['Midsize jet', 8, 120000000, 'Eight seats, any of our cities nonstop'], heavy: ['Long-range jet', 13, 250000000, 'Thirteen seats, a bedroom, London nonstop'] };
   const jetFee = (d) => (d[0] === 'island' ? 2000 : Math.floor(d[4] / 4)); // fuel and handling for your own jet
+  // work at the airport: Ground Crew and Air Traffic Control, the same server-kept careers as the Grid's
+  async function airWorkBox(el) {
+    if (!el) return;
+    if (!signedIn()) { el.innerHTML = '<div class="rsec">WORK AT THE AIRPORT</div><div class="pcard dim">Sign in to work here: Ground Crew or Air Traffic Control.</div>'; return; }
+    await gridSync();
+    const sh = GJ.shift, onAir = sh && GRID_TRACKS[sh.track] && GRID_TRACKS[sh.track].place === 'airport';
+    el.innerHTML = `<div class="rsec">WORK AT THE AIRPORT</div>${Object.entries(GRID_TRACKS).filter(([, t2]) => t2.place === 'airport').map(([k, t2]) => { const lv = gridLv(k), xp = GJ.xp[k] || 0;
+      return `<div class="pcard"><div class="grow"><span><b>${t2.icon} ${t2.name}</b><small>${t2.blurb}</small><small class="dim">${GRID_LEVELS[lv - 1]} · level ${lv} · ${xp} XP · ${naira(GRID_PAY[lv - 1])} a shift at full marks</small></span></div>
+        <button class="pbtn" data-aw="${k}">${onAir && sh.track === k ? 'Carry on with your shift' : 'Start a shift'}</button>${lv < 5 && xp >= GRID_XP[lv] ? ` <button class="pbtn alt" data-ax="${k}">🎓 Certification exam</button>` : ''}</div>`; }).join('')}
+      <div class="lock">One paid airport shift every 40 minutes, within the daily cap. The server deals the work and marks it.</div>`;
+    el.querySelectorAll('[data-aw]').forEach((b) => (b.onclick = async () => { const tr = b.dataset.aw;
+      if (!(onAir && sh.track === tr)) { if (sh && !confirm('Starting this drops the shift you are on. Start?')) return; try { await gridNewShift(tr); } catch (e) { return fail(e); } }
+      closePhone(); const t1 = gridTask(); if (t1) coachSay(`${GRID_TRACKS[tr].name} shift. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }));
+    el.querySelectorAll('[data-ax]').forEach((b) => (b.onclick = () => { closePhone(); gridExam(b.dataset.ax, () => openPhone('airport')); }));
+  }
   async function myJetBox(el) {
     if (!el) return;
     if (!signedIn()) { el.innerHTML = '<div class="rsec">YOUR OWN JET</div><div class="pcard dim">Sign in to buy a jet of your own: fly anywhere for just the fuel, your registration on a hangar door.</div>'; return; }
@@ -7083,7 +7109,7 @@
     const s = MP.q[MP.i];
     if (inside && inside.kind === 'jetcabin') { const d = AIR.find(inside.flight) || AIR_JOY, left = Math.ceil(((inside.until || 0) - Date.now()) / 1000); islandSet('il-live il-fly', null, d[0] === 'island' ? 'Joyride' : 'LOS → ' + d[2], '✈️', mmss(left)); islOpen = null; }
     else if (s && !MP.a.paused) { islandSet('il-live il-music', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
-    else if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const n = GJ.shift.tasks.filter((tk) => tk.done).length, tk = GJ.shift.tasks.find((v) => !v.done); islandSet('il-live il-grid', null, tk ? tk.title : 'Hand in your shift', '⚡', `${n}/${GJ.shift.tasks.length}`); islOpen = ['grid']; }
+    else if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const n = GJ.shift.tasks.filter((tk) => tk.done).length, tk = GJ.shift.tasks.find((v) => !v.done); const air = GRID_TRACKS[GJ.shift.track] && GRID_TRACKS[GJ.shift.track].place === 'airport'; islandSet('il-live il-grid', null, tk ? tk.title : 'Hand in your shift', air ? '🦺' : '⚡', `${n}/${GJ.shift.tasks.length}`); islOpen = [air ? 'airport' : 'grid']; }
     else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, CITY.mix.now.title || 'DJ Eko Nights', '🎧', 'LIVE'); islOpen = ['music']; }
     else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? 'On the way' : 'Your ride is coming', '🛵', ''); islOpen = ['ride']; }
     else { islandSet('il-idle', null, ''); islOpen = null; }
@@ -7618,11 +7644,11 @@
         show(`${ahead('airport', 'Lagos Island Airport', 'Private jets, every minute')}
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#FACC15">✈ Departures</h3>${rows([0, 1, 2, 3, 4].map((k) => { const s = s0 + k, d = AIR.dep(s), st = AIR.depStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} ${esc(d[1])} <span class="dim">${d[2]}</span></span><b style="color:${stCol(st)}">Gate ${AIR.gate(s)} · ${st}</b></div>`; }))}</div>
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#38BDF8">🛬 Arrivals</h3>${rows([-1, 0, 1, 2].map((k) => { const s = s0 + k, d = AIR.arr(s), st = AIR.arrStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} from ${esc(d[1])}</span><b style="color:${stCol(st)}">${st}</b></div>`; }))}</div>
-          <div id="myJetBox"></div>
+          <div id="myJetBox"></div><div id="airWorkBox"></div>
           <div class="rsec">FLY SOMEWHERE</div>
           <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-fly="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}${d[0] === 'island' ? '' : ' <span class="dim">' + d[2] + '</span>'}</b><small>${d[0] === 'island' ? 'Round the island and back' : 'There, a look round, and home'} · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">G${naira(d[4])}</span></button>`).join('')}</div>
           <div class="lock">Paid from your wallet. Everyone who books the same flight in the same minute is on the same jet.</div>`);
-        myJetBox($('myJetBox'));
+        myJetBox($('myJetBox')); airWorkBox($('airWorkBox'));
         pbody.querySelectorAll('[data-fly]').forEach((b) => (b.onclick = async () => {
           const d = AIR.find(b.dataset.fly); b.disabled = true;
           try {
@@ -7757,7 +7783,7 @@
           ${GJ.track ? `<div class="pcard"><div class="grow"><span><b>${GRID_TRACKS[tr].icon} ${GRID_TRACKS[tr].name}</b><small>${GRID_LEVELS[lv - 1]} · level ${lv} of 5 · ${naira(GRID_PAY[lv - 1])} a shift at full marks</small></span><em>${xp} XP</em></div><div class="gbar"><i style="width:${pct}%;background:linear-gradient(90deg,#FACC15,#F97316)"></i></div><small class="dim">${lv >= 5 ? 'Chief: the top of the track.' : xp >= nextXp ? 'Ready for promotion: take the exam.' : `${nextXp - xp} XP to the ${GRID_LEVELS[lv]} exam`}</small></div>
             ${sh ? `<div class="msec" style="font-size:15px">Your shift</div><div class="pcard">${sh.tasks.map((t2, k) => `<div class="grow"><span><b>${t2.done ? '✅' : t2 === tk ? '⚡' : '⬜'} ${esc(t2.title)}</b><small>${t2.done ? 'scored ' + t2.score + '/100' : 'at ' + esc(t2.spot.name)}</small></span></div>`).join('')}<button class="pbtn" id="gGo">Show me where</button></div>` : '<button class="pbtn" id="gStart">⚡ Start a shift</button>'}
             ${lv < 5 && xp >= nextXp ? '<button class="pbtn" id="gExam">🎓 Take the certification exam</button>' : ''}` : ''}
-          <div class="msec" style="font-size:15px">${GJ.track ? 'Switch track' : 'Choose your track'}</div>${Object.entries(GRID_TRACKS).map(([k, t2]) => `<button class="pcard gtrack ${k === tr && GJ.track ? 'on' : ''}" data-tr="${k}"><b>${t2.icon} ${t2.name}${k === rec ? ' <em>WYRD recommends</em>' : ''}</b><small>${t2.blurb}</small><small class="dim">Level ${gridLv(k)} · ${GJ.xp[k] || 0} XP</small></button>`).join('')}
+          <div class="msec" style="font-size:15px">${GJ.track ? 'Switch track' : 'Choose your track'}</div>${Object.entries(GRID_TRACKS).filter(([, t2]) => !t2.place).map(([k, t2]) => `<button class="pcard gtrack ${k === tr && GJ.track ? 'on' : ''}" data-tr="${k}"><b>${t2.icon} ${t2.name}${k === rec ? ' <em>WYRD recommends</em>' : ''}</b><small>${t2.blurb}</small><small class="dim">Level ${gridLv(k)} · ${GJ.xp[k] || 0} XP</small></button>`).join('')}
           ${GJ.shifts.length ? `<div class="msec" style="font-size:15px">Your shifts</div><div class="pcard">${GJ.shifts.slice(0, 8).map((s2) => `<div class="grow"><span><b>${GRID_TRACKS[s2.track].icon} ${GRID_TRACKS[s2.track].name}</b><small>${new Date(s2.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · level ${s2.level}</small></span><em>${s2.score}/100${s2.paid ? ' · ' + naira(s2.paid) : ''}</em></div>`).join('')}</div>` : ''}`);
         pbody.querySelectorAll('[data-tr]').forEach((b) => (b.onclick = () => { if (GJ.shift && !confirm('Switching track ends the shift you are on. Switch?')) return; GJ.track = b.dataset.tr; GJ.shift = null; gridSave(); render('grid'); }));
         if ($('gStart')) $('gStart').onclick = async () => { try { await gridNewShift(tr); } catch (e) { return fail(e); } closePhone(); const t1 = gridTask(); coachSay(`Shift started. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon, and when you get there the button go show.`, [['Oya', null, true]]); };
@@ -8724,6 +8750,8 @@
     control: { name: 'Control Room Operator', icon: '🖥️', for: ['innovator', 'leader'], blurb: 'Keep the whole island at 50 Hz: match the turbines, the solar and the import line to what Lagos is using, minute by minute.' },
     lineman: { name: 'Lineman', icon: '🧗', for: ['hustler', 'explorer'], blurb: 'When a feeder trips anywhere on the island, you go. Isolate, prove dead, earth, repair, restore: in that order, every time.' },
     solar: { name: 'Solar Technician', icon: '☀️', for: ['creative', 'socialite'], blurb: 'The solar farm is yours: clean the dirty panels, flag the cracked ones, keep every string producing.' },
+    marshal: { name: 'Ground Crew', icon: '🦺', for: [], place: 'airport', blurb: 'Turn the jets round on the apron in the right order, and marshal arrivals onto their stands with the right signals.' },
+    atc: { name: 'Air Traffic Control', icon: '🗼', for: [], place: 'airport', blurb: 'Up in the tower: clear arrivals and departures for runway 27 in the right order, nobody held, nobody close.' },
     plant: { name: 'Plant Engineer', icon: '⚙️', for: ['entrepreneur'], blurb: 'The turbines are your responsibility. Read their temperatures, vibration and oil, and call it: keep running, ease off, or shut down.' },
   };
   const GRID_LEVELS = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'], GRID_XP = [0, 60, 160, 320, 560], GRID_PAY = [12000, 16000, 21000, 27000, 34000];
@@ -8738,13 +8766,15 @@
   const gridLv = (tr) => GJ.level[tr] || 1;
   // where the work is: the Grid itself (its control centre, the solar farm, the turbine hall), or a fault out on the island
   const gridPlace = () => PLACES.find((p) => p[0] === 'grid');
+  function airSpot(kind) { const p = PLACES.find((v) => v[0] === 'airport'); if (!p) return null; const c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
+    return { apron: { x: c - 40, z: d - 24, name: 'the apron' }, tower: { x: c - 6, z: d - 7, name: 'the control tower' } }[kind]; }
   function gridSpot(kind) { const p = gridPlace(); if (!p) return null; const a = p[1] * T, b = p[2] * T, c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
     return { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; }
   function faultSpot(seed) { const dist = SECTORS.filter((s2) => ['lagos', 'ikoyi', 'vi', 'lekki', 'ajah', 'hqrow'].includes(s2.id) && !s2.sand), R2 = rnd(seed), sct = dist[Math.floor(R2() * dist.length)], [i0, j0, i1, j1] = sct.rect, pool = roadTiles.filter(([i, j]) => i >= i0 && i <= i1 && j >= j0 && j <= j1), [ti, tj] = pool[Math.floor(R2() * pool.length)] || [i0, j0]; return { x: ti * T + T / 2, z: tj * T + T / 2, name: `a feeder fault in ${sct.name}` }; }
   // a shift: three tasks for your track (a lineman's start at the Grid, collecting the van)
   async function gridNewShift(tr) {
     const d = await my('gridStart', { track: tr });
-    const spotFor = (t) => t.type === 'van' ? gridSpot('gate') : t.type === 'fault' ? faultSpot(t.seed) : t.type === 'solar' ? gridSpot('solar') : t.type === 'balance' ? gridSpot('control') : gridSpot(tr === 'plant' ? 'turbine' : 'control');
+    const spotFor = (t) => t.type === 'marshal' || t.type === 'turnaround' ? airSpot('apron') : t.type === 'atc' ? airSpot('tower') : t.type === 'van' ? gridSpot('gate') : t.type === 'fault' ? faultSpot(t.seed) : t.type === 'solar' ? gridSpot('solar') : t.type === 'balance' ? gridSpot('control') : gridSpot(tr === 'plant' ? 'turbine' : 'control');
     GJ.shift = { id: d.id, track: tr, tasks: d.tasks.map((t) => ({ ...t, spot: spotFor(t), done: false, score: 0, result: {} })), at: Date.now() }; GJ.level[tr] = d.level; gridSave();
   }
   const gridTask = () => GJ.shift && GJ.shift.tasks.find((tk) => !tk.done);
@@ -8795,6 +8825,34 @@
       const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${tleft} s</span></div><p>Tap a dusty panel to clean it, a cracked one to flag it. Leave the good ones.</p><div class="gppan">${P2.map((v, k) => `<button data-k="${k}" class="${v}"></button>`).join('')}</div><div class="gprow2"><span>Done right</span><b>${right}</b></div>`);
         gpEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, v = P2[k]; taps.push(k); if (v === 'dust' || v === 'crack') { right++; P2[k] = v === 'dust' ? 'clean' : 'flag'; } else if (v === 'ok') { wrong++; P2[k] = 'oops'; } draw(); })); };
       draw(); gpTimer = setInterval(() => { tleft--; const left = P2.filter((v) => v === 'dust' || v === 'crack').length; if (tleft <= 0 || !left) { const total = right + left; done(total ? right / total * 100 - wrong * 8 : 100, left ? `${left} panel${left > 1 ? 's' : ''} left undone${wrong ? `, ${wrong} good one${wrong > 1 ? 's' : ''} touched for nothing` : ''}.` : wrong ? 'All done, but you fiddled with good panels. Time is money.' : 'Every string producing. Clean work.'); } else { const el = gpEl.querySelector('.gphd span'); if (el) el.textContent = tleft + ' s'; } }, 1000); return; }
+    if (tk.type === 'marshal') { // six cues: give the jet the signal each one calls for
+      const SIG = [['straight', '⬆️ Come forward'], ['left', '↩️ Turn left'], ['right', '↪️ Turn right'], ['slow', '✋ Slow down'], ['stop', '🛑 Stop']];
+      const CUE = { far: ['On the yellow line, still well out', 0], left: ['The nose is drifting LEFT of the line', -1], right: ['The nose is drifting RIGHT of the line', 1], close: ['A few metres from the stop bar', 0], bar: ['The nose wheel is on the stop bar', 0] };
+      const WANT = { far: 'straight', left: 'right', right: 'left', close: 'slow', bar: 'stop' };
+      const picks = []; tk.result = { picks }; let k = 0, ok = 0;
+      const draw = () => { const c = tk.cues[k], [say, off] = CUE[c], gap = { far: 70, left: 55, right: 55, close: 18, bar: 6 }[c];
+        gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${k + 1} of ${tk.cues.length}</span></div>
+          <div class="gpapron"><i class="gpline"></i><i class="gpbar"></i><b class="gpjet" style="left:${50 + off * 14}%;top:${100 - gap}%">✈️</b></div>
+          <p>${say}.</p><div class="gpopts">${SIG.map(([s, l]) => `<button data-sg="${s}">${l}</button>`).join('')}</div>`);
+        gpEl.querySelectorAll('[data-sg]').forEach((b) => (b.onclick = () => { picks.push(b.dataset.sg); if (b.dataset.sg === WANT[c]) ok++; k++; if (k < tk.cues.length) return draw();
+          done(ok / tk.cues.length * 100, ok === tk.cues.length ? 'Parked on the mark. The captain gives you a thumbs up.' : `${tk.cues.length - ok} wrong signal${tk.cues.length - ok > 1 ? 's' : ''}. Fix a drift by signalling the other way, slow down near the bar, stop on it.`); })); };
+      draw(); return; }
+    if (tk.type === 'turnaround') { // the jobs on a parked jet, in order: a wrong one is a strike
+      const ORDER = ['Chocks in', 'Ground power on', 'Open the doors', 'Unload the bags', 'Refuel', 'Load the bags', 'Close the doors', 'Ground power off', 'Chocks out'];
+      const clicks = []; tk.result = { clicks }; let next = 0, strikes = 0;
+      const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>job ${next + 1} of ${ORDER.length}</span></div><p>Turn the jet round safely, in the right order.${strikes ? ` <b style="color:#F87171">Strikes: ${strikes}</b>` : ''}</p>
+          <div class="gpopts">${tk.steps.map((s2) => `<button data-st="${esc(s2)}" ${ORDER.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`);
+        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { clicks.push(b.dataset.st); if (b.dataset.st === ORDER[next]) { next++; if (next >= ORDER.length) return done(100 - strikes * 12, strikes ? `Turned round, with ${strikes} strike${strikes > 1 ? 's' : ''}. On a real apron, order is safety.` : 'Textbook turnaround. On time, nobody hurt.'); } else strikes++; draw(); })); };
+      draw(); return; }
+    if (tk.type === 'atc') { // four aircraft: clear them for the runway in time order (an arrival first on a tie)
+      const order = []; tk.result = { order };
+      const draw = () => { const left = tk.items.filter((it) => !order.includes(it.cs));
+        gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${order.length} of ${tk.items.length} cleared</span></div><p>Clear them for runway 27 in order: whoever needs it soonest first. If an arrival and a departure need it at the same time, the arrival goes first.</p>
+          <div class="gpstrips">${tk.items.map((it) => { const n = order.indexOf(it.cs); return `<button data-cs="${it.cs}" class="${n >= 0 ? 'dn' : ''}" ${n >= 0 ? 'disabled' : ''}><b>${it.kind === 'arr' ? '🛬' : '🛫'} ${it.cs}</b><span>${it.kind === 'arr' ? 'Landing in' : 'Ready in'} ${it.t} s</span>${n >= 0 ? `<em>#${n + 1}</em>` : ''}</button>`; }).join('')}</div>`);
+        gpEl.querySelectorAll('[data-cs]').forEach((b) => (b.onclick = () => { order.push(b.dataset.cs); if (order.length < tk.items.length) return draw();
+          const right = [...tk.items].sort((p1, p2) => p1.t - p2.t || (p1.kind === 'arr' ? -1 : 1)), ok = right.filter((it, i) => order[i] === it.cs).length;
+          done(ok / right.length * 100, ok === right.length ? 'Smooth flow: nobody held, nobody close. Tower approves.' : `Right order: ${right.map((it) => it.cs).join(', ')}.`); })); };
+      draw(); return; }
     if (tk.type === 'turbine') { // three machines' readings: call each one
       const units = (tk.units || []).map((un) => ({ ...un, right: un.vib >= 8 || un.oil < 2 ? 'shut' : un.temp > 600 ? 'reduce' : 'keep' })); // the limits on the screen decide it
       const pick = {}; tk.result = { picks: pick }; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
@@ -8815,7 +8873,7 @@
     GJ.shifts.unshift({ at: Date.now(), track: tr, level: sh.tasks.length ? gridLv(tr) : 1, score, paid }); GJ.shifts.length = Math.min(30, GJ.shifts.length); GJ.shift = null; gridSave();
     if (typeof pnaira !== 'undefined' && v.naira != null) pnaira.textContent = naira(v.naira);
     notify(`Grid shift done: ${score}/100${paid ? `, paid ${naira(paid)}` : ''}`, 'money', ['grid']);
-    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : (v.note || '')} You have ${v.xp} XP.${v.canExam ? ' You have the experience for promotion: take the certification exam in the WYRD Grid app.' : ''}`, [['WYRD Grid', () => { openPhone('grid'); return 'x'; }, true], ['Later', null]]);
+    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : (v.note || '')} You have ${v.xp} XP.${v.canExam ? ` You have the experience for promotion: take the certification exam in the ${GRID_TRACKS[tr].place === 'airport' ? 'Airport' : 'WYRD Grid'} app.` : ''}`, [[GRID_TRACKS[tr].place === 'airport' ? 'Airport' : 'WYRD Grid', () => { openPhone(GRID_TRACKS[tr].place === 'airport' ? 'airport' : 'grid'); return 'x'; }, true], ['Later', null]]);
   }
   // the certification exam for the next level: five questions, four to pass
   async function gridExam(tr, onDone) {

@@ -40,6 +40,26 @@ void main() {
           GridCareer.grade(t, {'log': [for (var i = 0; i < 90; i++) [400, 400, 400, 250]]}).$1, reason: 'sliders are clamped to what the plant has');
     });
 
+    test('marshalling: the right signal for each cue', () {
+      final t = {'type': 'marshal', 'cues': ['far', 'left', 'far', 'right', 'close', 'bar']};
+      expect(GridCareer.grade(t, {'picks': ['straight', 'right', 'straight', 'left', 'slow', 'stop']}).$1, 100);
+      expect(GridCareer.grade(t, {'picks': ['straight', 'left', 'straight', 'right', 'slow', 'stop']}).$1, 67, reason: 'turning into the drift is wrong');
+    });
+
+    test('a turnaround: all of it, in order; each wrong job a strike', () {
+      const ok = GridCareer.turnaround;
+      expect(GridCareer.grade({'type': 'turnaround'}, {'clicks': ok}).$1, 100);
+      expect(GridCareer.grade({'type': 'turnaround'}, {'clicks': ['Refuel', ...ok]}).$1, 88);
+      expect(GridCareer.grade({'type': 'turnaround'}, {'clicks': ok.take(8).toList()}).$1, 0);
+    });
+
+    test('the runway in time order, an arrival first on a tie', () {
+      final t = {'type': 'atc', 'items': [{'cs': 'A1', 'kind': 'arr', 't': 60}, {'cs': 'A2', 'kind': 'arr', 't': 120}, {'cs': 'D1', 'kind': 'dep', 't': 60}, {'cs': 'D2', 'kind': 'dep', 't': 30}]};
+      expect(GridCareer.grade(t, {'order': ['D2', 'A1', 'D1', 'A2']}).$1, 100);
+      expect(GridCareer.grade(t, {'order': ['D2', 'D1', 'A1', 'A2']}).$1, 50);
+      expect(GridCareer.grade(t, {'order': ['D2']}).$1, 0);
+    });
+
     test('pay follows the level the server keeps', () {
       expect(GridCareer.payFor(1, 100), 12000);
       expect(GridCareer.payFor(1, 0), 6000);

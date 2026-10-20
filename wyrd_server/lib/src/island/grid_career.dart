@@ -16,7 +16,10 @@ class GridRefused implements Exception {
 /// worked out here by replaying it. Level and experience live here too, and promotion is a certification exam the
 /// server sets and marks. So pay can't be raised by telling the server a higher level or a better score.
 abstract final class GridCareer {
-  static const tracks = ['control', 'lineman', 'solar', 'plant'];
+  static const tracks = ['control', 'lineman', 'solar', 'plant', 'marshal', 'atc'];
+
+  /// the airport's tracks (Ground Crew, Air Traffic Control): paid on their own 40-minute slot, not the Grid's
+  static const airportTracks = {'marshal', 'atc'};
 
   /// the experience needed to sit the exam for the next level, by current level (1..4)
   static const xpFor = [0, 60, 160, 320, 560];
@@ -25,7 +28,12 @@ abstract final class GridCareer {
   static const pay = [12000, 16000, 21000, 27000, 34000];
 
   /// the least a whole shift can take on each track (the control room's three balancing tasks are 90 s each)
-  static const minSeconds = {'control': 270, 'lineman': 40, 'solar': 40, 'plant': 30};
+  static const minSeconds = {'control': 270, 'lineman': 40, 'solar': 40, 'plant': 30, 'marshal': 40, 'atc': 45};
+
+  /// a turnaround, in the order it's done
+  static const turnaround = ['Chocks in', 'Ground power on', 'Open the doors', 'Unload the bags', 'Refuel', 'Load the bags', 'Close the doors', 'Ground power off', 'Chocks out'];
+  /// what the marshaller sees, and the signal it calls for
+  static const marshalCues = {'far': 'straight', 'left': 'right', 'right': 'left', 'close': 'slow', 'bar': 'stop'};
 
   static const shiftHours = 2, examMinutes = 30, examRetryMinutes = 30;
 
@@ -56,6 +64,22 @@ abstract final class GridCareer {
       ["Harmattan season means…", ["More dust: clean more often", "No sun at all", "Panels freeze"], 0],
       ["Panels in a string share…", ["Current: one bad panel drags the string", "Nothing", "Their colour"], 0],
       ["The best time to clean panels is…", ["Early morning or evening", "Noon in full sun", "During a storm"], 0],
+    ],
+    "marshal": [
+      ["The jet's nose drifts left of the yellow lead-in line. You signal…", ["Turn right", "Turn left", "Stop"], 0],
+      ["The nose wheel reaches the stop bar. You signal…", ["Stop", "Come forward", "Slow down"], 0],
+      ["Before the engines are off, you may…", ["Stay clear of the intakes", "Walk under the wing", "Put the chocks in"], 0],
+      ["The first thing once the engines stop:", ["Chocks in", "Open the doors", "Refuel"], 0],
+      ["Refuelling happens…", ["With the bags off and a fire watch", "During boarding with no one watching", "With the engines running"], 0],
+      ["The last thing before pushback:", ["Chocks out", "Open the doors", "Ground power on"], 0],
+    ],
+    "atc": [
+      ["Two aircraft want the runway: an arrival 2 minutes out and a departure ready in 3. You clear…", ["The arrival first", "The departure first", "Neither"], 0],
+      ["A departure and an arrival both need the runway now. You give it to…", ["The arrival", "The departure", "Whoever calls first"], 0],
+      ["Runway 27 means aircraft are heading…", ["West (270°)", "East (090°)", "North"], 0],
+      ["Wake turbulence behind a heavy jet means…", ["Leave extra spacing", "Close up behind it", "Nothing for small jets"], 0],
+      ["The windsock shows the wind from the west. You use…", ["Runway 27, into the wind", "Runway 09, with the wind behind", "Either"], 0],
+      ["A pilot reads back the wrong runway. You…", ["Correct them at once", "Let it go", "Clear them anyway"], 0],
     ],
     "plant": [
       ["Turbine bearing vibration above the limit means…", ["Shut down for inspection", "Run harder", "Nothing"], 0],
@@ -110,6 +134,16 @@ abstract final class GridCareer {
         return {'type': type, 'title': title, 'kind': r.nextInt(3), 'seed': r.nextInt(100000)};
       case 'solar':
         return {'type': type, 'title': title, 'panels': [for (var i = 0; i < 24; i++) (() { final x = r.nextDouble(); return x < 0.35 ? 'dust' : x < 0.47 ? 'crack' : 'ok'; })()]};
+      case 'marshal': // six cues: in on the line, a drift or two to correct, nearly there, on the bar
+        final cues = ['far', r.nextBool() ? 'left' : 'right', 'far', r.nextBool() ? 'left' : 'right', 'close', 'bar'];
+        if (r.nextBool()) { cues[1] = 'far'; cues[2] = r.nextBool() ? 'left' : 'right'; }
+        return {'type': type, 'title': title, 'cues': cues};
+      case 'turnaround': // the jobs, shuffled; done in their order
+        return {'type': type, 'title': title, 'steps': [...turnaround]..shuffle(r)};
+      case 'atc': // four aircraft: two arrivals (seconds to landing), two departures (seconds until ready)
+        final ts = <int>{}; while (ts.length < 4) { ts.add(2 + r.nextInt(23)); }
+        final tl = ts.toList(), al = ['LIA', 'ARK', 'EKO', 'WYR', 'ISL', 'BNA'];
+        return {'type': type, 'title': title, 'items': [for (var i = 0; i < 4; i++) {'cs': '${al[r.nextInt(al.length)]}${100 + r.nextInt(900)}', 'kind': i < 2 ? 'arr' : 'dep', 't': tl[i] * 10}]};
       case 'turbine':
         return {
           'type': type, 'title': title,
@@ -138,6 +172,8 @@ abstract final class GridCareer {
     await s.db.unsafeExecute('UPDATE "island_grid_work" SET "status" = \'void\' WHERE "authUserId" = @u AND "kind" = \'shift\' AND "status" = \'open\'', parameters: QueryParameters.named({'u': u.uuid}));
     final r = Random.secure();
     final tasks = switch (track) {
+      'marshal' => [_task(r, 'turnaround', 'Turnaround on the apron'), _task(r, 'marshal', 'Bring in the arrival'), _task(r, 'marshal', 'Park the jet on its stand')],
+      'atc' => [_task(r, 'atc', 'Morning push'), _task(r, 'atc', 'The busy hour'), _task(r, 'atc', 'Weather moving in')],
       'control' => [_task(r, 'balance', 'Morning ramp-up'), _task(r, 'balance', 'The evening peak'), _task(r, 'balance', 'Turbine 2 trips!')],
       'lineman' => [_task(r, 'van', 'Collect the crew van'), _task(r, 'fault', 'Repair the fault'), _task(r, 'fault', 'Second call-out')],
       'solar' => [_task(r, 'solar', 'Clean and inspect, rows A to C'), _task(r, 'solar', 'Clean and inspect, rows D to F'), _task(r, 'turbine', 'Inverter station readings')],
@@ -159,6 +195,25 @@ abstract final class GridCareer {
     switch (t['type']) {
       case 'van':
         return (_int(r['checked'], 0, 5) * 20, null);
+      case 'marshal': // each cue's signal
+        final picks = r['picks'], cues = (t['cues'] as List).cast<String>();
+        if (picks is! List) return (0, null);
+        var ok = 0;
+        for (var i = 0; i < cues.length; i++) { if (i < picks.length && '${picks[i]}' == marshalCues[cues[i]]) ok++; }
+        return ((ok / cues.length * 100).round(), null);
+      case 'turnaround': // the taps in order: a wrong job is a strike; all of it done, or nothing
+        final clicks = r['clicks'];
+        if (clicks is! List || clicks.length > 60) return (0, null);
+        var next = 0, strikes = 0;
+        for (final c in clicks) { if (next >= turnaround.length) break; if ('$c' == turnaround[next]) { next++; } else { strikes++; } }
+        return (next >= turnaround.length ? max(0, 100 - strikes * 12) : 0, '$strikes');
+      case 'atc': // the runway in time order (an arrival first when it's a tie): each aircraft in its right place
+        final order = r['order'], items = (t['items'] as List).cast<Map<String, dynamic>>();
+        if (order is! List || order.length != items.length) return (0, null);
+        final right = [...items]..sort((p1, p2) { final d = (p1['t'] as int) - (p2['t'] as int); return d != 0 ? d : (p1['kind'] == 'arr' ? -1 : 1); });
+        var ok = 0;
+        for (var i = 0; i < right.length; i++) { if ('${order[i]}' == right[i]['cs']) ok++; }
+        return ((ok / right.length * 100).round(), null);
       case 'balance': // the slider positions each second, replayed against the demand
         final log = r['log'];
         if (log is! List || log.length != 90) return (0, null);

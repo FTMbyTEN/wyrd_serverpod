@@ -290,16 +290,17 @@ class IslandMeEndpoint extends Endpoint {
           } else {
             pay = min(GridCareer.payFor(w.level, score), dailyCap - earned);
             final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
-            final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:grid:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: 'National Grid shift');
+            final air = GridCareer.airportTracks.contains(w.track);
+            final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:${air ? 'airport' : 'grid'}:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: air ? 'Lagos Island Airport shift' : 'National Grid shift');
             if (r.repeat) {
               pay = 0;
-              note = 'One paid grid shift every 40 minutes. This one counts for your experience.';
+              note = 'One paid shift every 40 minutes. This one counts for your experience.';
             }
           }
           if (pay > 0) await GridCareer.setPaid(session, w.id!, pay);
           final cash = await Bank.fresh(session, u);
           return jsonEncode({
-            'score': score, 'scores': scores, 'paid': pay, if (note != null) 'note': note, 'naira': cash.naira, 'memo': 'National Grid shift',
+            'score': score, 'scores': scores, 'paid': pay, if (note != null) 'note': note, 'naira': cash.naira, 'memo': GridCareer.airportTracks.contains(w.track) ? 'Lagos Island Airport shift' : 'National Grid shift',
             'level': c.level, 'xp': c.xp, 'canExam': c.level < 5 && c.xp >= GridCareer.xpFor[c.level],
           });
         } on GridRefused catch (e) {
