@@ -1112,6 +1112,16 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {},
   );
 
+  /// Every chat I'm in, in one go: its key material (as [groups]), its members, its latest message (still encrypted)
+  /// and how many messages I haven't seen ([seenJson]: {groupId: last seen message id}). One request for the Link app's
+  /// list and for the new-message notifications, instead of one per chat; the queries are batched too.
+  _ida.Future<String> inbox(String seenJson) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'inbox',
+        {'seenJson': seenJson},
+      );
+
   /// Post an encrypted message to a chat I'm in.
   _ida.Future<String> post(
     int groupId,
@@ -1444,6 +1454,61 @@ class EndpointIslandMe extends _isc.EndpointRef {
     'islandMe',
     'flyJet',
     {'dest': dest},
+  );
+
+  _ida.Future<String> publicProfile(String handle) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'publicProfile',
+        {'handle': handle},
+      );
+
+  /// The newest Lagosians (to say hello to), and a search by name.
+  _ida.Future<String> people(String query) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'people',
+    {'query': query},
+  );
+
+  /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
+  _ida.Future<String> friendRequest(
+    String handle,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'friendRequest',
+    {
+      'handle': handle,
+      'note': note,
+    },
+  );
+
+  /// Accept or decline a request someone sent me.
+  _ida.Future<String> friendRespond(
+    String handle,
+    bool accept,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'friendRespond',
+    {
+      'handle': handle,
+      'accept': accept,
+    },
+  );
+
+  /// Cancel a request I sent, or end a friendship (either side).
+  _ida.Future<String> unfriend(String handle) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'unfriend',
+        {'handle': handle},
+      );
+
+  /// My friends, the requests waiting for me (with their hello), and the ones I sent.
+  _ida.Future<String> friends() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'friends',
+    {},
   );
 
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its

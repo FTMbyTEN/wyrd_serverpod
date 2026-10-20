@@ -2040,6 +2040,25 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
                   .groups(session),
         ),
+        'inbox': _is.MethodConnector(
+          name: 'inbox',
+          params: {
+            'seenJson': _is.ParameterDescription(
+              name: 'seenJson',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).inbox(
+                    session,
+                    params['seenJson'],
+                  ),
+        ),
         'post': _is.MethodConnector(
           name: 'post',
           params: {
@@ -2732,6 +2751,123 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['dest'],
                   ),
+        ),
+        'publicProfile': _is.MethodConnector(
+          name: 'publicProfile',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .publicProfile(
+                    session,
+                    params['handle'],
+                  ),
+        ),
+        'people': _is.MethodConnector(
+          name: 'people',
+          params: {
+            'query': _is.ParameterDescription(
+              name: 'query',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).people(
+                    session,
+                    params['query'],
+                  ),
+        ),
+        'friendRequest': _is.MethodConnector(
+          name: 'friendRequest',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .friendRequest(
+                    session,
+                    params['handle'],
+                    params['note'],
+                  ),
+        ),
+        'friendRespond': _is.MethodConnector(
+          name: 'friendRespond',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'accept': _is.ParameterDescription(
+              name: 'accept',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .friendRespond(
+                    session,
+                    params['handle'],
+                    params['accept'],
+                  ),
+        ),
+        'unfriend': _is.MethodConnector(
+          name: 'unfriend',
+          params: {
+            'handle': _is.ParameterDescription(
+              name: 'handle',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .unfriend(
+                    session,
+                    params['handle'],
+                  ),
+        ),
+        'friends': _is.MethodConnector(
+          name: 'friends',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .friends(session),
         ),
         'room': _is.MethodConnector(
           name: 'room',

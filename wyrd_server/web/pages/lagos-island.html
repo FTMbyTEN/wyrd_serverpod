@@ -7,6 +7,7 @@
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#4F9FD8">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -743,6 +744,15 @@
   }
   /* locked: whatever app was open stays hidden under the lock screen (it is private until you unlock) */
   #phone.locked #pbody, #phone.locked #shade { visibility: hidden !important; }
+  /* a Lagosian's public profile, on a home's card and in the People app */
+  .pfcard { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(15,23,42,.1); }
+  .pfhd { display: flex; align-items: center; gap: 10px; } .pfhd b { display: block; font-size: 15px; } .pfhd small { color: var(--dim, #64748B); font-size: 12px; }
+  .pfrows { display: grid; gap: 4px; margin: 8px 0; font-size: 13px; }
+  .pfact { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .pfact input { flex: 1 1 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(15,23,42,.18); font: inherit; }
+  #card .pfact .pbtn { padding: 8px 12px; border-radius: 999px; border: 0; background: #0EA5E9; color: #fff; font-weight: 800; cursor: pointer; } #card .pfact .pbtn.alt { background: #E2E8F0; color: #0F172A; }
+  /* Install app: a pill at the bottom-left, gone once installed */
+  #tApp { position: fixed; left: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 15; display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; border: 0; background: linear-gradient(135deg, #0EA5E9, #22C55E); color: #fff; font: 800 13px 'Plus Jakarta Sans', sans-serif; box-shadow: 0 8px 22px rgba(14,165,233,.35); cursor: pointer; }
+  #tApp em { font-style: normal; } .touch #tApp { bottom: calc(150px + env(safe-area-inset-bottom)); }
 </style>
 </head>
 <body>
@@ -1097,6 +1107,38 @@
   // page: add Lagos Island to the home screen and it opens full screen like an app (see the manifest).
   let fsAsked = false;
   const wantFs = () => MOBILE && !fsAsked && !document.fullscreenElement && !matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches && document.documentElement.requestFullscreen;
+
+  // ---- the app: install Lagos Island like an app, with all of it downloaded onto the device (the service worker keeps
+  // the page, every model and texture, and three.js, so it opens at once and loads nothing again). Chrome, Edge and
+  // Android install in one tap; an iPhone or iPad adds it to the home screen from Safari's Share menu (Apple allows no
+  // button for that), and gets the same full download.
+  const APP = { prompt: null, installed: matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone === true };
+  const canSW = 'serviceWorker' in navigator && !location.pathname.startsWith('/lagos-island') && /^https:|^http:\/\/localhost/.test(location.origin);
+  if (canSW) navigator.serviceWorker.register('sw.js').catch(() => {});
+  addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); APP.prompt = e; appBtn(); });
+  addEventListener('appinstalled', () => { APP.installed = true; APP.prompt = null; appBtn(); notify('Lagos Island is installed. Open it from your home screen.', 'island'); });
+  // download everything into the device's cache, with progress on the button
+  async function appDownload(btn) {
+    if (!canSW) return true;
+    const reg = await navigator.serviceWorker.ready; const sw = reg.active; if (!sw) return true;
+    return new Promise((done) => {
+      const ch = new MessageChannel(); ch.port1.onmessage = (ev) => { const { got, of, ok } = ev.data || {}; if (btn) btn.textContent = ok ? '✓ Downloaded' : `⬇ ${got}/${of}`; if (ok) done(true); };
+      sw.postMessage({ type: 'precache' }, [ch.port2]);
+    });
+  }
+  async function appInstall(btn) {
+    await appDownload(btn);
+    if (APP.prompt) { APP.prompt.prompt(); const r = await APP.prompt.userChoice.catch(() => null); APP.prompt = null; if (r && r.outcome === 'accepted') return; }
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    card.innerHTML = `<b>📲 Install Lagos Island</b><span>Everything is downloaded to this device: it opens instantly and full screen.</span><div class="offer"><strong>${iOS ? 'On iPhone or iPad' : 'In your browser'}</strong><small>${iOS ? 'Tap the Share button <b>⬆︎</b> in Safari, then <b>Add to Home Screen</b>.' : 'Open the browser menu <b>⋮</b> and choose <b>Install app</b> (or <b>Add to Home screen</b>).'}</small></div>`;
+    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 15000);
+  }
+  function appBtn() {
+    let b = document.getElementById('tApp');
+    if (APP.installed) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement('button'); b.id = 'tApp'; b.title = 'Install Lagos Island as an app'; b.innerHTML = '<span>⬇</span><em>Install app</em>'; b.onclick = (e) => { e.stopPropagation(); appInstall(b.querySelector('em')); }; document.body.append(b); }
+  }
+  setTimeout(appBtn, 1500);
   addEventListener('pointerup', () => { if (!wantFs()) return; fsAsked = true; document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); }, { capture: true });
 
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
@@ -5889,10 +5931,10 @@
     if (!inside) return;
     pose = null;
     inside = null; deco = null; setDeco();
-    me.x = outside.x; me.z = outside.z; Object.assign(cam, outside.cam, { follow: false });
+    me.x = outside.x; me.z = outside.z; Object.assign(cam, outside.cam, { follow: false }); exitHold = { x: me.x, z: me.z }; // no 'go in' prompt the moment you come out
     others.clear(); updateWhere();
   }
-  let stageTimer = 0;
+  let stageTimer = 0, exitHold = null;
   async function stagePoll() {
     clearTimeout(stageTimer);
     if (!inside || inside.kind !== 'arena') return;
@@ -6174,12 +6216,56 @@
     } else if (o.buy) btn('🏡 Buy it', () => { card.style.display = 'none'; openPhone('homes', o.buy); }, '#0EA5E9');
     card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 9000);
   }
+  // ---- people: a Lagosian's public profile (never their wallet, email, messages, where they are, who their friends are
+  // or what's inside their home), real friend requests (they see it, they accept or decline), and finding people
+  const sinceStr = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-NG', { month: 'long', year: 'numeric' }); };
+  const REL = { none: '➕ Add friend', sent: '⏳ Request sent', received: '✓ Accept request', friends: '✓ Friends', me: '' };
+  function profileHtml(p) {
+    return `<div class="pfhd">${avatar(p.handle)}<div><b>@${esc(p.handle)}</b><small>Lagosian since ${sinceStr(p.since)}</small></div></div>
+      <div class="pfrows"><span>🏠 ${esc(p.hq)}</span>${p.careers && p.careers.length ? `<span>💼 ${p.careers.slice(0, 2).map(esc).join(' · ')}</span>` : ''}${p.skills ? `<span>🧰 ${esc(p.skills)}</span>` : ''}${p.jet ? `<span>🛩️ ${esc(p.jet)}</span>` : ''}<span>👥 ${p.friends} friend${p.friends === 1 ? '' : 's'}</span></div>`;
+  }
+  // the buttons for me and them; [done] after anything changes
+  function relActions(host, p, done) {
+    host.innerHTML = '';
+    const b = (label, fn, cls = '') => { const e = document.createElement('button'); e.className = 'pbtn ' + cls; e.textContent = label; e.onclick = async () => { e.disabled = true; try { await fn(); } catch (er) { e.disabled = false; (typeof fail === 'function' ? fail : alert)(er.message ? er : new Error(String(er))); } }; host.append(e); return e; };
+    if (p.rel === 'me') return;
+    if (p.rel === 'none') {
+      const inp = document.createElement('input'); inp.maxLength = 140; inp.placeholder = `Say hi to @${p.handle} (optional)`; host.append(inp);
+      b('➕ Send friend request', async () => { const r = await my('friendRequest', { handle: p.handle, note: inp.value }); p.rel = r.rel; notify(r.rel === 'friends' ? `You and ${p.handle} are friends` : `Friend request sent to ${p.handle}`, 'link', ['people']); done(p); });
+    } else if (p.rel === 'sent') b('⏳ Request sent · cancel', async () => { await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
+    else if (p.rel === 'received') { b('✓ Accept', async () => { await my('friendRespond', { handle: p.handle, accept: true }); p.rel = 'friends'; notify(`You and ${p.handle} are friends`, 'link', ['people']); done(p); }); b('✕ Decline', async () => { await my('friendRespond', { handle: p.handle, accept: false }); p.rel = 'none'; done(p); }, 'alt'); }
+    else if (p.rel === 'friends') b('✓ Friends · remove', async () => { if (!confirm(`Remove ${p.handle} from your friends?`)) return; await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
+    b('💬 Message', async () => { card.style.display = 'none'; openPhone('newchat', { dm: true, who: p.handle }); }, 'alt');
+  }
+  // the card over a home: who lives there, from their public profile, and what you can do
+  async function residentCard(o) {
+    houseCard({ ...o, owner: null }); // the house itself first, at once
+    if (!o.owner) return;
+    clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 30000);
+    if (!signedIn()) { const s = document.createElement('div'); s.className = 'pfcard'; s.innerHTML = `<div class="pfrows"><span>Sign in to see @${esc(o.owner)}'s profile and say hello.</span></div>`; card.append(s); return; }
+    const s = document.createElement('div'); s.className = 'pfcard'; s.innerHTML = '<div class="dim">Loading their profile…</div>'; card.append(s);
+    try { const p = await my('publicProfile', { handle: o.owner }); const draw = () => { s.innerHTML = profileHtml(p) + '<div class="pfact"></div>'; relActions(s.querySelector('.pfact'), p, draw); }; draw(); }
+    catch (e) { s.innerHTML = `<div class="dim">${esc(e.message === 'signin' ? 'Sign in to see their profile.' : 'Their profile is not available right now.')}</div>`; }
+  }
+  // new requests and new friends turn into notifications (checked a minute at a time while you're signed in)
+  const FR = { seen: (() => { try { return new Set(JSON.parse(store.get('li.frSeen') || '[]')); } catch { return new Set(); } })(), list: null };
+  async function friendsPoll() {
+    if (!signedIn()) return;
+    try { const f = await my('friends'); FR.list = f; let changed = false;
+      for (const r of f.incoming) { const k = 'in:' + r.handle; if (!FR.seen.has(k)) { FR.seen.add(k); changed = true; notify(`${r.handle} sent you a friend request${r.note ? `: "${r.note}"` : ''}`, 'link', ['people'], ''); } }
+      for (const r of f.friends) { const k = 'fr:' + r.handle; if (!FR.seen.has(k)) { FR.seen.add(k); changed = true; if (FR.seen.has('out:' + r.handle)) notify(`${r.handle} accepted your friend request`, 'link', ['people']); } }
+      for (const r of f.sent) FR.seen.add('out:' + r.handle);
+      if (changed) store.set('li.frSeen', JSON.stringify([...FR.seen].slice(-400)));
+    } catch {}
+  }
+  setTimeout(friendsPoll, 6000); setInterval(friendsPoll, 60000);
+  const PEOPLE_TAB = { tab: 'requests' };
   // a home in an estate
   function homeCard(pl, i, j) {
     const h = homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? {} : null), st = HOME_STYLES[pl.style];
     const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'home:' + pl.plot, 'Your ' + st[0].toLowerCase(), { style: pl.style }); };
     if (!h) return houseCard({ title: '🪧 ' + st[0], sub: pl.name + ' · for sale', head: naira(st[1]), note: 'Empty, and locked until someone buys it.', buy: pl.plot });
-    houseCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Say hello: add them as a friend, or send a message request.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
+    residentCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Their home stays private; here is who they are.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
   }
   // a BQ on HQ Row
   function enterHq(k, i, j) {
@@ -6187,7 +6273,7 @@
     const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
     if (!taken) return houseCard({ title: '🏚️ BQ #' + (k + 1) + ' · HQ Row', sub: 'Vacant', head: 'Not assigned yet', note: 'Locked: it goes to the next new Lagosian, free for their first week.' });
     if (!hq) return houseCard({ title: '🏠 BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'A Lagosian lives here', note: signedIn() ? 'They keep their home private.' : 'Sign in to see who lives here.' });
-    houseCard({ title: (hq.mine ? '🏡 ' : '🏠 ') + (hq.name || 'BQ #' + (k + 1)), sub: 'BQ #' + (k + 1) + ' · HQ Row', head: hq.mine ? 'Your apartment' : hq.owner ? `${hq.owner} lives here` : 'A Lagosian lives here', note: hq.mine ? 'Furnish it, invite people round.' : hq.owner ? 'Say hello: add them as a friend, or send a message request.' : 'They keep their home private.', mine: hq.mine, owner: hq.mine ? null : hq.owner, go });
+    residentCard({ title: (hq.mine ? '🏡 ' : '🏠 ') + (hq.name || 'BQ #' + (k + 1)), sub: 'BQ #' + (k + 1) + ' · HQ Row', head: hq.mine ? 'Your apartment' : (hq.owner || hq.resident) ? `${hq.owner || hq.resident} lives here` : 'A Lagosian lives here', note: hq.mine ? 'Furnish it, invite people round.' : hq.owner ? 'They let visitors in. Knock, or say hello.' : 'Their BQ stays private; here is who they are.', mine: hq.mine, owner: hq.mine ? null : (hq.owner || hq.resident), go });
   }
 
   // ---- others and chat (the island endpoint)
@@ -6389,7 +6475,18 @@
       return true;
     } catch { return false; }
   }
+  // reads the phone makes over and over: kept 20 s and shared while in flight, so opening an app again (or two parts of
+  // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
+  const MY_READS = new Set(['me', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
+  const MY_CACHE = new Map();
   async function my(method, args = {}) {
+    if (!MY_READS.has(method)) { MY_CACHE.clear(); return myNet(method, args); }
+    const key = method + JSON.stringify(args), hit = MY_CACHE.get(key);
+    if (hit && performance.now() - hit.at < 20000) return hit.p;
+    const pr = myNet(method, args); MY_CACHE.set(key, { at: performance.now(), p: pr }); pr.catch(() => MY_CACHE.delete(key));
+    return pr;
+  }
+  async function myNet(method, args = {}) {
     const go = () => fetch(`${API}/islandMe/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) });
     let r = await go();
     if (r.status === 401 && await refresh()) r = await go();
@@ -6454,13 +6551,13 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { people: '#38BDF8', airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['people', '👥', 'People'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino', 'airport']], ['You', ['gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino', 'airport']], ['You', ['people', 'gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -7128,26 +7225,32 @@
   { let y0 = null; shadeEl.addEventListener("touchstart", (e) => (y0 = e.touches[0].clientY), { passive: true }); shadeEl.addEventListener("touchend", (e) => { if (y0 != null && y0 - e.changedTouches[0].clientY > 50 && shadeEl.querySelector(".shin").scrollTop <= 0) closeShade(); y0 = null; }, { passive: true }); }
   addEventListener("keydown", (e) => { if (e.key === "Escape" && shadeEl.classList.contains("on")) closeShade(); });
   setInterval(() => { if (shadeEl.classList.contains("on")) { shadeEl.classList.toggle("night", nightNow() > 0.5); shadeEl.classList.toggle("day", nightNow() <= 0.5); } }, 30000);
-  // Link: new messages from other players reach you anywhere on the island, opened on this device like the app does
-  let linkBase = null;
-  setInterval(async () => {
+  // Link: new messages from other players reach you anywhere on the island, opened on this device like the app does.
+  // It starts as soon as you're signed in (your profile and keys load in the background), asks once for all your chats,
+  // and also tells you about messages that came while you were away (once each).
+  const LINK = { told: {} };
+  async function linkPoll() {
     if (!signedIn() || !me$ || !keyed) return;
     try {
-      const gs = await my('groups'), seen = linkSeen(), first = !linkBase; linkBase = linkBase || {};
+      const seen = linkSeen(), gs = await myNet('inbox', { seenJson: JSON.stringify(seen) });
       for (const g of gs) {
-        const ms = await my('messages', { groupId: g.id, since: linkBase[g.id] || seen[g.id] || 0 });
-        for (const m of ms) {
-          if (m.mine || first || m.id <= (seen[g.id] || 0)) continue;
-          const viewing = phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'thread' && stack[stack.length - 1][1] && stack[stack.length - 1][1].id === g.id;
-          if (viewing) continue;
-          let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒 New message'; }
-          let nm = ''; try { nm = dec.decode(await open(await groupKey(g), g.nameCt)); } catch {}
-          notify(t, 'link', ['thread', { ...g, name: nm }], m.from);
-        }
-        if (ms.length) linkBase[g.id] = ms[ms.length - 1].id;
+        const m = g.lastMsg; if (!m || m.mine || m.id <= (seen[g.id] || 0) || m.id <= (LINK.told[g.id] || 0)) continue;
+        LINK.told[g.id] = m.id;
+        const viewing = phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'thread' && stack[stack.length - 1][1] && stack[stack.length - 1][1].id === g.id;
+        if (viewing) continue;
+        let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒 New message'; }
+        let nm = ''; try { nm = dec.decode(await open(await groupKey(g), g.nameCt)); } catch {}
+        notify(g.unread > 1 ? `${t} (+${g.unread - 1} more)` : t, 'link', ['thread', { ...g, name: nm }], m.from);
       }
     } catch {}
-  }, 25000);
+  }
+  setInterval(linkPoll, 15000);
+  // your profile and keys, loaded in the background as soon as you're signed in, so the phone opens without waiting
+  async function warmUp() {
+    if (!signedIn() || (me$ && keyed)) return;
+    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); } catch {}
+  }
+  setTimeout(warmUp, 1200);
   // ================= WYRD OS 2 =================
   // ---- the live wallpaper: Lagos at the hour it is on the island, drawn behind everything on the phone: the sky (dawn,
   // day, dusk, night with stars), the skyline with lit windows and WYRD Tower's LED crown, the lagoon reflecting it, and the
@@ -7416,16 +7519,14 @@
         return;
       }
       if (app === 'chats') {
-        const gs = await my('groups');
+        const seen = linkSeen(), gs = await my('inbox', { seenJson: JSON.stringify(linkSeen()) });
         const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return '🔒 (can\'t open on this device)'; } }));
         const people = [...new Map([...others.values()].filter((o) => o.name && o.name !== me$.handle && !/^(Guest|Lagosian)$/.test(o.name)).map((o) => [o.name, o])).values()];
         // each conversation's latest message (opened here, on the device) and how many you haven't seen; newest first
-        const seen = linkSeen();
         const last = await Promise.all(gs.map(async (g) => {
-          try { const ms = await my('messages', { groupId: g.id, since: 0 }); const m = ms[ms.length - 1]; if (!m) return { id: 0, unread: 0 };
-            let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒'; }
-            return { id: m.id, t, from: m.mine ? 'You' : m.from, at: m.at, unread: ms.filter((v) => !v.mine && v.id > (seen[g.id] || 0)).length };
-          } catch { return { id: 0, unread: 0 }; }
+          const m = g.lastMsg; if (!m) return { id: 0, unread: 0 };
+          let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒'; }
+          return { id: m.id, t, from: m.mine ? 'You' : m.from, at: m.at, unread: g.unread || 0 };
         }));
         const order = gs.map((_, i) => i).sort((p, q) => last[q].id - last[p].id);
         const unreadAll = last.reduce((n, l) => n + l.unread, 0);
@@ -7446,6 +7547,37 @@
           if (g) go('thread', { ...g, name: names[gs.indexOf(g)] }); else go('newchat', { dm: true, who: b.dataset.dm });
         }));
         pbody.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => go('thread', { ...gs[b.dataset.g], name: names[b.dataset.g] })));
+        return;
+      }
+      if (app === 'people') {
+        // People: requests waiting for you, your friends, the newest Lagosians, and a search; tap anyone for their profile
+        const tab = (arg && arg.tab) || PEOPLE_TAB.tab;
+        if (arg && arg.handle) { // one person's profile
+          show(`${ahead('people', 'Profile', 'What every Lagosian can see')}<div class="pcard" id="pfOne"><div class="dim">Loading…</div></div>`);
+          try { const p = await my('publicProfile', { handle: arg.handle }); const el = $('pfOne'), draw = () => { el.innerHTML = profileHtml(p) + '<div class="pfact"></div>'; relActions(el.querySelector('.pfact'), p, draw); }; draw(); } catch (e) { fail(e); }
+          return;
+        }
+        let f = { friends: [], incoming: [], sent: [] }; try { f = await my('friends'); FR.list = f; } catch (e) { return fail(e); }
+        const row = (r, extra = '') => `<button class="li" data-pf="${esc(r.handle)}"><span class="ic">${avatar(r.handle)}</span><span class="lt"><b>@${esc(r.handle)}</b><small>${r.note ? '"' + esc(r.note) + '"' : 'Lagosian since ' + sinceStr(r.since)}</small></span><span class="lr">${extra}</span></button>`;
+        show(`${ahead('people', 'People', 'Friends, requests and new Lagosians')}
+          <div class="chips" style="--ac:#38BDF8">${[['requests', `Requests${f.incoming.length ? ' · ' + f.incoming.length : ''}`], ['friends', `Friends · ${f.friends.length}`], ['new', 'New on the island'], ['find', 'Find']].map(([k, n]) => `<button data-pt="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+          <div id="pplBody"></div>`);
+        const body = $('pplBody');
+        const wire = () => body.querySelectorAll('[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf })));
+        if (tab === 'requests') {
+          body.innerHTML = (f.incoming.length ? `<div class="rsec">WAITING FOR YOU</div><div class="lst">${f.incoming.map((r) => `<div class="li"><span class="ic">${avatar(r.handle)}</span><span class="lt" data-pf="${esc(r.handle)}" style="cursor:pointer"><b>@${esc(r.handle)}</b><small>${r.note ? '"' + esc(r.note) + '"' : 'wants to be friends'}</small></span><span class="lr"><button class="pbtn" data-acc="${esc(r.handle)}">✓</button> <button class="pbtn alt" data-dec="${esc(r.handle)}">✕</button></span></div>`).join('')}</div>` : '<div class="pcard dim">No requests waiting. Find someone and say hello.</div>')
+            + (f.sent.length ? `<div class="rsec">YOU ASKED</div><div class="lst">${f.sent.map((r) => row(r, '⏳')).join('')}</div>` : '');
+          body.querySelectorAll('[data-acc],[data-dec]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { const acc = !!b.dataset.acc; await my('friendRespond', { handle: b.dataset.acc || b.dataset.dec, accept: acc }); if (acc) notify(`You and ${b.dataset.acc} are friends`, 'link', ['people']); render('people', { tab: 'requests' }); } catch (e) { b.disabled = false; fail(e); } }));
+          body.querySelectorAll('.lt[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf })));
+          wire();
+        } else if (tab === 'friends') { body.innerHTML = f.friends.length ? `<div class="lst">${f.friends.map((r) => row(r, '💬')).join('')}</div>` : '<div class="pcard dim">No friends yet. Tap a neighbour\'s home, or look in New on the island.</div>'; wire(); }
+        else {
+          body.innerHTML = `${tab === 'find' ? '<input id="pplQ" maxlength="30" placeholder="Search by username" autocomplete="off">' : ''}<div id="pplList" class="lst"><div class="li"><span class="lt"><small>Loading…</small></span></div></div>`;
+          const load = async (q) => { try { const list = await my('people', { query: q || '' }); $('pplList').innerHTML = list.map((r) => row(r, '›')).join('') || '<div class="li"><span class="lt"><small>Nobody found.</small></span></div>'; body.querySelectorAll('[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf }))); } catch (e) { fail(e); } };
+          if (tab === 'find') { let tm = 0; $('pplQ').oninput = (e) => { clearTimeout(tm); tm = setTimeout(() => load(e.target.value.trim()), 300); }; $('pplList').innerHTML = '<div class="li"><span class="lt"><small>Type a name to search.</small></span></div>'; $('pplQ').focus(); }
+          else load('');
+        }
+        pbody.querySelectorAll('[data-pt]').forEach((b) => (b.onclick = () => { PEOPLE_TAB.tab = b.dataset.pt; render('people', { tab: b.dataset.pt }); }));
         return;
       }
       if (app === 'newchat') {
@@ -8380,6 +8512,7 @@
         else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }
     }
+    if (!inside && exitHold) { if (Math.hypot(me.x - exitHold.x, me.z - exitHold.z) < 14) next = null; else exitHold = null; } // just came out: walk away first
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
   actBtn.onclick = () => act && act.run();
@@ -8592,8 +8725,9 @@
     try {
       if (isNew) {
         const ask = (m, b) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then((r) => r.ok ? r.text() : 'true');
-        if ((await ask('available', { username: u })).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
-        if ((await ask('emailFree', { email: mail })).trim() === 'false') {
+        const [avail, free] = await Promise.all([ask('available', { username: u }), ask('emailFree', { email: mail })]); // both at once
+        if (avail.trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
+        if (free.trim() === 'false') {
           // already on WYRD: sign in with that email and password, and take the username chosen here
           const r0 = await fetch(`${API}/islandAuth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: mail, password: p }) });
           if (!r0.ok) throw new Error('That email already has a WYRD account. Use your WYRD password, or tap "I have an account".');
@@ -8612,7 +8746,7 @@
       }
       const a = JSON.parse(t);
       localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
-      myName = u.includes('@') ? '' : u; me$ = null; start();
+      myName = u.includes('@') ? '' : u; me$ = null; keyed = false; start(); setTimeout(warmUp, 300);
       if (isNew) { newLagosian(); my('setLook', { look: myLook }).catch(() => {}); cyberWelcome(u); } // a new Lagosian: the welcome, then WYRD's onboarding
       my('me').then((v) => { myName = v.handle; if (v.look) { myLook = v.look; store.set('li.look', myLook); } else my('setLook', { look: myLook }).catch(() => {}); }).catch(() => {});
     } catch (e) { errEl.textContent = e.message; }

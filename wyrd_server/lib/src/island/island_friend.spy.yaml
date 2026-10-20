@@ -1,0 +1,19 @@
+### A friend request between two Lagosians, and then the friendship: pending until the other one accepts or declines.
+### One row per pair and direction; accepting turns it into a friendship both of them see.
+class: IslandFriend
+table: island_friend
+fields:
+  fromUser: UuidValue
+  toUser: UuidValue
+  ### pending | accepted | declined
+  status: String
+  ### a short hello with the request (optional)
+  note: String?
+  createdAt: DateTime
+  decidedAt: DateTime?
+indexes:
+  island_friend_pair_idx:
+    fields: fromUser, toUser
+    unique: true
+  island_friend_to_idx:
+    fields: toUser, status

@@ -824,6 +824,45 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode(out);
   }
 
+  /// Every chat I'm in, in one go: its key material (as [groups]), its members, its latest message (still encrypted)
+  /// and how many messages I haven't seen ([seenJson]: {groupId: last seen message id}). One request for the Link app's
+  /// list and for the new-message notifications, instead of one per chat; the queries are batched too.
+  Future<String> inbox(Session session, String seenJson) async {
+    final u = _user(session);
+    Map<String, dynamic> seen = const {};
+    try {
+      seen = (jsonDecode(seenJson) as Map).cast<String, dynamic>();
+    } catch (_) {}
+    final mine = await IslandMember.db.find(session, where: (t) => t.authUserId.equals(u));
+    if (mine.isEmpty) return '[]';
+    final gids = {for (final m in mine) m.groupId};
+    final groups = {for (final g in await IslandGroup.db.find(session, where: (t) => t.id.inSet(gids))) g.id!: g};
+    final members = await IslandMember.db.find(session, where: (t) => t.groupId.inSet(gids));
+    final handles = {
+      for (final p in await IslandProfile.db.find(session, where: (t) => t.authUserId.inSet({for (final m in members) m.authUserId}))) p.authUserId.uuid: p.handle,
+    };
+    final out = <Map<String, dynamic>>[];
+    for (final m in mine) {
+      final g = groups[m.groupId];
+      if (g == null) continue;
+      final last = await IslandMessage.db.findFirstRow(session, where: (t) => t.groupId.equals(g.id!), orderBy: (t) => t.id.desc());
+      final s = (seen['${g.id}'] as num?)?.toInt() ?? 0;
+      final unread = last == null || last.id! <= s ? 0 : await IslandMessage.db.count(session, where: (t) => t.groupId.equals(g.id!) & (t.id > s) & t.senderId.notEquals(u));
+      out.add({
+        'id': g.id,
+        'nameCt': g.nameCt,
+        'wrappedKey': m.wrappedKey,
+        'wrapperPub': m.wrapperPub,
+        'members': [for (final x in members) if (x.groupId == g.id) handles[x.authUserId.uuid] ?? '?'],
+        'last': last?.id ?? 0,
+        if (last != null) 'lastMsg': {'id': last.id, 'from': handles[last.senderId.uuid] ?? '?', 'mine': last.senderId == u, 'ct': last.ct, 'at': last.createdAt.toIso8601String()},
+        'unread': unread,
+      });
+    }
+    out.sort((a, b) => (b['last'] as int).compareTo(a['last'] as int));
+    return jsonEncode(out);
+  }
+
   /// Post an encrypted message to a chat I'm in.
   Future<String> post(Session session, int groupId, String ct) async {
     final u = _user(session);
@@ -2056,6 +2095,115 @@ class IslandMeEndpoint extends Endpoint {
     final after = await Bank.fresh(session, u);
     return jsonEncode({'dest': dest, 'name': f.name, 'tail': j.tail, 'fee': fee, 'naira': after.naira});
   });
+
+  // ---------------- people: public profiles, finding Lagosians, friend requests ----------------
+  /// What anyone signed in may see about a Lagosian: the name, the look, since when, the HQ's name, the skills only if
+  /// they're open to work, their career titles, how many friends. Never their wallet, email, messages, where they
+  /// are, who their friends are or what's inside their home.
+  static const _gridTitles = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'];
+  static const _trackNames = {'control': 'Control Room Operator', 'lineman': 'Lineman', 'solar': 'Solar Technician', 'plant': 'Plant Engineer', 'marshal': 'Ground Crew', 'atc': 'Air Traffic Controller'};
+  static Future<IslandProfile?> _byHandle(Session s, String handle) =>
+      IslandProfile.db.findFirstRow(s, where: (t) => t.handle.equals(_clean(handle, 40)));
+
+  Future<String> publicProfile(Session session, String handle) async {
+    final u = _user(session);
+    final p = await _byHandle(session, handle);
+    if (p == null) return _err('No Lagosian by that name.');
+    final careers = await IslandGridCareer.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.xp > 0));
+    final friends = await IslandFriend.db.count(session, where: (t) => (t.fromUser.equals(p.authUserId) | t.toUser.equals(p.authUserId)) & t.status.equals('accepted'));
+    final jet = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(p.authUserId));
+    return jsonEncode({
+      'handle': p.handle,
+      'look': p.look,
+      'since': p.createdAt.toIso8601String(),
+      'hq': p.hqName ?? "${p.handle}'s HQ",
+      if (p.openToWork && p.skills.trim().isNotEmpty) 'skills': p.skills,
+      'careers': [for (final c in careers..sort((a, b) => b.level.compareTo(a.level))) '${_gridTitles[(c.level - 1).clamp(0, 4)]} ${_trackNames[c.track] ?? c.track}'],
+      'friends': friends,
+      if (jet != null && jet.showName) 'jet': jet.tail,
+      'me': p.authUserId == u,
+      'rel': p.authUserId == u ? 'me' : await _rel(session, u, p.authUserId),
+    });
+  }
+
+  /// me and them: none | sent (waiting for them) | received (waiting for me) | friends
+  static Future<String> _rel(Session s, UuidValue me, UuidValue them) async {
+    final rows = await IslandFriend.db.find(s, where: (t) => (t.fromUser.equals(me) & t.toUser.equals(them)) | (t.fromUser.equals(them) & t.toUser.equals(me)));
+    if (rows.any((r) => r.status == 'accepted')) return 'friends';
+    if (rows.any((r) => r.status == 'pending' && r.fromUser == me)) return 'sent';
+    if (rows.any((r) => r.status == 'pending' && r.fromUser == them)) return 'received';
+    return 'none';
+  }
+
+  static Map<String, dynamic> _card(IslandProfile p) => {'handle': p.handle, 'look': p.look, 'since': p.createdAt.toIso8601String()};
+
+  /// The newest Lagosians (to say hello to), and a search by name.
+  Future<String> people(Session session, String query) async {
+    final u = _user(session);
+    final q = _clean(query, 30).toLowerCase();
+    final rows = q.isEmpty
+        ? await IslandProfile.db.find(session, orderBy: (t) => t.createdAt.desc(), limit: 15)
+        : await IslandProfile.db.find(session, where: (t) => t.handle.ilike('%${q.replaceAll(RegExp(r'[%_\\]'), '')}%'), orderBy: (t) => t.handle, limit: 15);
+    return jsonEncode([for (final p in rows) if (p.authUserId != u) _card(p)]);
+  }
+
+  /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
+  Future<String> friendRequest(Session session, String handle, String note) async {
+    final u = _user(session);
+    final p = await _byHandle(session, handle);
+    if (p == null) return _err('No Lagosian by that name.');
+    if (p.authUserId == u) return _err('That\'s you.');
+    final back = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u));
+    if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); return jsonEncode({'rel': 'friends'}); }
+    if (back != null && back.status == 'accepted') return jsonEncode({'rel': 'friends'});
+    final day = DateTime.now().toUtc().subtract(const Duration(days: 1));
+    if (await IslandFriend.db.count(session, where: (t) => t.fromUser.equals(u) & (t.createdAt > day)) >= 30) return _err('That\'s a lot of requests for one day. Try again tomorrow.');
+    final mine = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(u) & t.toUser.equals(p.authUserId));
+    final n = _clean(note, 140);
+    if (mine == null) {
+      await IslandFriend.db.insertRow(session, IslandFriend(fromUser: u, toUser: p.authUserId, status: 'pending', note: n.isEmpty ? null : n, createdAt: DateTime.now().toUtc()));
+    } else if (mine.status == 'declined') {
+      if (mine.decidedAt != null && DateTime.now().toUtc().difference(mine.decidedAt!) < const Duration(days: 7)) return _err('They said no for now. You can ask again in a week.');
+      await IslandFriend.db.updateRow(session, mine.copyWith(status: 'pending', note: n.isEmpty ? null : n, createdAt: DateTime.now().toUtc(), decidedAt: null));
+    }
+    return jsonEncode({'rel': mine?.status == 'accepted' ? 'friends' : 'sent'});
+  }
+
+  /// Accept or decline a request someone sent me.
+  Future<String> friendRespond(Session session, String handle, bool accept) async {
+    final u = _user(session);
+    final p = await _byHandle(session, handle);
+    if (p == null) return _err('No Lagosian by that name.');
+    final r = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u) & t.status.equals('pending'));
+    if (r == null) return _err('No request from them.');
+    await IslandFriend.db.updateRow(session, r.copyWith(status: accept ? 'accepted' : 'declined', decidedAt: DateTime.now().toUtc()));
+    return jsonEncode({'rel': accept ? 'friends' : 'none'});
+  }
+
+  /// Cancel a request I sent, or end a friendship (either side).
+  Future<String> unfriend(Session session, String handle) async {
+    final u = _user(session);
+    final p = await _byHandle(session, handle);
+    if (p == null) return _err('No Lagosian by that name.');
+    await IslandFriend.db.deleteWhere(session, where: (t) => ((t.fromUser.equals(u) & t.toUser.equals(p.authUserId)) | (t.fromUser.equals(p.authUserId) & t.toUser.equals(u))) & (t.status.equals('accepted') | (t.status.equals('pending') & t.fromUser.equals(u))));
+    return jsonEncode({'rel': 'none'});
+  }
+
+  /// My friends, the requests waiting for me (with their hello), and the ones I sent.
+  Future<String> friends(Session session) async {
+    final u = _user(session);
+    final rows = await IslandFriend.db.find(session, where: (t) => (t.fromUser.equals(u) | t.toUser.equals(u)) & (t.status.equals('accepted') | t.status.equals('pending')));
+    final ids = {for (final r in rows) r.fromUser == u ? r.toUser : r.fromUser};
+    final profs = {for (final p in await IslandProfile.db.find(session, where: (t) => t.authUserId.inSet(ids))) p.authUserId: p};
+    final out = {'friends': <Map<String, dynamic>>[], 'incoming': <Map<String, dynamic>>[], 'sent': <Map<String, dynamic>>[]};
+    for (final r in rows) {
+      final p = profs[r.fromUser == u ? r.toUser : r.fromUser];
+      if (p == null) continue;
+      final c = {..._card(p), 'at': (r.decidedAt ?? r.createdAt).toIso8601String()};
+      if (r.status == 'accepted') { out['friends']!.add(c); } else if (r.toUser == u) { out['incoming']!.add({...c, if (r.note != null) 'note': r.note}); } else { out['sent']!.add(c); }
+    }
+    return jsonEncode(out);
+  }
 
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.

@@ -54,6 +54,7 @@ import 'greetings/greeting.dart' as _izw8z7ou;
 import 'island/island_access.dart' as _irpwye33;
 import 'island/island_application.dart' as _i62wuws7;
 import 'island/island_car.dart' as _i2p3hxjg;
+import 'island/island_friend.dart' as _ia1wkbmk;
 import 'island/island_furniture.dart' as _iuwuptop;
 import 'island/island_grid_career.dart' as _if4nrr5f;
 import 'island/island_grid_work.dart' as _irf3px15;
@@ -180,6 +181,7 @@ export 'greetings/greeting.dart';
 export 'island/island_access.dart';
 export 'island/island_application.dart';
 export 'island/island_car.dart';
+export 'island/island_friend.dart';
 export 'island/island_furniture.dart';
 export 'island/island_grid_career.dart';
 export 'island/island_grid_work.dart';
@@ -365,6 +367,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i2p3hxjg.IslandCar) {
       return _i2p3hxjg.IslandCar.fromJson(data) as T;
+    }
+    if (t == _ia1wkbmk.IslandFriend) {
+      return _ia1wkbmk.IslandFriend.fromJson(data) as T;
     }
     if (t == _iuwuptop.IslandFurniture) {
       return _iuwuptop.IslandFurniture.fromJson(data) as T;
@@ -745,6 +750,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_i2p3hxjg.IslandCar?>()) {
       return (data != null ? _i2p3hxjg.IslandCar.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ia1wkbmk.IslandFriend?>()) {
+      return (data != null ? _ia1wkbmk.IslandFriend.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iuwuptop.IslandFurniture?>()) {
       return (data != null ? _iuwuptop.IslandFurniture.fromJson(data) : null)
@@ -1473,6 +1481,7 @@ class Protocol extends _isc.SerializationManager {
       _irpwye33.IslandAccess => 'IslandAccess',
       _i62wuws7.IslandApplication => 'IslandApplication',
       _i2p3hxjg.IslandCar => 'IslandCar',
+      _ia1wkbmk.IslandFriend => 'IslandFriend',
       _iuwuptop.IslandFurniture => 'IslandFurniture',
       _if4nrr5f.IslandGridCareer => 'IslandGridCareer',
       _irf3px15.IslandGridWork => 'IslandGridWork',
@@ -1625,6 +1634,8 @@ class Protocol extends _isc.SerializationManager {
         return 'IslandApplication';
       case _i2p3hxjg.IslandCar():
         return 'IslandCar';
+      case _ia1wkbmk.IslandFriend():
+        return 'IslandFriend';
       case _iuwuptop.IslandFurniture():
         return 'IslandFurniture';
       case _if4nrr5f.IslandGridCareer():
@@ -1910,6 +1921,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'IslandCar') {
       return deserialize<_i2p3hxjg.IslandCar>(data['data']);
+    }
+    if (dataClassName == 'IslandFriend') {
+      return deserialize<_ia1wkbmk.IslandFriend>(data['data']);
     }
     if (dataClassName == 'IslandFurniture') {
       return deserialize<_iuwuptop.IslandFurniture>(data['data']);

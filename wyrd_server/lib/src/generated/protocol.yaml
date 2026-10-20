@@ -86,6 +86,7 @@ islandMe:
   - addMember:
   - leaveGroup:
   - groups:
+  - inbox:
   - post:
   - messages:
   - live:
@@ -119,6 +120,12 @@ islandMe:
   - buyJet:
   - setJet:
   - flyJet:
+  - publicProfile:
+  - people:
+  - friendRequest:
+  - friendRespond:
+  - unfriend:
+  - friends:
   - room:
   - saveRoom:
   - shows:
