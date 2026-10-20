@@ -3769,7 +3769,7 @@
       ${row('Due this week', naira(A.dueWk), [A.rent ? 'BQ rent' : '', A.homes.length ? 'service charges and land use' : ''].filter(Boolean).join(', ') || 'nothing due: your first week is free', 'total')}
       <div class="gpnote">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : `<div class="gpnote">Your rent, tax and pay show here once you're signed in to WYRD.</div>`}
       <div class="gpsec">The island now <em class="gplive">● live</em></div>
-      <div class="gptiles"><div class="gpt"><span>WYRD approval</span><b class="${L.approval >= 50 ? 'gpup' : 'gpdn'}">${L.approval}%</b><small>${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div class="gpt"><span>Treasury</span><b>${naira(L.treasury)}</b><small>+${naira(Math.round(L.perSec * 60))} a minute</small></div></div>
+      <div class="gptiles"><div class="gpt"><span>WYRD approval</span><b class="${L.approval >= 50 ? 'gpup' : 'gpdn'}">${L.approval}%</b><small>${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div class="gpt"><span>Treasury</span><b>${naira(L.treasury)}</b><small>${naira(Math.round(L.rateWk))} a week once rates are collected</small></div></div>
       ${L.feed.slice(0, 3).map((f) => `<div class="gpfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}
       <div class="gpbill"><small>This week's bill · ${L.bill[2]}</small><b>${esc(L.bill[0])}</b><div class="gpbar"><i style="width:${Math.round(L.yes / Math.max(1, L.yes + L.no) * 100)}%"></i></div><small>${L.yes} yes · ${L.no} no${L.mine ? ` · you voted ${L.mine}` : ''}</small><div class="gpvote"><button data-pv="yes" class="${L.mine === 'yes' ? 'on' : ''}">👍 Yes</button><button data-pv="no" class="${L.mine === 'no' ? 'on' : ''}">👎 No</button></div></div>
       ${row('Power', grid ? 'NEPA has light' : 'NEPA took light', grid ? '' : 'inverters on', grid ? 'ok' : 'off')}
@@ -3807,9 +3807,10 @@
     // approval: the light matters most, then housing and the weather; it drifts a little hour to hour
     const R = rnd(Math.floor(now / 3600e3)), approval = Math.round(Math.max(18, Math.min(92, 38 + (light - 12) * 2.2 + occ * 25 + (on ? 4 : -6) - rain * 10 + (R() - 0.5) * 4)));
     const apY = Math.round(Math.max(18, Math.min(92, 38 + (lightIn(now - 25 * 3600e3) - 12) * 2.2 + occ * 25)));
-    // the treasury: rates from homes lived in, BQ rent and the island's base income since the government began, less what it has spent
-    const rateWk = Object.entries(c.style).reduce((s2, [k, v]) => s2 + v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52), 0) + c.bq.taken * GOV.bqRentWk + 2500000;
-    const treasury = Math.round(rateWk * ((now - GOV_EPOCH) / GOV_WEEK) * 0.38 + 48e6), perSec = rateWk * 0.38 / (GOV_WEEK / 1000);
+    // the treasury: what has actually been collected. Nothing is collected until the Treasury opens with the financial
+    // system, so it starts at ₦0 (no made-up balance); rateWk is what the rates from homes lived in and BQ rent would bring a week
+    const rateWk = Object.entries(c.style).reduce((s2, [k, v]) => s2 + v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52), 0) + c.bq.taken * GOV.bqRentWk;
+    const treasury = 0, perSec = 0;
     // the bill of the week, and last week's result
     const bill = GOV_BILLS[wk % GOV_BILLS.length], last = GOV_BILLS[(wk + GOV_BILLS.length - 1) % GOV_BILLS.length], RV = rnd(wk * 31 + 7), RL = rnd((wk - 1) * 31 + 7);
     const base = Math.round(4 + c.bq.taken * 0.6 + into * 30), yes0 = Math.round(base * (0.35 + RV() * 0.4)), no0 = base - yes0, mine = store.get('li.vote.' + wk) || '';
@@ -6633,18 +6634,26 @@
     const L = { storm: ['⛈️', 'Thunderstorm'], rain: ['🌧️', r >= 7.6 ? 'Heavy rain' : r >= 2.5 ? 'Rain' : 'Light rain'], drizzle: ['🌦️', 'Drizzle'], fog: ['🌫️', 'Fog'], haze: ['🌫️', 'Harmattan haze'], overcast: ['☁️', 'Overcast'], cloudy: [day ? '⛅' : '☁️', 'Mostly cloudy'], partly: [day ? '🌤️' : '🌙', 'Partly cloudy'], clear: [day ? '☀️' : '🌙', day ? 'Sunny' : 'Clear night'] }[k];
     Object.assign(WX, { kind: k, icon: L[0], text: L[1] });
   }
+  // the island's weather comes from the game server: Lagos airport's real observation (METAR) decides it whenever there
+  // is a recent one, the weather model fills the gaps; everyone on the island gets the same reading. Straight from the
+  // model only if the server can't be reached.
+  const WX_URL = (/\.serverpod\.space$/.test(location.hostname) ? '' : 'https://wryd00.serverpod.space') + '/lagos-island/weather';
   async function wxFetch() {
     try {
-      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=6.45&longitude=3.42&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,is_day&timezone=Africa%2FLagos');
-      const c0 = (await r.json()).current;
+      let c0;
+      try { const r0 = await fetch(WX_URL); if (!r0.ok) throw 0; c0 = await r0.json(); c0.rainMmH = c0.precipitation_mm_h; }
+      catch {
+        const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=6.45&longitude=3.42&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,is_day&timezone=Africa%2FLagos');
+        c0 = (await r.json()).current; c0.rainMmH = (c0.precipitation || 0) * 4; // the model's rain is per 15 minutes
+        try { const a0 = (await (await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=6.45&longitude=3.42&current=dust,pm10&timezone=Africa%2FLagos')).json()).current; c0.dust = a0.dust; c0.pm10 = a0.pm10; } catch {}
+      }
       { const start = Date.parse(c0.time + ':00Z') - 3600e3, now = Date.now() + CLOCK.off; if (Number.isFinite(start) && (now < start - 120e3 || now > start + 17 * 60e3)) CLOCK.off = start + 7.5 * 60e3 - Date.now(); } // the reading is for the quarter hour Lagos is in now
-      Object.assign(WX, { temp: Math.round(c0.temperature_2m), feels: Math.round(c0.apparent_temperature), humidity: c0.relative_humidity_2m, rainMm: c0.precipitation || 0, code: c0.weather_code, cloudPct: c0.cloud_cover, visibility: c0.visibility ?? 20000, wind: c0.wind_speed_10m, windDir: c0.wind_direction_10m, isDay: c0.is_day, live: true, at: c0.time });
+      Object.assign(WX, { temp: Math.round(c0.temperature_2m), feels: Math.round(c0.apparent_temperature ?? c0.temperature_2m), humidity: c0.relative_humidity_2m, rainMm: c0.rainMmH || 0, code: c0.weather_code, cloudPct: c0.cloud_cover, visibility: c0.visibility ?? 20000, wind: c0.wind_speed_10m, windDir: c0.wind_direction_10m, isDay: c0.is_day, dust: c0.dust || 0, pm10: c0.pm10 || 0, source: c0.source || 'model', live: true, at: c0.time });
     } catch {} // no signal: keep what we last had (the sky doesn't change on its own)
-    try { const a0 = (await (await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=6.45&longitude=3.42&current=dust,pm10&timezone=Africa%2FLagos')).json()).current; WX.dust = a0.dust || 0; WX.pm10 = a0.pm10 || 0; } catch {}
     wxApply();
   }
-  wxFetch(); setInterval(wxFetch, 15 * 60000);
-  setInterval(() => { const el = document.getElementById('tWx'); if (el) { { const k = WX.kind, day = WX.isDay !== 0, ic = ico({ storm: 'storm', rain: 'rain', drizzle: 'rain', fog: 'fog', haze: 'fog', overcast: 'cloud', cloudy: 'cloud', partly: day ? 'partly' : 'moon', clear: day ? 'sun' : 'moon' }[k] || 'sun'); const h = WX.temp == null ? ic : `${ic}<b>${WX.temp}°</b>`; if (el.innerHTML !== h) el.innerHTML = h; el.dataset.k = k; } el.title = WX.live ? `Lagos now: ${WX.text}, ${WX.temp}°C (feels ${WX.feels}°), humidity ${WX.humidity}%, wind ${Math.round(WX.wind)} km/h${WX.rainMm ? ', rain ' + WX.rainMm + ' mm/h' : ''}` : 'Lagos weather: waiting for the live reading'; } }, 2000);
+  wxFetch(); setInterval(wxFetch, 10 * 60000);
+  setInterval(() => { const el = document.getElementById('tWx'); if (el) { { const k = WX.kind, day = WX.isDay !== 0, ic = ico({ storm: 'storm', rain: 'rain', drizzle: 'rain', fog: 'fog', haze: 'fog', overcast: 'cloud', cloudy: 'cloud', partly: day ? 'partly' : 'moon', clear: day ? 'sun' : 'moon' }[k] || 'sun'); const h = WX.temp == null ? ic : `${ic}<b>${WX.temp}°</b>`; if (el.innerHTML !== h) el.innerHTML = h; el.dataset.k = k; } el.title = WX.live ? `Lagos now (${WX.source === 'observed' ? 'observed at the airport' : 'weather model'}): ${WX.text}, ${WX.temp}°C (feels ${WX.feels}°), humidity ${WX.humidity}%, wind ${Math.round(WX.wind)} km/h${WX.rainMm ? ', rain ' + WX.rainMm + ' mm/h' : ''}` : 'Lagos weather: waiting for the live reading'; } }, 2000);
   if (WX_FORCE) wxApply();
   // the drops (in screen space) and the clouds (in the world), the lightning, the sound
   const DROPS = Array.from({ length: 420 }, () => ({ x: Math.random(), y: Math.random(), s: 0.7 + Math.random() * 0.6 }));
@@ -7371,7 +7380,7 @@
         const line = (k, v, sub) => `<div class="grow"><span><b>${k}</b>${sub ? `<small>${sub}</small>` : ''}</span><em>${v}</em></div>`;
         let body = '';
         if (tab === 'overview') body = `<div class="ggov"><i class="gorb"></i><div><small>Governor of Lagos Island</small><b>WYRD</b><span>"Eko o ni baje. Every Lagosian housed, every street lit."</span></div></div>
-          <div class="gstat"><div><span>Approval</span><b class="${L.approval >= 50 ? 'gon' : 'goff'}">${L.approval}%</b><small class="gdl">${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div style="grid-column:span 2"><span>Treasury</span><b id="govTreas">${naira(L.treasury)}</b><small class="gdl">+${naira(Math.round(L.rateWk))} a week in rates and rent</small></div></div>
+          <div class="gstat"><div><span>Approval</span><b class="${L.approval >= 50 ? 'gon' : 'goff'}">${L.approval}%</b><small class="gdl">${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div style="grid-column:span 2"><span>Treasury</span><b id="govTreas">${naira(L.treasury)}</b><small class="gdl">collected so far · ${naira(Math.round(L.rateWk))} a week in rates and rent once the Treasury opens</small></div></div>
           <div class="msec" style="font-size:15px">Happening now<small>live</small></div><div class="pcard">${L.feed.slice(0, 4).map((f) => `<div class="gfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}<button class="pbtn" data-gt="live" style="margin-top:8px">Everything happening</button></div>
           <div class="pcard gbill"><small>This week's bill · ${L.bill[2]}</small><b>${esc(L.bill[0])}</b><span>${esc(L.bill[1])}</span>${bar(L.yes / Math.max(1, L.yes + L.no) * 100, 'linear-gradient(90deg,#22C55E,#4ADE80)')}<small>${L.yes} yes · ${L.no} no${L.mine ? ` · you voted ${L.mine}` : ''}</small><button class="pbtn" data-gt="vote" style="margin-top:8px">${L.mine ? 'See the vote' : 'Cast your vote'}</button></div>
           <div class="gstat"><div><span>Citizens</span><b>${citizens}</b></div><div><span>Online now</span><b>${online}</b></div><div><span>Light today</span><b class="${lightHrs >= 16 ? 'gon' : 'goff'}">${lightHrs}/24h</b></div></div>
@@ -7390,7 +7399,7 @@
           <div class="lock">The rates are set; collection starts when the Treasury opens at the Island Reserve Bank with the financial system.</div>`;
         else if (tab === 'live') body = `<div class="pcard">${L.feed.map((f) => `<div class="gfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}</div>
           <div class="msec" style="font-size:15px">Public works</div><div class="pcard">${L.works.map((w) => line(esc(w.nm), Math.round(w.p * 100) + '%', `${w.dep} · ${w.eta}`) + bar(w.p * 100, w.p >= 1 ? '#4ADE80' : 'linear-gradient(90deg,#FACC15,#F97316)')).join('')}</div>
-          <div class="msec" style="font-size:15px">The island right now</div><div class="pcard">${line('Approval of WYRD', L.approval + '%', `${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday: it follows the light, the housing and the weather`)}${line('Treasury', `<span id="govTreas">${naira(L.treasury)}</span>`, `growing by about ${naira(Math.round(L.perSec * 60))} a minute`)}${line('Light in the last day', L.light + '/24 h', L.on ? 'on now' : 'load shedding now')}${line('On the island now', L.online)}</div>`;
+          <div class="msec" style="font-size:15px">The island right now</div><div class="pcard">${line('Approval of WYRD', L.approval + '%', `${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday: it follows the light, the housing and the weather`)}${line('Treasury', `<span id="govTreas">${naira(L.treasury)}</span>`, `collected so far: nothing is taken until the Treasury opens (then about ${naira(Math.round(L.rateWk))} a week)`)}${line('Light in the last day', L.light + '/24 h', L.on ? 'on now' : 'load shedding now')}${line('On the island now', L.online)}</div>`;
         else if (tab === 'vote') { const tot = Math.max(1, L.yes + L.no), left = L.closes - lagosMs(); body = `<div class="pcard gbill"><small>Bill ${L.wk + 1} · ${L.bill[2]} · closes in ${Math.floor(left / 864e5)}d ${Math.floor(left % 864e5 / 3600e3)}h</small><b>${esc(L.bill[0])}</b><span>${esc(L.bill[1])}</span>
           ${line('Yes', `${L.yes} · ${Math.round(L.yes / tot * 100)}%`)}${bar(L.yes / tot * 100, '#4ADE80')}${line('No', `${L.no} · ${Math.round(L.no / tot * 100)}%`)}${bar(L.no / tot * 100, '#F87171')}
           ${L.mine ? `<div class="dim" style="padding:6px 0">You voted <b>${L.mine}</b>. You can change your vote until it closes.</div>` : ''}<div class="qa" style="--ac:#22D3EE;grid-template-columns:1fr 1fr"><button data-vote="yes"><i>👍</i>Yes</button><button data-vote="no"><i>👎</i>No</button></div></div>
