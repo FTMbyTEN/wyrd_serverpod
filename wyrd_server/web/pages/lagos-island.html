@@ -1029,6 +1029,11 @@
     }
   });
   for (const [i0, j0, i1, j1] of BRIDGES) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) tile[j * BOARD.w + i] = BRIDGE;
+  // the Marina boardwalk: from the Marina Jetty round the island's west shore, behind the Marina & NECOM House and
+  // Tinubu Square, then along behind Idumota onto the reclaimed land. A timber deck on piles over the water, for walking.
+  const BOARDWALK = 6, BOARDWALKS = [[1, 3, 1, 15], [2, 3, 5, 3]]; // [i0, j0, i1, j1]: the west shore (north-south), then behind Idumota (east-west)
+  for (const [i0, j0, i1, j1] of BOARDWALKS) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) if (tile[j * BOARD.w + i] === W0) tile[j * BOARD.w + i] = BOARDWALK;
+
   for (let i = COAST[0]; i <= COAST[1]; i++) if (tile[COAST[2] * BOARD.w + i] === W0) tile[COAST[2] * BOARD.w + i] = BRIDGE;
   // where the new bridges land: a stretch of road on each side
   for (const [i, j] of [[64, 4], [69, 19], [64, 22], [81, 22], [82, 22], [6, 18], [4, 41], [30, 41], [46, 41], [70, 28], [70, 41]]) tile[j * BOARD.w + i] = ROAD;
@@ -4074,6 +4079,21 @@
         if (along) box(xa, 0.45, side ? zb - 1.9 : za + 1.5, xb, 1.3, side ? zb - 1.5 : za + 1.9, '#E5E7EB');
         else box(side ? xb - 1.9 : xa + 1.5, 0.45, za, side ? xb - 1.5 : xa + 1.9, 1.3, zb, '#E5E7EB');
       }
+    }
+    // the Marina boardwalk: timber on piles, planks across it, lamps and benches along it. The shore walk has a rail on
+    // the water side and runs from the jetty up onto the reclaimed land; the arm behind Idumota spans the channel from
+    // the island to the reclaimed land, so it touches land on both sides.
+    for (const [i0, j0, i1, j1] of BOARDWALKS) {
+      const ns = j1 - j0 > i1 - i0;
+      const X0 = ns ? i0 * T + 2 : i0 * T, X1 = ns ? (i1 + 1) * T + 0.5 : (i1 + 1) * T, Z0 = ns ? j0 * T - 6 : j0 * T, Z1 = ns ? (j1 + 1) * T + 1 : (j1 + 1) * T;
+      const len = ns ? Z1 - Z0 : X1 - X0;
+      for (let u = 0; u <= len; u += 4) { const px = ns ? X0 + 0.8 : X0 + u, pz = ns ? Z0 + u : Z1 - 0.8; box(px - 0.3, -1.2, pz - 0.3, px + 0.3, 0.4, pz + 0.3, '#4A3420'); } // the piles
+      box(X0, 0, Z0, X1, 0.4, Z1, '#A0672E');
+      x.strokeStyle = 'rgba(70,40,15,0.4)'; x.lineWidth = 1; x.beginPath();
+      for (let u = 1; u < len; u += 1) { const p = ns ? P(X0, 0.42, Z0 + u) : P(X0 + u, 0.42, Z0), q = ns ? P(X1, 0.42, Z0 + u) : P(X0 + u, 0.42, Z1); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } // the planks
+      x.stroke();
+      if (ns) { for (let pz = Z0 + 7; pz <= Z1; pz += 2) box(X0 + 0.05, 0.4, pz - 0.1, X0 + 0.25, 1.6, pz + 0.1, '#E5E7EB'); box(X0 + 0.05, 1.5, Z0 + 7, X0 + 0.25, 1.7, Z1, '#E5E7EB'); } // the rail, water side
+      for (let u = 8; u < len - 2; u += 20) { if (ns) { lamp(X0 + 1, Z0 + u, 5); if (u + 10 < len - 4) bench(X0 + 2.6, Z0 + u + 10); } else lamp(X0 + u, Z1 - 1, 5); }
     }
     // the Lekki-Ikoyi Link Bridge: a cable-stayed span on piers in the lagoon, two lanes each way with walkways, a
     // slender white pylon on the median rising to a pointed crown, two fans of stays down to both edges of the deck;
