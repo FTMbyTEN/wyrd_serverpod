@@ -2959,7 +2959,7 @@
     G3.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6));
     const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-0.5, 1, -0.35); G3.scene.add(sun);
     G3.cam = new THREE.Camera(); G3.cam.matrixAutoUpdate = false;
-    const loader = new GLTFLoader(); G3.loader = loader; G3.loading = {};
+    const loader = new GLTFLoader(); if (T.MeshoptDecoder) loader.setMeshoptDecoder(T.MeshoptDecoder); G3.loader = loader; G3.loading = {}; // the models are meshopt-compressed
     for (const [model, file] of Object.entries(GLB_FOR)) {
       loader.load(CAR_BASE + file + '.glb', (gltf) => {
         // stand it on the ground, centred, its length along x, scaled to the real car's length in metres
@@ -3014,7 +3014,7 @@
   const HAIR_M = ['hair_buzzed', 'hair_simpleparted', 'hair_buzzed+hair_beard', 'hair_simpleparted+hair_beard'], HAIR_F = ['hair_long', 'hair_buns', 'hair_buzzedfemale', 'hair_long'];
   function initPeople() {
     if (PEOPLE.started || !G3.ok) return; PEOPLE.started = true;
-    const THREE = G3.T, L = new window.__three.GLTFLoader(), want = ['body_m', 'body_f', 'anims', 'hair_buzzed', 'hair_simpleparted', 'hair_beard', 'hair_long', 'hair_buns', 'hair_buzzedfemale', 'eyebrows_regular', 'eyebrows_female'];
+    const THREE = G3.T, L = new window.__three.GLTFLoader(); if (window.__three.MeshoptDecoder) L.setMeshoptDecoder(window.__three.MeshoptDecoder); const want = ['body_m', 'body_f', 'anims', 'hair_buzzed', 'hair_simpleparted', 'hair_beard', 'hair_long', 'hair_buns', 'hair_buzzedfemale', 'eyebrows_regular', 'eyebrows_female'];
     let left = want.length;
     const done = () => { if (--left === 0) { PEOPLE.ok = !!(PEOPLE.base.m && PEOPLE.base.f && Object.keys(PEOPLE.clips).length); if (PEOPLE.ok && typeof previewLook === 'function') previewLook(); } }; // ready: the sign-up picture turns 3D
     for (const n of want) L.load(PEOPLE_BASE + n + (n === 'anims' ? '.glb' : '.gltf'), (g) => {
@@ -3438,7 +3438,7 @@
     glow.rotation.x = -Math.PI / 2; glow.position.y = 0.003; SC.scene.add(glow);
     SC.cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
     SC.holder = new THREE.Group(); SC.scene.add(SC.holder);
-    SC.loader = new T.GLTFLoader(); SC.cache = {};
+    SC.loader = new T.GLTFLoader(); if (T.MeshoptDecoder) SC.loader.setMeshoptDecoder(T.MeshoptDecoder); SC.cache = {};
     return true;
   }
   function showcaseLoad(id) {

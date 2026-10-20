@@ -18,6 +18,17 @@ import 'src/rewards/provider_route.dart';
 import 'src/rewards/reward_seed.dart';
 
 /// The starting point of the Serverpod server.
+/// The file types Lagos Island's models are made of.
+final _islandMime = <String, MimeType>{
+  'glb': MimeType('model', 'gltf-binary'),
+  'gltf': MimeType('model', 'gltf+json'),
+  'bin': MimeType('application', 'octet-stream'),
+  'png': MimeType('image', 'png'),
+  'jpg': MimeType('image', 'jpeg'),
+  'jpeg': MimeType('image', 'jpeg'),
+  'webp': MimeType('image', 'webp'),
+};
+
 void run(List<String> args) async {
   // Initialize Serverpod. The generated Serverpod class is already connected
   // with your project's generated code.
@@ -86,8 +97,10 @@ void run(List<String> args) async {
     if (!d.existsSync()) continue;
     for (final f in d.listSync().whereType<File>()) {
       final name = f.uri.pathSegments.last;
-      if (!name.endsWith('.glb') && !name.endsWith('.png')) continue;
-      pod.webServer.addRoute(StaticRoute.file(f), '/lagos-island/$dir/$name');
+      // the people are glTF (.gltf + .bin) with .jpg skins: every model file type is served, gzipped, cached a day (revalidated by ETag)
+      final mime = _islandMime[name.substring(name.lastIndexOf('.') + 1)];
+      if (mime == null) continue;
+      pod.webServer.addRoute(CompressedAssetRoute(f, mimeType: mime, maxAge: const Duration(days: 1)), '/lagos-island/$dir/$name');
     }
   }
 
