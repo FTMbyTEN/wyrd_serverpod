@@ -1533,9 +1533,10 @@
   if (isTouch) document.body.classList.add('touch');
   let W = 0, H = 0, DPR = 1;
   let quality = 1; // drops when frames run slow
+  let zoomCap = 1.5; // a phone's drawing resolution: 1.5x, 2x zoomed in, 2.5x up close (never past the screen's own)
   const cvMain = cv.getContext('2d');
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
-  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? zoomCap : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   { const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
     const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
@@ -6955,6 +6956,7 @@
     if (dt > (MOBILE ? 0.048 : 0.045)) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
     if (slow > (MOBILE ? 30 : 90) && quality > (MOBILE ? 0.6 : 0.85)) { quality = Math.max(MOBILE ? 0.6 : 0.85, quality - 0.075); slow = 0; resize(); }
     if (fast > 300 && quality < 1) { quality = Math.min(1, quality + 0.075); fast = 0; resize(); }
+    if (MOBILE) { const z = cam.zoom * cam.user, want = z > 2.2 ? 2.5 : z > 1.5 ? 2 : 1.5; if (want !== zoomCap) { zoomCap = want; resize(); } }
     if (playing) {
       let ix = stick.x, iz = stick.z;
       if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
