@@ -3257,8 +3257,20 @@
       glow.push(() => { const p = P(mid, 5, zf), r = K * 26; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,230,180,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.4, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     welcome(a, b, c, d) {
-      const cx = (a + c) / 2, cz = (b + d) / 2;
-      groundText('WELCOME TO', cx, cz - 9, 5.5, '#B08A43', 'rgba(60,40,10,0.35)');
+      const cx = (a + c) / 2, cz = (b + d) / 2, tw = performance.now() / 1000;
+      // the plaza: warm stone, laid in big tiles with a gold border, under the letters
+      flat(a + 3, b + 8, c - 3, d - 11, 0.04, '#EBDDBB', '#C9A86A');
+      x.strokeStyle = 'rgba(150,115,60,0.22)'; x.lineWidth = 1;
+      for (let px = a + 7; px < c - 3; px += 4) { const p0 = P(px, 0.05, b + 8), p1 = P(px, 0.05, d - 11); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+      for (let pz = b + 12; pz < d - 11; pz += 4) { const p0 = P(a + 3, 0.05, pz), p1 = P(c - 3, 0.05, pz); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+      flat(a + 4, b + 9, c - 4, d - 12, 0.05, 'rgba(0,0,0,0)', 'rgba(201,168,106,0.8)');
+      // at night, a soft green glow pooled under the name
+      glow.push(() => { if (night < 0.1) return; const p0 = P(cx, 0.1, cz - 3), r = K * 34; x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.min(1, night * 1.1); const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(60,255,160,0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p0[0], p0[1], r, r * 0.45, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
+      // planters at the plaza's corners, flowers in Lagos colours
+      for (const [px, pz] of [[a + 4, b + 9], [c - 8, b + 9], [a + 4, d - 15], [c - 8, d - 15]]) {
+        box(px, 0, pz, px + 4, 1.1, pz + 3, '#C9A86A'); box(px + 0.3, 1.1, pz + 0.3, px + 3.7, 1.4, pz + 2.7, '#3F7D3A');
+        const Rf = rnd(px * 3 + pz); for (let k = 0; k < 7; k++) { const fx = px + 0.6 + Rf() * 2.8, fz = pz + 0.5 + Rf() * 2; box(fx, 1.4, fz, fx + 0.45, 1.85, fz + 0.45, ['#F43F5E', '#FACC15', '#F97316', '#FFFFFF', '#A855F7'][k % 5]); }
+      }
       groundText('LAGOS ISLAND', cx, cz + 1, 10, '#F8FAFC', 'rgba(60,40,10,0.45)');
       // after dark the letters light up: brighter the darker it gets, the colour drifting slowly between green, white
       // and gold, a soft pulse running through them
@@ -3284,9 +3296,31 @@
       const s0 = P(gx - 7, 11.3, d - 1.48), s1 = P(gx + 7, 11.3, d - 1.48), s3 = P(gx - 7, 13.7, d - 1.48), wpx = Math.hypot(s1[0] - s0[0], s1[1] - s0[1]);
       if (wpx > 30) { x.save(); x.translate((s1[0] + s3[0]) / 2, (s1[1] + s3[1]) / 2); x.rotate(Math.atan2(s1[1] - s0[1], s1[0] - s0[0])); x.fillStyle = '#FFFFFF'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `900 ${Math.round(wpx * 0.085)}px "Plus Jakarta Sans", sans-serif`; x.fillText('EKO O NI BAJE', 0, 0); x.restore(); }
       // umbrellas and loungers along the sand, benches by the boardwalk
-      for (let k = 0; k < 6; k++) { const ux = a + 6 + k * ((c - a - 12) / 5); if (Math.abs(ux - gx) < 12) continue; umbrella(ux, d - 9, STALLS[k % STALLS.length]); box(ux + 1.4, 0, d - 9.6, ux + 2.4, 0.5, d - 7, '#F8FAFC'); }
+      const kiosk = (kx, kz, col, label) => { box(kx, 0, kz, kx + 6, 3.2, kz + 4, '#F8FAFC'); box(kx - 0.4, 3.2, kz - 0.6, kx + 6.4, 3.7, kz + 4.4, col);
+        for (let s = 0; s < 6; s++) box(kx - 0.4 + s * 1.13, 3.7, kz - 0.6, kx + 0.17 + s * 1.13, 3.95, kz + 4.4, s % 2 ? '#FFFFFF' : col);
+        box(kx + 0.4, 1, kz + 4, kx + 5.6, 1.25, kz + 4.5, '#8B5E3C'); faceText(label, kx + 3, 2.4, kz + 4.02, col, 0.9, 0, 800);
+        glow.push(() => { if (night < 0.2) return; const p0 = P(kx + 3, 2.2, kz + 4.2), r = K * 7; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(255,200,120,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(p0[0] - r, p0[1] - r, r * 2, r * 2); x.restore(); }); };
+      kiosk(a + 3, d - 11, '#EA580C', 'SUYA'); kiosk(c - 9, d - 11, '#0EA5E9', 'CHILLED');
+      for (let k = 1; k < 5; k++) { const ux = a + 6 + k * ((c - a - 12) / 5); if (Math.abs(ux - gx) < 12) continue; umbrella(ux, d - 9, STALLS[k % STALLS.length]); box(ux + 1.4, 0, d - 9.6, ux + 2.4, 0.5, d - 7, '#F8FAFC'); }
       for (const px of [a + 10, gx - 16, gx + 13, c - 12]) bench(px, d - 4.6);
       for (const px of [a + 4, gx - 11, gx + 11, c - 4]) lamp(px, d - 2, 6);
+      // festoon lights between the lamps: dim bulbs by day, a warm chain after dark
+      const posts = [a + 4, gx - 11, gx + 11, c - 4], bulbs = ['#FDE68A', '#F472B6', '#34D399', '#60A5FA', '#FB923C'];
+      const chain = (lit) => { for (let s = 0; s < posts.length - 1; s++) { const x0 = posts[s], x1 = posts[s + 1];
+        x.strokeStyle = 'rgba(40,30,20,0.5)'; x.lineWidth = 1; x.beginPath(); for (let k = 0; k <= 16; k++) { const u = k / 16, pp = P(x0 + (x1 - x0) * u, 6 - Math.sin(u * Math.PI) * 1.6, d - 2); k ? x.lineTo(pp[0], pp[1]) : x.moveTo(pp[0], pp[1]); } x.stroke();
+        for (let k = 1; k < 12; k++) { const u = k / 12, pp = P(x0 + (x1 - x0) * u, 5.8 - Math.sin(u * Math.PI) * 1.6, d - 2), on = lit ? 0.55 + 0.45 * Math.sin(tw * 3 + k + s * 2) : 0.5;
+          x.fillStyle = bulbs[(k + s) % bulbs.length]; x.globalAlpha = on; x.beginPath(); x.arc(pp[0], pp[1], Math.max(1.2, K * (lit ? 0.32 : 0.2)), 0, Math.PI * 2); x.fill(); x.globalAlpha = 1; } } };
+      chain(false); glow.push(() => { if (night < 0.15) return; x.save(); x.globalCompositeOperation = 'lighter'; x.shadowBlur = 8; x.shadowColor = '#FDE68A'; chain(true); x.restore(); });
+      // searchlights: two beams from the arch, sweeping the sky after dark
+      glow.push(() => { if (night < 0.3) return; x.save(); x.globalCompositeOperation = 'lighter';
+        for (const [bx, ph] of [[gx - 7, 0], [gx + 7, 2.1]]) { const base = P(bx, 14.5, d - 2.4), ang = -Math.PI / 2 + Math.sin(tw * 0.45 + ph) * 0.55, L = K * 60, sp = 0.07;
+          const g = x.createLinearGradient(base[0], base[1], base[0] + Math.cos(ang) * L, base[1] + Math.sin(ang) * L); g.addColorStop(0, 'rgba(190,255,230,' + (0.28 * night) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = g; x.beginPath(); x.moveTo(base[0], base[1]); x.lineTo(base[0] + Math.cos(ang - sp) * L, base[1] + Math.sin(ang - sp) * L); x.lineTo(base[0] + Math.cos(ang + sp) * L, base[1] + Math.sin(ang + sp) * L); x.closePath(); x.fill(); }
+        x.restore(); });
+      // by day, a few gulls wheeling over the water in front
+      if (night < 0.5) { x.strokeStyle = 'rgba(30,41,59,0.55)'; x.lineWidth = Math.max(1, K * 0.18);
+        for (let k = 0; k < 4; k++) { const ang = tw * 0.25 + k * 1.6, gp = P(cx + Math.cos(ang) * (18 + k * 4), 16 + k * 2, d + 8 + Math.sin(ang) * 6), w = K * 1.1, fl = Math.sin(tw * 6 + k) * 0.35;
+          x.beginPath(); x.moveTo(gp[0] - w, gp[1] - w * fl); x.quadraticCurveTo(gp[0] - w * 0.4, gp[1] - w * 0.6, gp[0], gp[1]); x.quadraticCurveTo(gp[0] + w * 0.4, gp[1] - w * 0.6, gp[0] + w, gp[1] - w * fl); x.stroke(); } }
       glow.push(() => { const p = P(gx, 12.5, d - 1.5), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(80,255,170,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.5, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     // ---- Island Reserve Bank, on the reclaimed land by Eko Atlantic: a classical banking hall in pale stone with a
@@ -6425,9 +6459,9 @@
     }
     if (!extra.tour && signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
-        const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine;
-        if (R.mine) { const f = await my('myFurniture', { room: key }).catch(() => ({})); R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; }
-        if (R.mine) R.cars = myCarsL = await my('myCars').catch(() => myCarsL); // a loft keeps your cars inside // what you can place: what you've bought, less what stands in your other homes
+        const [v, f, cars] = await Promise.all([my('room', { key }), my('myFurniture', { room: key }).catch(() => ({})), my('myCars').catch(() => myCarsL)]);
+        if (v.layout) R.layout = v.layout; R.mine = v.mine;
+        if (R.mine) { R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; R.cars = myCarsL = cars; } // a loft keeps your cars inside // what you can place: what you've bought, less what stands in your other homes
       }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
@@ -6992,7 +7026,7 @@
   }
   // reads the phone makes over and over: kept 20 s and shared while in flight, so opening an app again (or two parts of
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
-  const MY_READS = new Set(['me', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
+  const MY_READS = new Set(['room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
   const MY_QUIET = new Set(['live', 'typing', 'read', 'messages']); // chat traffic that changes nothing the cache holds
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
@@ -9252,7 +9286,7 @@
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
         else if (!hq) next = null; // vacant: locked
-        else if (hq.mine) next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) };
+        else if (hq.mine) { warmDoor('hq:' + hq.slot); next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) }; }
         else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }
     }
@@ -9260,6 +9294,9 @@
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
   actBtn.onclick = () => act && act.run();
+  // walking up to a home or an HQ door: what's inside starts loading now (once per door)
+  let warmedDoor = '';
+  function warmDoor(key) { if (!key || key === warmedDoor || !signedIn()) return; warmedDoor = key; my('room', { key }).catch(() => {}); my('myFurniture', { room: key }).catch(() => {}); my('myCars').catch(() => {}); }
   // the spot on a piece of furniture where you sit (or lie), and the seat's height
   function seatOf(it) {
     const f = FURN[it.k], rot = (it.r || 0) % 2, w = rot ? f[3] : f[2], d = rot ? f[2] : f[3], a = it.x - w / 2, b = it.z - d / 2, c = it.x + w / 2, e = it.z + d / 2;
