@@ -7432,7 +7432,8 @@
         return;
       }
       if (app === 'grid') {
-        // WYRD Grid: your career at the National Grid
+        // WYRD Grid: your career at the National Grid (kept by the server)
+        await gridSync();
         const rec = gridRecommend(), tr = GJ.track || rec, lv = gridLv(tr), xp = GJ.xp[tr] || 0, nextXp = GRID_XP[lv] ?? xp, pct = lv >= 5 ? 100 : Math.min(100, Math.round((xp - GRID_XP[lv - 1]) / Math.max(1, nextXp - GRID_XP[lv - 1]) * 100)), sh = GJ.shift, tk = gridTask();
         show(`<div class="ghero" style="background:linear-gradient(135deg,rgba(202,138,4,.35),rgba(79,70,229,.25))"><i style="background:linear-gradient(135deg,#FACC15,#F97316)">${ico('grid')}</i><div><h2>WYRD Grid</h2><span>Careers at the National Grid · run by WYRD</span></div></div>
           <div class="ggov"><i class="gorb"></i><div><small>Today's briefing</small><span style="font-style:normal">${esc(gridBriefing())}</span></div></div>
@@ -7442,7 +7443,7 @@
           <div class="msec" style="font-size:15px">${GJ.track ? 'Switch track' : 'Choose your track'}</div>${Object.entries(GRID_TRACKS).map(([k, t2]) => `<button class="pcard gtrack ${k === tr && GJ.track ? 'on' : ''}" data-tr="${k}"><b>${t2.icon} ${t2.name}${k === rec ? ' <em>WYRD recommends</em>' : ''}</b><small>${t2.blurb}</small><small class="dim">Level ${gridLv(k)} · ${GJ.xp[k] || 0} XP</small></button>`).join('')}
           ${GJ.shifts.length ? `<div class="msec" style="font-size:15px">Your shifts</div><div class="pcard">${GJ.shifts.slice(0, 8).map((s2) => `<div class="grow"><span><b>${GRID_TRACKS[s2.track].icon} ${GRID_TRACKS[s2.track].name}</b><small>${new Date(s2.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · level ${s2.level}</small></span><em>${s2.score}/100${s2.paid ? ' · ' + naira(s2.paid) : ''}</em></div>`).join('')}</div>` : ''}`);
         pbody.querySelectorAll('[data-tr]').forEach((b) => (b.onclick = () => { if (GJ.shift && !confirm('Switching track ends the shift you are on. Switch?')) return; GJ.track = b.dataset.tr; GJ.shift = null; gridSave(); render('grid'); }));
-        if ($('gStart')) $('gStart').onclick = () => { gridNewShift(tr); closePhone(); const t1 = gridTask(); coachSay(`Shift started. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon, and when you get there the button go show.`, [['Oya', null, true]]); };
+        if ($('gStart')) $('gStart').onclick = async () => { try { await gridNewShift(tr); } catch (e) { return fail(e); } closePhone(); const t1 = gridTask(); coachSay(`Shift started. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon, and when you get there the button go show.`, [['Oya', null, true]]); };
         if ($('gGo')) $('gGo').onclick = () => { const t1 = gridTask(); closePhone(); if (t1) { cam.follow = false; cam.x = t1.spot.x; cam.z = t1.spot.z; coachSay(`There: ${t1.spot.name}. Walk, take a ride, or drive. The beacon dey shine.`, [['Got it', () => { cam.follow = true; return 'x'; }, true]]); } };
         if ($('gExam')) $('gExam').onclick = () => { closePhone(); gridExam(tr, () => openPhone('grid')); };
         return;
@@ -8409,14 +8410,12 @@
     plant: { name: 'Plant Engineer', icon: '⚙️', for: ['entrepreneur'], blurb: 'The turbines are your responsibility. Read their temperatures, vibration and oil, and call it: keep running, ease off, or shut down.' },
   };
   const GRID_LEVELS = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'], GRID_XP = [0, 60, 160, 320, 560], GRID_PAY = [12000, 16000, 21000, 27000, 34000];
-  const GRID_EXAM = {
-    control: [['The island is in balance when the frequency is…', ['50 Hz', '60 Hz', '45 Hz'], 0], ['Demand jumps and the frequency falls. You…', ['Raise generation', 'Cut generation', 'Wait'], 0], ['A turbine trips. The quickest power to bring in is…', ['Spinning reserve / the import line', 'A new power station', 'The solar farm at night'], 0], ['Solar output at 9 pm is…', ['About zero', 'At its highest', 'The same as noon'], 0], ['When can frequency go too high?', ['When generation exceeds demand', 'When demand exceeds generation', 'Never'], 0], ['The evening peak in Lagos comes mostly from…', ['Lights, ACs and TVs when people get home', 'The solar farm', 'Midnight'], 0]],
-    lineman: [['Before touching a line, the first step is…', ['Open the breaker to isolate it', 'Replace the part', 'Remove the earths'], 0], ['After isolating, you must…', ['Prove it dead with a tester', 'Close the breaker', 'Climb straight up'], 0], ['Earths are applied to…', ['Protect you if the line is re-energised', 'Make it brighter', 'Hold the pylon up'], 0], ['A blown fuse is replaced with…', ['A fuse of the right rating', 'Any wire', 'A bigger fuse'], 0], ['The last step before restoring is…', ['Remove the earths', 'Apply more earths', 'Leave the site'], 0], ['Rain on a cracked insulator causes…', ['Flashover and trips', 'Nothing', 'Better conduction'], 0]],
-    solar: [['A dusty panel produces…', ['Less power', 'More power', 'The same'], 0], ['A cracked panel should be…', ['Flagged for replacement', 'Cleaned harder', 'Ignored'], 0], ['Solar panels produce the most around…', ['Midday', 'Midnight', 'Sunrise only'], 0], ['Harmattan season means…', ['More dust: clean more often', 'No sun at all', 'Panels freeze'], 0], ['Panels in a string share…', ['Current: one bad panel drags the string', 'Nothing', 'Their colour'], 0], ['The best time to clean panels is…', ['Early morning or evening', 'Noon in full sun', 'During a storm'], 0]],
-    plant: [['Turbine bearing vibration above the limit means…', ['Shut down for inspection', 'Run harder', 'Nothing'], 0], ['Exhaust temperature a little high, everything else normal:', ['Reduce load', 'Shut down at once', 'Ignore it'], 0], ['Low oil pressure risks…', ['Bearing damage', 'Better efficiency', 'Nothing'], 0], ['All readings normal. You…', ['Keep it running', 'Shut it down', 'Reduce load to zero'], 0], ['Why keep spinning reserve?', ['To cover a trip instantly', 'To waste gas', 'For decoration'], 0], ['The cooling towers…', ['Reject heat from the cycle', 'Make the electricity', 'Store gas'], 0]],
-  };
+  // the certification exams are set and marked by the server (GridCareer.bank)
   const gridLoad = () => { try { return JSON.parse(store.get('li.grid') || 'null'); } catch { return null; } };
   const GJ = Object.assign({ track: null, xp: {}, level: {}, shifts: [], shift: null, notes: {} }, gridLoad() || {});
+  if (GJ.shift && !GJ.shift.id) GJ.shift = null; // shifts are dealt by the server now
+  // the career as the server keeps it (level, XP, recent shifts); this page only mirrors it
+  async function gridSync() { try { const c = await my('gridCareer'); for (const [k, v] of Object.entries(c.tracks || {})) { GJ.level[k] = v.level; GJ.xp[k] = v.xp; } GJ.shifts = (c.shifts || []).map((s2) => ({ ...s2, at: Date.parse(s2.at) })); gridSave(); } catch {} }
   const gridSave = () => store.set('li.grid', JSON.stringify(GJ));
   const gridRecommend = () => { const r = store.get('li.role'); return Object.entries(GRID_TRACKS).find(([, t]) => t.for.includes(r))?.[0] || 'control'; };
   const gridLv = (tr) => GJ.level[tr] || 1;
@@ -8426,13 +8425,10 @@
     return { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; }
   function faultSpot(seed) { const dist = SECTORS.filter((s2) => ['lagos', 'ikoyi', 'vi', 'lekki', 'ajah', 'hqrow'].includes(s2.id) && !s2.sand), R2 = rnd(seed), sct = dist[Math.floor(R2() * dist.length)], [i0, j0, i1, j1] = sct.rect, pool = roadTiles.filter(([i, j]) => i >= i0 && i <= i1 && j >= j0 && j <= j1), [ti, tj] = pool[Math.floor(R2() * pool.length)] || [i0, j0]; return { x: ti * T + T / 2, z: tj * T + T / 2, name: `a feeder fault in ${sct.name}` }; }
   // a shift: three tasks for your track (a lineman's start at the Grid, collecting the van)
-  function gridNewShift(tr) {
-    const seed = Date.now() % 100000, mk = (type, title, spot) => ({ type, title, spot, done: false, score: 0 });
-    const tasks = tr === 'control' ? [mk('balance', 'Morning ramp-up', gridSpot('control')), mk('balance', 'The evening peak', gridSpot('control')), mk('balance', 'Turbine 2 trips!', gridSpot('control'))]
-      : tr === 'lineman' ? [mk('van', 'Collect the crew van', gridSpot('gate')), mk('fault', 'Repair the fault', faultSpot(seed)), mk('fault', 'Second call-out', faultSpot(seed + 7))]
-      : tr === 'solar' ? [mk('solar', 'Clean and inspect, rows A to C', gridSpot('solar')), mk('solar', 'Clean and inspect, rows D to F', gridSpot('solar')), mk('turbine', 'Inverter station readings', gridSpot('control'))]
-      : [mk('turbine', 'Morning rounds', gridSpot('turbine')), mk('turbine', 'Load change review', gridSpot('turbine')), mk('turbine', 'End of shift handover', gridSpot('turbine'))];
-    GJ.shift = { track: tr, tasks, at: Date.now() }; gridSave();
+  async function gridNewShift(tr) {
+    const d = await my('gridStart', { track: tr });
+    const spotFor = (t) => t.type === 'van' ? gridSpot('gate') : t.type === 'fault' ? faultSpot(t.seed) : t.type === 'solar' ? gridSpot('solar') : t.type === 'balance' ? gridSpot('control') : gridSpot(tr === 'plant' ? 'turbine' : 'control');
+    GJ.shift = { id: d.id, track: tr, tasks: d.tasks.map((t) => ({ ...t, spot: spotFor(t), done: false, score: 0, result: {} })), at: Date.now() }; GJ.level[tr] = d.level; gridSave();
   }
   const gridTask = () => GJ.shift && GJ.shift.tasks.find((tk) => !tk.done);
   // the beacon over where you have to go
@@ -8455,9 +8451,9 @@
       gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : 'Finish the shift'}</button>`);
       gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
     if (tk.type === 'van') { gpShow(`<div class="gphd"><b>Collect the crew van</b><button class="gpx2">✕</button></div><p>Sign out van GC-02, check the ladder, the tester, the earthing kit and the spares.</p><div class="gpchk">${['Ladder secured', 'Voltage tester working', 'Earthing kit complete', 'Spare fuses and insulators', 'Radio checked with control'].map((t2, k) => `<label><input type="checkbox" data-c="${k}"> ${t2}</label>`).join('')}</div><button class="gpgo">Sign out the van</button>`);
-      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { const n2 = gpEl.querySelectorAll('[data-c]:checked').length; done(n2 * 20, n2 === 5 ? 'Every check done. Control has you on the radio.' : `You skipped ${5 - n2} check${5 - n2 > 1 ? 's' : ''}. On a real call-out that can cost a life.`); }; return; }
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { const n2 = gpEl.querySelectorAll('[data-c]:checked').length; tk.result = { checked: n2 }; done(n2 * 20, n2 === 5 ? 'Every check done. Control has you on the radio.' : `You skipped ${5 - n2} check${5 - n2 > 1 ? 's' : ''}. On a real call-out that can cost a life.`); }; return; }
     if (tk.type === 'balance') { // supply against demand for 90 seconds: keep the frequency inside 49.8 to 50.2 Hz
-      const S = { t: 0, t1: 300, t2: 300, t3: 250, imp: 100, inBand: 0, ticks: 0, low: 50 }, scen = tk.title, sun = solarAt(lagosMs() - 3600e3);
+      const S = { t: 0, t1: 300, t2: 300, t3: 250, imp: 100, inBand: 0, ticks: 0, low: 50 }, scen = tk.title, sun = tk.sun || 0, log = []; tk.result = { log };
       const demandAt = (s2) => { const base = scen.includes('peak') ? 1180 + s2 * 2.4 : scen.includes('Morning') ? 820 + s2 * 2.8 : 1050; return base + Math.sin(s2 / 6) * 30 + (s2 > 40 && s2 < 55 && scen.includes('peak') ? 140 : 0); };
       const draw = () => { const dem = Math.round(demandAt(S.t)), tripped = scen.includes('trips') && S.t >= 20, gen = Math.round(S.t1 + (tripped ? 0 : S.t2) + S.t3 + S.imp + sun * 0.6), f = 50 + (gen - dem) / 400, ok = f >= 49.8 && f <= 50.2;
         const stat = `<div class="gphd"><b>${esc(scen)}</b><span>${Math.max(0, 90 - S.t)} s</span></div>
@@ -8466,25 +8462,25 @@
         if (!gpEl.querySelector('#gpStat')) { gpShow(`<div id="gpStat"></div>${[['t1', 'Turbine 1', 400], ['t2', 'Turbine 2', 400], ['t3', 'Turbine 3', 400], ['imp', 'Import line', 250]].map(([k, l, mx]) => `<label class="gpsl"><span>${l}</span><input type="range" min="0" max="${mx}" step="10" value="${S[k]}" data-s="${k}"><b>${S[k]}</b></label>`).join('')}<div class="gprow2"><span>Solar (by the sky)</span><b>${Math.round(sun * 0.6)} MW</b></div>`);
           gpEl.querySelectorAll('[data-s]').forEach((r) => (r.oninput = () => { S[r.dataset.s] = +r.value; r.nextElementSibling.textContent = r.value; })); }
         gpEl.querySelector('#gpStat').innerHTML = stat; const t2el = gpEl.querySelector('[data-s="t2"]'); if (tripped && !t2el.disabled) { t2el.disabled = true; t2el.previousElementSibling.textContent = 'Turbine 2 (tripped)'; }
-        S.ticks++; if (ok) S.inBand++; S.low = Math.min(S.low, f); };
+        log.push([S.t1, S.t2, S.t3, S.imp]); S.ticks++; if (ok) S.inBand++; S.low = Math.min(S.low, f); };
       draw(); gpTimer = setInterval(() => { S.t++; if (S.t >= 90) { const sc = S.inBand / Math.max(1, S.ticks) * 100; GJ.notes.lowHz = S.low.toFixed(2); done(sc, sc > 85 ? 'Rock steady. The island never knew how close it came.' : sc > 60 ? `Mostly in band. Lowest you let it fall: ${S.low.toFixed(2)} Hz. Keep more reserve ready.` : `The frequency wandered: lowest ${S.low.toFixed(2)} Hz. Watch demand and move before it does.`); } else draw(); }, 1000); return; }
     if (tk.type === 'fault') { // the safe repair: the right steps in the right order, the right part
-      const kinds = [['a blown fuse', 'Fuse, 63 A'], ['a cracked insulator', 'Insulator, 33 kV'], ['a burnt jumper', 'Jumper cable']], R2 = rnd(Math.round(tk.spot.x + tk.spot.z)), fk = kinds[Math.floor(R2() * 3)];
+      const kinds = [['a blown fuse', 'Fuse, 63 A'], ['a cracked insulator', 'Insulator, 33 kV'], ['a burnt jumper', 'Jumper cable']], R2 = rnd(tk.seed || 1), fk = kinds[tk.kind || 0], clicks = []; tk.result = { clicks };
       const STEPS = ['Open the breaker', 'Prove it dead with the tester', 'Apply the earths', `Replace ${fk[0].replace(/^a /, 'the ')}`, 'Remove the earths', 'Close the breaker and restore'];
       const order = [...STEPS].sort(() => R2() - 0.5); let next = 0, strikes = 0, part = null;
       const draw = () => { gpShow(`<div class="gphd"><b>Fault: ${esc(fk[0])}</b><span>step ${next + 1} of 6</span></div><p>Feeder ${tk.spot.name.replace('a feeder fault in ', '')} is down. Do it safely, in order.${strikes ? ` <b style="color:#F87171">Safety strikes: ${strikes}</b>` : ''}</p>
           ${next === 3 && !part ? `<div class="gpsec2">Pick the right part</div><div class="gpopts">${kinds.map((k2) => `<button data-p="${esc(k2[1])}">${esc(k2[1])}</button>`).join('')}</div>` : `<div class="gpopts">${order.map((s2) => `<button data-st="${esc(s2)}" ${STEPS.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`}`);
-        gpEl.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { if (b.dataset.p === fk[1]) { part = fk[1]; draw(); } else { strikes++; draw(); } }));
-        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { if (b.dataset.st === STEPS[next]) { next++; if (next === 3 && !part) return draw(); if (next >= 6) return done(100 - strikes * 18, strikes ? `Restored, but with ${strikes} safety strike${strikes > 1 ? 's' : ''}. Out there, one is too many.` : 'Textbook. Isolated, proved dead, earthed, repaired, restored. The street has light.'); draw(); } else { strikes++; draw(); } })); };
+        gpEl.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { clicks.push('part:' + b.dataset.p); if (b.dataset.p === fk[1]) { part = fk[1]; draw(); } else { strikes++; draw(); } }));
+        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { clicks.push(b.dataset.st); if (b.dataset.st === STEPS[next]) { next++; if (next === 3 && !part) return draw(); if (next >= 6) return done(100 - strikes * 18, strikes ? `Restored, but with ${strikes} safety strike${strikes > 1 ? 's' : ''}. Out there, one is too many.` : 'Textbook. Isolated, proved dead, earthed, repaired, restored. The street has light.'); draw(); } else { strikes++; draw(); } })); };
       draw(); return; }
     if (tk.type === 'solar') { // 24 panels, some dusty, some cracked, 60 seconds
-      const R2 = rnd(Date.now() % 9999), P2 = Array.from({ length: 24 }, () => { const r = R2(); return r < 0.35 ? 'dust' : r < 0.47 ? 'crack' : 'ok'; }); let tleft = 60, right = 0, wrong = 0;
+      const P2 = [...(tk.panels || [])], taps = []; tk.result = { taps }; let tleft = 60, right = 0, wrong = 0;
       const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${tleft} s</span></div><p>Tap a dusty panel to clean it, a cracked one to flag it. Leave the good ones.</p><div class="gppan">${P2.map((v, k) => `<button data-k="${k}" class="${v}"></button>`).join('')}</div><div class="gprow2"><span>Done right</span><b>${right}</b></div>`);
-        gpEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, v = P2[k]; if (v === 'dust' || v === 'crack') { right++; P2[k] = v === 'dust' ? 'clean' : 'flag'; } else if (v === 'ok') { wrong++; P2[k] = 'oops'; } draw(); })); };
+        gpEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, v = P2[k]; taps.push(k); if (v === 'dust' || v === 'crack') { right++; P2[k] = v === 'dust' ? 'clean' : 'flag'; } else if (v === 'ok') { wrong++; P2[k] = 'oops'; } draw(); })); };
       draw(); gpTimer = setInterval(() => { tleft--; const left = P2.filter((v) => v === 'dust' || v === 'crack').length; if (tleft <= 0 || !left) { const total = right + left; done(total ? right / total * 100 - wrong * 8 : 100, left ? `${left} panel${left > 1 ? 's' : ''} left undone${wrong ? `, ${wrong} good one${wrong > 1 ? 's' : ''} touched for nothing` : ''}.` : wrong ? 'All done, but you fiddled with good panels. Time is money.' : 'Every string producing. Clean work.'); } else { const el = gpEl.querySelector('.gphd span'); if (el) el.textContent = tleft + ' s'; } }, 1000); return; }
     if (tk.type === 'turbine') { // three machines' readings: call each one
-      const R2 = rnd(Date.now() % 7777), units = [1, 2, 3].map((u) => { const kind = Math.floor(R2() * 3); return { u, temp: kind === 1 ? 612 + Math.round(R2() * 15) : 560 + Math.round(R2() * 25), vib: kind === 2 ? 11 + Math.round(R2() * 4) : 3 + Math.round(R2() * 3), oil: kind === 2 ? 1.6 : 2.6 + Math.round(R2() * 5) / 10, right: ['keep', 'reduce', 'shut'][kind] }; });
-      const pick = {}; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
+      const units = (tk.units || []).map((un) => ({ ...un, right: un.vib >= 8 || un.oil < 2 ? 'shut' : un.temp > 600 ? 'reduce' : 'keep' })); // the limits on the screen decide it
+      const pick = {}; tk.result = { picks: pick }; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
           ${units.map((un) => `<div class="gpunit"><b>Turbine ${un.u}</b><span>${un.temp} °C · ${un.vib} mm/s · ${un.oil} bar</span><div class="gpopts sm">${[['keep', 'Keep running'], ['reduce', 'Reduce load'], ['shut', 'Shut down']].map(([k, l]) => `<button data-u="${un.u}" data-a="${k}" class="${pick[un.u] === k ? 'sel' : ''}">${l}</button>`).join('')}</div></div>`).join('')}<button class="gpgo">Log the decisions</button>`);
         gpEl.querySelectorAll('[data-u]').forEach((b) => (b.onclick = () => { pick[b.dataset.u] = b.dataset.a; draw(); }));
         gpEl.querySelector('.gpgo').onclick = () => { const ok = units.filter((un) => pick[un.u] === un.right).length; done(ok / 3 * 100, ok === 3 ? 'Every call right. The plant runs safe and earns.' : `${3 - ok} wrong call${3 - ok > 1 ? 's' : ''}. ${units.filter((un) => pick[un.u] !== un.right).map((un) => `Turbine ${un.u} needed: ${{ keep: 'keep running', reduce: 'reduce load', shut: 'shut down' }[un.right]}`).join('. ')}.`); }; };
@@ -8492,22 +8488,29 @@
   }
   // the end of a shift: the report, the pay, the experience, and the next step in the career
   async function gridFinish() {
-    const sh = GJ.shift; if (!sh) return; const tr = sh.track, lv = gridLv(tr), score = Math.round(sh.tasks.reduce((s2, tk) => s2 + tk.score, 0) / sh.tasks.length), xp = Math.round(10 + score / 5);
-    GJ.xp[tr] = (GJ.xp[tr] || 0) + xp; let paid = null, payNote = '';
-    try { const v = await my('gridShift', { level: lv, score }); paid = v.paid; if (typeof pnaira !== 'undefined' && v.naira != null) pnaira.textContent = naira(v.naira); } catch (e) { payNote = /enough for today|just finished/i.test(e.message) ? e.message : 'Pay is held until the National Grid payroll goes live on the server.'; }
-    GJ.shifts.unshift({ at: Date.now(), track: tr, level: lv, score, paid, xp }); GJ.shifts.length = Math.min(30, GJ.shifts.length); GJ.shift = null; gridSave();
-    const canExam = lv < 5 && GJ.xp[tr] >= GRID_XP[lv];
+    const sh = GJ.shift; if (!sh) return; const tr = sh.track;
+    let v;
+    try { v = await my('gridFinish', { workId: sh.id, results: JSON.stringify(sh.tasks.map((tk) => tk.result || {})) }); }
+    catch (e) { GJ.shift = null; gridSave(); coachSay(e.message === 'signin' ? 'Sign in to hand in your shift.' : e.message, [['OK', null, true]]); return; }
+    const score = v.score, paid = v.paid || 0;
+    (v.scores || []).forEach((s2, k) => { if (sh.tasks[k]) sh.tasks[k].score = s2; });
+    GJ.level[tr] = v.level; GJ.xp[tr] = v.xp;
+    GJ.shifts.unshift({ at: Date.now(), track: tr, level: sh.tasks.length ? gridLv(tr) : 1, score, paid }); GJ.shifts.length = Math.min(30, GJ.shifts.length); GJ.shift = null; gridSave();
+    if (typeof pnaira !== 'undefined' && v.naira != null) pnaira.textContent = naira(v.naira);
     notify(`Grid shift done: ${score}/100${paid ? `, paid ${naira(paid)}` : ''}`, 'money', ['grid']);
-    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : payNote} +${xp} XP.${canExam ? ' You have the experience for promotion: take the certification exam in the WYRD Grid app.' : ''}`, [['WYRD Grid', () => { openPhone('grid'); return 'x'; }, true], ['Later', null]]);
+    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : (v.note || '')} You have ${v.xp} XP.${v.canExam ? ' You have the experience for promotion: take the certification exam in the WYRD Grid app.' : ''}`, [['WYRD Grid', () => { openPhone('grid'); return 'x'; }, true], ['Later', null]]);
   }
   // the certification exam for the next level: five questions, four to pass
-  function gridExam(tr, onDone) {
-    const R2 = rnd(Date.now() % 5555), qs = [...GRID_EXAM[tr]].sort(() => R2() - 0.5).slice(0, 5); let k = 0, right = 0;
-    const draw = () => { const [q, opts] = qs[k]; const order = opts.map((o, i) => [o, i]).sort(() => R2() - 0.5);
-      gpShow(`<div class="gphd"><b>${esc(GRID_TRACKS[tr].name)} certification</b><span>${k + 1} of 5</span></div><p class="gpq">${esc(q)}</p><div class="gpopts">${order.map(([o, i]) => `<button data-i="${i}">${esc(o)}</button>`).join('')}</div>`);
-      gpEl.querySelectorAll('[data-i]').forEach((b) => (b.onclick = () => { if (+b.dataset.i === qs[k][2]) right++; k++; if (k < 5) return draw(); const pass = right >= 4;
-        gpShow(`<div class="gphd"><b>${pass ? 'Passed!' : 'Not this time'}</b><button class="gpx2">✕</button></div><div class="gpbig">${right}<small>/5</small></div><p>${pass ? `Promoted to ${GRID_LEVELS[gridLv(tr)]}. Your pay goes up from your next shift.` : 'You need four right. Study the job and sit it again.'}</p>`);
-        if (pass) { GJ.level[tr] = gridLv(tr) + 1; gridSave(); notify(`Promoted: ${GRID_LEVELS[GJ.level[tr] - 1]} ${GRID_TRACKS[tr].name}`, 'money', ['grid']); }
+  async function gridExam(tr, onDone) {
+    let d; try { d = await my('gridExamStart', { track: tr }); } catch (e) { coachSay(e.message, [['OK', () => { onDone && onDone(); return 'x'; }, true]]); return; }
+    const qs = d.questions, answers = []; let k = 0;
+    const draw = () => { const { q, opts } = qs[k];
+      gpShow(`<div class="gphd"><b>${esc(GRID_TRACKS[tr].name)} certification</b><span>${k + 1} of ${qs.length}</span></div><p class="gpq">${esc(q)}</p><div class="gpopts">${opts.map((o, i) => `<button data-i="${i}">${esc(o)}</button>`).join('')}</div>`);
+      gpEl.querySelectorAll('[data-i]').forEach((b) => (b.onclick = async () => { answers.push(+b.dataset.i); k++; if (k < qs.length) return draw();
+        let r; try { r = await my('gridExamAnswer', { workId: d.id, answers: JSON.stringify(answers) }); } catch (e) { gpClose(); coachSay(e.message, [['OK', null, true]]); return; }
+        GJ.level[tr] = r.level; GJ.xp[tr] = r.xp; gridSave();
+        gpShow(`<div class="gphd"><b>${r.pass ? 'Passed!' : 'Not this time'}</b><button class="gpx2">✕</button></div><div class="gpbig">${r.right}<small>/${r.of}</small></div><p>${r.pass ? `Promoted to ${GRID_LEVELS[r.level - 1]}. Your pay goes up from your next shift.` : 'You need four right. Study the job and sit it again in half an hour.'}</p>`);
+        if (r.pass) notify(`Promoted: ${GRID_LEVELS[r.level - 1]} ${GRID_TRACKS[tr].name}`, 'money', ['grid']);
         gpEl.querySelector('.gpx2').onclick = () => { gpClose(); onDone && onDone(); }; })); };
     draw();
   }

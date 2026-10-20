@@ -8,6 +8,7 @@ import '../drone/drone_service.dart';
 import '../generated/protocol.dart';
 import '../world/bank.dart';
 import '../world/world_authority.dart';
+import 'grid_career.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
 ///
@@ -255,35 +256,76 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
   });
 
-  /// A shift at the National Grid: paid by career level (Trainee to Chief) and how well it went (score 0..100), one every 40 minutes, within the daily cap.
-  Future<String> gridShift(Session session, int level, int score) => _money(
-    session,
-    (u) async {
-      const pays = [12000, 16000, 21000, 27000, 34000];
-      final lv = level.clamp(1, 5), sc = score.clamp(0, 100);
-      await WorldAuthority.citizen(session, u);
-      final earned = await _earnedToday(session, u);
-      if (earned >= dailyCap)
-        return _err(
-          'You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.',
-        );
-      final pay = min((pays[lv - 1] * (0.5 + 0.5 * sc / 100)).round(), dailyCap - earned);
-      final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
-      final r = await Bank.post(
-        session,
-        u,
-        key: 'island:shift:${u.uuid}:grid:$bucket',
-        amount: pay,
-        kind: 'job',
-        counter: 'city:services',
-        memo: 'National Grid shift',
-      );
-      if (r.repeat)
-        return _err('You just finished a grid shift. The next one opens in a while.');
-      final c = await Bank.fresh(session, u);
-      return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': 'National Grid shift'});
-    },
-  );
+  /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
+  Future<String> gridCareer(Session session) async {
+    try {
+      return jsonEncode(await GridCareer.all(session, _user(session)));
+    } on GridRefused catch (e) {
+      return _err(e.message);
+    }
+  }
+
+  /// Start a shift on [track]: the server deals the tasks and keeps the answers.
+  Future<String> gridStart(Session session, String track) => _money(session, (u) async {
+        try {
+          await WorldAuthority.citizen(session, u);
+          return jsonEncode(await GridCareer.start(session, u, track));
+        } on GridRefused catch (e) {
+          return _err(e.message);
+        }
+      });
+
+  /// Hand in a shift: [results] is what the player did in each task, as JSON. The server replays and scores it, adds
+  /// the experience, and pays by the level it keeps and the score it worked out: one paid shift every 40 minutes,
+  /// within the daily cap.
+  Future<String> gridFinish(Session session, int workId, String results) => _money(session, (u) async {
+        try {
+          final (w, scores, c) = await GridCareer.finish(session, u, workId, results);
+          final score = w.score!;
+          var pay = 0;
+          String? note;
+          final earned = await _earnedToday(session, u);
+          if (earned >= dailyCap) {
+            note = 'You\'ve worked enough for today (₦${_n(dailyCap)}). The shift counts for your experience; pay starts again tomorrow.';
+          } else {
+            pay = min(GridCareer.payFor(w.level, score), dailyCap - earned);
+            final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
+            final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:grid:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: 'National Grid shift');
+            if (r.repeat) {
+              pay = 0;
+              note = 'One paid grid shift every 40 minutes. This one counts for your experience.';
+            }
+          }
+          if (pay > 0) await GridCareer.setPaid(session, w.id!, pay);
+          final cash = await Bank.fresh(session, u);
+          return jsonEncode({
+            'score': score, 'scores': scores, 'paid': pay, if (note != null) 'note': note, 'naira': cash.naira, 'memo': 'National Grid shift',
+            'level': c.level, 'xp': c.xp, 'canExam': c.level < 5 && c.xp >= GridCareer.xpFor[c.level],
+          });
+        } on GridRefused catch (e) {
+          return _err(e.message);
+        }
+      });
+
+  /// The certification exam for the next level on [track] (needs the experience); the server sets and marks it.
+  Future<String> gridExamStart(Session session, String track) async {
+    try {
+      return jsonEncode(await GridCareer.examStart(session, _user(session), track));
+    } on GridRefused catch (e) {
+      return _err(e.message);
+    }
+  }
+
+  Future<String> gridExamAnswer(Session session, int workId, String answers) async {
+    try {
+      return jsonEncode(await GridCareer.examAnswer(session, _user(session), workId, answers));
+    } on GridRefused catch (e) {
+      return _err(e.message);
+    }
+  }
+
+  /// The old shift report (the phone chose its own level and score). Kept so an old page gets an answer, not an error.
+  Future<String> gridShift(Session session, int level, int score) async => _err('Update the game: reload the page to keep working at the Grid.');
 
   static String _n(int v) => v.toString().replaceAllMapped(
     RegExp(r'\B(?=(\d{3})+(?!\d))'),

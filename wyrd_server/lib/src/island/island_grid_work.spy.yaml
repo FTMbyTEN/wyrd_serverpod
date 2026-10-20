@@ -1,0 +1,20 @@
+### A Grid shift or certification exam the server dealt: [spec] holds what was dealt, including the answers, which
+### the phone never sees. The result is graded here from what the player did, once.
+class: IslandGridWork
+table: island_grid_work
+fields:
+  authUserId: UuidValue
+  ### shift | exam
+  kind: String
+  track: String
+  level: int
+  spec: String
+  ### open | done | void
+  status: String
+  score: int?
+  paid: int?
+  issuedAt: DateTime
+  doneAt: DateTime?
+indexes:
+  island_grid_work_user_idx:
+    fields: authUserId, kind, status

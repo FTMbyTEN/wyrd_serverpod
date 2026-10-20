@@ -1584,6 +1584,104 @@ class Endpoints extends _is.EndpointDispatch {
                     params['place'],
                   ),
         ),
+        'gridCareer': _is.MethodConnector(
+          name: 'gridCareer',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .gridCareer(session),
+        ),
+        'gridStart': _is.MethodConnector(
+          name: 'gridStart',
+          params: {
+            'track': _is.ParameterDescription(
+              name: 'track',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .gridStart(
+                    session,
+                    params['track'],
+                  ),
+        ),
+        'gridFinish': _is.MethodConnector(
+          name: 'gridFinish',
+          params: {
+            'workId': _is.ParameterDescription(
+              name: 'workId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'results': _is.ParameterDescription(
+              name: 'results',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .gridFinish(
+                    session,
+                    params['workId'],
+                    params['results'],
+                  ),
+        ),
+        'gridExamStart': _is.MethodConnector(
+          name: 'gridExamStart',
+          params: {
+            'track': _is.ParameterDescription(
+              name: 'track',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .gridExamStart(
+                    session,
+                    params['track'],
+                  ),
+        ),
+        'gridExamAnswer': _is.MethodConnector(
+          name: 'gridExamAnswer',
+          params: {
+            'workId': _is.ParameterDescription(
+              name: 'workId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'answers': _is.ParameterDescription(
+              name: 'answers',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .gridExamAnswer(
+                    session,
+                    params['workId'],
+                    params['answers'],
+                  ),
+        ),
         'gridShift': _is.MethodConnector(
           name: 'gridShift',
           params: {

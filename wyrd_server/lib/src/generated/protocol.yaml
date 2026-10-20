@@ -65,6 +65,11 @@ islandMe:
   - setLook:
   - keyOf:
   - work:
+  - gridCareer:
+  - gridStart:
+  - gridFinish:
+  - gridExamStart:
+  - gridExamAnswer:
   - gridShift:
   - receipts:
   - send:

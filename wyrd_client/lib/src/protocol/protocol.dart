@@ -55,6 +55,8 @@ import 'island/island_access.dart' as _irpwye33;
 import 'island/island_application.dart' as _i62wuws7;
 import 'island/island_car.dart' as _i2p3hxjg;
 import 'island/island_furniture.dart' as _iuwuptop;
+import 'island/island_grid_career.dart' as _if4nrr5f;
+import 'island/island_grid_work.dart' as _irf3px15;
 import 'island/island_group.dart' as _ia3qph7z;
 import 'island/island_home.dart' as _ii0e1z5r;
 import 'island/island_job.dart' as _ifd0cm6h;
@@ -178,6 +180,8 @@ export 'island/island_access.dart';
 export 'island/island_application.dart';
 export 'island/island_car.dart';
 export 'island/island_furniture.dart';
+export 'island/island_grid_career.dart';
+export 'island/island_grid_work.dart';
 export 'island/island_group.dart';
 export 'island/island_home.dart';
 export 'island/island_job.dart';
@@ -362,6 +366,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iuwuptop.IslandFurniture) {
       return _iuwuptop.IslandFurniture.fromJson(data) as T;
+    }
+    if (t == _if4nrr5f.IslandGridCareer) {
+      return _if4nrr5f.IslandGridCareer.fromJson(data) as T;
+    }
+    if (t == _irf3px15.IslandGridWork) {
+      return _irf3px15.IslandGridWork.fromJson(data) as T;
     }
     if (t == _ia3qph7z.IslandGroup) {
       return _ia3qph7z.IslandGroup.fromJson(data) as T;
@@ -733,6 +743,14 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iuwuptop.IslandFurniture?>()) {
       return (data != null ? _iuwuptop.IslandFurniture.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_if4nrr5f.IslandGridCareer?>()) {
+      return (data != null ? _if4nrr5f.IslandGridCareer.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_irf3px15.IslandGridWork?>()) {
+      return (data != null ? _irf3px15.IslandGridWork.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_ia3qph7z.IslandGroup?>()) {
@@ -1448,6 +1466,8 @@ class Protocol extends _isc.SerializationManager {
       _i62wuws7.IslandApplication => 'IslandApplication',
       _i2p3hxjg.IslandCar => 'IslandCar',
       _iuwuptop.IslandFurniture => 'IslandFurniture',
+      _if4nrr5f.IslandGridCareer => 'IslandGridCareer',
+      _irf3px15.IslandGridWork => 'IslandGridWork',
       _ia3qph7z.IslandGroup => 'IslandGroup',
       _ii0e1z5r.IslandHome => 'IslandHome',
       _ifd0cm6h.IslandJob => 'IslandJob',
@@ -1598,6 +1618,10 @@ class Protocol extends _isc.SerializationManager {
         return 'IslandCar';
       case _iuwuptop.IslandFurniture():
         return 'IslandFurniture';
+      case _if4nrr5f.IslandGridCareer():
+        return 'IslandGridCareer';
+      case _irf3px15.IslandGridWork():
+        return 'IslandGridWork';
       case _ia3qph7z.IslandGroup():
         return 'IslandGroup';
       case _ii0e1z5r.IslandHome():
@@ -1878,6 +1902,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'IslandFurniture') {
       return deserialize<_iuwuptop.IslandFurniture>(data['data']);
+    }
+    if (dataClassName == 'IslandGridCareer') {
+      return deserialize<_if4nrr5f.IslandGridCareer>(data['data']);
+    }
+    if (dataClassName == 'IslandGridWork') {
+      return deserialize<_irf3px15.IslandGridWork>(data['data']);
     }
     if (dataClassName == 'IslandGroup') {
       return deserialize<_ia3qph7z.IslandGroup>(data['data']);

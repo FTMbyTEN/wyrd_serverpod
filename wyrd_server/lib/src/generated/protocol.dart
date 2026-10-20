@@ -60,6 +60,8 @@ import 'island/island_access.dart' as _irpwye33;
 import 'island/island_application.dart' as _i62wuws7;
 import 'island/island_car.dart' as _i2p3hxjg;
 import 'island/island_furniture.dart' as _iuwuptop;
+import 'island/island_grid_career.dart' as _if4nrr5f;
+import 'island/island_grid_work.dart' as _irf3px15;
 import 'island/island_group.dart' as _ia3qph7z;
 import 'island/island_home.dart' as _ii0e1z5r;
 import 'island/island_job.dart' as _ifd0cm6h;
@@ -183,6 +185,8 @@ export 'island/island_access.dart';
 export 'island/island_application.dart';
 export 'island/island_car.dart';
 export 'island/island_furniture.dart';
+export 'island/island_grid_career.dart';
+export 'island/island_grid_work.dart';
 export 'island/island_group.dart';
 export 'island/island_home.dart';
 export 'island/island_job.dart';
@@ -2500,6 +2504,172 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_grid_career',
+      dartName: 'IslandGridCareer',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'track',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'xp',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'level',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'examAfter',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_grid_career_user_track_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'track',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_grid_work',
+      dartName: 'IslandGridWork',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'track',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'level',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'spec',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'score',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'paid',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'issuedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'doneAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_grid_work_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'kind',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
             ),
           ],
           type: 'btree',
@@ -7392,6 +7562,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iuwuptop.IslandFurniture) {
       return _iuwuptop.IslandFurniture.fromJson(data) as T;
     }
+    if (t == _if4nrr5f.IslandGridCareer) {
+      return _if4nrr5f.IslandGridCareer.fromJson(data) as T;
+    }
+    if (t == _irf3px15.IslandGridWork) {
+      return _irf3px15.IslandGridWork.fromJson(data) as T;
+    }
     if (t == _ia3qph7z.IslandGroup) {
       return _ia3qph7z.IslandGroup.fromJson(data) as T;
     }
@@ -7762,6 +7938,14 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_iuwuptop.IslandFurniture?>()) {
       return (data != null ? _iuwuptop.IslandFurniture.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_if4nrr5f.IslandGridCareer?>()) {
+      return (data != null ? _if4nrr5f.IslandGridCareer.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_irf3px15.IslandGridWork?>()) {
+      return (data != null ? _irf3px15.IslandGridWork.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_ia3qph7z.IslandGroup?>()) {
@@ -8480,6 +8664,8 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i62wuws7.IslandApplication => 'IslandApplication',
       _i2p3hxjg.IslandCar => 'IslandCar',
       _iuwuptop.IslandFurniture => 'IslandFurniture',
+      _if4nrr5f.IslandGridCareer => 'IslandGridCareer',
+      _irf3px15.IslandGridWork => 'IslandGridWork',
       _ia3qph7z.IslandGroup => 'IslandGroup',
       _ii0e1z5r.IslandHome => 'IslandHome',
       _ifd0cm6h.IslandJob => 'IslandJob',
@@ -8630,6 +8816,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'IslandCar';
       case _iuwuptop.IslandFurniture():
         return 'IslandFurniture';
+      case _if4nrr5f.IslandGridCareer():
+        return 'IslandGridCareer';
+      case _irf3px15.IslandGridWork():
+        return 'IslandGridWork';
       case _ia3qph7z.IslandGroup():
         return 'IslandGroup';
       case _ii0e1z5r.IslandHome():
@@ -8914,6 +9104,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'IslandFurniture') {
       return deserialize<_iuwuptop.IslandFurniture>(data['data']);
+    }
+    if (dataClassName == 'IslandGridCareer') {
+      return deserialize<_if4nrr5f.IslandGridCareer>(data['data']);
+    }
+    if (dataClassName == 'IslandGridWork') {
+      return deserialize<_irf3px15.IslandGridWork>(data['data']);
     }
     if (dataClassName == 'IslandGroup') {
       return deserialize<_ia3qph7z.IslandGroup>(data['data']);
@@ -9308,6 +9504,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i2p3hxjg.IslandCar.t;
       case _iuwuptop.IslandFurniture:
         return _iuwuptop.IslandFurniture.t;
+      case _if4nrr5f.IslandGridCareer:
+        return _if4nrr5f.IslandGridCareer.t;
+      case _irf3px15.IslandGridWork:
+        return _irf3px15.IslandGridWork.t;
       case _ia3qph7z.IslandGroup:
         return _ia3qph7z.IslandGroup.t;
       case _ii0e1z5r.IslandHome:

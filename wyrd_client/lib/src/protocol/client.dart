@@ -879,7 +879,57 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {'place': place},
   );
 
-  /// A shift at the National Grid: paid by career level (Trainee to Chief) and how well it went (score 0..100), one every 40 minutes, within the daily cap.
+  /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
+  _ida.Future<String> gridCareer() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridCareer',
+    {},
+  );
+
+  /// Start a shift on [track]: the server deals the tasks and keeps the answers.
+  _ida.Future<String> gridStart(String track) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'gridStart',
+        {'track': track},
+      );
+
+  /// Hand in a shift: [results] is what the player did in each task, as JSON. The server replays and scores it, adds
+  /// the experience, and pays by the level it keeps and the score it worked out: one paid shift every 40 minutes,
+  /// within the daily cap.
+  _ida.Future<String> gridFinish(
+    int workId,
+    String results,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridFinish',
+    {
+      'workId': workId,
+      'results': results,
+    },
+  );
+
+  /// The certification exam for the next level on [track] (needs the experience); the server sets and marks it.
+  _ida.Future<String> gridExamStart(String track) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'gridExamStart',
+        {'track': track},
+      );
+
+  _ida.Future<String> gridExamAnswer(
+    int workId,
+    String answers,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridExamAnswer',
+    {
+      'workId': workId,
+      'answers': answers,
+    },
+  );
+
+  /// The old shift report (the phone chose its own level and score). Kept so an old page gets an answer, not an error.
   _ida.Future<String> gridShift(
     int level,
     int score,

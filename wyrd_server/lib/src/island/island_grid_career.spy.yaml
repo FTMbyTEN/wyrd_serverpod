@@ -1,0 +1,15 @@
+### A player's National Grid career on one track (control, lineman, solar, plant): the server's own record of their
+### experience and level (1 Trainee .. 5 Chief). Pay is by this level, never by what the phone says.
+class: IslandGridCareer
+table: island_grid_career
+fields:
+  authUserId: UuidValue
+  track: String
+  xp: int
+  level: int
+  ### a failed certification can be retaken after this
+  examAfter: DateTime?
+indexes:
+  island_grid_career_user_track_idx:
+    fields: authUserId, track
+    unique: true
