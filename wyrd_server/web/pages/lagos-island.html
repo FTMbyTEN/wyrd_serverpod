@@ -761,6 +761,75 @@
   .touch #tAppTip { bottom: calc(202px + env(safe-area-inset-bottom)); }
   @keyframes tipIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #tApp { animation: none; } }
+  /* ================= WYRD OS 4: light (white, smooth) by default; dark is the Night City look =================
+     Light needs no animated wallpaper (a still gradient) and no backdrop blur on phones: lighter to draw. */
+  #phone.os-light { --ink4: #0F172A; --dim4: #64748B; --line4: rgba(15,23,42,.08); --card4: #FFFFFF; --soft4: #F1F5F9; --acc4: #0EA5E9; --acc4b: #6366F1; }
+  #phone.os-light #screen { background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 55%, #E8EEF6 100%) !important; color: var(--ink4) !important; }
+  #phone.os-light #pwall { display: none !important; }
+  #phone.os-light #pbar { color: #0F172A !important; background: transparent !important; } #phone.os-light #pbar svg { fill: #0F172A !important; color: #0F172A !important; }
+  #phone.os-light #pbody { color: var(--ink4) !important; }
+  #phone.os-light #pbody, #phone.os-light #pbody p, #phone.os-light #pbody span, #phone.os-light #pbody b, #phone.os-light #pbody h2, #phone.os-light #pbody h3, #phone.os-light #pbody label { color: inherit; text-shadow: none !important; }
+  #phone.os-light .dim, #phone.os-light #pbody small, #phone.os-light .ahead span, #phone.os-light .li .lt small { color: var(--dim4) !important; }
+  /* surfaces: white cards, soft shadows, no neon edges or clipped corners */
+  #phone.os-light .pcard, #phone.os-light .widget, #phone.os-light .wmini, #phone.os-light .mw, #phone.os-light .tw, #phone.os-light .wfit, #phone.os-light .glass, #phone.os-light .jc, #phone.os-light .lst, #phone.os-light .peek, #phone.os-light .hero {
+    background: var(--card4) !important; color: var(--ink4) !important; border: 1px solid var(--line4) !important; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06) !important; border-radius: 20px !important; clip-path: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  #phone.os-light .hero { background: linear-gradient(135deg, #FFFFFF, #F0F9FF) !important; } #phone.os-light .hero .hv { color: var(--ink4) !important; -webkit-text-fill-color: var(--ink4) !important; text-shadow: none !important; } #phone.os-light .hero .hl { color: var(--dim4) !important; }
+  #phone.os-light .lst { padding: 4px !important; } #phone.os-light .li { background: transparent !important; color: var(--ink4) !important; border: 0 !important; border-bottom: 1px solid var(--line4) !important; border-radius: 14px !important; }
+  #phone.os-light .li:last-child { border-bottom: 0 !important; } #phone.os-light .li:hover { background: var(--soft4) !important; } #phone.os-light .li .lr { color: var(--ink4) !important; }
+  #phone.os-light .li .ic { background: var(--soft4) !important; border-radius: 12px !important; }
+  #phone.os-light .rsec, #phone.os-light .hsec, #phone.os-light .msec { color: var(--dim4) !important; text-shadow: none !important; letter-spacing: 1px !important; }
+  #phone.os-light .ahead { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+  #phone.os-light .ahead h2 { color: var(--ink4) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; font-size: 24px !important; text-shadow: none !important; }
+  #phone.os-light .ahead i { background: linear-gradient(135deg, var(--acc4), var(--acc4b)) !important; color: #fff !important; border-radius: 14px !important; box-shadow: 0 6px 16px rgba(14,165,233,.3) !important; clip-path: none !important; }
+  #phone.os-light .ahead i svg { stroke: #fff !important; color: #fff !important; }
+  /* controls */
+  #phone.os-light .pbtn { background: linear-gradient(135deg, var(--acc4), var(--acc4b)) !important; color: #fff !important; border: 0 !important; border-radius: 14px !important; box-shadow: 0 6px 16px rgba(14,165,233,.25) !important; clip-path: none !important; font-family: 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; }
+  #phone.os-light .pbtn.alt { background: var(--soft4) !important; color: var(--ink4) !important; box-shadow: none !important; }
+  #phone.os-light input, #phone.os-light textarea, #phone.os-light select { background: var(--soft4) !important; color: var(--ink4) !important; border: 1px solid transparent !important; border-radius: 14px !important; box-shadow: none !important; }
+  #phone.os-light input:focus, #phone.os-light textarea:focus { border-color: var(--acc4) !important; background: #fff !important; outline: none !important; }
+  #phone.os-light .chips button, #phone.os-light .qa button { background: var(--card4) !important; color: var(--ink4) !important; border: 1px solid var(--line4) !important; border-radius: 999px !important; clip-path: none !important; box-shadow: 0 1px 2px rgba(15,23,42,.05) !important; }
+  #phone.os-light .qa button { border-radius: 18px !important; } #phone.os-light .chips button.on, #phone.os-light .qa button.on { background: var(--ink4) !important; color: #fff !important; }
+  #phone.os-light .tag { background: var(--soft4) !important; color: #334155 !important; }
+  /* home: app icons on white, the dock frosted (solid on phones: no blur), widgets clean */
+  #phone.os-light .app { color: var(--ink4) !important; text-shadow: none !important; } #phone.os-light .app i { box-shadow: 0 6px 14px rgba(15,23,42,.12) !important; }
+  #phone.os-light .dock { background: rgba(255,255,255,.82) !important; border: 1px solid var(--line4) !important; box-shadow: 0 10px 30px rgba(15,23,42,.10) !important; clip-path: none !important; }
+  #phone.os-light .widget *, #phone.os-light .wmini *, #phone.os-light .mw *, #phone.os-light .tw *, #phone.os-light .wfit * { color: inherit; text-shadow: none !important; }
+  #phone.os-light .wbar { background: var(--soft4) !important; }
+  /* the bar at the bottom */
+  #phone.os-light #pnav { background: rgba(255,255,255,.9) !important; border: 1px solid var(--line4) !important; box-shadow: 0 8px 24px rgba(15,23,42,.08) !important; }
+  #phone.os-light #pnav button { color: #334155 !important; } #phone.os-light #pnav button:hover { background: var(--soft4) !important; }
+  /* the notification shade and control centre */
+  #phone.os-light #shade { background: rgba(248,250,252,.97) !important; color: var(--ink4) !important; backdrop-filter: none !important; }
+  #phone.os-light #shade .sky { display: none !important; } #phone.os-light #shade .cct, #phone.os-light #shade .n, #phone.os-light #shade .ccth { background: #fff !important; color: var(--ink4) !important; border: 1px solid var(--line4) !important; box-shadow: 0 4px 14px rgba(15,23,42,.05) !important; }
+  #phone.os-light #shade .cct.on { background: linear-gradient(135deg, var(--acc4), var(--acc4b)) !important; color: #fff !important; } #phone.os-light #shade small, #phone.os-light #shade .nhead, #phone.os-light #shade .ngrp { color: var(--dim4) !important; }
+  #phone.os-light #shade .shx { color: var(--ink4) !important; background: var(--soft4) !important; }
+  /* the lock screen, light: the clock in ink, no scanlines */
+  #phone.os-light #lockscr { background: linear-gradient(180deg, #F8FAFC, #E0F2FE 70%, #EDE9FE) !important; }
+  #phone.os-light #lockscr .lscan { display: none !important; } #phone.os-light #lockscr .lt { color: var(--ink4) !important; text-shadow: none !important; animation: none !important; font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; letter-spacing: -2px !important; }
+  #phone.os-light #lockscr .ld, #phone.os-light #lockscr .lwx, #phone.os-light #lockscr .lu { color: #334155 !important; text-shadow: none !important; }
+  #phone.os-light #lockscr .lnet { background: #fff !important; color: #0F172A !important; border-color: var(--line4) !important; } #phone.os-light #lockscr .lq { background: rgba(255,255,255,.85) !important; border-color: var(--line4) !important; backdrop-filter: none !important; }
+  #phone.os-light #lockscr .lid { color: var(--acc4) !important; text-shadow: none !important; } #phone.os-light #lockscr .lnotes .n { background: #fff !important; color: var(--ink4) !important; border-left-color: var(--acc4) !important; }
+  #phone.os-light #boot { background: #F8FAFC !important; color: var(--ink4) !important; } #phone.os-light #boot .logo { color: var(--ink4) !important; text-shadow: none !important; }
+  #phone.os-light .cyload { background: transparent !important; }
+  #phone.os-light .err { background: #FEF2F2 !important; color: #B91C1C !important; }
+  /* WYRD, wired in: the smart bar, its suggestions, the ✨ in every app's header, the answer sheet */
+  .w4bar { display: flex; align-items: center; gap: 8px; margin: 2px 0 10px; padding: 10px 14px; border-radius: 18px; background: var(--card4, rgba(255,255,255,.08)); border: 1px solid var(--line4, rgba(255,255,255,.12)); box-shadow: 0 6px 18px rgba(15,23,42,.06); }
+  .w4bar i { width: 22px; height: 22px; border-radius: 50%; flex: none; background: radial-gradient(circle at 35% 35%, #E0FCFF, #38BDF8 45%, #6366F1); box-shadow: 0 0 10px rgba(56,189,248,.6); }
+  .w4bar input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; padding: 4px 0 !important; margin: 0 !important; font: 600 15px 'Plus Jakarta Sans', sans-serif; color: inherit; box-shadow: none !important; outline: none; }
+  .w4res { margin: -4px 0 10px; } .w4res:empty { display: none; }
+  .w4sug { display: grid; gap: 6px; margin: 0 0 10px; } .w4sug button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 10px 12px; border-radius: 16px; border: 1px solid var(--line4, rgba(255,255,255,.12)); background: var(--card4, rgba(255,255,255,.06)); color: inherit; font: 600 13px/1.3 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .w4sug button b { display: block; font-size: 13.5px; } .w4sug button span { opacity: .7; font-size: 12px; } .w4sug .w4i { font-size: 20px; flex: none; }
+  .w4hd { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 6px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; text-transform: uppercase; opacity: .65; }
+  .ahead { position: relative; } .w4ask { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle at 35% 35%, #E0FCFF, #38BDF8 45%, #6366F1); box-shadow: 0 4px 14px rgba(56,189,248,.45); font-size: 16px; }
+  #w4sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; max-height: 72%; overflow-y: auto; padding: 16px 16px calc(18px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; background: var(--card4, #0B1220); color: var(--ink4, #E2E8F0); box-shadow: 0 -12px 40px rgba(15,23,42,.18); animation: sheetUp .22s ease-out; }
+  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+  #w4sheet h4 { margin: 0 0 8px; font: 800 15px 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; gap: 8px; } #w4sheet .qs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  #w4sheet .qs button { padding: 7px 11px; border-radius: 999px; border: 1px solid var(--line4, rgba(255,255,255,.15)); background: var(--soft4, rgba(255,255,255,.06)); color: inherit; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #w4sheet .ans { margin-top: 8px; padding: 12px; border-radius: 16px; background: var(--soft4, rgba(255,255,255,.06)); font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; white-space: pre-wrap; } #w4sheet .ans:empty { display: none; }
+  #w4sheet .row4 { display: flex; gap: 6px; } #w4sheet .row4 input { flex: 1; } #w4sheet .x { position: absolute; right: 14px; top: 12px; border: 0; background: transparent; color: inherit; font-size: 18px; cursor: pointer; opacity: .6; }
+  .lbrief { margin-top: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14); font: 600 12px 'Plus Jakarta Sans', sans-serif; color: inherit; } #phone.os-light .lbrief { background: rgba(255,255,255,.75); color: #334155; }
+  .shsum { margin: 0 0 10px; padding: 10px 12px; border-radius: 16px; background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(99,102,241,.15)); font: 600 13px/1.4 'Plus Jakarta Sans', sans-serif; }
+  @media (max-width: 600px) { #phone.os-light .dock, #phone.os-light #pnav { background: #fff !important; } }
 </style>
 </head>
 <body>
@@ -793,7 +862,7 @@
     <div id="who" class="who"></div>
     <div id="auth">
       <div class="tabs"><button id="tNew" class="on">New here</button><button id="tOld">I have an account</button></div>
-      <label class="fl" id="lEmail">Email<input id="email" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"></label>
+      <label class="fl" id="lEmail" style="display:none">Email<input id="email" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"></label>
       <label class="fl"><span id="lName">Username</span><input id="name" maxlength="120" placeholder="e.g. tunde.lagos" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
       <label class="fl">Password<span class="pw"><input id="pass" type="password" maxlength="128" placeholder="Create a password" autocomplete="new-password"><button type="button" id="peek" aria-label="Show password">Show</button></span></label>
       <div id="pwMeter" class="meter"><i></i></div><div id="pwSay" class="pwsay">Make am strong like Third Mainland Bridge 🌉</div>
@@ -6978,7 +7047,7 @@
   // place and doesn't flicker
   function show(html) { pbody.innerHTML = html; if (pbody.dataset.fresh) { pbody.scrollTop = 0; delete pbody.dataset.fresh; } }
   // the shared app header: the app's icon in its colour, a title, a line under it
-  const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || (a ? a[1] : '✨')}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div></div>`; };
+  const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || (a ? a[1] : '✨')}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div>${k === 'wyrd' ? '' : `<button class="w4ask" data-w4="${k}" aria-label="Ask WYRD" title="Ask WYRD about this">✨</button>`}</div>`; };
   // a round avatar with someone's initials, in a colour that's always theirs
   const avatar = (name) => { let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) % 360; return `<span class="av2" style="background:hsl(${h},75%,62%)">${esc(String(name).replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?')}</span>`; };
   function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); enterFx(); render(app, arg); }
@@ -7193,6 +7262,77 @@
   let osTheme = store.get('li.os') || 'neon';
   function applyTheme() { const t = OS_THEMES[osTheme] || OS_THEMES.neon; phone.style.setProperty('--y', t[0]); phone.style.setProperty('--c', t[1]); phone.style.setProperty('--m', t[2]); }
   applyTheme();
+
+  // ================= WYRD OS 4 =================
+  // ---- appearance: light (white, smooth) unless you pick dark; remembered on this device
+  let osMode = store.get('li.osMode') || 'light';
+  function applyMode() { phone.classList.toggle('os-light', osMode === 'light'); phone.classList.toggle('os-dark', osMode !== 'light'); }
+  applyMode();
+  // ---- WYRD, wired in. Suggestions: what's worth your attention right now, worked out on the phone (no server trip)
+  function w4Suggest() {
+    const out = [], cap = (me$ && me$.dailyCap) || 10000, earned = (me$ && me$.earnedToday) || 0, h = new Date(lagosMs()).getUTCHours();
+    const reqs = (typeof FR !== 'undefined' && FR.list && FR.list.incoming) || [];
+    if (reqs.length) out.push({ i: '👥', t: `${reqs.length} friend request${reqs.length > 1 ? 's' : ''}`, s: reqs.slice(0, 3).map((r) => '@' + r.handle).join(', '), run: () => go('people', { tab: 'requests' }), w: 9 });
+    const msgs = notes.filter((n) => !n.seen && n.kind === 'link').length;
+    if (msgs) out.push({ i: '💬', t: `${msgs} new message${msgs > 1 ? 's' : ''}`, s: 'Open Link', run: () => go('chats'), w: 8 });
+    if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const tk = GJ.shift.tasks.find((v) => !v.done); out.push({ i: GRID_TRACKS[GJ.shift.track] && GRID_TRACKS[GJ.shift.track].place === 'airport' ? '🦺' : '⚡', t: tk ? `Your shift: ${tk.title}` : 'Hand in your shift', s: tk && tk.spot ? 'At ' + tk.spot.name : 'Finish it for your pay', run: () => closePhone(), w: 7 }); }
+    if (WX.kind === 'storm' || WX.kind === 'rain') out.push({ i: WX.kind === 'storm' ? '⛈️' : '🌧️', t: WX.kind === 'storm' ? 'A storm over the island' : 'It\'s raining in Lagos', s: 'Indoors is better: a club, the casino, your HQ', run: null, w: 6 });
+    if (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3)) out.push({ i: '🔌', t: 'NEPA took light', s: 'Inverters on. The Grid has work if you want it.', run: () => go('grid'), w: 5 });
+    if (signedIn() && earned < cap && h >= 7 && h < 22) out.push({ i: '💼', t: `You can still earn ${naira(cap - earned)} today`, s: 'A refinery shift pays ₦6,500; the Grid and the airport pay by level', run: () => go('jobs'), w: 4 });
+    if (typeof AIR !== 'undefined') { const s = AIR.slot() + 1, d = AIR.dep(s); out.push({ i: '✈️', t: `Next flight: ${d[1]} at ${AIR.hhmm(s)}`, s: `Gate ${AIR.gate(s)} · a seat from ${naira(d[4])}`, run: () => go('airport'), w: 2 }); }
+    if (h >= 20 || h < 3) out.push({ i: '🪩', t: 'The clubs are open', s: 'DJ Eko Nights is on the island', run: () => go('music'), w: 3 });
+    return out.sort((a, b) => b.w - a.w);
+  }
+  const w4Brief = () => { const s = w4Suggest().slice(0, 2); return s.length ? s.map((v) => v.t).join(' · ') : 'All quiet on the island.'; };
+  // the smart bar: apps, people and places as you type; Enter with nothing matching asks WYRD
+  function w4Home() {
+    const sug = w4Suggest().slice(0, 3);
+    return `<form class="w4bar" id="w4f"><i></i><input id="w4q" placeholder="Search or ask WYRD…" autocomplete="off" enterkeyhint="search"></form><div class="w4res" id="w4r"></div>
+      ${sug.length ? `<div class="w4hd"><span>✨ WYRD suggests</span></div><div class="w4sug">${sug.map((v, k) => `<button data-w4s="${k}"><span class="w4i">${v.i}</span><span><b>${esc(v.t)}</b><span>${esc(v.s)}</span></span></button>`).join('')}</div>` : ''}`;
+  }
+  function w4Wire() {
+    const sug = w4Suggest().slice(0, 3);
+    pbody.querySelectorAll('[data-w4s]').forEach((b) => (b.onclick = () => { const v = sug[+b.dataset.w4s]; if (v && v.run) v.run(); }));
+    const f = $('w4f'), q = $('w4q'), res = $('w4r'); if (!f) return;
+    let tm = 0, seq = 0;
+    const draw = async (text) => {
+      const t = text.trim().toLowerCase(), my0 = ++seq; if (!t) { res.innerHTML = ''; return; }
+      const apps = APPS.filter((a) => a[2].toLowerCase().includes(t)).slice(0, 4);
+      const places = PLACES.filter((p) => p[5].toLowerCase().includes(t)).slice(0, 4);
+      const row = (ic, title, sub, attr) => `<button class="li" ${attr}><span class="ic">${ic}</span><span class="lt"><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="lr">›</span></button>`;
+      const html = () => `<div class="lst">${apps.map((a) => row(a[1], a[2], 'App', `data-ga="${a[0]}"`)).join('')}${places.map((p) => row(p[6], p[5], 'Ride there', `data-gp="${PLACES.indexOf(p)}"`)).join('')}${(people || []).map((pp) => row('👤', '@' + pp.handle, 'Profile', `data-gh="${esc(pp.handle)}"`)).join('')}${row('✨', `Ask WYRD: “${text.trim()}”`, 'Press enter', 'data-gw="1"')}</div>`;
+      let people = []; res.innerHTML = html();
+      const wire = () => { res.querySelectorAll('[data-ga]').forEach((b) => (b.onclick = () => go(b.dataset.ga))); res.querySelectorAll('[data-gh]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.gh })));
+        res.querySelectorAll('[data-gp]').forEach((b) => (b.onclick = () => { const p = PLACES[+b.dataset.gp], tt = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: tt[0], j: tt[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
+        const w = res.querySelector('[data-gw]'); if (w) w.onclick = () => f.requestSubmit(); };
+      wire();
+      if (signedIn() && t.length >= 2) { try { people = (await my('people', { query: t })).slice(0, 3); if (my0 === seq) { res.innerHTML = html(); wire(); } } catch {} }
+    };
+    q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => draw(q.value), 160); };
+    f.onsubmit = (e) => { e.preventDefault(); const v = q.value.trim(); if (!v) return; openW4('home', v); };
+  }
+  // ✨ in every app's header: ask WYRD about this, in place
+  const W4Q = {
+    wallet: ['How do I earn more today?', 'What did I spend on?', 'Is my money safe?'], jobs: ['Which job suits me?', 'How do I get hired?'], chats: ['Are my chats private?', 'How do I start a group?'],
+    grid: ['Which track should I pick?', 'How do I get promoted?'], airport: ['Where should I fly?', 'How do I buy a jet?', 'How do airport jobs pay?'], homes: ['Which home is good value?', 'How does rent work?'],
+    garage: ['Which car should I buy?'], fashion: ['What should I wear tonight?'], gov: ['What is this week\'s bill?', 'How is the treasury doing?'], people: ['How do I make friends?', 'Who sees my profile?'],
+    music: ['What\'s good tonight?'], hq: ['How do I decorate?', 'How do I invite people?'], ride: ['Okada or car?'], arena: ['How do I perform?'], casino: ['Is the casino worth it?'], home: ['What should I do now?', 'Where is the party tonight?', 'How do I earn naira?'],
+  };
+  function openW4(app, ask) {
+    const old = document.getElementById('w4sheet'); if (old) old.remove();
+    const nm = (APPS.find((a) => a[0] === app) || [, , 'the island'])[2], el = document.createElement('div'); el.id = 'w4sheet';
+    el.innerHTML = `<button class="x" aria-label="Close">✕</button><h4><span class="w4ask" style="position:static;transform:none;width:26px;height:26px"></span>Ask WYRD${app === 'home' ? '' : ' about ' + esc(nm)}</h4>
+      <div class="qs">${(W4Q[app] || W4Q.home).map((q) => `<button>${esc(q)}</button>`).join('')}</div><div class="row4"><input placeholder="Ask anything…" maxlength="300"><button class="pbtn">Ask</button></div><div class="ans"></div>`;
+    document.getElementById('screen').append(el);
+    const inp = el.querySelector('input'), ans = el.querySelector('.ans');
+    const ask0 = async (t) => { if (!t) return; ans.textContent = '…'; if (!signedIn()) { ans.textContent = 'Sign in to talk to WYRD.'; return; }
+      try { const v = await my('askWyrd', { text: app === 'home' ? t : `(I'm in the ${nm} app on my phone) ${t}`, district: sector.name }); ans.textContent = v.say || v.reply || v.text || '…'; } catch (e) { ans.textContent = e.message === 'signin' ? 'Sign in to talk to WYRD.' : 'WYRD can\'t answer right now.'; } };
+    el.querySelector('.x').onclick = () => el.remove();
+    el.querySelectorAll('.qs button').forEach((b) => (b.onclick = () => { inp.value = b.textContent; ask0(b.textContent); }));
+    el.querySelector('.pbtn').onclick = () => ask0(inp.value.trim()); inp.onkeydown = (e) => { if (e.key === 'Enter') ask0(inp.value.trim()); };
+    if (ask) { inp.value = ask; ask0(ask); } else inp.focus();
+  }
+  pbody.addEventListener('click', (e) => { const b = e.target.closest('.w4ask[data-w4]'); if (b) { e.stopPropagation(); openW4(b.dataset.w4); } });
   // WYRD OS: it boots once, then each time you pick it up it's on the lock screen until you tap
   let booted = false, lockGo = null;
   const notes = []; // the notification centre: every note keeps where it leads (tap to open) and whether you've seen it
@@ -7216,12 +7356,14 @@
     const order = ['Messages', 'Island chat', 'WYRD OS'].filter((g) => groups.has(g));
     shadeEl.classList.toggle("night", nightNow() > 0.5); shadeEl.classList.toggle("day", nightNow() <= 0.5);
     shadeEl.innerHTML = `<div class="sky"><i></i></div><button class="shx" aria-label="Close">✕</button><div class="grab" aria-label="Close"></div><div class="shin"><div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
+      <button class="cct${osMode === 'light' ? ' on' : ''}" data-cc="mode"><b>${osMode === 'light' ? '☀️' : '🌙'}</b><span>${osMode === 'light' ? 'Light' : 'Dark'}</span><small>Appearance</small></button>
       <div class="cct wide"><b>${wx.icon}</b><span>${wx.temp}°C · ${wx.text}</span><small>Lagos</small></div>
       <div class="ccth"><span>Theme</span>${Object.entries(OS_THEMES).map(([k, c]) => `<button data-th="${k}" class="${k === osTheme ? 'on' : ''}" style="background:linear-gradient(135deg,${c[0]},${c[1]} 55%,${c[2]})" aria-label="${k}"></button>`).join('')}</div></div>
-      <div class="nhead"><span>Notifications</span>${notes.length ? '<button data-cc="clear">Clear</button>' : ''}</div>
+      <div class="shsum">✨ ${esc(w4Brief())}</div><div class="nhead"><span>Notifications</span>${notes.length ? '<button data-cc="clear">Clear</button>' : ''}</div>
       ${hqReqs ? `<div class="n new tap" data-hq="1"><i>🏠</i><div><b>Your HQ</b><span>${hqReqs} waiting at your door</span></div><small>now</small></div>` : ''}
       ${order.map((g) => `<div class="ngrp">${g}</div>${groups.get(g).slice(0, 12).join('')}`).join('') || (hqReqs ? '' : '<div class="n quiet">All quiet on the island.</div>')}</div>`;
     shadeEl.querySelector('[data-cc="3d"]').onclick = (e) => { e.stopPropagation(); G3.on = !G3.on; buildShade(); };
+    shadeEl.querySelector('[data-cc="mode"]').onclick = (e) => { e.stopPropagation(); osMode = osMode === 'light' ? 'dark' : 'light'; store.set('li.osMode', osMode); applyMode(); buildShade(); };
     const cl = shadeEl.querySelector('[data-cc="clear"]'); if (cl) cl.onclick = (e) => { e.stopPropagation(); notes.length = 0; updBadge(); buildShade(); };
     shadeEl.querySelectorAll('[data-th]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); osTheme = b.dataset.th; store.set('li.os', osTheme); applyTheme(); buildShade(); }));
     shadeEl.querySelectorAll('[data-ni]').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); const n = notes[+el.dataset.ni]; if (!n) return; n.seen = true; updBadge(); shadeEl.classList.remove('on');
@@ -7298,7 +7440,7 @@
     // keep it calm under the apps: a soft dark wash
     const sh = g.createLinearGradient(0, 0, 0, h); sh.addColorStop(0, 'rgba(7,7,13,0.15)'); sh.addColorStop(0.4, 'rgba(7,7,13,0.35)'); sh.addColorStop(1, 'rgba(7,7,13,0.55)'); g.fillStyle = sh; g.fillRect(0, 0, w, h);
   }
-  (function wallLoop(now) { if (phone.style.display === 'block' && now - (WALL.last || 0) > 33) { WALL.last = now; drawWall(now); } requestAnimationFrame(wallLoop); })(performance.now()); // ~30 frames a second is plenty for a wallpaper
+  (function wallLoop(now) { if (phone.style.display === 'block' && osMode !== 'light' && now - (WALL.last || 0) > 90) { WALL.last = now; drawWall(now); } requestAnimationFrame(wallLoop); })(performance.now()); // ~30 frames a second is plenty for a wallpaper
   // ---- WYRD OS 3: the system UI. Like a real phone's, it has states: asleep (put away), locked (the lock screen; only
   // the lock screen's own controls answer, Back/Home/Close wait), and unlocked. The side button is the power button:
   // it puts the phone away whatever state it's in (Esc does the same on a computer).
@@ -7343,7 +7485,7 @@
       const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos`;
+      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos<div class="lbrief">✨ ${esc(w4Brief())}</div>`;
       if (!L.querySelector('.lnet')) { L.insertAdjacentHTML('afterbegin', '<div class="lscan" aria-hidden="true"></div><div class="lnet"><i></i>NETWATCH · LINK SECURE</div><div class="lbeam" aria-hidden="true"></div><div class="lid" aria-live="polite"></div>'); }
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
@@ -7395,8 +7537,7 @@
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
-        show(`
-
+        show(`${w4Home()}
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🪩</i></button>`; })()}
@@ -7405,7 +7546,7 @@
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
-        pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
+        pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
         if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
         pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
