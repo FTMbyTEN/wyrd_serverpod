@@ -1392,6 +1392,14 @@ class EndpointIslandMe extends _isc.EndpointRef {
         {'kind': kind},
       );
 
+  /// Pay for a seat on a flight; the trip itself (out, a moment there, home) runs in the game.
+  _ida.Future<String> bookFlight(String dest) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'bookFlight',
+        {'dest': dest},
+      );
+
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
   /// owner and the people they've let in.
   _ida.Future<String> room(String key) => caller.callServerEndpoint<String>(

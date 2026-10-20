@@ -2625,6 +2625,25 @@ class Endpoints extends _is.EndpointDispatch {
                     params['kind'],
                   ),
         ),
+        'bookFlight': _is.MethodConnector(
+          name: 'bookFlight',
+          params: {
+            'dest': _is.ParameterDescription(
+              name: 'dest',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .bookFlight(
+                    session,
+                    params['dest'],
+                  ),
+        ),
         'room': _is.MethodConnector(
           name: 'room',
           params: {

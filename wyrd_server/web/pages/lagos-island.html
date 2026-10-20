@@ -671,6 +671,46 @@
   #go:hover { filter: brightness(1.06); box-shadow: 0 12px 28px rgba(14,165,233,.45) !important; } #go:active { transform: scale(.98); }
   #hello .link { color: #0369A1; font-weight: 700; }
 /* compact and sleek: everything fits in one slim bar, the DJ chip gives way first, nothing spills out */  #top.pill { width: min(600px, calc(100vw - 16px)); height: 46px; padding: 5px !important; gap: 6px !important; overflow: hidden; }  #title { font-size: 15px; gap: 7px; flex: none; } #title .logo { width: 34px; height: 34px; }  #online { height: 26px; padding: 0 9px; font-size: 11.5px; flex: none; }  #topR { flex: 1 1 auto; min-width: 0; justify-content: flex-end; gap: 4px !important; }  #tWx { height: 30px; padding: 0 9px !important; font-size: 12.5px !important; flex: none; }  .tdj { flex: 0 1 auto; min-width: 0; max-width: 190px; height: 32px; padding: 0 10px 0 8px; } .tdj.on { display: flex; }  #topR button { width: 32px !important; height: 32px !important; flex: none; transition: background .2s, transform .15s, color .2s !important; }  @media (max-width: 640px) { #title span.logo + * { display: none; } #title { font-size: 0; } .tdj { max-width: 150px; } }  @media (max-width: 430px) { #online { padding: 0 7px; } .tdj small { display: none; } .tdj { max-width: 112px; } #tWx b { font-size: 12px; } }
+  /* WYRD OS 3: the system UI's states. Locked: Back / Home / Close wait (dimmed, no taps) until you unlock. */
+  #phone.locked #pnav button { opacity: .28 !important; pointer-events: none !important; filter: grayscale(1) saturate(0); transform: none !important; }
+  #phone.locked #pnav { border-color: rgba(255,255,255,.06) !important; }
+  #phone .btnR { cursor: pointer; } #phone .btnR:active { transform: translateX(1px); }
+  /* the Dynamic Island: compact live activities (left: what, middle: the line, right: how it's going) */
+  #island .il-l, #island .il-r { flex: none; font: 800 11px 'Rajdhani', 'Plus Jakarta Sans', sans-serif; letter-spacing: .5px; font-variant-numeric: tabular-nums; }
+  #island .il-l:empty, #island .il-r:empty { display: none; }
+  #island .il-r { color: #FDE68A; }
+  #island .il-orb { display: none; flex: none; width: 7px; height: 7px; margin-left: 2px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #E0FCFF, #00F0FF 45%, #0E7490); box-shadow: 0 0 6px #00F0FF; animation: orbBreath 3.2s ease-in-out infinite; }
+  #island.il-idle .il-orb { display: block; } @keyframes orbBreath { 50% { opacity: .35; transform: scale(.7); } }
+  #island.il-music .il-eq { display: flex; } #island.il-music .il-r { display: none; }
+  #island.il-fly { color: #BAE6FD; } #island.il-grid { color: #FDE68A; } #island.il-grid .il-r { color: #FACC15; }
+  #island.il-lock { width: 64px !important; margin-left: -32px !important; color: #E2E8F0; justify-content: center; }
+  #island.il-lock::before { content: ''; position: absolute; inset: 3px auto 3px 6px; width: 20px; border-radius: 50%; border: 1.5px solid rgba(0,240,255,.0); }
+  #island.il-scan::before { border-color: rgba(0,240,255,.8); border-top-color: transparent; animation: islScan .5s linear infinite; } @keyframes islScan { to { transform: rotate(360deg); } }
+  #island.il-unlock { width: 132px !important; margin-left: -66px !important; color: #4ADE80; justify-content: center; box-shadow: 0 0 0 1px rgba(74,222,128,.45), 0 0 16px rgba(74,222,128,.3) !important; }
+  #island.il-unlock .il-r { color: #4ADE80; }
+  #island.il-toast .il-r { display: none; }
+  /* the lock screen, Night City over Lagos: scanlines, a glitching clock, the NETWATCH chip, the unlock beam */
+  #lockscr { overflow: hidden; touch-action: none; }
+  #lockscr .lscan { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
+  #lockscr > *:not(.lscan):not(.lbeam) { position: relative; z-index: 1; }
+  #lockscr .lnet { position: absolute !important; top: 46px; left: 50%; transform: translateX(-50%); padding: 3px 10px; border: 1px solid rgba(0,240,255,.45); font: 700 10px 'Rajdhani', sans-serif; letter-spacing: 2.5px; color: #7DF9FF; background: rgba(0,20,30,.55); white-space: nowrap; }
+  #lockscr .lnet i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 6px #4ADE80; vertical-align: 1px; animation: orbBreath 2s ease-in-out infinite; }
+  #lockscr .lt { animation: lockGlitch 6s steps(1) infinite; }
+  @keyframes lockGlitch { 0%, 92%, 100% { transform: none; text-shadow: 4px 0 var(--m), -3px 0 var(--c); } 93% { transform: translateX(-3px) skewX(-6deg); text-shadow: -6px 0 var(--m), 5px 0 var(--c); } 95% { transform: translateX(2px); clip-path: inset(10% 0 45% 0); } 97% { transform: none; clip-path: none; } }
+  #lockscr .lbeam { position: absolute; left: 0; right: 0; bottom: -20%; height: 18%; z-index: 2; pointer-events: none; opacity: 0; background: linear-gradient(0deg, transparent, rgba(0,240,255,.35) 60%, rgba(224,252,255,.9) 62%, transparent 64%); }
+  #lockscr.unlocking .lbeam { animation: lockBeam .65s cubic-bezier(.4,0,.2,1) forwards; } @keyframes lockBeam { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: .9; transform: translateY(-640%); } }
+  #lockscr.unlocking .ltop, #lockscr.unlocking .lnotes, #lockscr.unlocking .lbot { transition: transform .45s cubic-bezier(.4,0,.2,1) .2s, opacity .45s .2s; transform: translateY(-24px); opacity: 0; }
+  #lockscr .lid { position: absolute !important; left: 0; right: 0; bottom: 92px; text-align: center; font: 800 11px 'Orbitron', sans-serif; letter-spacing: 3px; color: #7DF9FF; text-shadow: 0 0 8px rgba(0,240,255,.6); min-height: 14px; }
+  #lockscr.unlocking .lid { color: #4ADE80; text-shadow: 0 0 8px rgba(74,222,128,.6); }
+  @media (prefers-reduced-motion: reduce) { #lockscr .lt, #island .il-orb, #lockscr .lnet i { animation: none !important; } #lockscr.unlocking .lbeam { animation-duration: .01s; } }
+  /* the lock screen's foot: the hint on its own line, the quick buttons in a row under it, all clear of the (idle) bar */
+  #lockscr { padding-bottom: 104px !important; }
+  #lockscr .lbot { flex-wrap: wrap; justify-content: center !important; gap: 14px 22px; }
+  #lockscr .lbot .lu { order: -1; flex-basis: 100%; text-align: center; white-space: nowrap; font-size: 11px !important; letter-spacing: 3px !important; }
+  #lockscr .lbot .lu::before { content: ''; display: block; width: 36px; height: 3px; margin: 0 auto 8px; border-radius: 3px; background: linear-gradient(90deg, var(--c), var(--m)); animation: swipeHint 1.8s ease-in-out infinite; }
+  @keyframes swipeHint { 50% { transform: translateY(-5px); opacity: .55; } }
+  #lockscr .lid { bottom: 178px !important; }
+  #lockscr.unlocking .lbot .lu { opacity: 0 !important; transition: opacity .1s !important; } /* WYRD ID speaks instead */
 </style>
 </head>
 <body>
@@ -2351,6 +2391,19 @@
       for (let k = 0; k < 6; k++) { const px = t0 + 3 + k * (t1 - t0 - 6) / 5; box(px - 0.2, 0, f1 + 1.2, px + 0.2, 10, f1 + 1.5, '#E5E7EB'); }
       const nm = () => { const p = P((t0 + t1) / 2, 7.4, f1 + 0.05); if (K < 2) return; x.save(); x.font = `800 ${Math.max(8, K * 1.5)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#1E3A8A'; x.shadowColor = '#93C5FD'; x.shadowBlur = 6; x.fillText('LAGOS ISLAND AIRPORT', p[0], p[1]); x.restore(); };
       nm(); glow.push(nm);
+      // the departures board out front: the next three from the timetable (only drawn when you're close enough to read it)
+      const fids = () => { if (K < 2.2) return; const p = P(t1 - 10, 6, f1 + 3.2); if (p[0] < -200 || p[0] > W + 200 || p[1] < -100 || p[1] > H + 100) return;
+        box(t1 - 13.6, 0, f1 + 3, t1 - 13.2, 5, f1 + 3.4, '#334155'); box(t1 - 6.8, 0, f1 + 3, t1 - 6.4, 5, f1 + 3.4, '#334155');
+        const s0 = AIR.slot(), sc = Math.min(1.6, K / 4.6), w = 168 * sc, hh = 64 * sc;
+        x.save(); x.fillStyle = '#0B1220'; x.strokeStyle = '#334155'; x.lineWidth = 1; x.beginPath(); x.roundRect(p[0] - w / 2, p[1] - hh, w, hh, 4 * sc); x.fill(); x.stroke();
+        x.font = `800 ${8 * sc}px "Plus Jakarta Sans", sans-serif`; x.textBaseline = 'middle'; x.fillStyle = '#FACC15'; x.textAlign = 'left'; x.fillText('✈ DEPARTURES', p[0] - w / 2 + 6 * sc, p[1] - hh + 8 * sc);
+        x.font = `700 ${7.5 * sc}px ui-monospace, "SF Mono", Menlo, monospace`;
+        for (let k = 0; k < 3; k++) { const s = s0 + k, d = AIR.dep(s), st = AIR.depStatus(s, s0), y0 = p[1] - hh + (21 + k * 14) * sc;
+          x.fillStyle = '#E2E8F0'; x.textAlign = 'left'; x.fillText(`${AIR.hhmm(s)} ${d[2]} ${d[1].slice(0, 9).padEnd(9)} G${AIR.gate(s)}`, p[0] - w / 2 + 6 * sc, y0);
+          x.fillStyle = st === 'Boarding' ? '#4ADE80' : st === 'Departed' ? '#94A3B8' : '#FACC15'; x.textAlign = 'right'; x.fillText(st.toUpperCase(), p[0] + w / 2 - 6 * sc, y0); }
+        x.restore(); };
+      fids(); glow.push(fids);
+
       // the drop-off lane and car park out front
       flat(t0, f1 + 1.8, t1, d - 0.5, 0.07, '#57534E'); flat(t0, f1 + 4.2, t1, f1 + 4.5, 0.09, '#F8FAFC');
       const R = rnd(a + b);
@@ -2387,7 +2440,7 @@
         //  arrival:   in from the east over the water, down on runway 27, the roll-out, round on the runway, back along
         //             it to the taxiway and down to the apron
         //  departure: up the taxiway from the apron, lined up on 27, the take-off roll and the climb out over the island
-        { const T60 = t % 60, xe = c - 13, zr = rm, rr = 2, zl = zr + 2 * rr, za = d - 28;
+        { const T60 = ((Date.now() + CLOCK.off) / 1000) % 60, xe = c - 13, zr = rm, rr = 2, zl = zr + 2 * rr, za = d - 28;
           const ease = (u) => u * u * (3 - 2 * u), lerp = (p0, p1, u) => p0 + (p1 - p0) * u, arc = (cx0, cz0, r0, an) => [cx0 + Math.cos(an) * r0, cz0 + Math.sin(an) * r0, 0];
           const arr = (s) => { // [x, z, alt] at second s of the arrival
             if (s < 12) { const u = s / 12; return [lerp(c + 75, c - 6, u), zr, 26 * (1 - u) * (1 - u * 0.35)]; }
@@ -2409,7 +2462,7 @@
             if (p0[2] > 0.3) { const sh = P(p0[0] + p0[2] * 0.4, 0, p0[1] + p0[2] * 0.2); x.fillStyle = 'rgba(20,40,60,' + Math.max(0.05, 0.25 - p0[2] / 200) + ')'; x.beginPath(); x.ellipse(sh[0], sh[1], K * 6, K * 2 * sp, 0, 0, Math.PI * 2); x.fill(); }
             if (!car3d(p0[0], p0[1], 'jet', ang + JET_TURN, 12, liv, p0[2], pitch)) plane(p0[0], p0[1], p0[2], 0.55, liv, Math.cos(ang) >= 0 ? 1 : -1); // the drawn plane until the model loads
           };
-          const cycle = Math.floor(t / 60), ST = AIR_ST;
+          const cycle = AIR.slot(), ST = AIR_ST; // the timetable's minute: this slot's arrival and departure
           if (T60 < 38) fly(arr, T60, 38, LIVERY[cycle % LIVERY.length], ST.a);
           if (T60 >= 40) fly(dep, T60 - 40, 20, LIVERY[(cycle + 4) % LIVERY.length], ST.d); }
       }
@@ -2851,6 +2904,28 @@
   let JET_TURN = 0; // which way the model's nose points (checked in the preview)
   // each jet in its own livery: white, navy, red, green, gold, purple, sky blue, black
   const LIVERY = ['#F8FAFC', '#1E3A8A', '#B91C1C', '#047857', '#D4A017', '#0EA5E9', '#111827', '#EA580C', '#64748B', '#0F766E'];
+  // ---- Lagos Island Airport's timetable. One slot a minute on the Lagos clock: in each, one jet arrives and one leaves,
+  // to and from the places below, at a gate. The planes on the runway, the departures board and the flights you book
+  // all read this, so they agree. [id, city, code, flag, seat in G₦, seconds aboard, the skyline drawn when you get there]
+  const AIR_DEST = [
+    ['abuja', 'Abuja', 'ABV', '🇳🇬', 25000, 150, 'zuma'], ['accra', 'Accra', 'ACC', '🇬🇭', 40000, 170, 'low'], ['dakar', 'Dakar', 'DSS', '🇸🇳', 60000, 190, 'low'],
+    ['nairobi', 'Nairobi', 'NBO', '🇰🇪', 80000, 220, 'mid'], ['dubai', 'Dubai', 'DXB', '🇦🇪', 90000, 240, 'burj'], ['joburg', 'Johannesburg', 'JNB', '🇿🇦', 100000, 240, 'mid'],
+    ['london', 'London', 'LHR', '🇬🇧', 150000, 280, 'eye'],
+  ];
+  const AIR_JOY = ['island', 'Island joyride', 'LOS', '🏝️', 8000, 90, 'island']; // round the island and back, no landing away
+  const AIR = {
+    slot: (ms = Date.now() + CLOCK.off) => Math.floor(ms / 60000),
+    dep: (s) => AIR_DEST[((s * 5 + 2) % AIR_DEST.length + AIR_DEST.length) % AIR_DEST.length],
+    arr: (s) => AIR_DEST[((s * 3) % AIR_DEST.length + AIR_DEST.length) % AIR_DEST.length],
+    gate: (s) => 1 + ((s % 5) + 5) % 5,
+    find: (id) => (id === AIR_JOY[0] ? AIR_JOY : AIR_DEST.find((d) => d[0] === id)),
+    // the slot's clock time in Lagos (HH:MM): the departure leaves 40 s into its minute, the arrival lands 12 s in
+    hhmm: (s) => { const d = new Date(s * 60000 + 3600e3); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); },
+    // what a departure is doing now (sec: seconds into the current slot)
+    depStatus: (s, now = AIR.slot(), sec = ((Date.now() + CLOCK.off) / 1000) % 60) => s < now || (s === now && sec >= 53) ? 'Departed' : s === now && sec >= 46 ? 'Taking off' : s === now && sec >= 40 ? 'Taxiing' : s === now || s === now + 1 ? 'Boarding' : 'On time',
+    arrStatus: (s, now = AIR.slot(), sec = ((Date.now() + CLOCK.off) / 1000) % 60) => s < now || (s === now && sec >= 38) ? 'At the gate' : s === now && sec >= 12 ? 'Landed' : s === now ? 'Landing' : 'Expected',
+  };
+
   function jet(px, pz, k) {
     const liv = LIVERY[k % LIVERY.length];
     if (car3d(px, pz, 'jet', JET_TURN, 12, liv)) return; // the real model, 12 m nose to tail, painted in its livery; the drawn one below until it loads
@@ -4523,6 +4598,7 @@
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
     yacht: { w: 96, d: 34, floor: '#B7895C', wall: '#B7895C', trim: '#B7895C', cam: { yaw: -0.45, pitch: 0.82, zoom: 1.25 } }, // a deck at sea: no walls
+    jetcabin: { w: 60, d: 18, floor: '#CFC2A8', wall: '#F5F1E8', trim: '#B08A43', cam: { yaw: -0.5, pitch: 0.84, zoom: 1.7 } }, // a private jet in flight: windows down the wall
     beach: { w: 110, d: 72, floor: '#F3DE9C', wall: '#F3DE9C', trim: '#F3DE9C', cam: { yaw: -0.4, pitch: 0.85, zoom: 1.0 } }, // no walls: the sea at the back
     home: { w: 56, d: 40, floor: '#D6C3A5', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
@@ -4542,6 +4618,12 @@
       ...[0, 1, 2, 3].map((k) => ({ k: 'lounger', x: 46 + k * 5.5, z: 10, c: '#F8FAFC' })), ...[0, 1, 2, 3].map((k) => ({ k: 'lounger', x: 46 + k * 5.5, z: 24, c: '#F8FAFC' })),
       { k: 'bar', x: 40, z: 31, c: '#1E3A8A' }, { k: 'stool', x: 36, z: 28 }, { k: 'stool', x: 40, z: 28 }, { k: 'stool', x: 44, z: 28 },
       { k: 'couch2', x: 3, z: 17, r: 1, c: '#1E3A8A' },
+    ],
+    // a private jet's cabin: club seats in facing pairs down both sides, a divan, the galley bar at the front, a screen
+    jetcabin: [
+      ...[0, 1].map((k) => ({ k: 'armchair', x: 12 + k * 7, z: 4, r: k % 2 ? 3 : 1, c: '#E7D7BC' })), ...[0, 1].map((k) => ({ k: 'armchair', x: 12 + k * 7, z: 14, r: k % 2 ? 3 : 1, c: '#E7D7BC' })),
+      ...[0, 1].map((k) => ({ k: 'armchair', x: 28 + k * 7, z: 4, r: k % 2 ? 3 : 1, c: '#E7D7BC' })), ...[0, 1].map((k) => ({ k: 'armchair', x: 28 + k * 7, z: 14, r: k % 2 ? 3 : 1, c: '#E7D7BC' })),
+      { k: 'couch2', x: 44, z: 15, c: '#E7D7BC' }, { k: 'bar', x: 54, z: 2, c: '#3F2A18' }, { k: 'tv', x: 46, z: 1 }, { k: 'plant', x: 5, z: 2 },
     ],
     // a day at the beach: loungers under umbrellas along the sand, a bar, volleyball, suya, a bonfire for the evening
     beach: [
@@ -4666,6 +4748,7 @@
       for (let i = 5; i < R.w; i += 5) { const p = P(i, 0.01, 0), q = P(i, 0.01, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       for (let j = 5; j < R.d; j += 5) { const p = P(0, 0.01, j), q = P(R.w, 0.01, j); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
+      if (R.kind === 'jetcabin') drawCabin(R, now); // the windows and the flight
       box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
       flat(R.w / 2 - 4, R.d - 1.2, R.w / 2 + 4, R.d, 0.04, '#94A3B8'); // the door mat
     }
@@ -5244,6 +5327,52 @@
     for (const it of R.layout) if (it.k === 'lounger') umbrella(it.x - 2.6, it.z - 2.2, ['#EF4444', '#F59E0B', '#3B82F6', '#EC4899'][Math.round(it.x) % 4]);
     for (const [px, pz] of [[3, 50], [106, 46], [104, 68], [28, 70]]) palm(px, pz, 11);
     groundText(R.title.toUpperCase(), R.w / 2, R.d - 5, 3, 'rgba(160,120,60,0.55)');
+  }
+  // ---- a flight from Lagos Island Airport: the cabin of a private jet, out to the city, a moment there, and home. The
+  // windows down the wall show the trip: the runway going by, then cloud tops (the sky's own cloud pictures, stamped),
+  // the city when you get there (its skyline), the island coming back up under you. The captain says where you are.
+  function cabinPhase(R) {
+    const f = Math.min(1, Math.max(0, (Date.now() - R.from) / Math.max(1, R.until - R.from))), joy = R.flight === 'island';
+    return f < 0.1 ? 'takeoff' : joy ? (f < 0.9 ? 'island' : 'landing') : f < 0.42 ? 'out' : f < 0.58 ? 'there' : f < 0.9 ? 'home' : 'landing';
+  }
+  const CABIN_SAY = {
+    takeoff: (d) => `Good day, this is Captain Ade. Cabin crew, seats for take-off. ${d[0] === 'island' ? 'We\'ll take you round the island.' : `Next stop, ${d[1]}.`}`,
+    out: (d) => `We're cruising at 41,000 feet on our way to ${d[1]}. Relax, the bar is open.`,
+    there: (d) => `Welcome to ${d[1]} ${d[3]}! Have a look out of the window. We head home shortly.`,
+    home: () => 'Wheels up for Lagos. We\'ll have you home soon.',
+    island: () => 'That\'s Banana Island below us, then Eko Atlantic, Lekki and the lagoon. Not bad, abi?',
+    landing: () => 'Cabin crew, seats for landing. Welcome home to Lagos Island.',
+  };
+  function drawCabin(R, now) {
+    const t = now / 1000, ph = cabinPhase(R), d = AIR.find(R.flight) || AIR_JOY, nt = Math.min(1, night * 1.2);
+    if (R.said !== ph) { R.said = ph; bubbles.set('captain', { text: CABIN_SAY[ph](d), until: performance.now() + 6500 }); }
+    // the windows: ovals down the wall, each a little view of the same sky
+    const A = cloudArt(nt), speed = ph === 'takeoff' || ph === 'landing' ? 40 : ph === 'there' ? 6 : 22;
+    for (let wx = 7; wx < R.w - 6; wx += 6) {
+      const c0 = P(wx, 9.5, -0.02), rx = K * 1.35, ry = K * 1.9;
+      x.save(); x.beginPath(); x.ellipse(c0[0], c0[1], rx, ry, 0, 0, Math.PI * 2); x.clip();
+      const g = x.createLinearGradient(0, c0[1] - ry, 0, c0[1] + ry); g.addColorStop(0, nt > 0.5 ? '#0B1E3A' : '#38BDF8'); g.addColorStop(1, nt > 0.5 ? '#1E3A8A' : '#E0F2FE'); x.fillStyle = g; x.fillRect(c0[0] - rx, c0[1] - ry, rx * 2, ry * 2);
+      const low = ph === 'takeoff' || ph === 'landing' || ph === 'island', slide = ((t * speed + wx * 7) % 60) / 60;
+      if (low) { // the ground close below: grass, the runway edge, the water and the island going past
+        x.fillStyle = ph === 'island' ? '#2E7FB8' : '#7FA65A'; x.fillRect(c0[0] - rx, c0[1] + ry * 0.15, rx * 2, ry);
+        x.fillStyle = ph === 'island' ? '#86A86A' : '#374151'; x.fillRect(c0[0] - rx + (1 - slide) * rx * 3 - rx, c0[1] + ry * (ph === 'island' ? 0.3 : 0.45), rx * 1.2, ry * 0.3);
+      } else { x.fillStyle = 'rgba(255,255,255,0.85)'; x.fillRect(c0[0] - rx, c0[1] + ry * 0.55, rx * 2, ry); } // the cloud sea below
+      if (ph === 'there') { // the city on the horizon
+        x.fillStyle = nt > 0.5 ? '#0F172A' : '#475569'; const by = c0[1] + ry * 0.55, bx = c0[0] - rx;
+        for (let k = 0; k < 6; k++) x.fillRect(bx + k * rx * 0.36, by - ry * (0.15 + ((k * 37 + wx) % 5) * 0.06), rx * 0.28, ry);
+        if (d[6] === 'burj' && wx % 12 === 7) { x.beginPath(); x.moveTo(c0[0] - rx * 0.12, by); x.lineTo(c0[0], by - ry * 1.1); x.lineTo(c0[0] + rx * 0.12, by); x.fill(); }
+        if (d[6] === 'eye' && wx % 12 === 7) { x.strokeStyle = x.fillStyle; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.arc(c0[0], by - ry * 0.45, ry * 0.42, 0, Math.PI * 2); x.stroke(); }
+        if (d[6] === 'zuma' && wx % 12 === 7) { x.beginPath(); x.ellipse(c0[0], by, rx * 0.8, ry * 0.6, 0, Math.PI, 0); x.fill(); }
+      }
+      if (!low && A.day) { const cw = rx * 2.4; x.globalAlpha = 0.9; x.drawImage((nt > 0.5 && A.night ? A.night : A.day)[(wx / 6) % 5 | 0], c0[0] - rx * 1.8 + (1 - slide) * rx * 3.6 - rx, c0[1] - ry * 0.2, cw, cw * 0.62); x.globalAlpha = 1; }
+      x.restore();
+      x.strokeStyle = '#CBD5E1'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.ellipse(c0[0], c0[1], rx, ry, 0, 0, Math.PI * 2); x.stroke();
+    }
+    person(57, 12, '#1E3A8A', 'Captain Ade', bubbles.get('captain'), now, false, 'm,3,2,0,1');
+    // the trip: where you are and how long is left, up top; home when it's up
+    const left = Math.max(0, Math.ceil(((R.until || 0) - Date.now()) / 1000)), where = { takeoff: 'Take-off', out: `On the way to ${d[1]}`, there: `In ${d[1]} ${d[3]}`, home: 'Flying home', island: 'Over the island', landing: 'Landing at Lagos Island' }[ph];
+    afterCars.push(() => { const txt = `✈️ ${where} · ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; x.save(); x.font = '800 13px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const w = x.measureText(txt).width + 28; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(W / 2 - w / 2, 96, w, 30, 15); x.fill(); x.fillStyle = '#FDE68A'; x.fillText(txt, W / 2, 111.5); x.restore(); });
+    if (!left && !R.ending) { R.ending = true; setTimeout(() => { if (inside === R) { leaveRoom(); const ap = PLACES.find((p) => p[0] === 'airport'); if (ap) at$(ap); bubbles.set('me', { text: 'Landed at Lagos Island Airport.', until: performance.now() + 4000 }); } }, 1500); }
   }
   // ---- a yacht charter out of Banana Island Marina: [name, price, seconds, what it is]
   const CHARTERS = { tour: ['Harbour tour', 0, 90, 'A quick spin round Banana Island and back. Free.'], cruise: ['Lagoon cruise', 15000, 180, 'Out across the lagoon past Ikoyi and the Eko skyline, a drink at the bar.'], sunset: ['Sunset party', 30000, 180, 'A DJ on the foredeck, a dance floor, the city lights coming on.'], private: ['Private charter', 250000, 300, 'The whole yacht to yourself, and whoever you bring along.'] };
@@ -5842,6 +5971,9 @@
   let sector = SECTORS[0];
   { const in0 = new URLSearchParams(location.search).get('in'); if (in0) setTimeout(() => { const p = PLACES.find((v) => v[0] === in0); if (p && ENTERABLE.has(in0)) enterPlace(p); }, 1200); } // ?in=mall opens a building straight away
   { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
+  // testing on a local copy: ?fly=dubai (or any destination, or island) puts you straight in the cabin, nothing paid
+  { const f0 = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('fly') : null; const d0 = f0 && AIR.find(f0); if (d0) setTimeout(() => enterRoom('jetcabin', 'place:flight:test:' + d0[0], '✈️ Test flight: ' + d0[1], { flight: d0[0], from: Date.now(), until: Date.now() + d0[5] * 1000 }), 1500); }
+
 
   // ---- input
   const keys = new Set();
@@ -5904,7 +6036,7 @@
   const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer', 'homestore', 'mall', 'shops', 'arcade']);
   // what each place offers when you tap its tag: a question, and what happens if you say yes (null: coming soon)
   const OFFERS = {
-    airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets from the hangars.', null],
+    airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets every minute, or once round the island.', (p) => { at$(p); openPhone('airport'); }],
     station: ['🚆 Take the Blue Line?', 'Trains to the mainland: Mile 2, Iganmu, National Theatre.', null],
     jetty: ['⛴️ Take a boat?', 'Water taxis to Ilashe, Badagry and Ikorodu.', null],
     hotel: ['🏨 Book a room?', 'A night on the island, a pool, room service.', null],
@@ -6209,13 +6341,13 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino', 'airport']], ['You', ['gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -6900,34 +7032,67 @@
     const sh = g.createLinearGradient(0, 0, 0, h); sh.addColorStop(0, 'rgba(7,7,13,0.15)'); sh.addColorStop(0.4, 'rgba(7,7,13,0.35)'); sh.addColorStop(1, 'rgba(7,7,13,0.55)'); g.fillStyle = sh; g.fillRect(0, 0, w, h);
   }
   (function wallLoop(now) { if (phone.style.display === 'block' && now - (WALL.last || 0) > 33) { WALL.last = now; drawWall(now); } requestAnimationFrame(wallLoop); })(performance.now()); // ~30 frames a second is plenty for a wallpaper
-  // ---- the Dynamic Island: the camera notch, alive. Music playing: the cover and a moving equaliser; the city DJ out at night;
-  // a ride on its way. A notification grows out of it for a moment. Tap it to open what it shows.
-  const ISL = document.querySelector('#pbar .cam'); ISL.id = 'island'; ISL.innerHTML = '<img alt=""><span class="il-t"></span><i class="il-eq"><s></s><s></s><s></s></i>';
-  let islToastUntil = 0, islOpen = null;
-  function islandSet(kind, img, text) { ISL.className = 'cam ' + kind; const im = ISL.querySelector('img'); if (img) { if (im.src !== img) im.src = img; im.style.display = ''; } else im.style.display = 'none'; ISL.querySelector('.il-t').textContent = text || ''; }
+  // ---- WYRD OS 3: the system UI. Like a real phone's, it has states: asleep (put away), locked (the lock screen; only
+  // the lock screen's own controls answer, Back/Home/Close wait), and unlocked. The side button is the power button:
+  // it puts the phone away whatever state it's in (Esc does the same on a computer).
+  function phoneLock(on) {
+    phone.classList.toggle('locked', !!on);
+    for (const b of document.querySelectorAll('#pnav button')) { b.disabled = !!on; b.setAttribute('aria-disabled', on ? 'true' : 'false'); }
+  }
+  { const pw = phone.querySelector('.btnR'); pw.title = 'Power: put the phone away'; pw.setAttribute('role', 'button'); pw.setAttribute('aria-label', 'Power'); pw.onclick = (e) => { e.stopPropagation(); document.getElementById('lockscr').style.display = 'none'; phoneLock(false); closePhone(); }; }
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && phone.style.display === 'block' && !e.target.closest?.('input, textarea')) { document.getElementById('lockscr').style.display = 'none'; phoneLock(false); closePhone(); } });
+
+  // ---- the Dynamic Island: the camera notch, alive, as a set of live activities. Compact: what it is on the left, how
+  // it's going on the right (the music's cover and equaliser, a ride, your flight's countdown, your Grid shift). Locked:
+  // a padlock and a scanning ring; unlocking flashes WYRD ID. A notification grows out of it for a moment. Idle: WYRD's
+  // orb breathing in the notch. Tap it to open what it shows.
+  const ISL = document.querySelector('#pbar .cam'); ISL.id = 'island'; ISL.innerHTML = '<img alt=""><span class="il-l"></span><span class="il-t"></span><span class="il-r"></span><i class="il-eq"><s></s><s></s><s></s></i><i class="il-orb"></i>';
+  let islToastUntil = 0, islOpen = null, islHoldUntil = 0;
+  function islandSet(kind, img, text, left = '', right = '') {
+    ISL.className = 'cam ' + kind; const im = ISL.querySelector('img');
+    if (img) { if (im.src !== img) im.src = img; im.style.display = ''; } else im.style.display = 'none';
+    ISL.querySelector('.il-l').textContent = left; ISL.querySelector('.il-t').textContent = text || ''; ISL.querySelector('.il-r').textContent = right;
+  }
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, '0')}`;
   setInterval(() => {
-    if (performance.now() < islToastUntil) return;
+    const now = performance.now(); if (now < islToastUntil || now < islHoldUntil) return;
+    if (phone.classList.contains('locked')) { islandSet('il-lock', null, '', '🔒', ''); islOpen = null; return; }
     const s = MP.q[MP.i];
-    if (s && !MP.a.paused) { islandSet('il-live', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
-    else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, '🎧 ' + (CITY.mix.now.title || 'DJ Eko Nights')); islOpen = ['music']; }
-    else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? '🛵 On the way' : '🛵 Your ride is coming'); islOpen = ['ride']; }
-    else { islandSet('', null, ''); islOpen = null; }
-  }, 600);
-  ISL.onclick = (e) => { e.stopPropagation(); if (islOpen) go(...islOpen); };
-  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, ((NOTE_ICON[kind] ? NOTE_ICON[kind] + ' ' : '🔔 ')) + text); }
-  { const n0 = notify; notify = (text, kind, open, from) => { n0(text, kind, open, from); if (phone.style.display === "block") islandToast(from ? from + ": " + text : text, kind); }; }
+    if (inside && inside.kind === 'jetcabin') { const d = AIR.find(inside.flight) || AIR_JOY, left = Math.ceil(((inside.until || 0) - Date.now()) / 1000); islandSet('il-live il-fly', null, d[0] === 'island' ? 'Joyride' : 'LOS → ' + d[2], '✈️', mmss(left)); islOpen = null; }
+    else if (s && !MP.a.paused) { islandSet('il-live il-music', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
+    else if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const n = GJ.shift.tasks.filter((tk) => tk.done).length, tk = GJ.shift.tasks.find((v) => !v.done); islandSet('il-live il-grid', null, tk ? tk.title : 'Hand in your shift', '⚡', `${n}/${GJ.shift.tasks.length}`); islOpen = ['grid']; }
+    else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, CITY.mix.now.title || 'DJ Eko Nights', '🎧', 'LIVE'); islOpen = ['music']; }
+    else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? 'On the way' : 'Your ride is coming', '🛵', ''); islOpen = ['ride']; }
+    else { islandSet('il-idle', null, ''); islOpen = null; }
+  }, 500);
+  ISL.onclick = (e) => { e.stopPropagation(); if (islOpen && !phone.classList.contains('locked')) go(...islOpen); };
+  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, text, NOTE_ICON[kind] || '🔔'); }
+  { const n0 = notify; notify = (text, kind, open, from) => { n0(text, kind, open, from); if (phone.style.display === 'block') islandToast(from ? from + ': ' + text : text, kind); }; }
+
+  // ---- the lock screen: the time over the city, what's playing, your notifications. Swipe up (or tap) to unlock: WYRD
+  // ID runs its scan, a beam goes up the screen, and you're in. The quick buttons at the bottom open straight to an app.
   function lockScreen() {
     return new Promise((done) => {
       const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
       document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos`;
+      if (!L.querySelector('.lnet')) { L.insertAdjacentHTML('afterbegin', '<div class="lscan" aria-hidden="true"></div><div class="lnet"><i></i>NETWATCH · LINK SECURE</div><div class="lbeam" aria-hidden="true"></div><div class="lid" aria-live="polite"></div>'); }
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
       document.getElementById('lockn').innerHTML = lm + notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
       document.getElementById('lockn').querySelectorAll('[data-lm]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); audioCtx(); const k = b.dataset.lm; if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); b.closest('.lmus').querySelector('[data-lm=play]').textContent = MP.a.paused ? '▶' : '⏸'; }));
-      L.style.display = 'flex'; L.onclick = () => { L.style.display = 'none'; done(); };
-      L.querySelectorAll('[data-lq]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); lockGo = b.dataset.lq; L.style.display = 'none'; done(); })); // straight into an app
+      L.querySelector('.lu').textContent = 'Swipe up to unlock';
+      L.classList.remove('unlocking'); L.style.display = 'flex';
+      let busy = false, y0 = null;
+      const unlock = (then) => { if (busy) return; busy = true;
+        L.querySelector('.lid').textContent = 'WYRD ID // NEURAL MATCH…'; L.classList.add('unlocking'); islandSet('il-lock il-scan', null, '', '🔒', '');
+        setTimeout(() => { L.querySelector('.lid').textContent = 'WYRD ID ✓ WELCOME BACK'; islandSet('il-unlock', null, 'WYRD ID', '✓', ''); islHoldUntil = performance.now() + 900; }, 380);
+        setTimeout(() => { L.style.display = 'none'; L.classList.remove('unlocking'); L.querySelector('.lid').textContent = ''; then && then(); done(); }, 700); };
+      L.onpointerdown = (e) => { y0 = e.clientY; };
+      L.onpointerup = (e) => { if (y0 != null && y0 - e.clientY > 40) unlock(); y0 = null; }; // a swipe up
+      L.onclick = (e) => { if (!e.target.closest('.lq, .lmus, .n')) unlock(); }; // or a tap
+      L.querySelectorAll('[data-lq]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); unlock(() => { lockGo = b.dataset.lq; }); })); // straight into an app
     });
   }
   function boot() {
@@ -6944,17 +7109,19 @@
     // already open (tapping piece after piece in the Home Store, say): just show the next thing, no lock screen
     if (phone.style.display === 'block' && app && signedIn() && me$ && keyed) { shadeEl.classList.remove('on'); if (stack.length > 1 && stack[stack.length - 1][0] === app) stack.pop(); return go(app, arg); } // the next piece replaces the last, so Back stays short
     phone.style.display = 'block'; phoneBtnEl.style.display = 'none'; stack = [['home']]; shadeEl.classList.remove('on');
+    phoneLock(true); // locked until it's unlocked: Back, Home and Close wait (the side button still puts it away)
     if (!booted) await boot();
     if (!app) await lockScreen(); // you picked the phone up yourself; something in the world (a piece in the store, a car, a ride) opens straight to it
+    phoneLock(false);
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
-    if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' ? go(app) : render('signin'); // a ride or the free harbour tour need no account
+    if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin'); // a ride, the free harbour tour and the airport's boards need no account
     try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
   async function render(app, arg) { pbody.dataset.app = app;
     try {
-      if (app === 'signin') { show(`<div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
+      if (app === 'signin') { show(`<div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button> <button class="pbtn alt" id="gFly">✈️ Flights</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); $('gFly').onclick = () => go('airport'); return; }
       if (app === 'home') {
         const d = new Date(lagosMs()), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
@@ -7418,6 +7585,28 @@
           catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); partiesLive[sel.key] = { ...base, local: true }; } // the server hasn't got parties yet: it's on for you to see
           notify(`Your ${PARTY_THEMES[sel.theme][0]} has started`, 'party'); render('parties');
         };
+        return;
+      }
+      if (app === 'airport') {
+        // Lagos Island Airport: the departures and arrivals boards (the same timetable the planes on the runway keep),
+        // and a seat on a private jet to any of them, or once round the island
+        const s0 = AIR.slot(), rows = (list) => list.join('');
+        const stCol = (st) => st === 'Boarding' || st === 'Landed' || st === 'At the gate' ? '#4ADE80' : st === 'Departed' ? '#94A3B8' : '#FACC15';
+        show(`${ahead('airport', 'Lagos Island Airport', 'Private jets, every minute')}
+          <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#FACC15">✈ Departures</h3>${rows([0, 1, 2, 3, 4].map((k) => { const s = s0 + k, d = AIR.dep(s), st = AIR.depStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} ${esc(d[1])} <span class="dim">${d[2]}</span></span><b style="color:${stCol(st)}">Gate ${AIR.gate(s)} · ${st}</b></div>`; }))}</div>
+          <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#38BDF8">🛬 Arrivals</h3>${rows([-1, 0, 1, 2].map((k) => { const s = s0 + k, d = AIR.arr(s), st = AIR.arrStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} from ${esc(d[1])}</span><b style="color:${stCol(st)}">${st}</b></div>`; }))}</div>
+          <div class="rsec">FLY SOMEWHERE</div>
+          <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-fly="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}${d[0] === 'island' ? '' : ' <span class="dim">' + d[2] + '</span>'}</b><small>${d[0] === 'island' ? 'Round the island and back' : 'There, a look round, and home'} · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">G${naira(d[4])}</span></button>`).join('')}</div>
+          <div class="lock">Paid from your wallet. Everyone who books the same flight in the same minute is on the same jet.</div>`);
+        pbody.querySelectorAll('[data-fly]').forEach((b) => (b.onclick = async () => {
+          const d = AIR.find(b.dataset.fly); b.disabled = true;
+          try {
+            const v = await my('bookFlight', { dest: d[0] }); if (v.naira != null) pnaira.textContent = naira(v.naira);
+            closePhone(); const ap = PLACES.find((p) => p[0] === 'airport'); if (ap && !inside) at$(ap);
+            notify(`${d[0] === 'island' ? 'Island joyride' : 'Flight to ' + d[1]} from Lagos Island Airport`, 'airport');
+            enterRoom('jetcabin', `place:flight:${d[0]}:${AIR.slot()}`, `✈️ ${d[0] === 'island' ? 'Island joyride' : 'Lagos – ' + d[1]}`, { flight: d[0], from: Date.now(), until: Date.now() + d[5] * 1000 });
+          } catch (e) { b.disabled = false; fail(/\((404|500)\)/.test(e.message) ? new Error('Flights open when the server update goes live.') : e); }
+        }));
         return;
       }
       if (app === 'yacht') {

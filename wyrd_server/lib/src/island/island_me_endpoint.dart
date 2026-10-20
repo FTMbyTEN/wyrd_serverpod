@@ -1967,6 +1967,30 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'kind': kind, 'name': c.name, 'naira': after.naira});
   });
 
+  /// Private-jet flights out of Lagos Island Airport, by destination: what a seat costs (the flight runs in the game).
+  static const flights = {
+    'island': (name: 'Island joyride', price: 8000),
+    'abuja': (name: 'Abuja', price: 25000),
+    'accra': (name: 'Accra', price: 40000),
+    'dakar': (name: 'Dakar', price: 60000),
+    'nairobi': (name: 'Nairobi', price: 80000),
+    'dubai': (name: 'Dubai', price: 90000),
+    'joburg': (name: 'Johannesburg', price: 100000),
+    'london': (name: 'London', price: 150000),
+  };
+
+  /// Pay for a seat on a flight; the trip itself (out, a moment there, home) runs in the game.
+  Future<String> bookFlight(Session session, String dest) => _money(session, (u) async {
+    final f = flights[dest];
+    if (f == null) return _err('There\'s no flight there.');
+    final w = await WorldAuthority.citizen(session, u);
+    if (w.naira < f.price) return _err('A seat to ${f.name} is N${_n(f.price)}. You have N${_n(w.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:flight:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -f.price, kind: 'fee', counter: 'city:services', memo: 'Lagos Island Airport: flight to ${f.name}');
+    if (r.short != null) return _err('Not enough naira.');
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'dest': dest, 'name': f.name, 'naira': after.naira});
+  });
+
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {
