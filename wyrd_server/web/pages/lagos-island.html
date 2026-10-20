@@ -1093,6 +1093,9 @@
   #pbody[data-app="home"] .apps { gap: 14px 8px !important; } #pbody[data-app="home"] .app { font: 700 11.5px 'Plus Jakarta Sans', sans-serif !important; }
   #pbody[data-app="home"] .app i { border-radius: 18px !important; box-shadow: 0 6px 14px rgba(15,23,42,.12) !important; transition: transform .12s; } #pbody[data-app="home"] .app:active i { transform: scale(.9); }
   #phone.os-light #pbody[data-app="home"] .dock { background: rgba(255,255,255,.6) !important; backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-radius: 28px !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 10px 26px rgba(15,23,42,.1) !important; }
+  #upd { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 65; transform: translate(-50%, 160%); transition: transform .4s cubic-bezier(.2,1.2,.3,1); display: flex; align-items: center; gap: 10px; width: min(380px, calc(100vw - 20px)); box-sizing: border-box; padding: 10px 10px 10px 14px; border-radius: 20px; background: #0F172A; color: #F8FAFC; box-shadow: 0 16px 40px rgba(2,6,23,.45); font: 600 13px/1.35 'Plus Jakarta Sans', sans-serif; }
+  #upd.on { transform: translate(-50%, 0); } #upd b { display: block; font-weight: 800; } #upd button { margin-left: auto; flex: none; padding: 9px 14px; border: 0; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, #22C55E, #0EA5E9); color: #fff; font: 800 13px 'Plus Jakarta Sans', sans-serif; }
+  #upd i { flex: none; font-style: normal; font-size: 20px; }
 </style>
 </head>
 <body>
@@ -1504,6 +1507,14 @@
   }
   function closePass() { const v = document.getElementById('passportVeil'), el = document.getElementById('passport'); if (!el) return; v.classList.remove('on'); el.classList.remove('on'); setTimeout(() => { if (!el.classList.contains('on')) v.style.display = el.style.display = 'none'; }, 260); }
   { const lg = document.querySelector('#title .logo'); if (lg) { lg.setAttribute('role', 'button'); lg.setAttribute('aria-label', 'Your passport'); lg.title = 'You on Lagos Island'; lg.addEventListener('click', (e) => { e.stopPropagation(); openPass(); }); } }
+  // ---- updates: the build's version (written at deploy) is checked every 5 minutes and when you come back to the game;
+  // a newer one shows a banner, and one tap loads it
+  const VER = { now: null };
+  async function checkVersion() { try { const v = (await (await fetch('version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v; if (!VER.now) { VER.now = v; return; } if (v && v !== VER.now) showUpdate(); } catch {} }
+  function showUpdate() { if (document.getElementById('upd')) return; const b = document.createElement('div'); b.id = 'upd'; b.setAttribute('role', 'status');
+    b.innerHTML = '<i>✨</i><span><b>A new version of Lagos Island is ready</b>Update to keep everything running smoothly.</span><button>Update</button>'; document.body.append(b);
+    requestAnimationFrame(() => b.classList.add('on')); b.querySelector('button').onclick = async () => { b.querySelector('button').textContent = 'Updating…'; try { const r = await navigator.serviceWorker?.getRegistration(); if (r) await r.update(); } catch {} location.reload(); }; }
+  checkVersion(); setInterval(checkVersion, 5 * 60000); addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
   // ---- the app: install Lagos Island like an app, with all of it downloaded onto the device (the service worker keeps
   // the page, every model and texture, and three.js, so it opens at once and loads nothing again). Chrome, Edge and
   // Android install in one tap; an iPhone or iPad adds it to the home screen from Safari's Share menu (Apple allows no
@@ -6867,7 +6878,9 @@
   const TOK = 'wyrd_sp_access_token', RTOK = 'wyrd_sp_refresh_token';
   const tokGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
   const signedIn = () => !!tokGet(TOK);
-  async function refresh() {
+  let refreshing = null;
+  function refresh() { return refreshing || (refreshing = refresh1().finally(() => setTimeout(() => (refreshing = null), 2000))); }
+  async function refresh1() {
     const rt = tokGet(RTOK); if (!rt) return false;
     try {
       const r = await fetch(`${API}/jwtRefresh/refreshAccessToken`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: rt }) });
@@ -6899,7 +6912,7 @@
     let r = await go();
     if (r.status === 401 && await refresh()) r = await go();
     if (r.status === 401) throw new Error('signin');
-    if (!r.ok) throw new Error('Something went wrong (' + r.status + ').');
+    if (!r.ok) { const b = await r.text().catch(() => ''); if (r.status === 400 && /Auth|Token|Login|Session|Unauthor/i.test(b)) throw new Error('signin'); throw new Error(r.status >= 500 ? 'The island\'s server is busy. Try again in a moment.' : 'That didn\'t go through. Try again.'); }
     const t = await r.text(); let v = JSON.parse(t); if (typeof v === 'string') v = JSON.parse(v);
     if (v && v.error) throw new Error(v.error);
     return v;
@@ -7902,14 +7915,54 @@
     phoneLock(false);
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
-    if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin'); // a ride, the free harbour tour and the airport's boards need no account
+    if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin', { then: app, arg }); // a ride, the free harbour tour and the airport's boards need no account
     try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (me$ && !phoneOk() && app !== 'unlock') return render('unlock', { then: app, arg }); // your email and game password first: it confirms the game ID
     if (app) go(app, arg); else render('home');
   }
   async function render(app, arg) { pbody.dataset.app = app;
     try {
-      if (app === 'signin') { show(`<div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button> <button class="pbtn alt" id="gFly">✈️ Flights</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); $('gFly').onclick = () => go('airport'); return; }
+      if (app === 'signin') {
+        const mode = (arg && arg.mode) || 'new', nm = String(myName || '').trim(), okName = /^[a-zA-Z0-9_.-]{3,20}$/.test(nm) && !/^(guest|lagosian)/i.test(nm);
+        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>${mode === 'new' ? 'Create your WYRD ID' : 'Sign in with WYRD ID'}</h2>
+          <p>${mode === 'new' ? 'One ID for your phone, your wallet, your HQ and WYRD. Your island name stays yours: WYRD ties your ID to it and calls you by it everywhere.' : 'Your WYRD ID is the email (or island name) and password you made it with.'}</p>
+          <div class="ppSeg" style="margin-bottom:14px"><button data-wm="new" class="${mode === 'new' ? 'on' : ''}">New WYRD ID</button><button data-wm="old" class="${mode === 'old' ? 'on' : ''}">I have one</button></div>
+          ${mode === 'new' ? `<label for="wName">Island name (your game ID)</label><div class="fld">${pi('users')}<input id="wName" maxlength="20" autocomplete="username" value="${okName ? esc(nm) : ''}" placeholder="e.g. tunde.lagos"></div>
+          <label for="wMail">Email</label><div class="fld">${pi('mail')}<input id="wMail" type="email" maxlength="120" autocomplete="email" placeholder="you@example.com"></div>
+          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="new-password" placeholder="8+ characters, A–Z, a–z, 0–9"></div>`
+          : `<label for="wMail">Email or island name</label><div class="fld">${pi('mail')}<input id="wMail" maxlength="120" autocomplete="username" value="${okName ? esc(nm) : ''}" placeholder="you@example.com"></div>
+          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="current-password" placeholder="Your password"></div>`}
+          <div class="err" id="wErr"></div><button class="pbtn" id="wGo">${pi('check')}${mode === 'new' ? 'Create WYRD ID' : 'Sign in'}</button>
+          <div class="fine">${mode === 'new' ? 'Your email stays private. It is where a password reset goes.' : ''}</div>
+          <div style="display:flex;gap:8px;margin-top:14px"><button class="pbtn alt" id="gRide" style="flex:1">🛵 Ride</button><button class="pbtn alt" id="gFly" style="flex:1">✈️ Flights</button></div></div>`);
+        pbody.dataset.app = 'unlock'; // its look
+        pbody.querySelectorAll('[data-wm]').forEach((b) => (b.onclick = () => render('signin', { ...(arg || {}), mode: b.dataset.wm })));
+        $('gRide').onclick = () => go('ride'); $('gFly').onclick = () => go('airport');
+        const goOn = async () => { const b = $('wGo'), err = $('wErr'); if (b.disabled) return; err.textContent = '';
+          const mail = $('wMail').value.trim(), pw = $('wPass').value, name = mode === 'new' ? $('wName').value.trim() : '';
+          if (mode === 'new') {
+            if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(name)) { err.textContent = 'Island names are 3 to 20 letters, digits, _ . or -.'; return $('wName').focus(); }
+            if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { err.textContent = 'Enter your email address.'; return $('wMail').focus(); }
+            if (!strong(pw)) { err.textContent = 'Use 8 or more characters with a capital, a small letter and a number.'; return $('wPass').focus(); }
+          } else if (!mail || !pw) { err.textContent = 'Enter your email (or island name) and password.'; return; }
+          b.disabled = true; b.textContent = mode === 'new' ? 'Creating your WYRD ID…' : 'Signing in…';
+          try {
+            const post = (m, body) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (mode === 'new') { const av = await post('available', { username: name }); if (av.ok && (await av.text()).trim() === 'false') throw new Error('That island name is taken. If it is yours, tap "I have one".');
+              const fr = await post('emailFree', { email: mail }); if (fr.ok && (await fr.text()).trim() === 'false') throw new Error('That email already has a WYRD ID. Tap "I have one" to sign in.'); }
+            const r = await post(mode === 'new' ? 'register' : 'login', mode === 'new' ? { username: name, email: mail.toLowerCase(), password: pw } : { username: mail, password: pw });
+            const t = await r.text();
+            if (!r.ok) throw new Error(/taken/i.test(t) ? 'That island name is taken.' : /invalidCredentials|credential|notFound/i.test(t) ? 'That WYRD ID and password don\'t match.' : /Too many|tooMany/i.test(t) ? 'Too many tries. Wait a while and try again.' : r.status >= 500 ? 'The island\'s server is busy. Try again in a moment.' : 'That didn\'t go through. Check your details and try again.');
+            const a = JSON.parse(t); localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
+            me$ = null; keyed = false; MY_CACHE.clear(); await loadMe(); myName = me$.handle; store.set('li.name', myName);
+            store.set('li.phoneOk', JSON.stringify({ h: me$.handle, at: Date.now() })); // you just proved it's you
+            if (mode === 'new') { try { newLagosian(); } catch {} my('setLook', { look: myLook }).catch(() => {}); }
+            if (typeof poll === 'function') poll(); setTimeout(warmUp, 300);
+            tickerSay(`Signed in as @${me$.handle}`); closePhone(); setTimeout(() => openPhone(arg && arg.then, arg && arg.arg), 250);
+          } catch (e) { err.textContent = e.message; b.disabled = false; b.innerHTML = pi('check') + (mode === 'new' ? 'Create WYRD ID' : 'Sign in'); } };
+        $('wGo').onclick = goOn; $('wPass').onkeydown = (e) => { if (e.key === 'Enter') goOn(); };
+        return;
+      }
       if (app === 'home') {
         const d = new Date(lagosMs()), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
@@ -8093,7 +8146,7 @@
       }
       if (app === 'unlock') {
         const first = me$.hasEmail === false;
-        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>Confirm it's you</h2><p>${first ? 'Add your email and enter your game password to open your phone. Your email is where a password reset goes.' : 'Enter the email and game password on this account to open your phone.'}</p>
+        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>Confirm your WYRD ID</h2><p>${first ? 'Add your email and enter your game password to open your phone. Your email is where a password reset goes.' : 'Enter the email and game password on this account to open your phone.'}</p>
           <div class="id">${avatar(me$.handle)}<div><b>@${esc(me$.handle)}</b><small>Game ID</small></div></div>
           <label for="uMail">Email</label><div class="fld">${pi('mail')}<input id="uMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"></div>
           <label for="uPass">Game password</label><div class="fld">${pi('key')}<input id="uPass" type="password" maxlength="128" placeholder="Your password" autocomplete="current-password"></div>
