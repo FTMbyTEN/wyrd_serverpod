@@ -3304,18 +3304,9 @@
       for (let k = 1; k < 5; k++) { const ux = a + 6 + k * ((c - a - 12) / 5); if (Math.abs(ux - gx) < 12) continue; umbrella(ux, d - 9, STALLS[k % STALLS.length]); box(ux + 1.4, 0, d - 9.6, ux + 2.4, 0.5, d - 7, '#F8FAFC'); }
       for (const px of [a + 10, gx - 16, gx + 13, c - 12]) bench(px, d - 4.6);
       for (const px of [a + 4, gx - 11, gx + 11, c - 4]) lamp(px, d - 2, 6);
-      // festoon lights between the lamps: dim bulbs by day, a warm chain after dark
-      const posts = [a + 4, gx - 11, gx + 11, c - 4], bulbs = ['#FDE68A', '#F472B6', '#34D399', '#60A5FA', '#FB923C'];
-      const chain = (lit) => { for (let s = 0; s < posts.length - 1; s++) { const x0 = posts[s], x1 = posts[s + 1];
-        x.strokeStyle = 'rgba(40,30,20,0.5)'; x.lineWidth = 1; x.beginPath(); for (let k = 0; k <= 16; k++) { const u = k / 16, pp = P(x0 + (x1 - x0) * u, 6 - Math.sin(u * Math.PI) * 1.6, d - 2); k ? x.lineTo(pp[0], pp[1]) : x.moveTo(pp[0], pp[1]); } x.stroke();
-        for (let k = 1; k < 12; k++) { const u = k / 12, pp = P(x0 + (x1 - x0) * u, 5.8 - Math.sin(u * Math.PI) * 1.6, d - 2), on = lit ? 0.55 + 0.45 * Math.sin(tw * 3 + k + s * 2) : 0.5;
-          x.fillStyle = bulbs[(k + s) % bulbs.length]; x.globalAlpha = on; x.beginPath(); x.arc(pp[0], pp[1], Math.max(1.2, K * (lit ? 0.32 : 0.2)), 0, Math.PI * 2); x.fill(); x.globalAlpha = 1; } } };
-      chain(false); glow.push(() => { if (night < 0.15) return; x.save(); x.globalCompositeOperation = 'lighter'; x.shadowBlur = 8; x.shadowColor = '#FDE68A'; chain(true); x.restore(); });
-      // searchlights: two beams from the arch, sweeping the sky after dark
-      glow.push(() => { if (night < 0.3) return; x.save(); x.globalCompositeOperation = 'lighter';
-        for (const [bx, ph] of [[gx - 7, 0], [gx + 7, 2.1]]) { const base = P(bx, 14.5, d - 2.4), ang = -Math.PI / 2 + Math.sin(tw * 0.45 + ph) * 0.55, L = K * 60, sp = 0.07;
-          const g = x.createLinearGradient(base[0], base[1], base[0] + Math.cos(ang) * L, base[1] + Math.sin(ang) * L); g.addColorStop(0, 'rgba(190,255,230,' + (0.28 * night) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)');
-          x.fillStyle = g; x.beginPath(); x.moveTo(base[0], base[1]); x.lineTo(base[0] + Math.cos(ang - sp) * L, base[1] + Math.sin(ang - sp) * L); x.lineTo(base[0] + Math.cos(ang + sp) * L, base[1] + Math.sin(ang + sp) * L); x.closePath(); x.fill(); }
+      // after dark the gate glows in the flag's colours: green, white, green
+      glow.push(() => { if (night < 0.1) return; x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.min(1, night * 1.2) * (0.85 + Math.sin(tw * 1.4) * 0.15);
+        for (const [gxp, col] of [[gx - 7.2, '0,200,110'], [gx, '255,255,255'], [gx + 7.2, '0,200,110']]) { const p0 = P(gxp, 8, d - 2.4), r = K * 9; const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(' + col + ',0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(p0[0] - r, p0[1] - r, r * 2, r * 2); }
         x.restore(); });
       // by day, a few gulls wheeling over the water in front
       if (night < 0.5) { x.strokeStyle = 'rgba(30,41,59,0.55)'; x.lineWidth = Math.max(1, K * 0.18);
