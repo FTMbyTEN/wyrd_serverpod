@@ -830,6 +830,54 @@
   .lbrief { margin-top: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14); font: 600 12px 'Plus Jakarta Sans', sans-serif; color: inherit; } #phone.os-light .lbrief { background: rgba(255,255,255,.75); color: #334155; }
   .shsum { margin: 0 0 10px; padding: 10px 12px; border-radius: 16px; background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(99,102,241,.15)); font: 600 13px/1.4 'Plus Jakarta Sans', sans-serif; }
   @media (max-width: 600px) { #phone.os-light .dock, #phone.os-light #pnav { background: #fff !important; } }
+  /* ================= OS 4.1: the background, the notification centre, heads-up alerts ================= */
+  /* light: a still Lagos-dawn wash (sky, lagoon, a warm sun glow) with a soft wave line at the bottom; evening turns it lilac */
+  #phone.os-light #screen { background:
+      radial-gradient(70% 38% at 88% 4%, rgba(253,186,116,.42), transparent 70%),
+      radial-gradient(80% 45% at 4% 18%, rgba(125,211,252,.55), transparent 70%),
+      radial-gradient(90% 50% at 100% 62%, rgba(196,181,253,.38), transparent 70%),
+      radial-gradient(90% 40% at 0% 100%, rgba(110,231,183,.40), transparent 70%),
+      linear-gradient(180deg, #F8FBFF 0%, #EFF5FC 50%, #EAF4F4 100%) !important; }
+  #phone.os-light.eve #screen { background:
+      radial-gradient(70% 38% at 88% 4%, rgba(244,114,182,.30), transparent 70%),
+      radial-gradient(80% 45% at 4% 18%, rgba(129,140,248,.40), transparent 70%),
+      radial-gradient(90% 50% at 100% 62%, rgba(192,132,252,.34), transparent 70%),
+      radial-gradient(90% 40% at 0% 100%, rgba(56,189,248,.30), transparent 70%),
+      linear-gradient(180deg, #F5F3FF 0%, #EEF0FB 55%, #E9EEF8 100%) !important; }
+  #phone.os-light #screen::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 120px; pointer-events: none; z-index: 0; opacity: .5;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120' preserveAspectRatio='none'%3E%3Cpath d='M0 70 C60 50 110 90 170 72 S290 46 400 66 V120 H0Z' fill='%23BAE6FD' fill-opacity='.45'/%3E%3Cpath d='M0 92 C70 76 130 108 200 92 S320 74 400 90 V120 H0Z' fill='%2393C5FD' fill-opacity='.35'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat; }
+  #phone.os-light #pbody, #phone.os-light #pbar, #phone.os-light #pnav { position: relative; z-index: 1; }
+  /* the notification centre: frosted, rounded, each note a card with a coloured app tile, an unread dot, swipe to dismiss */
+  #shade .n { position: relative; align-items: center; padding: 11px 12px !important; margin-bottom: 8px !important; border-radius: 18px !important; transition: transform .22s ease, opacity .22s ease, background .2s; touch-action: pan-y; }
+  #shade .n > i { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 17px !important; line-height: 1 !important; background: var(--nt, linear-gradient(135deg, #38BDF8, #6366F1)); box-shadow: 0 4px 10px rgba(15,23,42,.12); }
+  #shade .n b { font: 800 13px 'Plus Jakarta Sans', sans-serif !important; } #shade .n span { font: 500 13px/1.35 'Plus Jakarta Sans', sans-serif; display: block; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  #shade .n small { align-self: flex-start; font: 600 11px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; }
+  #shade .n.new::after { content: ""; position: absolute; right: 10px; bottom: 12px; width: 8px; height: 8px; border-radius: 50%; background: #0EA5E9; box-shadow: 0 0 0 3px rgba(14,165,233,.18); }
+  #shade .n.gone { transform: translateX(-110%); opacity: 0; }
+  #shade .n.quiet { justify-content: center; padding: 22px !important; opacity: .7; }
+  #shade .ngrp { font: 800 11px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .08em; text-transform: uppercase; margin: 12px 4px 6px; }
+  #phone.os-light #shade { background: rgba(248,250,252,.88) !important; backdrop-filter: blur(18px) saturate(1.4) !important; -webkit-backdrop-filter: blur(18px) saturate(1.4) !important; box-shadow: 0 24px 50px rgba(15,23,42,.18) !important; }
+  #phone.os-light #shade .n { background: rgba(255,255,255,.92) !important; }
+  #phone.os-light #shade .n.new { background: #fff !important; box-shadow: 0 6px 18px rgba(14,165,233,.14), inset 0 0 0 1px rgba(14,165,233,.22) !important; }
+  #phone.os-light #shade .n span { color: #334155; } #phone.os-light #shade .n b { color: #0F172A; }
+  #phone.os-light #shade .nhead button { background: var(--soft4) !important; color: var(--ink4) !important; }
+  /* heads-up: drops in at the top of the screen wherever you are, tap to open, swipe up or wait to dismiss */
+  #hup { position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top)); z-index: 60; width: min(380px, calc(100vw - 20px)); transform: translate(-50%, -140%); transition: transform .38s cubic-bezier(.2,1.2,.3,1), opacity .25s; opacity: 0; pointer-events: none;
+    display: flex; gap: 11px; align-items: center; padding: 11px 14px 11px 11px; border-radius: 22px; background: rgba(255,255,255,.94); color: #0F172A; backdrop-filter: blur(16px) saturate(1.5); -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    box-shadow: 0 18px 44px rgba(15,23,42,.28), 0 0 0 1px rgba(15,23,42,.06); font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; touch-action: none; }
+  #hup.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  #hup.dark { background: rgba(15,17,30,.92); color: #F1F5F9; box-shadow: 0 18px 44px rgba(0,0,0,.5), 0 0 0 1px rgba(0,240,255,.25); }
+  #hup > i { flex: 0 0 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; font-style: normal; font-size: 20px; background: var(--nt, linear-gradient(135deg, #38BDF8, #6366F1)); }
+  #hup > div { flex: 1; min-width: 0; } #hup em { display: flex; justify-content: space-between; font: 700 11px sans-serif; font-style: normal; opacity: .55; text-transform: uppercase; letter-spacing: .06em; }
+  #hup b { display: block; font-size: 14px; font-weight: 800; } #hup span { display: block; font-size: 13px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #hup.ping { animation: hupPing .5s ease; } @keyframes hupPing { 30% { transform: translate(-50%, 0) scale(1.03); } }
+  #pbadge.bump { animation: badgeBump .6s ease 2; } @keyframes badgeBump { 40% { transform: scale(1.5); } }
+  @media (prefers-reduced-motion: reduce) { #hup { transition: opacity .2s; } #pbadge.bump, #hup.ping { animation: none; } }
+  #shade .cct { border-radius: 20px !important; } #phone.os-light #shade .cct.on small { color: rgba(255,255,255,.85) !important; } #phone.os-light #shade .ccth { border-radius: 18px !important; }
+  #lockscr .lnotes .n { display: flex; gap: 10px; align-items: center; border-left: 0 !important; border-radius: 18px !important; padding: 10px 12px !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  #lockscr .lnotes .n > i { flex: 0 0 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-style: normal; font-size: 16px; background: var(--nt); }
+  #lockscr .lnotes .n > div { flex: 1; min-width: 0; } #lockscr .lnotes .n b { display: block; font: 800 13px 'Plus Jakarta Sans', sans-serif; } #lockscr .lnotes .n span { font: 500 13px 'Plus Jakarta Sans', sans-serif; }
+  #phone.os-light #lockscr .lnotes .n { background: rgba(255,255,255,.85) !important; box-shadow: 0 8px 22px rgba(15,23,42,.10) !important; }
 </style>
 </head>
 <body>
@@ -1090,11 +1138,11 @@
     ['beach', 3, 22, 4, 2, 'Ilashe Beach', '🏝️'],
     ['huts', 7, 22, 4, 2, 'Ilashe beach houses', '🛖'],
     // nights out and play money
-    ['club', 20, 17, 3, 2, 'Club Ozumba (open every night)', '🪩'],
-    ['club', 38, 20, 4, 2, 'Club Lekki (open every night)', '🪩'],
-    ['club', 30, 13, 3, 2, 'Quilox (open every night)', '🪩'],
-    ['club', 34, 13, 3, 2, 'Secrets Palace (open every night)', '🪩'],
-    ['club', 16, 10, 3, 2, 'VEIN Lagos (open every night)', '🪩'],
+    ['club', 20, 17, 3, 2, 'Club Ozumba (open every night)', '🎶'],
+    ['club', 38, 20, 4, 2, 'Club Lekki (open every night)', '🎶'],
+    ['club', 30, 13, 3, 2, 'Quilox (open every night)', '🎶'],
+    ['club', 34, 13, 3, 2, 'Secrets Palace (open every night)', '🎶'],
+    ['club', 16, 10, 3, 2, 'VEIN Lagos (open every night)', '🎶'],
     ['casino', 30, 16, 3, 3, 'Island Casino', '🎰'],
     // the refinery, always running
     ['refinery', 65, 0, 9, 7, 'Lekki Free Zone Refinery', '🛢️'], // along the top, clear of the car dealers below
@@ -1391,7 +1439,7 @@
         x.fillStyle = g; x.fillRect(ox + dx, oy - phh, pw, phh);
         x.fillStyle = 'rgba(255,255,255,0.12)'; x.beginPath(); x.arc(ox + dx + pw * 0.85, oy - phh * 0.75, phh * 0.55, 0, Math.PI * 2); x.fill(); // a light shape behind
         if (wpx < 34) return;
-        const icon = { WYRD: '✨', 'THE ARENA': '🎤', 'ISLAND CASINO': '🎰', 'CLUB OZUMBA': '🪩', 'YOUR HQ': '🏠', 'LEKKI FREE ZONE': '🏭', 'JOBS ON THE ISLAND': '💼', 'EKO O NI BAJE': '🇳🇬', WELCOME: '👋' }[ad[0]] || '📣';
+        const icon = { WYRD: '✨', 'THE ARENA': '🎤', 'ISLAND CASINO': '🎰', 'CLUB OZUMBA': '🎶', 'YOUR HQ': '🏠', 'LEKKI FREE ZONE': '🏭', 'JOBS ON THE ISLAND': '💼', 'EKO O NI BAJE': '🇳🇬', WELCOME: '👋' }[ad[0]] || '📣';
         x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.shadowColor = 'rgba(0,0,0,.35)'; x.shadowBlur = 4;
         x.font = `${Math.round(phh * 0.34)}px sans-serif`; x.fillText(icon, ox + dx + pw * 0.05, oy - phh * 0.56);
         x.font = `900 ${Math.round(Math.min(phh * 0.26, pw * 0.08))}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[0], ox + dx + pw * 0.22, oy - phh * 0.66);
@@ -4736,7 +4784,7 @@
     tv: ['TV', '📺', 6, 1.6], plant: ['Plant', '🪴', 2.4, 2.4], lamp: ['Lamp', '💡', 2, 2], rug: ['Rug', '🟥', 9, 6], shelf: ['Shelf', '📚', 6, 2],
     fridge: ['Fridge', '🧊', 3, 3], kitchen: ['Kitchen', '🍳', 9, 3], desk: ['Desk', '🖥️', 6, 3], wardrobe: ['Wardrobe', '🚪', 5, 2.6],
     speaker: ['Speaker', '🔊', 3, 3], djbooth: ['DJ booth', '🎧', 10, 4], bar: ['Bar', '🍸', 14, 3.4], stool: ['Stool', '🟤', 1.8, 1.8],
-    dance: ['Dance floor', '🪩', 16, 12], cards: ['Blackjack', '🃏', 8, 5], reception: ['Reception', '🛎️', 14, 4], podium: ['Podium', '💃', 4, 4], booth: ['VIP booth', '🛋️', 9, 9], bottles: ['Bottle service', '🍾', 3.6, 3.6], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
+    dance: ['Dance floor', '🎶', 16, 12], cards: ['Blackjack', '🃏', 8, 5], reception: ['Reception', '🛎️', 14, 4], podium: ['Podium', '💃', 4, 4], booth: ['VIP booth', '🛋️', 9, 9], bottles: ['Bottle service', '🍾', 3.6, 3.6], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
     lounger: ['Sun lounger', '🏖️', 3, 7], beachbar: ['Beach bar', '🍹', 14, 6], volley: ['Volleyball net', '🏐', 20, 1], fire: ['Bonfire', '🔥', 4, 4], suya: ['Suya stand', '🍢', 6, 3],
   };
   // ---- the Home Store: real 3D furniture (Kenney's Furniture Kit, CC0), from cheap to luxury, so everyone can build a home
@@ -6339,7 +6387,7 @@
       if (changed) store.set('li.frSeen', JSON.stringify([...FR.seen].slice(-400)));
     } catch {}
   }
-  setTimeout(friendsPoll, 6000); setInterval(friendsPoll, 60000);
+  setTimeout(friendsPoll, 6000); setInterval(() => { if (!document.hidden) friendsPoll(); }, 20000);
   const PEOPLE_TAB = { tab: 'requests' };
   // a home in an estate
   function homeCard(pl, i, j) {
@@ -7280,7 +7328,7 @@
     if (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3)) out.push({ i: '🔌', t: 'NEPA took light', s: 'Inverters on. The Grid has work if you want it.', run: () => go('grid'), w: 5 });
     if (signedIn() && earned < cap && h >= 7 && h < 22) out.push({ i: '💼', t: `You can still earn ${naira(cap - earned)} today`, s: 'A refinery shift pays ₦6,500; the Grid and the airport pay by level', run: () => go('jobs'), w: 4 });
     if (typeof AIR !== 'undefined') { const s = AIR.slot() + 1, d = AIR.dep(s); out.push({ i: '✈️', t: `Next flight: ${d[1]} at ${AIR.hhmm(s)}`, s: `Gate ${AIR.gate(s)} · a seat from ${naira(d[4])}`, run: () => go('airport'), w: 2 }); }
-    if (h >= 20 || h < 3) out.push({ i: '🪩', t: 'The clubs are open', s: 'DJ Eko Nights is on the island', run: () => go('music'), w: 3 });
+    if (h >= 20 || h < 3) out.push({ i: '🎶', t: 'The clubs are open', s: 'DJ Eko Nights is on the island', run: () => go('music'), w: 3 });
     return out.sort((a, b) => b.w - a.w);
   }
   const w4Brief = () => { const s = w4Suggest().slice(0, 2); return s.length ? s.map((v) => v.t).join(' · ') : 'All quiet on the island.'; };
@@ -7340,14 +7388,46 @@
   const NOTE_GROUP = { chat: 'Island chat', link: 'Messages' };
   let hqReqs = 0;
   function notify(text, kind = 'island', open = null, from = '') {
-    notes.unshift({ text, kind, open, from, at: new Date(), seen: false }); notes.length = Math.min(notes.length, 60); updBadge();
+    notes.unshift({ text, kind, open, from, at: new Date(), seen: false }); notes.length = Math.min(notes.length, 60); updBadge(); headsUp(notes[0]);
     if (shadeEl && shadeEl.classList.contains('on')) buildShade();
   }
   // the red dot on the phone: unread notes plus anyone waiting at your HQ door
   function updBadge() { const n = notes.filter((m) => !m.seen).length + hqReqs, b = document.getElementById('pbadge'); if (!b) return; b.textContent = n > 99 ? '99+' : n; b.style.display = n ? 'block' : 'none'; }
   const shadeEl = document.getElementById('shade');
+  // ---- heads-up alerts: a note that comes in drops down at the top of the screen at once (wherever you are), with a chime
+  // and a buzz on phones; when the game is in the background, a system notification (if you allowed them). Island chat stays quiet.
+  const NOTE_TILE = { link: 'linear-gradient(135deg,#34D399,#0EA5E9)', chat: 'linear-gradient(135deg,#A78BFA,#6366F1)', money: 'linear-gradient(135deg,#FBBF24,#F97316)', gov: 'linear-gradient(135deg,#94A3B8,#475569)', music: 'linear-gradient(135deg,#F472B6,#A855F7)', hq: 'linear-gradient(135deg,#FB923C,#EF4444)', ride: 'linear-gradient(135deg,#22D3EE,#3B82F6)' };
+  const HUP = { el: null, tm: 0, on: store.get('li.alerts') !== 'off' };
+  function chime() {
+    try { const c = audioCtx(); if (!c || c.state !== 'running') return; const t = c.currentTime, g = c.createGain(); g.connect(c.destination);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+      [[880, 0], [1318.5, 0.11]].forEach(([f, d]) => { const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.connect(g); o.start(t + d); o.stop(t + d + 0.45); });
+    } catch {}
+  }
+  function headsUp(n) {
+    if (!HUP.on || n.kind === 'chat') return;
+    const tile = NOTE_TILE[n.kind] || '', title = n.from || (n.kind === 'link' ? 'Link' : 'WYRD OS');
+    if (document.hidden) {
+      if ('Notification' in window && Notification.permission === 'granted') { const o = { body: n.text, icon: 'icon-192.png', badge: 'icon-192.png', tag: n.kind + ':' + (n.from || ''), renotify: true };
+        (navigator.serviceWorker && navigator.serviceWorker.ready ? navigator.serviceWorker.ready.then((r) => r.showNotification(title, o)) : Promise.reject()).catch(() => { try { new Notification(title, o); } catch {} }); }
+      return;
+    }
+    if (!HUP.el) { HUP.el = document.createElement('div'); HUP.el.id = 'hup'; HUP.el.setAttribute('role', 'status'); HUP.el.setAttribute('aria-live', 'polite'); document.body.append(HUP.el);
+      let y0 = null; HUP.el.addEventListener('pointerdown', (e) => (y0 = e.clientY)); HUP.el.addEventListener('pointerup', (e) => { const up = y0 != null && y0 - e.clientY > 25; y0 = null; if (up) return hideHup(); const m = HUP.cur; hideHup(); if (!m) return; m.seen = true; updBadge(); if (m.open) openPhone(...m.open); else openPhone(); }); }
+    HUP.cur = n; HUP.el.className = osMode === 'light' ? '' : 'dark'; HUP.el.style.setProperty('--nt', tile || 'linear-gradient(135deg,#38BDF8,#6366F1)');
+    HUP.el.innerHTML = `<i>${NOTE_ICON[n.kind] || '🔔'}</i><div><em><span>${esc(NOTE_GROUP[n.kind] || 'WYRD OS')}</span><span>now</span></em><b>${esc(title)}</b><span>${esc(n.text)}</span></div>`;
+    void HUP.el.offsetWidth; HUP.el.classList.add('on', 'ping');
+    clearTimeout(HUP.tm); HUP.tm = setTimeout(hideHup, 5200);
+    chime(); try { navigator.vibrate && navigator.vibrate([35, 60, 35]); } catch {}
+    const b = document.getElementById('pbadge'); if (b) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
+  }
+  function hideHup() { clearTimeout(HUP.tm); if (HUP.el) HUP.el.classList.remove('on', 'ping'); }
+  // system notifications for when the game is in the background: asked once, on a tap, after you've signed in
+  addEventListener('pointerdown', () => { if (!signedIn() || !('Notification' in window) || Notification.permission !== 'default' || store.get('li.askedNotif')) return; store.set('li.askedNotif', '1'); try { Notification.requestPermission(); } catch {} }, { passive: true });
+  // the light wallpaper turns lilac in the evening
+  setInterval(() => phone.classList.toggle('eve', nightNow() > 0.5), 60000); phone.classList.toggle('eve', nightNow() > 0.5);
   const ago = (d) => { const s = (Date.now() - d) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s / 60) + 'm' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
-  const noteHtml = (n, i) => `<div class="n${n.seen ? '' : ' new'}${n.open ? ' tap' : ''}" data-ni="${i}"><i>${NOTE_ICON[n.kind] || '🔔'}</i><div>${n.from ? `<b>${esc(n.from)}</b>` : ''}<span>${esc(n.text)}</span></div><small>${ago(n.at)}</small></div>`;
+  const noteHtml = (n, i) => `<div class="n${n.seen ? '' : ' new'}${n.open ? ' tap' : ''}" data-ni="${i}" style="--nt:${NOTE_TILE[n.kind] || 'linear-gradient(135deg,#38BDF8,#6366F1)'}"><i>${NOTE_ICON[n.kind] || '🔔'}</i><div>${n.from ? `<b>${esc(n.from)}</b>` : ''}<span>${esc(n.text)}</span></div><small>${ago(n.at)}</small></div>`;
   // the control centre: pull it down from the status bar. Toggles for the 3D models and the sky, the OS theme, then
   // notifications grouped (messages from other players, island chat, the rest), each one tappable
   function buildShade() {
@@ -7357,6 +7437,7 @@
     shadeEl.classList.toggle("night", nightNow() > 0.5); shadeEl.classList.toggle("day", nightNow() <= 0.5);
     shadeEl.innerHTML = `<div class="sky"><i></i></div><button class="shx" aria-label="Close">✕</button><div class="grab" aria-label="Close"></div><div class="shin"><div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
       <button class="cct${osMode === 'light' ? ' on' : ''}" data-cc="mode"><b>${osMode === 'light' ? '☀️' : '🌙'}</b><span>${osMode === 'light' ? 'Light' : 'Dark'}</span><small>Appearance</small></button>
+      <button class="cct${HUP.on ? ' on' : ''}" data-cc="alerts"><b>${HUP.on ? '🔔' : '🔕'}</b><span>Alerts</span><small>${HUP.on ? 'On' : 'Silent'}</small></button>
       <div class="cct wide"><b>${wx.icon}</b><span>${wx.temp}°C · ${wx.text}</span><small>Lagos</small></div>
       <div class="ccth"><span>Theme</span>${Object.entries(OS_THEMES).map(([k, c]) => `<button data-th="${k}" class="${k === osTheme ? 'on' : ''}" style="background:linear-gradient(135deg,${c[0]},${c[1]} 55%,${c[2]})" aria-label="${k}"></button>`).join('')}</div></div>
       <div class="shsum">✨ ${esc(w4Brief())}</div><div class="nhead"><span>Notifications</span>${notes.length ? '<button data-cc="clear">Clear</button>' : ''}</div>
@@ -7364,9 +7445,13 @@
       ${order.map((g) => `<div class="ngrp">${g}</div>${groups.get(g).slice(0, 12).join('')}`).join('') || (hqReqs ? '' : '<div class="n quiet">All quiet on the island.</div>')}</div>`;
     shadeEl.querySelector('[data-cc="3d"]').onclick = (e) => { e.stopPropagation(); G3.on = !G3.on; buildShade(); };
     shadeEl.querySelector('[data-cc="mode"]').onclick = (e) => { e.stopPropagation(); osMode = osMode === 'light' ? 'dark' : 'light'; store.set('li.osMode', osMode); applyMode(); buildShade(); };
+    shadeEl.querySelector('[data-cc="alerts"]').onclick = (e) => { e.stopPropagation(); HUP.on = !HUP.on; store.set('li.alerts', HUP.on ? 'on' : 'off'); buildShade(); };
+    // swipe a note left to dismiss it
+    shadeEl.querySelectorAll('[data-ni]').forEach((el) => { let x0 = null, dx = 0; el.addEventListener('pointerdown', (e) => { x0 = e.clientX; dx = 0; }); el.addEventListener('pointermove', (e) => { if (x0 == null) return; dx = Math.min(0, e.clientX - x0); if (dx < -6) el.style.transform = `translateX(${dx}px)`; });
+      el.addEventListener('pointerup', () => { if (x0 == null) return; x0 = null; if (dx < -70) { el.dataset.swiped = '1'; el.classList.add('gone'); setTimeout(() => { const k = notes.indexOf(notes[+el.dataset.ni]); if (k >= 0) notes.splice(k, 1); updBadge(); buildShade(); }, 220); } else el.style.transform = ''; }); });
     const cl = shadeEl.querySelector('[data-cc="clear"]'); if (cl) cl.onclick = (e) => { e.stopPropagation(); notes.length = 0; updBadge(); buildShade(); };
     shadeEl.querySelectorAll('[data-th]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); osTheme = b.dataset.th; store.set('li.os', osTheme); applyTheme(); buildShade(); }));
-    shadeEl.querySelectorAll('[data-ni]').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); const n = notes[+el.dataset.ni]; if (!n) return; n.seen = true; updBadge(); shadeEl.classList.remove('on');
+    shadeEl.querySelectorAll('[data-ni]').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); if (el.dataset.swiped) return; const n = notes[+el.dataset.ni]; if (!n) return; n.seen = true; updBadge(); shadeEl.classList.remove('on');
       if (n.open) openPhone(...n.open); else if (n.kind === 'chat') { phone.style.display === 'block' && closePhone(); openSay(); } }));
     const hqb = shadeEl.querySelector('[data-hq]'); if (hqb) hqb.onclick = (e) => { e.stopPropagation(); shadeEl.classList.remove('on'); openPhone('hq'); };
   }
@@ -7398,7 +7483,8 @@
       }
     } catch {}
   }
-  setInterval(linkPoll, 15000);
+  setInterval(() => { if (!document.hidden || Date.now() - (LINK.at || 0) > 30000) { LINK.at = Date.now(); linkPoll(); } }, 6000);
+  addEventListener('visibilitychange', () => { if (!document.hidden) { linkPoll(); friendsPoll(); } });
   // your profile and keys, loaded in the background as soon as you're signed in, so the phone opens without waiting
   async function warmUp() {
     if (!signedIn() || (me$ && keyed)) return;
@@ -7540,7 +7626,7 @@
         show(`${w4Home()}
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
-          ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🪩</i></button>`; })()}
+          ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🎶</i></button>`; })()}
           <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
             <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
@@ -7557,7 +7643,7 @@
         // the balance up top, quick actions, a send panel that opens when you want it, where to earn, then receipts with icons
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap));
         const icon = (m, a) => /ride|okada/i.test(m) ? '🛵' : /casino/i.test(m) ? '🎰' : /home store/i.test(m) ? '🛋️' : /bought a/i.test(m) ? '🔑' : /ticket/i.test(m) ? '🎟️' : /^to |^from /i.test(m) ? '↔️' : a > 0 ? '💼' : '🧾';
-        const EARN = [['refinery', '🛢️', 'Refinery shift', '₦6,500'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🪩', 'Club night shift', 'nights']];
+        const EARN = [['refinery', '🛢️', 'Refinery shift', '₦6,500'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🎶', 'Club night shift', 'nights']];
         show(`${ahead('wallet', 'Wallet', 'Naira on the island\'s books')}
           <div class="hero" style="--ac:#FCEE0A"><div class="hl">Game Wallet · game currency, not withdrawable</div><div class="hv">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>Earned today ${naira(me$.earnedToday || 0)} of ${naira(cap)}</small></div>
           <div id="realBox"></div>
@@ -8060,7 +8146,7 @@
         // charters out of Banana Island Marina: pick one, pay (the tour is free), and you're on deck
         show(`${ahead('ride', 'Banana Island Marina', 'Yacht charters round the lagoon')}
           <div class="hero" style="--ac:#38BDF8"><div class="hl">Today</div><div class="hv" style="font-size:22px">⛵ ${lagosWeather().icon} ${lagosWeather().temp}°C</div><small>Calm water on the lagoon. Captain Femi at the helm.</small></div>
-          <div class="lst">${Object.entries(CHARTERS).map(([k, c]) => `<button class="li" data-ch="${k}"><span class="ic">${{ tour: '🛥️', cruise: '⛵', sunset: '🪩', private: '🛳️' }[k]}</span><span class="lt"><b>${c[0]}</b><small>${c[3]} · ${Math.round(c[2] / 60 * 10) / 10} min</small></span><span class="lr ${c[1] ? '' : 'pos'}">${c[1] ? naira(c[1]) : 'Free'}</span></button>`).join('')}</div>
+          <div class="lst">${Object.entries(CHARTERS).map(([k, c]) => `<button class="li" data-ch="${k}"><span class="ic">${{ tour: '🛥️', cruise: '⛵', sunset: '🎶', private: '🛳️' }[k]}</span><span class="lt"><b>${c[0]}</b><small>${c[3]} · ${Math.round(c[2] / 60 * 10) / 10} min</small></span><span class="lr ${c[1] ? '' : 'pos'}">${c[1] ? naira(c[1]) : 'Free'}</span></button>`).join('')}</div>
           <div class="lock">Paid from your wallet. Shared trips: everyone on the same charter is on the same deck.</div>`);
         pbody.querySelectorAll('[data-ch]').forEach((b) => (b.onclick = async () => {
           const k = b.dataset.ch, c = CHARTERS[k];
@@ -8632,7 +8718,7 @@
 
   // ---- work and play where you stand: a button appears near a workplace or the casino
   const actBtn = document.getElementById('act');
-  const WORK = [['refinery', 'refinery', '🛢️ Work a refinery shift'], ['club', 'club', '🪩 Work a night shift'], ['market', 'market', '🧺 Help at a market stall'], ['motorpark', 'okada', '🛵 Do okada rides']];
+  const WORK = [['refinery', 'refinery', '🛢️ Work a refinery shift'], ['club', 'club', '🎶 Work a night shift'], ['market', 'market', '🧺 Help at a market stall'], ['motorpark', 'okada', '🛵 Do okada rides']];
   let act = null;
   function updateAct() {
     let next = null;
@@ -8656,7 +8742,7 @@
       else next = null;
     }
     else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
-    else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); next = { label: '🪩 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
+    else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); next = { label: '🎶 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
