@@ -6846,19 +6846,19 @@
   // (about 0.46 MB), 128 px on a phone (0.2 MB), each painted in a couple of milliseconds.
   // They float above the town (so they slide against it as the camera moves), drift with the real wind, follow the
   // real cloud cover, and stay see-through: thinner round your own character, fainter as you zoom in, gone indoors.
-  const CLOUD_ALT = 95, CLOUD_SPAN = [440, 340]; // the clouds fill a window round the camera; each keeps its own spot in the world inside it
-  const CLOUDS = Array.from({ length: MOBILE ? 10 : 16 }, (_, k) => ({ x: Math.random() * CLOUD_SPAN[0], z: Math.random() * CLOUD_SPAN[1], r: 22 + Math.random() * 26, v: k % 5, stretch: 1.15 + Math.random() * 0.5, drift: 0.85 + Math.random() * 0.3, k }));
+  const CLOUD_ALT = 95, CLOUD_SPAN = [460, 360]; // the clouds fill a window round the camera; each keeps its own spot in the world inside it
+  const CLOUDS = Array.from({ length: MOBILE ? 12 : 18 }, (_, k) => ({ x: Math.random() * CLOUD_SPAN[0], z: Math.random() * CLOUD_SPAN[1], r: 32 + Math.random() * 30, v: k % 5, stretch: 1.15 + Math.random() * 0.5, drift: 0.85 + Math.random() * 0.3, k }));
   const CLOUD_ART = { day: null, night: null, shadow: null };
   function cloudPaint(v, tone) {
     const R = rnd(20261020 + v * 977), w = MOBILE ? 128 : 192, hh = Math.round(w * 0.62), c = document.createElement('canvas'); c.width = w; c.height = hh; const g = c.getContext('2d');
     const heads = [];
-    for (let i = 0; i < 5 + v; i++) { const a = R() * Math.PI * 2, d = Math.pow(R(), 1.3) * 0.5; heads.push([w / 2 + Math.cos(a) * d * w * 0.3, hh / 2 + Math.sin(a) * d * hh * 0.22, (0.15 + R() * 0.07) * w]); } // the body
-    for (let i = 0; i < 16 + v * 3; i++) { const a = R() * Math.PI * 2, d = 0.55 + R() * 0.4; heads.push([w / 2 + Math.cos(a) * d * w * 0.3, hh / 2 + Math.sin(a) * d * hh * 0.24, (0.05 + R() * 0.06) * w]); } // the bumps round its edge
+    for (let i = 0; i < 8 + v; i++) { const a = R() * Math.PI * 2, d = Math.pow(R(), 1.3) * 0.5; heads.push([w / 2 + Math.cos(a) * d * w * 0.3, hh / 2 + Math.sin(a) * d * hh * 0.22, (0.17 + R() * 0.08) * w]); } // the body, full
+    for (let i = 0; i < 24 + v * 3; i++) { const a = R() * Math.PI * 2, d = 0.55 + R() * 0.4; heads.push([w / 2 + Math.cos(a) * d * w * 0.3, hh / 2 + Math.sin(a) * d * hh * 0.24, (0.05 + R() * 0.06) * w]); } // the bumps round its edge
     const q = 4, s = document.createElement('canvas'); s.width = Math.ceil(w / q); s.height = Math.ceil(hh / q); const sg = s.getContext('2d'); sg.fillStyle = '#fff';
     for (const [px, py, r] of heads) { sg.beginPath(); sg.arc(px / q, py / q, r / q, 0, Math.PI * 2); sg.fill(); }
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(s, 0, 0, w, hh);
     g.globalCompositeOperation = 'source-atop';
-    const [lit, shade] = tone === 'night' ? ['rgba(175,185,220,', 'rgba(30,38,80,'] : ['rgba(255,255,255,', 'rgba(140,156,190,'];
+    const [lit, shade] = tone === 'night' ? ['rgba(175,185,220,', 'rgba(30,38,80,'] : ['rgba(255,253,245,', 'rgba(150,150,195,']; // sunlit warm white over soft lilac shade
     if (tone === 'night') { g.fillStyle = 'rgb(118,128,172)'; g.fillRect(0, 0, w, hh); }
     for (const [px, py, r] of heads.sort((p1, p2) => p1[1] - p2[1])) {
       let gr = g.createRadialGradient(px + r * 0.35, py + r * 0.4, 0, px + r * 0.35, py + r * 0.4, r); gr.addColorStop(0, shade + '0.38)'); gr.addColorStop(1, shade + '0)'); g.fillStyle = gr; g.fillRect(px - r * 1.4, py - r * 1.4, r * 2.8, r * 2.8);
@@ -6876,26 +6876,26 @@
       const gr = g.createRadialGradient(sw / 2, sw / 2, 0, sw / 2, sw / 2, sw / 2); gr.addColorStop(0, 'rgba(15,23,42,1)'); gr.addColorStop(0.6, 'rgba(15,23,42,0.5)'); gr.addColorStop(1, 'rgba(15,23,42,0)'); g.fillStyle = gr; g.fillRect(0, 0, sw, sw); A.shadow = s; }
     return A;
   }
-  // where a cloud is now: drifting with the wind, in the window centred on the patch of ground the sky above the view
+  // where a cloud is: still, in the window centred on the patch of ground the sky above the view
   // covers (the clouds are high and seen at a slant, so the ground under the clouds in view is a little down-screen); a cloud leaving one side comes
   // back on the other, off screen
   const wrapC = (v, c, s) => c + ((((v - c) % s) + s * 1.5) % s) - s / 2;
-  function cloudAt(cl, t, wx, wz) { const [ox, oz] = toWorldDir(0, CLOUD_ALT * cp), cx = cam.x + ox, cz = cam.z + oz; return [wrapC(cl.x + wx * t * 0.6 * cl.drift, cx, CLOUD_SPAN[0]), wrapC(cl.z + wz * t * 0.6 * cl.drift, cz, CLOUD_SPAN[1])]; }
+  function cloudAt(cl) { const [ox, oz] = toWorldDir(0, CLOUD_ALT * cp), cx = cam.x + ox, cz = cam.z + oz; return [wrapC(cl.x, cx, CLOUD_SPAN[0]), wrapC(cl.z, cz, CLOUD_SPAN[1])]; } // they stay still: each keeps its place in the sky
   function drawCloudShadows(C2, t, wx, wz, n) {
-    const s = cloudArt(Math.min(1, night * 1.2)).shadow; x.save(); x.globalAlpha = 0.17 * C2.cloud;
-    for (let k = 0; k < n; k++) { const cl = CLOUDS[k], [cx, cz] = cloudAt(cl, t, wx, wz), q = P(cx + 28, 0, cz + 18), rw = cl.r * K * cl.stretch, rh = cl.r * K * sp * 0.8; // the sun is high and a little to the south-west
+    const s = cloudArt(Math.min(1, night * 1.2)).shadow; x.save(); x.globalAlpha = 0.22 * C2.cloud;
+    for (let k = 0; k < n; k++) { const cl = CLOUDS[k], [cx, cz] = cloudAt(cl), q = P(cx + 28, 0, cz + 18), rw = cl.r * K * cl.stretch, rh = cl.r * K * sp * 0.8; // the sun is high and a little to the south-west
       if (q[0] + rw < 0 || q[0] - rw > W || q[1] + rh < 0 || q[1] - rh > H) continue; x.drawImage(s, q[0] - rw, q[1] - rh, rw * 2, rh * 2); }
     x.restore();
   }
   function drawClouds(C2, t, wx, wz, n) {
-    const nt = Math.min(1, night * 1.2), A = cloudArt(nt), me0 = P(me.x, 0, me.z), clear = Math.min(W, H) * 0.24;
-    const zoomFade = Math.max(0.15, Math.min(1, (9.5 - K) / 5)), base = (0.36 + 0.34 * C2.cloud) * zoomFade;
+    const nt = Math.min(1, night * 1.2), A = cloudArt(nt), me0 = P(me.x, 0, me.z), clear = Math.min(W, H) * 0.2;
+    const zoomFade = Math.max(0, Math.min(1, (1.8 - cam.user) / 0.6)), base = (0.62 + 0.28 * C2.cloud) * zoomFade; // zoom in past the clouds for a clear view
     if (WX_FORCE) window.__clouds = { K, zoomFade, base, n, cover: C2.cloud }; // testing only (?weather=...)
     x.save();
     for (let k = 0; k < n; k++) {
-      const cl = CLOUDS[k], [cx, cz] = cloudAt(cl, t, wx, wz), q = P(cx, CLOUD_ALT, cz), rw = cl.r * K * cl.stretch, rh = rw * 0.62;
+      const cl = CLOUDS[k], [cx, cz] = cloudAt(cl), q = P(cx, CLOUD_ALT, cz), rw = cl.r * K * cl.stretch, rh = rw * 0.62;
       if (q[0] + rw < 0 || q[0] - rw > W || q[1] + rh < 0 || q[1] - rh > H) continue;
-      const dm = Math.hypot(q[0] - me0[0], q[1] - me0[1]), near = playing && !inside ? Math.min(1, 0.35 + 0.65 * dm / clear) : 1; // thinner over your own character
+      const dm = Math.hypot(q[0] - me0[0], q[1] - me0[1]), near = playing && !inside ? Math.min(1, 0.55 + 0.45 * dm / clear) : 1; // thinner over your own character
       const a = base * near; if (a < 0.02) continue;
       if (A.day) { x.globalAlpha = a * (1 - nt); x.drawImage(A.day[cl.v], q[0] - rw, q[1] - rh, rw * 2, rh * 2); }
       if (A.night) { x.globalAlpha = a * nt * 0.8; x.drawImage(A.night[cl.v], q[0] - rw, q[1] - rh, rw * 2, rh * 2); }
