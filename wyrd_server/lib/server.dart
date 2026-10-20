@@ -14,6 +14,8 @@ import 'src/mind/tick_schedule.dart';
 import 'src/mind/document_service.dart';
 import 'src/mind/memory_recall_service.dart';
 import 'src/mind/wordnet_service.dart';
+import 'src/rewards/provider_route.dart';
+import 'src/rewards/reward_seed.dart';
 
 /// The starting point of the Serverpod server.
 void run(List<String> args) async {
@@ -91,6 +93,9 @@ void run(List<String> args) async {
 
   // WYRD's partner API (Konnectly first): server-to-server HTTPS JSON under /partner/v1, bearer keys. See PartnerApi.
   pod.webServer.addRoute(PartnerRoute(), '/partner/v1/**');
+
+  // The payout provider's signed status reports for real-earnings withdrawals (see RewardProviderRoute).
+  pod.webServer.addRoute(RewardProviderRoute(), '/rewards/v1/provider/*');
 
   // WYRD's Flutter client (wyrd_flutter), built for the web with --base-href /flutter/: the same
   // Serverpod backend, through the generated Dart client. It's told where the API is the same way.
@@ -193,6 +198,11 @@ void run(List<String> args) async {
       await WordNetService.ensureImported(session);
     } catch (e) {
       session.log('[wordnet] import failed: $e', level: LogLevel.warning);
+    }
+    try {
+      await RewardSeed.ensurePolicy(session); // the first reward policy (1.67% cash), once
+    } catch (e) {
+      session.log('[rewards] policy seed failed: $e', level: LogLevel.warning);
     }
     try {
       // full-text search over everything WYRD has read (RAG); built once, a no-op after that

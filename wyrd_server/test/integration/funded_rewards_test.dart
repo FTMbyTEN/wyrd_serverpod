@@ -6,6 +6,7 @@ import 'package:wyrd_server/src/rewards/reward_admin.dart';
 import 'package:wyrd_server/src/rewards/reward_config.dart';
 import 'package:wyrd_server/src/rewards/reward_ledger.dart';
 import 'package:wyrd_server/src/rewards/reward_math.dart';
+import 'package:wyrd_server/src/rewards/reward_seed.dart';
 import 'package:wyrd_server/src/rewards/withdrawals.dart';
 import 'package:wyrd_server/src/world/bank.dart';
 import 'package:wyrd_server/src/world/world_authority.dart';
@@ -267,6 +268,16 @@ void main() {
       await fund(100);
       await expectLater(s.db.unsafeExecute('UPDATE "reward_entry" SET "amount" = 1'), throwsA(anything));
       await expectLater(s.db.unsafeExecute('DELETE FROM "reward_journal"'), throwsA(anything));
+    });
+
+    test('the first policy is seeded once: 1.67% cash, and a new version never changes it', () async {
+      final p = await RewardSeed.ensurePolicy(s);
+      expect([p!.version, p.cashShareBp, p.feeAllowanceKobo], [1, 167, 83500]);
+      expect(await RewardSeed.ensurePolicy(s), isNull);
+      await RewardAdmin.newPolicy(s, admin1, cashShareBp: 167, feeAllowanceKobo: 83500, holdHours: 72);
+      expect(await RewardSeed.ensurePolicy(s), isNull);
+      expect((await RewardPolicy.db.find(s)).map((r) => r.version).toList()..sort(), [1, 2]);
+      expect(RewardMath.split(30000, (await RewardPolicy.db.findFirstRow(s, where: (t) => t.version.equals(1)))!.cashShareBp).toString(), 'G₦29499 + ₦501');
     });
 
     test('dual approval: the proposer cannot approve their own funding', () async {
