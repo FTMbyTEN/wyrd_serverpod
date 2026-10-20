@@ -3265,7 +3265,7 @@
       for (let pz = b + 12; pz < d - 11; pz += 4) { const p0 = P(a + 3, 0.05, pz), p1 = P(c - 3, 0.05, pz); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
       flat(a + 4, b + 9, c - 4, d - 12, 0.05, 'rgba(0,0,0,0)', 'rgba(201,168,106,0.8)');
       // at night, a soft green glow pooled under the name
-      glow.push(() => { if (night < 0.1) return; const p0 = P(cx, 0.1, cz - 3), r = K * 34; x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.min(1, night * 1.1); const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(60,255,160,0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p0[0], p0[1], r, r * 0.45, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
+      glow.push(() => { if (night < 0.1) return; const p0 = P(cx, 0.1, cz - 3), r = K * 34; x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.min(1, night * 1.1); const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(60,255,160,0.08)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p0[0], p0[1], r, r * 0.45, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
       // planters at the plaza's corners, flowers in Lagos colours
       for (const [px, pz] of [[a + 4, b + 9], [c - 8, b + 9], [a + 4, d - 15], [c - 8, d - 15]]) {
         box(px, 0, pz, px + 4, 1.1, pz + 3, '#C9A86A'); box(px + 0.3, 1.1, pz + 0.3, px + 3.7, 1.4, pz + 2.7, '#3F7D3A');
@@ -3306,13 +3306,13 @@
       for (const px of [a + 4, gx - 11, gx + 11, c - 4]) lamp(px, d - 2, 6);
       // after dark the gate glows in the flag's colours: green, white, green
       glow.push(() => { if (night < 0.1) return; x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.min(1, night * 1.2) * (0.85 + Math.sin(tw * 1.4) * 0.15);
-        for (const [gxp, col] of [[gx - 7.2, '0,200,110'], [gx, '255,255,255'], [gx + 7.2, '0,200,110']]) { const p0 = P(gxp, 8, d - 2.4), r = K * 9; const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(' + col + ',0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(p0[0] - r, p0[1] - r, r * 2, r * 2); }
+        for (const [gxp, col] of [[gx - 7.2, '0,200,110'], [gx, '255,255,255'], [gx + 7.2, '0,200,110']]) { const p0 = P(gxp, 8, d - 2.4), r = K * 5.5; const g = x.createRadialGradient(p0[0], p0[1], 0, p0[0], p0[1], r); g.addColorStop(0, 'rgba(' + col + ',0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(p0[0] - r, p0[1] - r, r * 2, r * 2); }
         x.restore(); });
       // by day, a few gulls wheeling over the water in front
       if (night < 0.5) { x.strokeStyle = 'rgba(30,41,59,0.55)'; x.lineWidth = Math.max(1, K * 0.18);
         for (let k = 0; k < 4; k++) { const ang = tw * 0.25 + k * 1.6, gp = P(cx + Math.cos(ang) * (18 + k * 4), 16 + k * 2, d + 8 + Math.sin(ang) * 6), w = K * 1.1, fl = Math.sin(tw * 6 + k) * 0.35;
           x.beginPath(); x.moveTo(gp[0] - w, gp[1] - w * fl); x.quadraticCurveTo(gp[0] - w * 0.4, gp[1] - w * 0.6, gp[0], gp[1]); x.quadraticCurveTo(gp[0] + w * 0.4, gp[1] - w * 0.6, gp[0] + w, gp[1] - w * fl); x.stroke(); } }
-      glow.push(() => { const p = P(gx, 12.5, d - 1.5), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(80,255,170,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.5, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
+      glow.push(() => { const p = P(gx, 12.5, d - 1.5), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(80,255,170,0.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.5, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     // ---- Island Reserve Bank, on the reclaimed land by Eko Atlantic: a classical banking hall in pale stone with a
     // colonnade, reflecting pools either side of the steps, and out of it a glass tower in three setbacks, gold fins running
