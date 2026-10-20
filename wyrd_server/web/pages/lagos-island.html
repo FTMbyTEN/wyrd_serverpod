@@ -1537,7 +1537,7 @@
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
   // an iPhone home-screen app reports a viewport that stops short of the home bar: there the game takes the phone's whole
   // physical screen (its long side in portrait, its short side in landscape), so nothing shows under it
-  function fitStandalone() { if (!(navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches)) return; const land = innerWidth > innerHeight, sh = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height); const want = Math.max(innerHeight, sh); cv.style.height = want + 'px'; document.documentElement.style.height = document.body.style.height = want + 'px'; }
+  function fitStandalone() { if (!(navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || matchMedia('(pointer: coarse)').matches)) return; const land = innerWidth > innerHeight, sh = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height); const want = Math.max(innerHeight, sh, document.documentElement.clientHeight); cv.style.top = '0px'; cv.style.bottom = 'auto'; cv.style.height = want + 'px'; document.documentElement.style.height = document.body.style.height = want + 'px'; }
   function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); fitStandalone(); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   { const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
@@ -1586,6 +1586,7 @@
           <div class="psec">Settings</div>
           <div class="ptog">${T2.map(([k, n, s, on]) => `<button data-pt2="${k}" class="${on ? 'on' : ''}"><span><span>${n}</span><small>${s}</small></span><span class="sw"></span></button>`).join('')}
             <button data-pt2="hqset"><span><span>HQ settings</span><small>Name, colour, door</small></span></button><button data-pt2="share"><span><span>Share profile</span><small>Invite a friend</small></span></button></div>
+          <div class="pfoot" style="font-size:10px;opacity:.4">screen ${screen.width}×${screen.height} · view ${innerWidth}×${innerHeight} · game ${Math.round(document.getElementById('c').getBoundingClientRect().height)} · ${navigator.standalone ? 'app' : matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'} · ${(VER.now || '').slice(5, 16)}</div>
           <div class="pfoot">${esc(online)} on the island now · Lagos time ${String(new Date(lagosMs()).getUTCHours()).padStart(2, '0')}:${String(new Date(lagosMs()).getUTCMinutes()).padStart(2, '0')}</div></div>`;
       el.querySelector('.px').onclick = closePass;
       el.querySelector('#pHq').onclick = () => { closePass(); if (phone.style.display === 'block') closePhone(); goHQ(); };
