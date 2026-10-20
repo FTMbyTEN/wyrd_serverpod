@@ -1584,6 +1584,31 @@ class Endpoints extends _is.EndpointDispatch {
                     params['place'],
                   ),
         ),
+        'gridShift': _is.MethodConnector(
+          name: 'gridShift',
+          params: {
+            'level': _is.ParameterDescription(
+              name: 'level',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'score': _is.ParameterDescription(
+              name: 'score',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .gridShift(
+                    session,
+                    params['level'],
+                    params['score'],
+                  ),
+        ),
         'receipts': _is.MethodConnector(
           name: 'receipts',
           params: {},

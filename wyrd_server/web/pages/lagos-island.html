@@ -45,13 +45,14 @@
   #log div { background: #fff; box-shadow: var(--shadow); border-radius: 14px; padding: 6px 11px; }
   #log b { font-weight: 800; }
   .btn { position: fixed; display: grid; place-items: center; border-radius: 50%; font: 800 13px 'Plus Jakarta Sans', sans-serif; color: var(--ink); background: #fff; box-shadow: var(--shadow); cursor: pointer; user-select: none; border: none; }
+  #zoomin, #zoomout { display: none !important; } /* zoom with a pinch or the wheel */
   #zoomin { right: 12px; top: calc(118px + env(safe-area-inset-top)); width: 44px; height: 44px; font-size: 22px; }
   #zoomout { right: 12px; top: calc(170px + env(safe-area-inset-top)); width: 44px; height: 44px; font-size: 22px; }
   #okada { right: 16px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 84px; height: 84px; background: var(--green); color: #fff; font-size: 14px; }
   #okada:active { background: var(--green-dark); transform: scale(0.96); }
   #stick { position: fixed; left: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); width: 120px; height: 120px; border-radius: 50%; display: none; background: rgba(255, 255, 255, 0.55); box-shadow: var(--shadow); }
   #knob { position: absolute; left: 38px; top: 38px; width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: var(--shadow); }
-  .touch #stick { display: block; }
+  .touch #stick { display: block; opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity .25s, transform .25s; } .touch #stick.show { opacity: 1; pointer-events: auto; transform: none; } /* only when your character is on screen and can walk */
   body:not(.touch) #okada { width: 70px; height: 70px; font-size: 12px; }
   #say { position: fixed; left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); bottom: calc(120px + env(safe-area-inset-bottom)); display: none; gap: 8px; padding: 6px; }
   #say input { flex: 1; padding: 11px 14px; border: none; border-radius: 999px; background: #F2F6FA; color: var(--ink); font: 500 15px 'Plus Jakarta Sans', sans-serif; outline: none; }
@@ -283,7 +284,7 @@
   .rsec { font: 800 11px 'Orbitron', sans-serif; letter-spacing: 3px; color: var(--m); margin: 14px 0 6px; }
   #phoneBtn::before { background: linear-gradient(160deg, #FCEE0A, #FF003C 60%, #00F0FF); }
   /* one phone shape everywhere: a fixed 372 x 780 handset, scaled as a whole (--ps, set in fitPhone) so it never stretches or squashes */
-  #phone, .touch #phone { left: auto; top: auto; right: 16px; bottom: 16px; width: 372px !important; height: 780px !important; scale: var(--ps, 1); transform-origin: 100% 100% !important; }
+  #phone, .touch #phone { left: auto; top: auto; right: 16px; bottom: 16px; width: 372px !important; height: var(--phh, 780px) !important; scale: var(--ps, 1); transform-origin: 100% 100% !important; }
   @media (max-width: 560px) { #phone, .touch #phone { right: auto; left: 50%; margin-left: -186px; bottom: calc(8px + env(safe-area-inset-bottom)); transform-origin: 50% 100% !important; } }
   /* WYRD OS, polished */
   #phone { border-radius: 52px !important; padding: 11px !important; background: linear-gradient(145deg, #3A3D46, #15161B 22%, #0B0B10 50%, #15161B 78%, #3A3D46) !important; box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset, 0 0 0 1.5px #000, 0 0 0 2.5px rgba(252,238,10,.28), 0 0 44px rgba(0,240,255,.16), 0 40px 90px rgba(0,0,0,.55) !important; }
@@ -452,6 +453,19 @@
   .ivhist { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; } .ivhist i, .ivlegend i { height: 16px; border-radius: 4px; background: rgba(239,68,68,.55); } .ivhist i.on, .ivlegend i.on { background: #22C55E; }
   .ivlegend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: #94A3B8; align-items: center; } .ivlegend span { display: flex; gap: 4px; align-items: center; } .ivlegend i { width: 10px; height: 10px; display: inline-block; }
   .ivwarn { margin-top: 10px; padding: 9px 11px; border-radius: 12px; background: rgba(245,158,11,.14); color: #FCD34D; font-size: 12.5px; font-weight: 600; }
+  #gridTask { position: fixed; left: 50%; top: 50%; z-index: 62; width: min(400px, calc(100vw - 24px)); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 16px; border-radius: 24px; background: linear-gradient(160deg, rgba(15,23,42,.95), rgba(30,27,20,.95)); border: 1px solid rgba(250,204,21,.35); box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 30px rgba(250,204,21,.15); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .25s, opacity .25s; }
+  #gridTask.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; } #gridTask p { font-size: 13.5px; line-height: 1.45; color: #CBD5E1; }
+  .gphd { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .gphd b { font-size: 16px; color: #FDE68A; } .gphd span { font-weight: 800; color: #FACC15; } .gpx2 { width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; cursor: pointer; }
+  .gpbig { font: 900 46px 'Plus Jakarta Sans', sans-serif; color: #FACC15; text-align: center; margin: 8px 0; } .gpbig small { font-size: 16px; opacity: .6; }
+  .gpgo { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #FACC15, #F97316); color: #1C1917; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .gpfreq { text-align: center; padding: 10px; border-radius: 14px; margin: 8px 0; } .gpfreq b { display: block; font-size: 30px; } .gpfreq small { opacity: .7; font-size: 11px; } .gpfreq.ok { background: rgba(34,197,94,.15); color: #4ADE80; } .gpfreq.bad { background: rgba(239,68,68,.15); color: #F87171; }
+  .gprow2 { display: flex; justify-content: space-between; padding: 5px 2px; font-size: 13px; } .gpwarn { margin: 6px 0; padding: 7px 10px; border-radius: 10px; background: rgba(239,68,68,.15); color: #FCA5A5; font-size: 12.5px; font-weight: 700; }
+  .gpsl { display: grid; grid-template-columns: 1fr 1.4fr 44px; align-items: center; gap: 8px; padding: 4px 0; font-size: 12.5px; } .gpsl input { accent-color: #FACC15; } .gpsl b { text-align: right; }
+  .gpopts { display: grid; gap: 6px; margin-top: 8px; } .gpopts button { padding: 10px; border: 1px solid rgba(250,204,21,.25); border-radius: 12px; background: rgba(255,255,255,.05); color: #F1F5F9; font: 700 13px 'Plus Jakarta Sans', sans-serif; text-align: left; cursor: pointer; } .gpopts button.dn { opacity: .35; text-decoration: line-through; } .gpopts button.sel { background: #FACC15; color: #1C1917; } .gpopts.sm { grid-template-columns: repeat(3, 1fr); } .gpopts.sm button { text-align: center; padding: 7px 4px; font-size: 11.5px; }
+  .gpchk { display: grid; gap: 6px; margin: 8px 0; } .gpchk label { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.05); font-size: 13px; }
+  .gppan { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 8px 0; } .gppan button { aspect-ratio: 1.3; border: 0; border-radius: 6px; cursor: pointer; background: linear-gradient(135deg, #1E3A8A, #2563EB); } .gppan .dust { background: linear-gradient(135deg, #78716C, #A8A29E); } .gppan .crack { background: linear-gradient(135deg, #1E3A8A, #2563EB), repeating-linear-gradient(45deg, transparent 0 5px, #F87171 5px 7px); background-blend-mode: multiply; outline: 2px solid #F87171; } .gppan .clean { background: linear-gradient(135deg, #22C55E, #2563EB); } .gppan .flag { background: #F97316; } .gppan .oops { background: #7F1D1D; }
+  .gpunit { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); } .gpunit b { display: block; } .gpunit span { font-size: 12.5px; color: #94A3B8; } .gpq { font-size: 15px !important; color: #fff !important; font-weight: 700; } .gpsec2 { margin-top: 8px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #FACC15; }
+  #phone .gtrack { display: block; width: 100%; text-align: left; color: inherit; cursor: pointer; border: 0; } #phone .gtrack.on { box-shadow: inset 0 0 0 2px #FACC15 !important; } #phone .gtrack b { display: block; font-size: 14.5px; } #phone .gtrack em { font-style: normal; font-size: 10px; padding: 2px 7px; margin-left: 6px; border-radius: 999px; background: #FACC15; color: #1C1917; vertical-align: middle; } #phone .gtrack small { display: block; margin-top: 4px; font-size: 12px; opacity: .8; }
   #coach { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 60; width: min(440px, calc(100vw - 24px)); display: flex; gap: 12px; align-items: flex-start; padding: 14px 14px 12px; border-radius: 22px; background: linear-gradient(135deg, rgba(15,23,42,.9), rgba(30,27,75,.9)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(167,139,250,.35); box-shadow: 0 18px 50px rgba(15,23,42,.45), 0 0 30px rgba(139,92,246,.25); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .3s; }
   #coach.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
   #coach .orb { flex: none; width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.8); animation: orbBob 2.4s ease-in-out infinite; }
@@ -564,6 +578,79 @@
   #topR button.thome { width: auto !important; height: 30px !important; padding: 0 10px; border-radius: 999px !important; display: flex; align-items: center; gap: 4px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: #0F172A; flex: none; }
   .thome .ic { width: 15px !important; height: 15px !important; color: #0EA5E9; } .thome b { font-weight: 800; } .thome span { color: #64748B; font-weight: 600; } .thome i { width: 1px; height: 14px; margin: 0 3px; background: rgba(15,23,42,.15); }
   @media (max-width: 640px) { .thome span { display: none; } .thome i { margin: 0 1px; } }
+  #topR button.tgov { position: relative; color: #0F172A; } .tgov .ic { width: 18px !important; height: 18px !important; color: #4F46E5; } .tgov em { display: none; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 0 2px #fff; } .tgov.due em { display: block; } #topR button.tgov { width: auto !important; padding: 0 9px !important; gap: 4px; display: inline-flex; align-items: center; } .tga { text-decoration: none; font: 800 12px "Plus Jakarta Sans", sans-serif; } .tga.up { color: #16A34A; } .tga.dn { color: #DC2626; }
+  #govPanel { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 54px); left: 50%; z-index: 59; width: min(400px, calc(100vw - 20px)); max-height: calc(100dvh - 90px); overflow-y: auto; padding: 14px; border-radius: 22px; background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(241,245,249,.92)); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border: 1px solid rgba(15,23,42,.07); box-shadow: 0 20px 50px rgba(15,23,42,.22); color: #0F172A; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, -8px); opacity: 0; pointer-events: none; transition: transform .25s cubic-bezier(.2,.8,.3,1), opacity .2s; }
+  #govPanel.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .gphead { display: flex; align-items: center; gap: 10px; } .gphead > i { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #4F46E5, #22D3EE); color: #fff; } .gphead > i .ic { width: 20px; height: 20px; } .gphead b { display: block; font-size: 15px; } .gphead small { color: #64748B; font-size: 12px; font-weight: 600; } .gpx { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(15,23,42,.06); cursor: pointer; }
+  .gptiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; } .gpt { padding: 10px 12px; border-radius: 14px; background: rgba(15,23,42,.04); } .gpt span { display: block; font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: .5px; } .gpt b { font-size: 17px; } .gpt small { display: block; font-size: 10.5px; color: #94A3B8; margin-top: 3px; }
+  .gpbar { height: 5px; margin-top: 6px; border-radius: 5px; background: rgba(15,23,42,.08); overflow: hidden; } .gpbar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #22C55E, #0EA5E9); }
+  .gpsec { margin: 14px 2px 6px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #64748B; }
+  .gprow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid rgba(15,23,42,.06); } .gprow span { font-size: 13.5px; font-weight: 700; } .gprow small { display: block; font-size: 11px; color: #94A3B8; font-weight: 600; } .gprow b { font-size: 14px; white-space: nowrap; } .gprow.total b { color: #4F46E5; font-size: 16px; } .gprow.ok b { color: #16A34A; } .gprow.off b { color: #DC2626; }
+  .gpnote { margin-top: 10px; padding: 9px 11px; border-radius: 12px; background: rgba(79,70,229,.07); color: #4338CA; font-size: 12px; font-weight: 600; line-height: 1.4; }
+  .gplive { float: right; font-style: normal; color: #16A34A; font-size: 10px; animation: gpblink 1.6s infinite; } @keyframes gpblink { 50% { opacity: .35; } } .gpt b.gpup { color: #16A34A; } .gpt b.gpdn { color: #DC2626; }
+  .gpfeed { display: flex; gap: 9px; padding: 8px 2px; border-bottom: 1px solid rgba(15,23,42,.06); } .gpfeed i { font-style: normal; font-size: 16px; } .gpfeed span { font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #1E293B; } .gpfeed small { display: block; font-size: 10.5px; color: #94A3B8; margin-top: 1px; }
+  .gpbill { margin-top: 8px; padding: 11px; border-radius: 14px; background: linear-gradient(135deg, rgba(34,211,238,.1), rgba(79,70,229,.1)); } .gpbill small { display: block; font-size: 10.5px; color: #64748B; font-weight: 700; } .gpbill b { display: block; font-size: 14.5px; margin: 3px 0 6px; } .gpvote { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; } .gpvote button { padding: 7px; border: 1px solid rgba(79,70,229,.25); border-radius: 999px; background: #fff; font: 700 12.5px "Plus Jakarta Sans", sans-serif; cursor: pointer; } .gpvote button.on { background: #4F46E5; color: #fff; }
+  .gpopen { width: 100%; margin-top: 12px; padding: 11px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #phone .ghero { display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 10px; border-radius: 20px; background: linear-gradient(135deg, rgba(79,70,229,.35), rgba(34,211,238,.18)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); } #phone .ghero > i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #4F46E5, #22D3EE); color: #fff; } #phone .ghero > i .ic { width: 24px; height: 24px; } #phone .ghero h2 { margin: 0; font-size: 16px; } #phone .ghero span { font-size: 12px; opacity: .75; }
+  #phone .gtabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; } #phone .gtabs button { flex: none; padding: 8px 13px; border: 0; border-radius: 999px !important; background: rgba(255,255,255,.08); color: inherit; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; } #phone .gtabs button.on { background: linear-gradient(135deg, #4F46E5, #22D3EE); color: #fff; }
+  #phone .gstat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; } #phone .gstat div { padding: 10px; border-radius: 16px; background: rgba(255,255,255,.07); text-align: center; } #phone .gstat span { display: block; font-size: 10.5px; opacity: .7; font-weight: 700; } #phone .gstat b { font-size: 20px; } #phone .gstat b.goff { color: #F87171; } #phone .gstat b.gon { color: #4ADE80; }
+  /* the phone, roomier: bigger app icons and labels, comfier cards and text */
+  #phone .app i { width: 54px !important; height: 54px !important; } #phone .app { font-size: 11.5px !important; } #phone .pcard { padding: 14px !important; } #phone #pbody { font-size: 14.5px; }
+  /* Island Music: a music app's look, in its own green */
+  #phone .mseg { display: flex !important; gap: 6px; padding: 4px; border-radius: 999px !important; background: rgba(255,255,255,.06) !important; border: 0 !important; margin-bottom: 12px; } #phone .mseg button { flex: 1; border-radius: 999px !important; border: 0 !important; font: 700 12.5px 'Plus Jakarta Sans', sans-serif !important; color: rgba(255,255,255,.7) !important; background: none !important; padding: 8px 4px !important; clip-path: none !important; } #phone .mseg button.on { background: #22C55E !important; color: #052E16 !important; box-shadow: 0 4px 14px rgba(34,197,94,.4); }
+  #phone .mfeat { position: relative; overflow: hidden; display: flex; gap: 12px; align-items: flex-end; padding: 14px; margin-bottom: 12px; border-radius: 20px !important; min-height: 130px; } #phone .mfeat .mbg { position: absolute; inset: -30px; background: var(--art) center / cover; filter: blur(26px) saturate(1.5) brightness(.55); } #phone .mfeat > img, #phone .mfeat .mft { position: relative; } #phone .mfeat > img { width: 100px; height: 100px; border-radius: 14px; object-fit: cover; box-shadow: 0 10px 24px rgba(0,0,0,.45); }
+  #phone .mft { min-width: 0; } #phone .mft small { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: #86EFAC; } #phone .mft b { display: block; font-size: 17px; line-height: 1.15; margin: 3px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; } #phone .mft span { display: block; font-size: 12.5px; opacity: .8; margin-bottom: 8px; } #phone .mplay { border: 0; border-radius: 999px; padding: 8px 16px; background: #22C55E; color: #052E16; font: 800 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 6px 16px rgba(34,197,94,.45); }
+  #phone .mmini { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; margin-bottom: 10px; border: 0; border-radius: 16px; background: rgba(34,197,94,.14); color: inherit; text-align: left; cursor: pointer; } #phone .mmini img { width: 42px; height: 42px; border-radius: 10px; object-fit: cover; } #phone .mmini span { flex: 1; min-width: 0; } #phone .mmini small { font-size: 10px; font-weight: 800; color: #4ADE80; letter-spacing: .8px; text-transform: uppercase; } #phone .mmini b, #phone .mmini em { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #phone .mmini b { font-size: 13.5px; } #phone .mmini em { font-style: normal; font-size: 11.5px; opacity: .7; }
+  #phone .meq { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; } #phone .meq s { width: 3px; background: #22C55E; border-radius: 1px; animation: eqb .8s ease-in-out infinite; } #phone .meq s:nth-child(2) { animation-delay: -.3s; } #phone .meq s:nth-child(3) { animation-delay: -.55s; }
+  #phone .mrow { border-radius: 14px !important; border-bottom: 0 !important; margin-bottom: 2px; padding: 7px 8px !important; transition: background .15s; } #phone .mrow:hover, #phone .mrow.on { background: rgba(255,255,255,.06) !important; } #phone .mrow img { width: 46px !important; height: 46px !important; border-radius: 10px !important; outline: 0 !important; } #phone .mrow.on .lt b { color: #4ADE80 !important; } #phone .mrow.on .lt b::before { content: '' !important; }
+  #phone .mno { flex: none; width: 20px; text-align: center; font-size: 12px; font-weight: 700; opacity: .5; } #phone .mrow.on .mno { opacity: 1; }
+  #phone .malb button img { border-radius: 14px !important; box-shadow: 0 8px 18px rgba(0,0,0,.35); } #phone .mgen button { border-radius: 16px !important; background: linear-gradient(135deg, var(--g), color-mix(in srgb, var(--g) 40%, #000)) !important; color: #fff !important; font: 800 14px 'Plus Jakarta Sans', sans-serif !important; text-align: left; border: 0 !important; clip-path: none !important; }
+  #phone .mnow img { border-radius: 20px !important; box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 40px rgba(34,197,94,.18); } #phone .mprog { height: 5px !important; border-radius: 5px !important; } #phone .mprog i { background: #22C55E !important; border-radius: 5px; }
+  #phone .mctl button { width: 46px; height: 46px; border-radius: 50% !important; background: rgba(255,255,255,.08) !important; font-size: 18px !important; } #phone .mctl button.big { width: 64px; height: 64px; background: #22C55E !important; color: #052E16 !important; font-size: 24px !important; box-shadow: 0 10px 24px rgba(34,197,94,.45); } #phone .mctl button.on { color: #F43F5E !important; }
+  /* Island Music, cleaner: a deep green glow behind it, titles in plain type, a shelf of big cards, quiet tags */
+  #pbody[data-app="music"] { background: radial-gradient(120% 60% at 50% 0%, rgba(22,101,52,.55), rgba(5,46,22,.15) 55%, transparent 80%); }
+  #phone .msec { display: flex; align-items: baseline; gap: 8px; margin: 18px 2px 10px; font: 800 17px 'Plus Jakarta Sans', sans-serif; color: #fff; letter-spacing: -.2px; } #phone .msec small { font-size: 12px; font-weight: 600; opacity: .55; }
+  #phone .mcards { display: flex; gap: 12px; overflow-x: auto; margin: 0 -16px 4px; padding: 0 16px 6px; scrollbar-width: none; scroll-snap-type: x mandatory; } #phone .mcards::-webkit-scrollbar { display: none; }
+  #phone .mcards button { flex: none; width: 128px; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; scroll-snap-align: start; } #phone .mcards img { width: 128px; height: 128px; border-radius: 16px; object-fit: cover; box-shadow: 0 10px 22px rgba(0,0,0,.4); transition: transform .2s; } #phone .mcards button:active img { transform: scale(.96); } #phone .mcards button.on img { box-shadow: 0 0 0 3px #22C55E, 0 10px 22px rgba(0,0,0,.4); }
+  #phone .mcards b, #phone .mcards small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #phone .mcards b { font-size: 13px; margin-top: 7px; } #phone .mcards small { font-size: 11.5px; opacity: .6; }
+  #phone .mrow em { background: rgba(255,255,255,.08) !important; color: rgba(255,255,255,.55) !important; border: 0 !important; border-radius: 6px; font: 700 9.5px 'Plus Jakarta Sans', sans-serif !important; } #phone .mrow > i { font-size: 15px !important; }
+  #phone .mrow .lt b { font-size: 14px; } #phone .mrow .lt small { opacity: .6; }
+  /* the phone's chrome, cleaned up: no neon ring round the frame or line inside the screen; a smoother Dynamic Island; a
+     slim scroll bar; Back, Home and Close as a frosted bar of icon buttons */
+  #phone { box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 0 0 1.5px #000, 0 40px 90px rgba(0,0,0,.55) !important; }
+  #screen { box-shadow: 0 0 0 2px #000 !important; } #pbar { border-bottom: 0 !important; }
+  #island { height: 28px !important; top: 9px !important; border-radius: 999px !important; background: linear-gradient(180deg, #111 0%, #000 60%) !important; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 4px 14px rgba(0,0,0,.45) !important; font: 700 11.5px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; padding: 0 10px !important; }
+  #island::after { right: 10px !important; top: 9px !important; width: 10px !important; height: 10px !important; background: radial-gradient(circle at 35% 30%, #4F6FA8 0 18%, #1E293B 35%, #000 70%) !important; box-shadow: 0 0 0 1px rgba(255,255,255,.05); }
+  #island.il-live { width: 188px !important; margin-left: -94px !important; height: 32px !important; top: 7px !important; } #island.il-live::after { display: none; }
+  #island img { width: 22px !important; height: 22px !important; border-radius: 7px !important; box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+  #island .il-eq { gap: 2.5px !important; height: 13px !important; } #island .il-eq s { width: 3px !important; border-radius: 2px !important; }
+  #island.il-toast { width: 250px !important; margin-left: -125px !important; height: 38px !important; top: 6px !important; box-shadow: 0 10px 28px rgba(0,0,0,.55) !important; font-size: 12px !important; } #island.il-toast::after { display: none; }
+  #phone ::-webkit-scrollbar { width: 4px !important; height: 4px !important; } #phone ::-webkit-scrollbar-track { background: transparent !important; margin: 18px 0 !important; }
+  #phone ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.28) !important; border-radius: 999px !important; box-shadow: none !important; border: 0 !important; } #phone ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.45) !important; }
+  #phone * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.28) transparent; }
+  #pnav { display: grid !important; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px !important; margin: 4px 18px 20px !important; padding: 6px 10px !important; border-radius: 26px !important; background: rgba(15,17,26,.62) !important; backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border: 1px solid rgba(255,255,255,.08) !important; clip-path: none !important; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  #pnav button { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 2px !important; padding: 6px 0 !important; border-radius: 16px !important; color: rgba(255,255,255,.82) !important; font: 700 10px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .3px !important; text-transform: none !important; background: transparent !important; transition: background .15s, transform .12s, color .15s !important; }
+  #pnav button svg { width: 18px !important; height: 18px !important; stroke-width: 2 !important; }
+  #pnav button:hover { background: rgba(255,255,255,.08) !important; color: #fff !important; } #pnav button:active { transform: scale(.92); background: rgba(255,255,255,.14) !important; color: #fff !important; }
+  #pnav #phome { width: 52px; height: 52px; padding: 0 !important; border-radius: 50% !important; margin: -14px 0 -4px; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1) !important; color: #fff !important; box-shadow: 0 8px 20px rgba(14,165,233,.45), 0 0 0 4px rgba(15,17,26,.9); font-size: 9px !important; }
+  #pnav #phome svg { width: 20px !important; height: 20px !important; } #pnav #phome:active { transform: scale(.9); }
+@media (max-width: 440px) { #online { display: none !important; } #topR { gap: 3px !important; } } /* a narrow phone: the online count lives in the phone's island widget, the top bar keeps its buttons */
+  /* the phone's loading screen: cyberpunk */
+  #phone .cyload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 70%; padding-top: 30%; font-family: 'Orbitron', 'Rajdhani', sans-serif; }
+  #phone .cyring { position: relative; width: 96px; height: 96px; } #phone .cyring i { position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; border-top-color: #00F0FF; border-right-color: rgba(0,240,255,.35); animation: cySpin 1s linear infinite; filter: drop-shadow(0 0 6px #00F0FF); }
+  #phone .cyring i:nth-child(2) { inset: 12px; border-top-color: #FF003C; border-left-color: rgba(255,0,60,.35); border-right-color: transparent; animation-duration: .7s; animation-direction: reverse; filter: drop-shadow(0 0 6px #FF003C); }
+  #phone .cyring b { position: absolute; inset: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.9); animation: cyPulse 1.2s ease-in-out infinite; }
+  @keyframes cySpin { to { transform: rotate(360deg); } } @keyframes cyPulse { 50% { transform: scale(.82); opacity: .75; } }
+  #phone .cyg { position: relative; font: 900 18px 'Orbitron', sans-serif; letter-spacing: 6px; color: #FCEE0A; text-shadow: 0 0 10px rgba(252,238,10,.6); }
+  #phone .cyg::before, #phone .cyg::after { content: attr(data-t); position: absolute; inset: 0; } #phone .cyg::before { color: #00F0FF; transform: translate(-2px, 0); clip-path: inset(0 0 55% 0); animation: cwSlice 1.3s infinite steps(1); mix-blend-mode: screen; } #phone .cyg::after { color: #FF003C; transform: translate(2px, 0); clip-path: inset(55% 0 0 0); animation: cwSlice 1s infinite reverse steps(1); mix-blend-mode: screen; }
+  #phone .cybar { width: 62%; height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; } #phone .cybar i { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #00F0FF, #FF003C); box-shadow: 0 0 10px #00F0FF; animation: cyBar 1.1s ease-in-out infinite; } @keyframes cyBar { 0% { transform: translateX(-110%); } 100% { transform: translateX(260%); } }
+  #phone .cylog { position: relative; height: 16px; width: 80%; text-align: center; font: 600 11px 'Rajdhani', monospace; letter-spacing: 1.5px; color: #8FB6C2; } #phone .cylog span { position: absolute; inset: 0; opacity: 0; animation: cyLog 3.6s infinite; } #phone .cylog span:nth-child(2) { animation-delay: 1.2s; } #phone .cylog span:nth-child(3) { animation-delay: 2.4s; } @keyframes cyLog { 0%, 33% { opacity: 1; } 34%, 100% { opacity: 0; } }
+  #hello .perso { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } #hello .perso button { display: inline-flex; align-items: center; gap: 5px; padding: 7px 11px; border: 1px solid rgba(15,23,42,.1); border-radius: 999px; background: rgba(15,23,42,.04); color: #0F172A; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background .15s, transform .12s, border-color .15s; } #hello .perso button i { font-style: normal; } #hello .perso button.on { background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); color: #fff; border-color: transparent; transform: scale(1.04); } #hello .perso button:disabled { opacity: .4; cursor: default; } #psCount { color: #0EA5E9; font-weight: 700; }
+  #phone .ggov { display: flex; gap: 12px; align-items: center; padding: 12px 14px; margin-bottom: 10px; border-radius: 18px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(167,139,250,.25); } #phone .gorb { flex: none; width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.7); animation: orbBob 2.4s ease-in-out infinite; }
+  #phone .ggov small { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: #A5B4FC; } #phone .ggov b { font-size: 18px; } #phone .ggov span { display: block; font-size: 12px; opacity: .75; font-style: italic; }
+  #phone .gdl { display: block; font-size: 10px; opacity: .7; margin-top: 2px; } #phone .gfeed { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); } #phone .gfeed i { font-style: normal; font-size: 18px; } #phone .gfeed span { font-size: 13px; line-height: 1.4; } #phone .gfeed small { display: block; font-size: 10.5px; opacity: .6; margin-top: 2px; }
+  #phone .gbill small { display: block; font-size: 11px; opacity: .7; font-weight: 700; } #phone .gbill b { display: block; font-size: 17px; margin: 4px 0; } #phone .gbill > span { display: block; font-size: 13px; line-height: 1.4; opacity: .85; margin-bottom: 8px; }
+  #phone .glaw { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); } #phone .glaw em { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: rgba(79,70,229,.35); font: 800 12px 'Plus Jakarta Sans', sans-serif; font-style: normal; } #phone .glaw small { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #22D3EE; } #phone .glaw span { font-size: 13.5px; line-height: 1.4; }
   /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
      soft fields, the logo's gradient on the button, compact and centred over the island */
   #hello { place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 100%, rgba(15,23,42,.45), rgba(15,23,42,.08) 70%); }
@@ -591,7 +678,7 @@
 <div id="top" class="pill">
   <div id="title"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></span>Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <div id="topR"><button id="tHome" class="thome" aria-label="Housing register" title="Housing register"></button><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
+  <div id="topR"><button id="tGov" class="tgov" aria-label="Government: your bills and pay" title="Government: your rent, tax and pay"></button><button id="tHome" class="thome" aria-label="Housing register" title="Housing register"></button><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -629,7 +716,8 @@
     <canvas id="lkPrev" width="320" height="360" aria-label="Your character"></canvas>
     <div class="lksub">Skin</div><div class="lkdots" id="lkSkin"></div>
     <div class="lksub">Hair</div><div class="lookrow" id="lkHair"></div>
-    <div class="lksub">Outfit</div><div class="lookrow lkwrap" id="lkFit"></div></div>
+    <div class="lksub">Outfit</div><div class="lookrow lkwrap" id="lkFit"></div>
+    <div class="fl" style="margin-top:14px">Your personality <small id="psCount">pick up to 3</small></div><div class="perso" id="perso"></div></div>
     <div id="err" class="err"></div>
     <button id="go">Enter Lagos Island</button>
     <button id="guest" class="link">Look around as a guest</button>
@@ -779,6 +867,7 @@
       welcome: 'M7 11V6a1.5 1.5 0 0 1 3 0v4M10 9V4.5a1.5 1.5 0 0 1 3 0V10M13 9.5V6a1.5 1.5 0 0 1 3 0v6M16 9a1.5 1.5 0 0 1 3 0v4a8 8 0 0 1-8 8 7 7 0 0 1-6-3.5L3 13.5a1.5 1.5 0 0 1 2.5-1.5L7 14',
       bank: 'M3 21h18M5 18h14M12 3l9 5H3zM6 10v6M10 10v6M14 10v6M18 10v6M12 6.2h.01',
       gov: 'M3 21h18M5 21V11h14v10M8 11a4 4 0 0 1 8 0M12 3v4M12 3l3 1.2-3 1.2M7.5 14v4M10.5 14v4M13.5 14v4M16.5 14v4',
+      grid: 'M13 2 4 14h7l-1 8 9-12h-7z',
       pin: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 10h.01',
     };
   })();
@@ -789,7 +878,7 @@
     g.save(); g.translate(cx - size / 2, cy - size / 2); g.scale(size / 24, size / 24); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(p); g.restore();
   }
   // each landmark's colour, for its pin
-  const PIN_COL = { bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
+  const PIN_COL = { grid: '#CA8A04', bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
   // the landmarks: [type, i, j, wi, dj, name, emoji]
   const PLACES = [
     // Lagos Island
@@ -864,7 +953,7 @@
     ['soon', 5, 36, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 64, 23, 7, 6, 'Eko Home Store', '🛋️'], // just south of the coastal road
     ['soon', 89, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 86, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['grid', 82, 19, 12, 11, 'National Grid · run by WYRD', '⚡'], // the power station that lights the island, away from the city
     ['soon', 86, 39, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 9, 43, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 34, 43, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -923,7 +1012,8 @@
   let W = 0, H = 0, DPR = 1;
   let quality = 1; // drops when frames run slow
   const cvMain = cv.getContext('2d');
-  function resize() { DPR = Math.max(1, Math.min(2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
+  const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
   let co = 1, si = 0, sp = 1, cp = 0, K = 1;
@@ -1758,11 +1848,9 @@
         flat(a + 1, d - 3, c - 8, d - 1.6, 0.07, '#B07A45');
         for (let k = 0; k < 4; k++) { const cx2 = a + 4 + k * 5.5, cz2 = d - 6.5; for (const [ox, oz] of [[-1.6, -1.6], [1.6, -1.6], [-1.6, 1.6], [1.6, 1.6]]) box(cx2 + ox - 0.1, 0, cz2 + oz - 0.1, cx2 + ox + 0.1, 3.4, cz2 + oz + 0.1, '#E7E5E4'); pyramid(cx2 - 2, cz2 - 2, cx2 + 2, cz2 + 2, 3.4, 1.4, '#FFFFFF'); box(cx2 - 1.2, 0, cz2 - 1, cx2 + 1.2, 0.8, cz2 + 1, '#F5F5F4'); torches.push([cx2 + 2, cz2 + 2.2, 2.2]); }
       } else if (/Elegushi/.test(name)) {
-        // Elegushi: the party beach, a stage with a DJ booth and stacks of speakers, lights pulsing at night
+        // Elegushi: the party beach, a stage with a DJ booth and stacks of speakers (no strobe)
         const sx = a + 9, sz = d - 6; box(sx - 6, 0, sz - 2.5, sx + 6, 1, sz + 2.5, '#1F2937'); for (const px of [sx - 6, sx + 5.6]) box(px, 1, sz - 2.5, px + 0.4, 6, sz - 2.1, '#374151'); box(sx - 6, 6, sz - 2.5, sx + 6, 6.4, sz + 2.5, '#111827');
         box(sx - 2, 1, sz - 0.6, sx + 2, 2.4, sz + 0.6, '#0F172A'); for (const px of [sx - 5, sx + 4]) box(px, 1, sz - 1, px + 1.2, 3.6, sz + 1, '#111827');
-        const stage = () => { if (night < 0.3) return; const tt = performance.now() / 1000; for (let k = 0; k < 6; k++) { const p = P(sx - 5 + k * 2, 6, sz + 2.4), on = (k + Math.floor(tt * 6)) % 3 === 0; x.fillStyle = on ? `hsl(${(tt * 120 + k * 60) % 360},95%,65%)` : 'rgba(80,80,80,0.6)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.4, K * 0.4), 0, Math.PI * 2); x.fill(); } beams(sx, 6, sz, 300, tt); };
-        stage(); glow.push(stage);
         for (let k = 0; k < 4; k++) torches.push([a + 18 + k * 3, d - 3, 2.2]);
       } else {
         // Ilashe: thatched chalets, a hammock between palms, a speedboat drawn up on the shore
@@ -1978,8 +2066,7 @@
           x.save(); x.font = `800 ${Math.max(8, K * 2.1)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
           x.shadowColor = '#22D3EE'; x.shadowBlur = 14; x.fillStyle = '#A5F3FC'; x.fillText('LEKKI', sg[0], sg[1] - K * 1.2);
           x.shadowColor = '#FB7185'; x.fillStyle = '#FECDD3'; x.font = `700 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.fillText('beach club', sg[0], sg[1] + K * 1.2); x.restore();
-          if (night > 0.3) beams((a + bx1) / 2, 10, (b + d) / 2, 190, t);
-        };
+                  };
         neon(); glow.push(neon);
       } else if (LK.theme === 'ozumba') {
         // Club Ozumba: two floors of black glass behind gold fins, LED bands chasing round, a rooftop lounge with umbrellas
@@ -2574,6 +2661,77 @@
       });
       const bp = P(cx, 108.4, tz); x.fillStyle = Math.floor(t * 1.2) % 2 ? '#EF4444' : '#7F1D1D'; x.beginPath(); x.arc(bp[0], bp[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); // the beacon
     },
+    // ---- the National Grid, run by WYRD: a gas turbine hall with its stacks, two cooling towers, the transformer yard and
+    // switchyard, a solar farm, the WYRD control centre with WYRD's orb on the roof, pylons carrying the lines to the city,
+    // and a big board with the output. It follows NEPA: when there's light the stacks smoke and it's lit up; when there
+    // isn't, LOAD SHEDDING in red and the plant goes dim
+    grid(a, b, c, d) {
+      const t = performance.now() / 1000, on = nepaAt(lagosMs() - 3600e3), dark = night > 0.45, mid = (a + c) / 2;
+      flat(a, b, c, d, 0.05, '#A8A29E', C.plotEdge); flat(a + 2, b + 2, c - 2, d - 2, 0.06, '#B8B2A7');
+      // the fence
+      x.strokeStyle = 'rgba(71,85,105,0.85)'; x.lineWidth = 1; for (const [x0, z0, x1, z1] of [[a + 1, b + 1, c - 1, b + 1], [a + 1, b + 1, a + 1, d - 1], [c - 1, b + 1, c - 1, d - 1], [a + 1, d - 1, mid - 6, d - 1], [mid + 6, d - 1, c - 1, d - 1]]) { const p0 = P(x0, 0, z0), p1 = P(x1, 0, z1), q0 = P(x0, 2.4, z0), q1 = P(x1, 2.4, z1); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.moveTo(q0[0], q0[1]); x.lineTo(q1[0], q1[1]); x.stroke(); }
+      // the solar farm along the back
+      for (let row = 0; row < 4; row++) for (let k = 0; k < 9; k++) { const sx = a + 4 + k * 6.2, sz = b + 4 + row * 4.4; quad([P(sx, 0.6, sz), P(sx + 5, 0.6, sz), P(sx + 5, 2, sz + 2.6), P(sx, 2, sz + 2.6)], '#1E3A8A', 'rgba(147,197,253,0.6)'); }
+      // two cooling towers, their tops steaming while the plant runs
+      for (const [tx, tz] of [[c - 26, b + 10], [c - 12, b + 10]]) { for (let k = 0; k < 10; k++) { const y0 = k * 2.6, r = 6 - Math.sin(k / 9 * Math.PI) * 1.8; cylLit(tx, tz, r, y0, 2.7, '#D6D3D1', k === 9); }
+        if (on) for (let k = 0; k < 6; k++) { const u = (t * 0.25 + k / 6) % 1, p = P(tx + Math.sin(t + k) * 2, 26 + u * 16, tz); x.fillStyle = `rgba(241,245,249,${0.55 * (1 - u)})`; x.beginPath(); x.arc(p[0], p[1], K * (3 + u * 5), 0, Math.PI * 2); x.fill(); } }
+      // the turbine hall and its stacks
+      box(a + 6, 0, b + 24, a + 40, 12, b + 38, '#E7E5E4', '#475569', 2); box(a + 5.6, 12, b + 23.6, a + 40.4, 12.8, b + 38.4, '#57534E');
+      for (let k = 0; k < 3; k++) { const sx = a + 12 + k * 11; cylLit(sx, b + 27, 1.3, 12.8, 16, '#78716C'); box(sx - 1.35, 26, b + 25.65, sx + 1.35, 27.2, b + 28.35, '#B91C1C');
+        if (on) for (let q = 0; q < 4; q++) { const u = (t * 0.4 + q / 4 + k * 0.3) % 1, p = P(sx + u * 6, 29 + u * 10, b + 27); x.fillStyle = `rgba(148,163,184,${0.45 * (1 - u)})`; x.beginPath(); x.arc(p[0], p[1], K * (1.4 + u * 3), 0, Math.PI * 2); x.fill(); } }
+      if (K > 2.4) faceText('TURBINE HALL', a + 23, 9, b + 38.45, '#334155', 1.4, 0, 800);
+      // the transformer yard and switchyard: rows of transformers, gantries, insulators
+      for (let r2 = 0; r2 < 3; r2++) for (let k = 0; k < 4; k++) { const tx = a + 48 + k * 7, tz = b + 26 + r2 * 6; box(tx - 1.8, 0, tz - 1.4, tx + 1.8, 3, tz + 1.4, '#64748B'); for (let q = 0; q < 3; q++) box(tx - 1.2 + q * 1.2 - 0.12, 3, tz - 0.12, tx - 1.2 + q * 1.2 + 0.12, 4.6, tz + 0.12, '#CBD5E1'); }
+      for (const gz of [b + 24, b + 42]) { for (const gx of [a + 45, c - 22]) box(gx - 0.3, 0, gz - 0.3, gx + 0.3, 9, gz + 0.3, '#94A3B8'); box(a + 45, 8.6, gz - 0.25, c - 22, 9.1, gz + 0.25, '#94A3B8'); }
+      // the WYRD control centre: glass, WYRD's orb glowing on the roof, the name across the front
+      const cx0 = mid - 14, cx1 = mid + 14, cz0 = d - 22, cz1 = d - 10;
+      box(cx0, 0, cz0, cx1, 9, cz1, '#1E1B4B', '#A5B4FC', 2); box(cx0 - 0.4, 9, cz0 - 0.4, cx1 + 0.4, 9.6, cz1 + 0.4, '#312E81');
+      const orbF = () => { const p = P(mid, 13, (cz0 + cz1) / 2), r = K * 2.4, g = x.createRadialGradient(p[0] - r * 0.3, p[1] - r * 0.3, 0, p[0], p[1], r); g.addColorStop(0, '#FFFFFF'); g.addColorStop(0.45, '#A78BFA'); g.addColorStop(1, '#0EA5E9'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.save(); x.globalCompositeOperation = 'lighter'; const h = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r * 3); h.addColorStop(0, 'rgba(167,139,250,0.5)'); h.addColorStop(1, 'rgba(167,139,250,0)'); x.fillStyle = h; x.beginPath(); x.arc(p[0], p[1], r * 3, 0, Math.PI * 2); x.fill(); x.restore(); };
+      box(mid - 0.3, 9.6, (cz0 + cz1) / 2 - 0.3, mid + 0.3, 11, (cz0 + cz1) / 2 + 0.3, '#475569'); orbF(); glow.push(orbF);
+      const sign = () => { faceText('NATIONAL GRID', mid, 7.3, cz1 + 0.05, '#E0E7FF', 1.8, dark ? 8 : 0, 900); faceText('RUN BY WYRD', mid, 5.6, cz1 + 0.05, '#A78BFA', 1, dark ? 6 : 0, 800); };
+      sign(); glow.push(sign);
+      // the output board by the gate: megawatts when the grid's up, LOAD SHEDDING when NEPA's off
+      { const bx = mid + 18, bz = d - 4; for (const px of [bx - 6, bx + 6]) box(px - 0.2, 0, bz - 0.2, px + 0.2, 4, bz + 0.2, '#1F2937'); box(bx - 6.6, 4, bz - 0.3, bx + 6.6, 9, bz + 0.3, '#0B1020');
+        const mw = on ? 1180 + Math.round(Math.sin(t * 0.3) * 40 + (new Date(lagosMs()).getUTCHours() >= 18 ? 160 : 0)) : 0;
+        const board = () => { faceText(on ? `${mw.toLocaleString()} MW` : 'LOAD SHEDDING', bx, 7.3, bz + 0.32, on ? '#4ADE80' : '#F87171', on ? 1.7 : 1.15, 8, 900); faceText(on ? 'THE ISLAND HAS LIGHT' : 'NEPA: BEAR WITH US', bx, 5.3, bz + 0.32, on ? '#FDE68A' : '#FCA5A5', 0.75, 4, 800); };
+        board(); glow.push(board); }
+      // pylons carrying the lines west, to the city
+      const pyl = (px, pz, h) => { x.strokeStyle = '#64748B'; x.lineWidth = Math.max(1, K * 0.18); const L = P(px - 1.6, 0, pz), Rr = P(px + 1.6, 0, pz), top = P(px, h, pz), arm0 = P(px - 3.5, h - 2, pz), arm1 = P(px + 3.5, h - 2, pz); x.beginPath(); x.moveTo(L[0], L[1]); x.lineTo(top[0], top[1]); x.lineTo(Rr[0], Rr[1]); x.moveTo(arm0[0], arm0[1]); x.lineTo(arm1[0], arm1[1]); x.stroke(); return [arm0, arm1]; };
+      const towers = [[a + 3, d - 8], [a - 12, d - 8], [a - 27, d - 8]].map(([px, pz]) => pyl(px, pz, 16));
+      x.strokeStyle = 'rgba(30,41,59,0.75)'; x.lineWidth = 1; for (let k = 0; k < towers.length - 1; k++) for (const s2 of [0, 1]) { const p0 = towers[k][s2], p1 = towers[k + 1][s2]; x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + K * 1.5, p1[0], p1[1]); x.stroke(); }
+      // lights round the site after dark (dim when the grid's down)
+      if (dark) glow.push(() => { for (let k = 0; k < 8; k++) { const p = P(a + 4 + k * ((c - a - 8) / 7), 6, d - 2), r = K * (on ? 4 : 1.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, on ? 'rgba(254,240,138,0.55)' : 'rgba(248,113,113,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); } });
+      // ---- more of the plant: the LNG jetty and its tanker, the gas line in, fuel tanks, aviation lights on the stacks,
+      // WYRD across a cooling tower, the gatehouse and barrier, a staff car park, crew vans, floodlight masts, a helipad,
+      // and the line of pylons marching off west over the water toward the city
+      { // the jetty out the east side, a gas tanker moored, the pipe running in to the turbine hall
+        flat(c - 1, b + 44, c + 18, b + 48, 0.3, '#57534E'); for (let k = 0; k < 6; k++) box(c + k * 3.2, -2, b + 44.2, c + k * 3.2 + 0.5, 0.3, b + 44.7, '#44403C');
+        const tx = c + 9, tz = b + 54; box(tx - 14, 0, tz - 3, tx + 14, 3.5, tz + 3, '#1E3A8A'); box(tx - 14, 3.5, tz - 3, tx + 14, 4, tz + 3, '#B91C1C'); for (let k = 0; k < 4; k++) disk(tx - 9 + k * 6, tz, 4.6, 2.2, '#E5E7EB'); box(tx + 10, 4, tz - 2, tx + 14, 9, tz + 2, '#F8FAFC'); if (K > 2.6) faceText('WYRD LNG', tx - 4, 2, tz + 3.05, '#FFFFFF', 1.3, 0, 900);
+        for (const [x0, z0, x1, z1] of [[c - 1, b + 46, a + 40, b + 46], [a + 40, b + 46, a + 40, b + 38]]) { const n2 = Math.max(1, Math.round(Math.hypot(x1 - x0, z1 - z0) / 1)); for (let k = 0; k <= n2; k++) { const u = k / n2; cylLit(x0 + (x1 - x0) * u, z0 + (z1 - z0) * u, 0.45, 0.6, 0.01, '#A16207', false); } box(Math.min(x0, x1) - 0.45, 0.4, Math.min(z0, z1) - 0.45, Math.max(x0, x1) + 0.45, 1.3, Math.max(z0, z1) + 0.45, '#CA8A04'); } }
+      // the fuel tanks by the turbine hall
+      for (let k = 0; k < 3; k++) { cylLit(a + 9 + k * 9, b + 46, 3.6, 0, 7, '#F8FAFC'); box(a + 7 + k * 9, 6.4, b + 49.4, a + 11 + k * 9, 7, b + 49.6, '#16A34A'); }
+      // red aviation lights blinking on the stacks and towers
+      const avi = () => { if (Math.floor(t * 1.2) % 2) return; for (const [ax, ay, az] of [[a + 12, 29, b + 27], [a + 23, 29, b + 27], [a + 34, 29, b + 27], [c - 26, 27, b + 10], [c - 12, 27, b + 10]]) { const p = P(ax, ay, az); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); } };
+      avi(); glow.push(avi);
+      if (K > 2) faceText('WYRD', c - 12, 15, b + 16.05, '#4F46E5', 3.2, dark ? 10 : 0, 900); // WYRD across the near cooling tower
+      // the gatehouse and its barrier at the front gate, a guard
+      box(mid - 9, 0, d - 4, mid - 6, 3.6, d - 1.5, '#334155', '#A5B4FC', 1); box(mid - 9.3, 3.6, d - 4.3, mid - 5.7, 4, d - 1.2, '#1E293B');
+      { const lift = on ? 0 : 0; box(mid - 5.6, 1, d - 1.1, mid + 5.6, 1.3, d - 0.8, ['#F8FAFC', '#DC2626'][Math.floor(t) % 2 && lift ? 1 : 0]); for (let k = 0; k < 6; k++) box(mid - 5 + k * 2, 1, d - 1.12, mid - 4 + k * 2, 1.3, d - 1.1, '#DC2626'); }
+      // the staff car park and the crew vans
+      flat(c - 22, d - 9, c - 3, d - 3, 0.07, '#4B5563'); { const R2 = rnd(a * 11 + 5); for (let k = 0; k < 5; k++) drawCar(c - 20 + k * 3.6, d - 6, ['corolla', 'camry', 'highlander', 'lexusrx', 'corolla'][k], ['#F8FAFC', '#111827', '#B91C1C', '#1D4ED8', '#9CA3AF'][Math.floor(R2() * 5)], Math.PI / 2, 0.9); }
+      for (let k = 0; k < 2; k++) { const vx = a + 6 + k * 7, vz = d - 7; box(vx - 2.6, 0.4, vz - 1.2, vx + 2.6, 2.8, vz + 1.2, '#F8FAFC'); box(vx - 2.62, 1.4, vz - 1.22, vx + 2.62, 1.9, vz + 1.22, '#CA8A04'); for (const wx of [vx - 1.6, vx + 1.6]) disk(wx, vz + 1.22, 0.45, 0.45, '#111827'); box(vx - 1, 2.8, vz - 0.8, vx + 1.4, 3.1, vz + 0.8, '#94A3B8'); if (K > 3) faceText('GRID CREW', vx, 2.2, vz + 1.25, '#1E3A8A', 0.45, 0, 900); }
+      // a helipad by the control centre
+      { const hx = mid + 20, hz = d - 16; disk(hx, hz, 0.09, 3.6, '#374151'); disk(hx, hz, 0.1, 3.2, '#4B5563'); if (K > 2) groundText('H', hx, hz, 3, '#F8FAFC'); }
+      // floodlight masts at the corners, lit after dark
+      const masts = [[a + 3, b + 3], [c - 3, b + 3], [a + 3, d - 3], [c - 3, d - 3]];
+      for (const [mx, mz] of masts) { box(mx - 0.25, 0, mz - 0.25, mx + 0.25, 18, mz + 0.25, '#64748B'); box(mx - 1.6, 18, mz - 0.4, mx + 1.6, 19.2, mz + 0.4, '#E5E7EB'); }
+      if (dark && on) glow.push(() => { for (const [mx, mz] of masts) { const p = P(mx, 18.6, mz), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 18); g.addColorStop(0, 'rgba(255,250,230,0.35)'); g.addColorStop(1, 'rgba(255,250,230,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 18, 0, Math.PI * 2); x.fill(); x.restore(); } });
+      // the line west: pylons all the way across the water toward the Home Store and the city
+      { const pts = []; for (let k = 0; k < 8; k++) pts.push([a - 12 - k * 15, d - 8 - k * 1.5]);
+        const arms = pts.map(([px, pz]) => { x.strokeStyle = '#64748B'; x.lineWidth = Math.max(1, K * 0.16); const L = P(px - 1.4, 0, pz), Rr = P(px + 1.4, 0, pz), top = P(px, 15, pz), a0 = P(px - 3.2, 13, pz), a1 = P(px + 3.2, 13, pz); x.beginPath(); x.moveTo(L[0], L[1]); x.lineTo(top[0], top[1]); x.lineTo(Rr[0], Rr[1]); x.moveTo(a0[0], a0[1]); x.lineTo(a1[0], a1[1]); x.stroke(); return [a0, a1]; });
+        x.strokeStyle = 'rgba(30,41,59,0.6)'; x.lineWidth = 1; for (let k = 0; k < arms.length - 1; k++) for (const s2 of [0, 1]) { const p0 = arms[k][s2], p1 = arms[k + 1][s2]; x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + K * 1.4, p1[0], p1[1]); x.stroke(); } }
+      gridJobFx(a, b, c, d); // where a grid career sends you, marked on the plant
+    },
     soon(a, b, c, d) {
       for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
       box(a + 3, 2.4, d - 2.6, c - 3, 3, d - 1.8, '#FACC15');
@@ -2581,8 +2739,24 @@
     screens(a, b, c, d) { flat(a, b, c, d, 0.05, '#1F2937'); for (let k = 0; k < 2; k++) screen(a + 10 + k * 20, b + 10, k + 7); },
     hqgate(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      for (const px of [a + 4, c - 4]) box(px - 1, 0, b + 8, px + 1, 8, b + 10, '#F8FAFC');
-      box(a + 3, 8, b + 8, c - 3, 10, b + 10, '#A855F7');
+      const t = performance.now() / 1000, x0 = a + 2, x1 = c - 2, zf = b + 10.1, y0 = 3.2, y1 = 11.5, mid = (x0 + x1) / 2;
+      for (const px of [a + 3.5, c - 3.5]) box(px - 0.5, 0, b + 9, px + 0.5, y0, b + 10, '#1F2937');
+      box(x0 - 0.4, y0 - 0.4, b + 8.6, x1 + 0.4, y1 + 0.4, b + 10, '#0B0B0F'); // the frame
+      const msgs = hqBoardMsgs(), m = msgs[Math.floor(t / 5) % msgs.length], wipe = Math.min(1, (t % 5) / 0.5); // 5 seconds each
+      const scr = () => {
+        const p0 = P(x0, y0, zf), p1 = P(x1, y0, zf), p2 = P(x1, y1, zf), p3 = P(x0, y1, zf), g = x.createLinearGradient(p3[0], p3[1], p1[0], p1[1]);
+        if (m.shout) { const hu = (t * 120) % 360; g.addColorStop(0, `hsl(${hu},85%,32%)`); g.addColorStop(0.5, `hsl(${(hu + 90) % 360},85%,28%)`); g.addColorStop(1, `hsl(${(hu + 180) % 360},85%,32%)`); } else { g.addColorStop(0, m.bg[0]); g.addColorStop(1, m.bg[1]); } quad([p0, p1, p2, p3], g);
+        x.save(); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.lineTo(p2[0], p2[1]); x.lineTo(p3[0], p3[1]); x.closePath(); x.clip(); x.globalAlpha = wipe;
+        if (m.shout) faceText('🎉 MASSIVE SHOUTOUT 🎉', mid, 10.3, zf + 0.02, '#FDE68A', 0.75, 6, 900);
+        faceText(m.head, mid, m.shout ? 7.9 : 8.6, zf + 0.02, '#FFFFFF', (m.shout ? 1.25 : 1) * Math.min(1.5, 14 / Math.max(8, m.head.length) * 1.6) * (m.shout ? 1 + Math.sin(t * 8) * 0.06 : 1), m.shout ? 12 : 6, 900);
+        faceText(m.sub, mid, 5.6, zf + 0.02, m.col, Math.min(0.95, 14 / Math.max(10, m.sub.length) * 1.7), 4, 700);
+        x.globalAlpha = 0.18; x.strokeStyle = '#000'; x.lineWidth = 1; x.beginPath(); for (let k = 1; k < 20; k++) { const u = k / 20, q0 = P(x0, y0 + (y1 - y0) * u, zf + 0.03), q1 = P(x1, y0 + (y1 - y0) * u, zf + 0.03); x.moveTo(q0[0], q0[1]); x.lineTo(q1[0], q1[1]); } x.stroke(); x.restore(); // LED rows
+        const dots = msgs.length; for (let k = 0; k < dots; k++) { const p = P(mid + (k - (dots - 1) / 2) * 0.9, y0 + 0.5, zf + 0.04); x.fillStyle = k === Math.floor(t / 5) % dots ? '#FFFFFF' : 'rgba(255,255,255,0.3)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.14), 0, Math.PI * 2); x.fill(); }
+      };
+      if (m.shout) { // confetti over the board and two searchlights swinging up from it
+        for (let k = 0; k < 40; k++) { const R3 = rnd(k * 7 + 3), fall = ((t * (1.5 + R3() * 2) + R3() * 10) % 10), p = P(x0 + R3() * (x1 - x0), y1 + 6 - fall, zf + 0.5); x.fillStyle = ['#F43F5E', '#FACC15', '#22C55E', '#38BDF8', '#A855F7', '#FFFFFF'][k % 6]; x.save(); x.translate(p[0], p[1]); x.rotate(t * 5 + k); x.fillRect(-K * 0.25, -K * 0.12, K * 0.5, K * 0.24); x.restore(); }
+        glow.push(() => { for (const sx of [-1, 1]) { const base = P(mid + sx * 4, y1, zf), an = Math.sin(t * 1.4 + sx) * 0.5 + sx * 0.25, len = K * 45, tip = [base[0] + Math.sin(an) * len, base[1] - Math.cos(an) * len]; const g3 = x.createLinearGradient(base[0], base[1], tip[0], tip[1]); g3.addColorStop(0, 'rgba(253,230,138,0.45)'); g3.addColorStop(1, 'rgba(253,230,138,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g3; x.beginPath(); x.moveTo(base[0] - K, base[1]); x.lineTo(tip[0] - K * 5, tip[1]); x.lineTo(tip[0] + K * 5, tip[1]); x.lineTo(base[0] + K, base[1]); x.fill(); x.restore(); } }); }
+      scr(); if (night > 0.35) glow.push(() => { const p = P(mid, (y0 + y1) / 2, zf), r = K * 9, g2 = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g2.addColorStop(0, m.glow); g2.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g2; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); scr(); });
     },
   };
   // WYRD Tower's atom: a nucleus of shaded protons and neutrons, three orbits that tilt and turn slowly in 3D (their far
@@ -3035,7 +3209,7 @@
     m_cargo: ['m_cargo', null, 1, [0, 0, 0], null, 45, 0.06], m_hoodie: ['hoodiejeans', [0], 0.0108, [0.002, 0, 0.01], null, 47, 0.06],
     m_jeans: ['hoodiejeans', [1], 0.0108, [0.002, 0, 0.01], null, 47, 0.06], suit_jacket: ['suit_jacket', null, 0.54, [0, 1.19, 0.005], null, 45, 0.09],
     leather_jacket: ['leather_jacket', null, 0.54, [0, 1.19, 0.005], null, 45, 0.09],
-    f_jeanstank: ['f_jeanstank', null, 0.00115, [0, -0.1, 0], null, 45, 0.06], f_knitskirt: ['f_knitskirt', null, 1, [0, 0, 0], null, 45, 0.06, [-0.4, 0.3]],
+    f_jeanstank: ['f_jeanstank', null, 0.00115, [0, -0.1, 0], null, 45, 0.06], f_knitskirt: ['f_knitskirt', null, 0.78, [0, 0, 0], null, 45, 0.06, [-0.4, 0.3]],
     f_sweatshirt: ['f_sweatshirt', null, 121, [0, -0.18, 0], null, 45, 0.06], f_sweatpants: ['f_sweatpants', [0], 105, [0.19, -0.09, 0], null, 45, 0.06],
     f_cargo: ['f_cargo', [0], 0.135, [0, 0, 0], null, 45, 0.08], f_dress: ['f_dress', null, 0.0105, [0, 0, 0], null, 20, 0.06],
     f_longdress: ['f_longdress', null, 0.0108, [0, 0, 0], null, 45, 0.06],
@@ -3057,6 +3231,7 @@
     versace_silk: { m: [['suit_jacket'], ['m_cargo']], f: [['f_dress']] }, fendi_set: { m: [['leather_jacket'], ['m_cargo']], f: [['f_knitskirt', '#D6A15C']] },
     lv_jacket: { m: [['leather_jacket'], ['m_jeans']], f: [['f_jeanstank']] }, dior_gown: { m: [['suit_jacket'], ['m_cargo']], f: [['f_longdress']] },
   };
+  const WEAR_SNUG = { m_hoodie: 0.035, suit_jacket: 0.03, leather_jacket: 0.032, f_cargo: 0.03, f_sweatshirt: 0.03, f_knitskirt: 0.09, f_dress: 0.08, f_longdress: 0.1 }; // default 0.022
   const WEAR_SRC = {}, WEAR_LOADING = {}, WEAR_FITTED = {}, WEAR_HIDE = {};
   function wearLoad(file) {
     if (WEAR_SRC[file] || WEAR_LOADING[file]) return; WEAR_LOADING[file] = 1;
@@ -3078,6 +3253,10 @@
     const seg = new THREE.Line3(), cp = new THREE.Vector3(), boneMats = sk.map((b, i) => new THREE.Matrix4().multiplyMatrices(b.matrixWorld, bm.skeleton.boneInverses[i]));
     const gs = WEAR_SRC[file].clone(true), w = new THREE.Group(), r = new THREE.Group(); r.add(gs); if (rot) r.rotation.set(...rot.map((d) => d * Math.PI / 180)); w.add(r); w.scale.setScalar(s); w.position.set(...off); w.updateMatrixWorld(true);
     const ms = []; gs.traverse((m) => { if (m.isMesh) ms.push(m); });
+    const BG = bm.geometry, bpos = [], bgrid = new Map(), bc = 0.1, bkey = (x, y, z) => (Math.floor(x / bc) * 73856093) ^ (Math.floor(y / bc) * 19349663) ^ (Math.floor(z / bc) * 83492791), tv = new THREE.Vector3(), maxOff = WEAR_SNUG[gk] ?? 0.022;
+    for (let i = 0; i < BG.attributes.position.count; i++) { tv.fromBufferAttribute(BG.attributes.position, i); bm.applyBoneTransform(i, tv); bpos.push(tv.x, tv.y, tv.z); const kk = bkey(tv.x, tv.y, tv.z); let a = bgrid.get(kk); if (!a) bgrid.set(kk, (a = [])); a.push(i); }
+    const snug = (q) => { let best = -1, bd = 1e9; for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) { const a = bgrid.get(bkey(q.x + dx * bc, q.y + dy * bc, q.z + dz * bc)); if (a) for (const j of a) { const ex = q.x - bpos[j * 3], ey = q.y - bpos[j * 3 + 1], ez = q.z - bpos[j * 3 + 2], d = ex * ex + ey * ey + ez * ez; if (d < bd) { bd = d; best = j; } } }
+      if (best < 0) return; const d = Math.sqrt(bd); if (d <= maxOff) return; const f = maxOff / d; q.set(bpos[best * 3] + (q.x - bpos[best * 3]) * f, bpos[best * 3 + 1] + (q.y - bpos[best * 3 + 1]) * f, bpos[best * 3 + 2] + (q.z - bpos[best * 3 + 2]) * f); };
     const parts = [], pts = [];
     ms.forEach((m, mi) => {
       if (keep && !keep.includes(mi)) return;
@@ -3087,7 +3266,7 @@
       if (clip) { const kept = []; for (let t = 0; t < idx.length; t += 3) { const wx = (i) => new THREE.Vector3(src.attributes.position.getX(i), src.attributes.position.getY(i), src.attributes.position.getZ(i)).applyMatrix4(m.matrixWorld).x; const cx = (wx(idx[t]) + wx(idx[t + 1]) + wx(idx[t + 2])) / 3; if (cx >= clip[0] && cx <= clip[1]) kept.push(idx[t], idx[t + 1], idx[t + 2]); } idx = kept; }
       const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), q = new THREE.Vector3(), S = new THREE.Matrix4(), M2 = new THREE.Matrix4();
       for (let i = 0; i < n; i++) {
-        q.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); pts.push(q.x, q.y, q.z);
+        q.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); snug(q); pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z; pts.push(q.x, q.y, q.z);
         let d1 = 1e9, d2 = 1e9, k1 = 0, k2 = 0;
         for (const sg of segs) { seg.set(sg.a, sg.e); seg.closestPointToPoint(q, true, cp); const d = cp.distanceTo(q); if (d < d1) { d2 = d1; k2 = k1; d1 = d; k1 = sg.k; } else if (d < d2) { d2 = d; k2 = sg.k; } }
         const w1 = 1 / Math.pow(d1 + 0.01, 4), w2 = 1 / Math.pow(d2 + 0.01, 4), tt = w1 + w2; si[i * 4] = k1; sw[i * 4] = w1 / tt; si[i * 4 + 1] = k2; sw[i * 4 + 1] = w2 / tt;
@@ -3486,6 +3665,37 @@
   // HQ Row: everyone's free starter home, a BQ (boys' quarters): a single-storey block behind a compound wall
   // (filled in from the server for signed-in players)
   let hqSlots = [];
+  // a plate on a post by a gate: OCCUPIED in green, VACANT in grey (the words once you're close enough to read them)
+  function gatePlate(px, pz, occ, label) {
+    box(px - 0.08, 0, pz - 0.08, px + 0.08, 2.4, pz + 0.08, '#57534E');
+    quad([P(px - 1.3, 1.6, pz + 0.1), P(px + 1.3, 1.6, pz + 0.1), P(px + 1.3, 2.6, pz + 0.1), P(px - 1.3, 2.6, pz + 0.1)], occ ? '#15803D' : '#6B7280', '#FFFFFF');
+    if (K > 3) faceText(label || (occ ? 'OCCUPIED' : 'VACANT'), px, 2.1, pz + 0.12, '#FFFFFF', 0.45, 0, 800);
+  }
+  function gateLight(px, pz, on) {
+    box(px - 0.1, 0, pz - 0.1, px + 0.1, 3.2, pz + 0.1, '#0B0B0F'); box(px - 0.22, 3.2, pz - 0.22, px + 0.22, 3.35, pz + 0.22, '#111827');
+    const p = P(px, 3.65, pz), r = Math.max(1.5, K * 0.32); x.fillStyle = on ? '#14532D' : '#1F2937'; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
+    if (on) { const halo = () => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * (night > 0.35 ? 1.6 : 0.8)); g.addColorStop(0, 'rgba(22,101,52,0.55)'); g.addColorStop(1, 'rgba(22,101,52,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2), 0, Math.PI * 2); x.fill(); x.restore(); }; halo(); glow.push(halo); }
+  }
+  const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 3.2); g.addColorStop(0, 'rgba(255,214,150,0.26)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 3.2, 0, Math.PI * 2); x.fill(); x.restore(); }); };
+  const hqBoard = { seen: null, arrivals: [] }; // new arrivals noticed this session: [{ k, owner, at }]
+  function hqBoardMsgs() {
+    const out = [], now = Date.now(), n = Math.max(hqSlots.length, housingBqs ?? 0), who = (k) => { const sl = hqSlots[k]; return sl ? (sl.resident || sl.owner || '') : ''; };
+    if (hqBoard.seen != null && n > hqBoard.seen) for (let k = hqBoard.seen; k < n; k++) hqBoard.arrivals.push({ k, at: now });
+    if (n) hqBoard.seen = n; hqBoard.arrivals = hqBoard.arrivals.filter((v) => now - v.at < 6 * 3600e3);
+    const GREEN = ['#052E16', '#14532D'], GOLD = ['#422006', '#713F12'], PINK = ['#4A044E', '#831843'], NIGHT = ['#0C0A2E', '#1E1B4B'];
+    // whoever just moved in: a massive shoutout, back every other message
+    const fresh = hqBoard.arrivals.slice(-2).map((v) => ({ shout: true, head: `@${(who(v.k) || 'new Lagosian').toUpperCase()}`, sub: `just moved into BQ #${v.k + 1} · welcome home!`, col: '#FFFFFF', bg: GOLD, glow: 'rgba(250,204,21,0.55)' }));
+    // the hype, and a shoutout to each resident in turn (the newest first)
+    const HYPE = [['HQ ROW NO DEY CARRY LAST 🔥', 'only correct people live here'], ['ODOGWU ROW', 'big energy · big dreams · no dulling'], ['WHO GET EAR, MAKE E HEAR', 'HQ Row dey on top, as always'], ['EKO O NI BAJE', 'HQ Row na family, we move together'], ['NO SLEEP TILL BANANA ISLAND', 'today BQ, tomorrow mansion. Make we hustle!']];
+    const hype = HYPE.map(([h, sb]) => ({ head: h, sub: sb, col: '#FDE68A', bg: NIGHT, glow: 'rgba(99,102,241,0.35)' }));
+    const shouts = []; for (let k = n - 1; k >= Math.max(0, n - 6); k--) { const nm = who(k); shouts.push({ head: `SHOUTOUT @${(nm || 'BQ #' + (k + 1)).toUpperCase()}`, sub: k === n - 1 ? `the newest on the Row · BQ #${k + 1} 🎉` : `BQ #${k + 1} · HQ Row legend`, col: '#86EFAC', bg: GREEN, glow: 'rgba(34,197,94,0.35)' }); }
+    const parties = []; for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) { if (!p.key || !p.key.startsWith('hq:') || !(p.until > now)) continue; const k = hqSlots.findIndex((s2) => String(s2.slot) === p.key.split(':')[1]), th = PARTY_THEMES[p.theme] || ['Party']; parties.push({ head: `PARTY @${(p.host || 'A NEIGHBOUR').toUpperCase()}`, sub: `${th[0]} · ${k >= 0 ? 'BQ #' + (k + 1) : 'on the Row'} · ${p.open ? 'everyone come!' : 'guest list'}`, col: '#FDE68A', bg: PINK, glow: 'rgba(236,72,153,0.4)' }); }
+    // weave them: hype, a shoutout, any party, and the newcomer between every one of them
+    const base = []; for (let k = 0; k < Math.max(hype.length, shouts.length); k++) { if (hype[k]) base.push(hype[k]); if (shouts[k]) base.push(shouts[k]); if (parties[k]) base.push(parties[k]); }
+    base.push({ head: 'HQ ROW', sub: `${n} Lagosian${n === 1 ? '' : 's'} live here · host a party to go on this board`, col: '#A5F3FC', bg: NIGHT, glow: 'rgba(99,102,241,0.35)' });
+    if (!fresh.length) return base;
+    for (const m of base) { out.push(fresh[out.length % fresh.length]); out.push(m); } return out;
+  }
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
     compound(a, b, c, d, hq && hq.mine, () => {
@@ -3499,6 +3709,7 @@
     });
     if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
     if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
+    { const occ = !!hq || k < (housingBqs ?? 0); gateLight(a + 2, d - 0.9, occ); if (occ) litWindows(a, b, c, d, 4); } // assigned or not, at a glance
   }
   // a house with a party on: lights pulsing round it, searchlights at night, a 🎉 bobbing over the roof
   function partyHouse(a, b, c, d, p) {
@@ -3544,9 +3755,88 @@
     } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
   }
   setTimeout(() => { housingPoll(); setInterval(housingPoll, 20000); }, 1500);
+  // the Government button in the top bar: a panel dropping out of it with your rent, tax and pay, the power, the island's homes
+  const govPanel = document.createElement('div'); govPanel.id = 'govPanel'; document.body.append(govPanel);
+  function govPanelDraw() {
+    const A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, pct = A.cap ? Math.min(100, Math.round(A.pay / A.cap * 100)) : 0;
+    const L = govLive(), row = (k, v, sub, cls = '') => `<div class="gprow ${cls}"><span>${k}${sub ? `<small>${sub}</small>` : ''}</span><b>${v}</b></div>`;
+    govPanel.innerHTML = `<div class="gphead"><i>${ico('gov')}</i><div><b>Lagos Island Government</b><small>${A.signed ? `Your account${myRole() ? ' · ' + myRole().icon + ' ' + myRole().name : ''}` : 'Sign in to see your account'}</small></div><button class="gpx" aria-label="Close">✕</button></div>
+      ${A.signed ? `<div class="gptiles"><div class="gpt"><span>Wallet</span><b>${naira(A.naira)}</b></div><div class="gpt"><span>Paid today</span><b>${naira(A.pay)}</b><div class="gpbar"><i style="width:${pct}%"></i></div><small>${A.cap ? naira(A.cap) + ' a day at most' : ''}</small></div></div>
+      <div class="gpsec">Your bills</div>
+      ${row('Rent · your BQ on HQ Row', A.trial ? 'Free' : naira(A.rent) + '/wk', A.trial ? `your first week · free until ${new Date(A.trialEnd).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'a basic apartment, after the free first week')}
+      ${A.homes.map((h) => row(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `service charge · land use ${naira(h.landUseWk)}/wk`)).join('')}
+      ${row('Income tax (PAYE, 7%)', naira(A.paye), `on today's pay · you keep ${naira(A.net)}`)}
+      ${row('Due this week', naira(A.dueWk), [A.rent ? 'BQ rent' : '', A.homes.length ? 'service charges and land use' : ''].filter(Boolean).join(', ') || 'nothing due: your first week is free', 'total')}
+      <div class="gpnote">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : `<div class="gpnote">Your rent, tax and pay show here once you're signed in to WYRD.</div>`}
+      <div class="gpsec">The island now <em class="gplive">● live</em></div>
+      <div class="gptiles"><div class="gpt"><span>WYRD approval</span><b class="${L.approval >= 50 ? 'gpup' : 'gpdn'}">${L.approval}%</b><small>${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div class="gpt"><span>Treasury</span><b>${naira(L.treasury)}</b><small>+${naira(Math.round(L.perSec * 60))} a minute</small></div></div>
+      ${L.feed.slice(0, 3).map((f) => `<div class="gpfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}
+      <div class="gpbill"><small>This week's bill · ${L.bill[2]}</small><b>${esc(L.bill[0])}</b><div class="gpbar"><i style="width:${Math.round(L.yes / Math.max(1, L.yes + L.no) * 100)}%"></i></div><small>${L.yes} yes · ${L.no} no${L.mine ? ` · you voted ${L.mine}` : ''}</small><div class="gpvote"><button data-pv="yes" class="${L.mine === 'yes' ? 'on' : ''}">👍 Yes</button><button data-pv="no" class="${L.mine === 'no' ? 'on' : ''}">👎 No</button></div></div>
+      ${row('Power', grid ? 'NEPA has light' : 'NEPA took light', grid ? '' : 'inverters on', grid ? 'ok' : 'off')}
+      ${row('Homes', `${c.all.total - c.all.taken} free · ${c.all.taken} lived in`, `${c.all.total} on the island`)}
+      <button class="gpopen">Open the Government app</button>`;
+    govPanel.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { store.set('li.vote.' + L.wk, b.dataset.pv); govPanelDraw(); }));
+    govPanel.querySelector('.gpx').onclick = () => govPanel.classList.remove('on');
+    govPanel.querySelector('.gpopen').onclick = () => { govPanel.classList.remove('on'); openPhone('gov'); };
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tGov')) { if (govPanel.classList.toggle('on')) { govPanelDraw(); if (signedIn() && !me$) my('me').then((v) => { me$ = v; govPanelDraw(); }).catch(() => {}); } } else if (govPanel.classList.contains('on') && !e.target.closest('#govPanel')) govPanel.classList.remove('on'); });
+  setInterval(() => { const b = document.getElementById('tGov'); if (!b) return; if (!b.innerHTML) b.innerHTML = ico('gov') + '<s class="tga"></s><em></em>'; const A = govAccount(); { const L = govLive(), s = b.querySelector('.tga'), v = `${L.approval}%`; if (s && s.textContent !== v) { s.textContent = v; s.className = 'tga ' + (L.approval >= 50 ? 'up' : 'dn'); } b.title = `WYRD approval ${L.approval}% (${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday) · treasury ${naira(L.treasury)} · this week: ${L.bill[0]}`; } b.classList.toggle('due', A.dueWk > 0 || (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3))); if (govPanel.classList.contains('on')) govPanelDraw(); }, 3000);
   // the top bar's housing chip: free homes and lived-in homes, all of them (BQs too), refreshed every two seconds
   setInterval(() => { const el = document.getElementById('tHome'); if (!el) return; const c = census(), h = `${ico('hq')}<b>${c.all.total - c.all.taken}</b><span>free</span><i></i><b>${c.all.taken}</b><span>lived in</span>`; if (el.innerHTML !== h) el.innerHTML = h; el.title = `Housing register: ${c.all.total} homes, ${c.all.taken} lived in, ${c.all.total - c.all.taken} free`; }, 2000);
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tHome')) openPhone('gov'); });
+  // the rates (set by WYRD's government; collected once the Treasury opens with the financial system)
+  const GOV = { bqRent: 0, bqRentWk: 3000, trialDays: 7, paye: 0.07, landUse: 0.005, service: { flat: 2000, bungalow: 5000, terrace: 8000, duplex: 15000, townhouse: 18000, loft: 25000, mansion: 40000, villa: 80000 } };
+  // ---- the government, live: everything here comes from the island's real state (the light, the weather, who lives
+  // where, who is online, the parties, your own shifts) and the clock, so every Lagosian sees the same government
+  const GOV_EPOCH = Date.UTC(2026, 9, 1), GOV_WEEK = 7 * 864e5;
+  const GOV_BILLS = [
+    ['Solar on every BQ roof', 'Put a 1 kW panel and a small inverter on every BQ on HQ Row, paid from the Power budget.', 'Power'],
+    ['Night Blue Line', 'Run the Blue Line until 2 am on Fridays and Saturdays, for the clubs and the Arena.', 'Transport'],
+    ['Rent freeze on HQ Row', 'Hold BQ rent at ₦3,000 a week for the next three months.', 'Housing'],
+    ['Okada lanes on the coastal road', 'Paint a lane for okadas from Lekki to Ajah: safer for riders and drivers.', 'Transport'],
+    ['Free Wi-Fi at Freedom Park', 'Public Wi-Fi in Freedom Park and Tafawa Balewa Square.', 'Culture'],
+    ['Flood drains in VI', 'Dig new drains on Adeola Odeku and Ahmadu Bello Way before the rains.', 'Works'],
+    ['Skills school at the Grid', 'A free training school at the National Grid for linemen and solar technicians.', 'Education'],
+    ['Weekend market at Balogun', 'Close Balogun to cars on Saturdays and open it as a street market.', 'Culture'],
+  ];
+  const GOV_WORKS = [['Lekki–Ajah coastal road resurfacing', 'Works', 9], ['New substation for Ikoyi', 'Power', 6], ['HQ Row phase 2: 40 more BQs', 'Housing', 12], ['Blue Line extension to Ajah', 'Transport', 20], ['General Hospital new wing', 'Health', 14], ['Flood barrier at Eko Atlantic', 'Works', 16]];
+  function govLive() {
+    const now = lagosMs(), c = census(), wk = Math.floor((now - GOV_EPOCH) / GOV_WEEK), into = ((now - GOV_EPOCH) % GOV_WEEK) / GOV_WEEK;
+    const lightIn = (from) => Array.from({ length: 24 }, (_, k) => nepaAt(from - k * 3600e3)).filter(Boolean).length, light = lightIn(now - 3600e3), on = nepaAt(now - 3600e3);
+    const rain = WX && WX.cur ? WX.cur.rain : 0, occ = c.all.total ? c.all.taken / c.all.total : 0, online = (typeof others !== 'undefined' ? others.size : 0) + 1;
+    // approval: the light matters most, then housing and the weather; it drifts a little hour to hour
+    const R = rnd(Math.floor(now / 3600e3)), approval = Math.round(Math.max(18, Math.min(92, 38 + (light - 12) * 2.2 + occ * 25 + (on ? 4 : -6) - rain * 10 + (R() - 0.5) * 4)));
+    const apY = Math.round(Math.max(18, Math.min(92, 38 + (lightIn(now - 25 * 3600e3) - 12) * 2.2 + occ * 25)));
+    // the treasury: rates from homes lived in, BQ rent and the island's base income since the government began, less what it has spent
+    const rateWk = Object.entries(c.style).reduce((s2, [k, v]) => s2 + v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52), 0) + c.bq.taken * GOV.bqRentWk + 2500000;
+    const treasury = Math.round(rateWk * ((now - GOV_EPOCH) / GOV_WEEK) * 0.38 + 48e6), perSec = rateWk * 0.38 / (GOV_WEEK / 1000);
+    // the bill of the week, and last week's result
+    const bill = GOV_BILLS[wk % GOV_BILLS.length], last = GOV_BILLS[(wk + GOV_BILLS.length - 1) % GOV_BILLS.length], RV = rnd(wk * 31 + 7), RL = rnd((wk - 1) * 31 + 7);
+    const base = Math.round(4 + c.bq.taken * 0.6 + into * 30), yes0 = Math.round(base * (0.35 + RV() * 0.4)), no0 = base - yes0, mine = store.get('li.vote.' + wk) || '';
+    const lastYes = 0.35 + RL() * 0.4 + (store.get('li.vote.' + (wk - 1)) === 'yes' ? 0.04 : 0);
+    // works under way: each takes its weeks, on its own schedule
+    const works = GOV_WORKS.map(([nm, dep, wks], k) => { const t0 = GOV_EPOCH + k * 5 * 864e5, p = Math.max(0, Math.min(1, (now - t0) / (wks * GOV_WEEK))); return { nm, dep, p, eta: p >= 1 ? 'Done' : `${Math.ceil((1 - p) * wks * 7)} days left` }; });
+    // what is happening on the island, newest first
+    const feed = [], h = new Date(now).getUTCHours(), ago = (ms) => { const m2 = Math.max(1, Math.round((now - ms) / 60000)); return m2 < 60 ? `${m2} min ago` : m2 < 1440 ? `${Math.round(m2 / 60)} h ago` : `${Math.round(m2 / 1440)} d ago`; };
+    for (let k = 0; k < 12; k++) { const a1 = nepaAt(now - 3600e3 - k * 3600e3), a0 = nepaAt(now - 3600e3 - (k + 1) * 3600e3); if (a1 !== a0) feed.push([Math.floor((now - k * 3600e3) / 3600e3) * 3600e3, '⚡', a1 ? 'Power restored across the island. The National Grid is carrying the load again.' : 'Load shedding: the Grid cut supply to protect the turbines. WYRD is bringing it back.']); }
+    if (rain > 0.3) feed.push([now - 600e3, '🌧️', 'Heavy rain: Works has crews on the VI drains. Avoid Ahmadu Bello Way if you can.']);
+    if (typeof hqBoard !== 'undefined') for (const v of hqBoard.arrivals) feed.push([v.at, '🏠', `A new Lagosian moved into BQ #${v.k + 1} on HQ Row. Welcome home.`]);
+    for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) if (p.until > now) feed.push([p.at || now - 1200e3, '🎉', `${p.host || 'A Lagosian'} is hosting a party${p.open ? ': everyone is welcome' : ''}.`]);
+    for (const s2 of (typeof GJ !== 'undefined' ? GJ.shifts : []).slice(0, 2)) feed.push([s2.at, '🔧', `A ${GRID_TRACKS[s2.track].name.toLowerCase()} finished a shift at the National Grid: ${s2.score}/100.`]);
+    for (const w of works) if (w.p >= 1) feed.push([GOV_EPOCH + GOV_WORKS.findIndex((g) => g[0] === w.nm) * 5 * 864e5 + GOV_WORKS.find((g) => g[0] === w.nm)[2] * GOV_WEEK, '🏗️', `Completed: ${w.nm}.`]);
+    feed.push([GOV_EPOCH + wk * GOV_WEEK, '🗳️', `New bill before the island: "${bill[0]}". Vote in the Government app.`]);
+    feed.push([GOV_EPOCH + wk * GOV_WEEK - 3600e3, lastYes >= 0.5 ? '✅' : '❌', `Last week's bill, "${last[0]}", ${lastYes >= 0.5 ? 'passed' : 'failed'} with ${Math.round(lastYes * 100)}% yes.`]);
+    if (h >= 17 && h <= 22) feed.push([now - 300e3, '📈', 'Evening peak: the island is using the most power of the day.']);
+    feed.sort((p, q) => q[0] - p[0]);
+    return { approval, apDelta: approval - apY, treasury, perSec, rateWk, light, on, online, bill, last, lastYes, wk, yes: yes0 + (mine === 'yes' ? 1 : 0), no: no0 + (mine === 'no' ? 1 : 0), mine, closes: GOV_EPOCH + (wk + 1) * GOV_WEEK, works, feed: feed.slice(0, 10).map(([t, i, s2]) => ({ when: ago(t), i, s: s2 })) };
+  }
+  function govAccount() {
+    const mine = Object.values(homesLive).filter((h) => h.mine), homes = mine.map((h) => { const st = HOME_STYLES[h.style] || ['Home', 0]; return { name: st[0], est: EST_NAME[(h.plot || '').split(':')[0]] || '', service: GOV.service[h.style] || 0, landUseWk: Math.round(st[1] * GOV.landUse / 52) }; });
+    const pay = me$ ? me$.earnedToday || 0 : 0, cap = me$ ? me$.dailyCap || 0 : 0, paye = Math.round(pay * GOV.paye);
+    const serviceWk = Math.round(homes.reduce((s2, h) => s2 + h.service, 0) / 4.33), landWk = homes.reduce((s2, h) => s2 + h.landUseWk, 0);
+    const joined = +store.get('li.joined') || 0, trialEnd = joined ? joined + GOV.trialDays * 864e5 : 0, trial = Date.now() < trialEnd, rent = trial ? 0 : GOV.bqRentWk;
+    return { signed: signedIn() && !!me$, naira: me$ ? me$.naira : 0, pay, cap, paye, net: pay - paye, homes, rent, trial, trialEnd, serviceWk, landWk, dueWk: serviceWk + landWk + rent };
+  }
   function census() {
     const est = {}, style = {}; let total = 0, taken = 0;
     for (const [e, list] of Object.entries(ESTATES)) {
@@ -3602,7 +3892,7 @@
     });
     { flat(a + 0.8, d - 3.1, c - 0.8, d - 0.5, 0.06, '#9CA3AF', '#D1D5DB'); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); const p = P((a + c) / 2, 0.07, d - 3), q = P((a + c) / 2, 0.07, d - 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); // the parking pad, two bays
       if (h && h.mine && h.style !== 'loft') parkOrder(myCarsL).slice(0, 2).forEach((c2, k) => drawCar(a + (c - a) * (k ? 0.73 : 0.27), d - 1.8, c2.model, c2.color, 0, 0.62)); }
-    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); }
+    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); gateLight(c - 0.9, d - 1, true); litWindows(a, b, c, d, 8); }
     else { box(c - 2.4, 0, d - 1.8, c - 2.2, 2.6, d - 1.6, '#78350F'); quad([P(c - 3.6, 1.6, d - 1.55), P(c - 1, 1.6, d - 1.55), P(c - 1, 2.8, d - 1.55), P(c - 3.6, 2.8, d - 1.55)], '#DC2626'); if (K > 3) faceText('FOR SALE', c - 2.3, 2.2, d - 1.5, '#FFFFFF', 0.55, 0); }
   }
   // an estate: its plots far to near, each in its style
@@ -3611,6 +3901,11 @@
     for (let j = b / T; j < d / T; j++) for (let i = a / T; i < c / T; i++) { const pl = plotAt(i, j); if (pl) tiles.push([P(i * T + T / 2, 0, j * T + T / 2)[2], i, j, pl]); }
     tiles.sort((p, q) => p[0] - q[0]);
     for (const [, i, j, pl] of tiles) homeModel(pl.style, i * T, j * T, (i + 1) * T, (j + 1) * T, homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? { plot: pl.plot, style: pl.style, color: '#94A3B8' } : undefined));
+    { const ep = estateAt(a / T, b / T); if (ep) { const bx0 = a + 1, bx1 = a + Math.min(14, (c - a) - 2), bz = d - 0.35, mid = (bx0 + bx1) / 2;
+        for (const px of [bx0 + 0.6, bx1 - 0.6]) box(px - 0.15, 0, bz - 0.15, px + 0.15, 4.6, bz + 0.15, '#57534E');
+        quad([P(bx0, 2.4, bz + 0.2), P(bx1, 2.4, bz + 0.2), P(bx1, 4.8, bz + 0.2), P(bx0, 4.8, bz + 0.2)], '#15803D', '#FFFFFF');
+        { const q0 = [P(bx0 + 0.25, 2.65, bz + 0.21), P(bx1 - 0.25, 2.65, bz + 0.21), P(bx1 - 0.25, 4.55, bz + 0.21), P(bx0 + 0.25, 4.55, bz + 0.21)]; x.strokeStyle = '#FFFFFF'; x.lineWidth = Math.max(1, K * 0.14); x.beginPath(); x.moveTo(q0[0][0], q0[0][1]); for (const p of q0.slice(1)) x.lineTo(p[0], p[1]); x.closePath(); x.stroke(); }
+        const sz = Math.min(1.1, (bx1 - bx0 - 1) / Math.max(6, ep[5].length * 0.62)); faceText(ep[5].toUpperCase(), mid, 3.6, bz + 0.22, '#FFFFFF', sz, 0, 900); } }
   }
 
   // ---- the lots: each landmark takes its tiles; the rest of a sector's lots get a plot, a house or trees
@@ -3627,7 +3922,7 @@
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { grid: 36, bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -3816,6 +4111,7 @@
       for (const g of glow) g();
     }
     drawWeather(now); // clouds, rain, lightning, fog, haze, over the town and under the pins
+    gridJobDraw(); // where your grid shift sends you
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
@@ -5388,7 +5684,7 @@
   // furnishing: the bar along the bottom, for the owner
   const decoEl = document.getElementById('deco'), askEl = document.getElementById('ask');
   function setDeco() {
-    askEl.style.display = inside && inside.kind === 'tower' ? 'flex' : 'none';
+    askEl.style.display = 'none'; // talking to WYRD is in the WYRD app
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
     if (!deco) {
@@ -5530,6 +5826,7 @@
   addEventListener('blur', () => keys.clear());
   const zoomBy = (f) => { cam.user = Math.max(0.45, Math.min(2.4, cam.user * f)); };
   document.getElementById('zoomin').onclick = () => zoomBy(1.25);
+  addEventListener('wheel', (e) => { if (e.target !== cv) return; e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1); }, { passive: false }); // zoom with the wheel (or a trackpad's two fingers)
   document.getElementById('zoomout').onclick = () => zoomBy(1 / 1.25);
   const stickEl = document.getElementById('stick'), knob = document.getElementById('knob');
   let stickId = null;
@@ -5582,6 +5879,7 @@
     jetty: ['⛴️ Take a boat?', 'Water taxis to Ilashe, Badagry and Ikorodu.', null],
     hotel: ['🏨 Book a room?', 'A night on the island, a pool, room service.', null],
     mall: ['🛍️ Go shopping?', 'Fashion, phones, food court.', null], arcade: ['🛍️ Go shopping?', 'Shops and cafés.', null], shops: ['🛍️ Go shopping?', 'Idumota: everything, cheaper.', null],
+    grid: ['⚡ The National Grid', 'Run by WYRD. It powers the whole island. Careers here: control room, lineman, solar, plant engineer.', () => openPhone('grid')],
     hospital: ['🏥 See a doctor?', 'Check-ups and the pharmacy.', null],
     beach: ['🏖️ Spend the day here?', 'Swim, lie on a lounger, a drink at the bar, suya, volleyball, the bonfire at night.', (p) => { at$(p); enterRoom('beach', 'place:beach:' + p[1] + ',' + p[2], p[5]); }],
     mosque: ['🕌 Visit?', 'Lagos Central Mosque, open for prayers.', null], cathedral: ['⛪ Visit?', 'The Cathedral Church of Christ.', null],
@@ -5635,37 +5933,36 @@
     return enterRoom('club', 'place:club:' + p[1], n);
   }
   // a plot in an estate: for sale (see it on your phone), or someone's home (go in, or knock)
-  function homeCard(pl, i, j) {
-    const h = homesLive[pl.plot], st = HOME_STYLES[pl.style];
+  // ---- tap a house: its details and who lives there. Only your own home opens (no wandering into a vacant one or someone
+  // else's); for a neighbour you can add them as a friend or send a message request (an encrypted Link chat)
+  const friends = () => { try { return JSON.parse(store.get('li.friends') || '[]'); } catch { return []; } };
+  function houseCard(o) {
     card.innerHTML = '';
-    const b = document.createElement('b'); b.textContent = (h ? '🏡 ' : '🪧 ') + st[0], s = document.createElement('span'); s.textContent = pl.name + (h && h.owner ? ' · ' + h.owner + "'s home" : h ? ' · private' : ' · for sale');
-    card.append(b, s);
-    const q = document.createElement('div'); q.className = 'offer'; q.innerHTML = '<strong></strong><small></small>';
-    q.firstChild.textContent = h ? (h.mine ? 'Your home' : h.may ? 'Go in?' : 'Knock?') : naira(st[1]);
-    q.lastChild.textContent = h ? (h.mine ? 'Furnish it from the Eko Home Store.' : h.may ? 'The owner has let you in.' : 'The owner sees it on their phone.') : pl.style === 'loft' ? 'Open plan, and room to park your cars inside.' : 'Yours to furnish however you like.';
-    const yes = document.createElement('button'); yes.className = 'drivebtn';
-    yes.textContent = h ? (h.mine || h.may ? '🚪 Go in' : '🔔 Knock') : '👀 Look inside';
-    const tour = () => { card.style.display = 'none'; me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'tour:home:' + pl.plot, 'Show home · ' + st[0], { style: pl.style, tour: true }); };
-    yes.onclick = () => {
-      card.style.display = 'none';
-      if (!h) return tour();
-      if (!signedIn()) return openPhone();
-      me.x = i * T + T / 2; me.z = j * T + T - 1;
-      if (h.mine || h.may) return enterRoom('home', 'home:' + pl.plot, h.mine ? 'Your ' + st[0].toLowerCase() : (h.owner || 'Someone') + "'s " + st[0].toLowerCase(), { style: pl.style });
-      askHq(h);
-    };
-    card.append(q, yes);
-    if (!h) { const buy = document.createElement('button'); buy.className = 'drivebtn'; buy.style.background = '#0EA5E9'; buy.textContent = '🏡 Buy it'; buy.onclick = () => { card.style.display = 'none'; openPhone('homes', pl.plot); }; card.append(buy); }
-    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 8000);
+    const b = document.createElement('b'); b.textContent = o.title; const sub = document.createElement('span'); sub.textContent = o.sub; card.append(b, sub);
+    const q = document.createElement('div'); q.className = 'offer hcard'; q.innerHTML = '<strong></strong><small></small>'; q.firstChild.textContent = o.head; q.lastChild.textContent = o.note; card.append(q);
+    const btn = (label, fn, col) => { const e = document.createElement('button'); e.className = 'drivebtn'; if (col) e.style.background = col; e.textContent = label; e.onclick = fn; card.append(e); return e; };
+    if (o.mine) btn('🚪 Go in', () => { card.style.display = 'none'; o.go(); });
+    else if (o.owner) {
+      const isF = friends().includes(o.owner);
+      const fb = btn(isF ? '✓ Friends' : '➕ Add friend', () => { if (!signedIn()) return openPhone(); const f = friends(); if (f.includes(o.owner)) return; f.push(o.owner); store.set('li.friends', JSON.stringify(f)); fb.textContent = '✓ Friends'; notify(`${o.owner} added to your friends`, 'link', ['chats']); }, '#0EA5E9');
+      btn('💬 Message request', () => { card.style.display = 'none'; if (!signedIn()) return openPhone(); openPhone('newchat', { dm: true, who: o.owner }); }, '#6366F1');
+    } else if (o.buy) btn('🏡 Buy it', () => { card.style.display = 'none'; openPhone('homes', o.buy); }, '#0EA5E9');
+    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 9000);
   }
+  // a home in an estate
+  function homeCard(pl, i, j) {
+    const h = homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? {} : null), st = HOME_STYLES[pl.style];
+    const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'home:' + pl.plot, 'Your ' + st[0].toLowerCase(), { style: pl.style }); };
+    if (!h) return houseCard({ title: '🪧 ' + st[0], sub: pl.name + ' · for sale', head: naira(st[1]), note: 'Empty, and locked until someone buys it.', buy: pl.plot });
+    houseCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Say hello: add them as a friend, or send a message request.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
+  }
+  // a BQ on HQ Row
   function enterHq(k, i, j) {
-    const say = (t) => { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = t; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 3500); };
-    const hq = signedIn() ? hqSlots[k] : null;
-    if (!hq) { me.x = i * T + T / 2; me.z = j * T + T - 1; return enterRoom('hq', 'tour:hq:' + k, signedIn() ? 'Show BQ · unclaimed lot' : 'Show BQ · sign in to visit people', { tour: true }); }
-    me.x = i * T + T / 2; me.z = j * T + T - 1;
-    if (hq.mine || hq.may) return enterRoom('hq', 'hq:' + hq.slot, hq.name);
-    if (hq.asked === 'pending') return say('⏳ Waiting for the owner to let you in');
-    askHq(hq).then(() => say(hq.asked === 'granted' ? '🚪 Come in' : '🔔 Knocked. The owner sees it on their phone.'));
+    const hq = signedIn() ? hqSlots[k] : null, taken = !!hq || k < (housingBqs ?? 0);
+    const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
+    if (!taken) return houseCard({ title: '🏚️ BQ #' + (k + 1) + ' · HQ Row', sub: 'Vacant', head: 'Not assigned yet', note: 'Locked: it goes to the next new Lagosian, free for their first week.' });
+    if (!hq) return houseCard({ title: '🏠 BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'A Lagosian lives here', note: signedIn() ? 'They keep their home private.' : 'Sign in to see who lives here.' });
+    houseCard({ title: (hq.mine ? '🏡 ' : '🏠 ') + (hq.name || 'BQ #' + (k + 1)), sub: 'BQ #' + (k + 1) + ' · HQ Row', head: hq.mine ? 'Your apartment' : hq.owner ? `${hq.owner} lives here` : 'A Lagosian lives here', note: hq.mine ? 'Furnish it, invite people round.' : hq.owner ? 'Say hello: add them as a friend, or send a message request.' : 'They keep their home private.', mine: hq.mine, owner: hq.mine ? null : hq.owner, go });
   }
 
   // ---- others and chat (the island endpoint)
@@ -5751,12 +6048,16 @@
 
   // ================= the loop =================
   let last = performance.now(), whereT = 0, playing = false, slow = 0, fast = 0;
+  const phoneEl0 = document.getElementById('phone');
   function frame(t) {
+    // on a phone: a steady 30 frames a second (half the work, and smoother than a stuttering 60)
+    if (MOBILE && t - (frame.drawn || 0) < 31) { requestAnimationFrame(frame); return; }
+    frame.drawn = t;
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
     if (document.hidden) { requestAnimationFrame(frame); return; }
     // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
-    if (dt > 0.045) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
-    if (slow > 90 && quality > 0.85) { quality = Math.max(0.85, quality - 0.075); slow = 0; resize(); }
+    if (dt > (MOBILE ? 0.048 : 0.045)) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    if (slow > (MOBILE ? 30 : 90) && quality > (MOBILE ? 0.6 : 0.85)) { quality = Math.max(MOBILE ? 0.6 : 0.85, quality - 0.075); slow = 0; resize(); }
     if (fast > 300 && quality < 1) { quality = Math.min(1, quality + 0.075); fast = 0; resize(); }
     if (playing) {
       let ix = stick.x, iz = stick.z;
@@ -5779,6 +6080,7 @@
     }
     if (trip && !inside) tripStep(dt);
     if (drive && !inside) driveStep(dt);
+    if (MOBILE && phoneEl0.style.display === 'block') { if (stickId == null) stickEl.classList.remove('show'); requestAnimationFrame(frame); return; }
     if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
@@ -5788,7 +6090,7 @@
     cam.yaw += dy * e2; cam.pitch += (want.pitch - cam.pitch) * e2; cam.zoom += (want.zoom - cam.zoom) * e2;
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
     if (!inside) wyrdStep(dt);
-    if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); }
+    if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); { const sp0 = P(me.x, 0, me.z), seen = sp0[0] > 0 && sp0[0] < W && sp0[1] > 0 && sp0[1] < H; stickEl.classList.toggle('show', stickId != null || (playing && seen && !pose && phoneEl0.style.display !== 'block' && !document.querySelector('#hello:not([style*="none"])'))); } } // the joystick: only while your character is on screen and free to walk
     if (x === cvMain && (W !== innerWidth || H !== innerHeight)) resize(); // a preview put back a stale size (the window changed while it drew): fit the screen again
     draw();
     requestAnimationFrame(frame);
@@ -5877,20 +6179,22 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
     // tablet, and on a desktop up to 80% of its real size; always within the window's width and height
     const w = innerWidth, vh = (window.visualViewport && visualViewport.height) || innerHeight, m = w <= 560 ? 8 : 16;
-    const [fw, fh, cap] = w < 600 ? [0.74, 0.68, 0.72] : w < 1024 ? [0.5, 0.74, 0.76] : [1, 0.84, 0.8];
-    phone.style.setProperty('--ps', Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, (vh - 2 * m) * fh / 780)).toFixed(4));
+    const [fw, fh, cap] = w < 600 ? [0.97, 0.93, 1] : w < 1024 ? [0.62, 0.88, 0.96] : [1, 0.9, 0.92];
+    // text stays readable: the scale never drops below what the width allows (about 90% on a desktop); a short window gets a shorter phone, not a smaller one
+    const s = Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, Math.max((vh - 2 * m) * fh / 780, w < 600 ? 0.9 : 0.88)));
+    phone.style.setProperty('--ps', s.toFixed(4)); phone.style.setProperty('--phh', Math.round(Math.min(780, (vh - 2 * m) / s)) + 'px');
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   // ---- Island Music: songs from two open catalogues. Deezer for what's charting and new (Nigeria's top 100, new releases,
@@ -6532,7 +6836,8 @@
       setTimeout(() => { B.style.display = 'none'; booted = true; done(); }, 1250);
     });
   }
-  async function openPhone(app, arg) {
+  const CYLOAD = `<div class="cyload"><div class="cyring"><i></i><i></i><b></b></div><div class="cyg" data-t="LOADING">LOADING</div><div class="cybar"><i></i></div><small class="cylog"><span>// linking to WYRD OS</span><span>// decrypting your keys</span><span>// syncing the island</span></small></div>`;
+  async function openPhone(app, arg) { store.set('li.phoneSeen', '1');
     // already open (tapping piece after piece in the Home Store, say): just show the next thing, no lock screen
     if (phone.style.display === 'block' && app && signedIn() && me$ && keyed) { shadeEl.classList.remove('on'); if (stack.length > 1 && stack[stack.length - 1][0] === app) stack.pop(); return go(app, arg); } // the next piece replaces the last, so Back stays short
     phone.style.display = 'block'; phoneBtnEl.style.display = 'none'; stack = [['home']]; shadeEl.classList.remove('on');
@@ -6541,19 +6846,19 @@
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
     if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' ? go(app) : render('signin'); // a ride or the free harbour tour need no account
-    try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
+    try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
-  async function render(app, arg) {
+  async function render(app, arg) { pbody.dataset.app = app;
     try {
-      if (app === 'signin') { show(`<div class="ptitle">Your phone</div><div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
+      if (app === 'signin') { show(`<div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
       if (app === 'home') {
         const d = new Date(lagosMs()), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
-        show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div></div>
-          <form class="osq" id="osQ"><i>✨</i><input id="osQi" placeholder="Ask WYRD anything…" autocomplete="off"><button aria-label="Ask">➤</button></form>
+        show(`
+
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🪩</i></button>`; })()}
@@ -6563,7 +6868,7 @@
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
-        $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
+        if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
         pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
         return;
@@ -6797,11 +7102,13 @@
         show(`${ahead('hq', 'My HQ', 'Your BQ on HQ Row · and every home you buy')}
           <div class="hero" style="--ac:${esc(h.color)}"><div class="hl">${h.locked ? '🔒 Invite only' : '🔓 Open door'}</div><div class="hv" style="font-size:20px">🏠 ${esc(h.name)}</div><small>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</small></div>
           <div class="qa" style="--ac:#FF4FD8"><button id="hGo"><i>🚪</i>Go home</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hShop"><i>🛋️</i>Furnish</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
+          <button class="pbtn" id="hBoard">📣 Put it on the HQ Row board: host a party</button>
           ${reqs.length ? `<div class="rsec">🔔 AT YOUR DOOR</div><div class="lst">${reqs.map((r) => `<div class="li">${avatar(r.handle)}<span class="lt"><b>${esc(r.handle)}</b><small>wants to come in</small></span><button class="pbtn" data-allow="${r.id}" style="margin:0 4px 0 0">Let in</button><button class="pbtn alt" data-deny="${r.id}" style="margin:0">No</button></div>`).join('')}</div>` : ''}
           <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your flag and your door)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
         $('hHomes').onclick = () => go('homes'); $('hShop').onclick = () => go('store'); $('hEdit').onclick = () => { const s = $('hSet'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; };
         pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
         $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
+        if ($('hBoard')) $('hBoard').onclick = () => go('parties');
         $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
         return;
       }
@@ -7052,6 +7359,55 @@
         { const gb = pbody.querySelector('[data-gov]'); if (gb) gb.onclick = () => go('gov'); }
         return;
       }
+      if (app === 'gov' && !(arg && arg.old)) {
+        const tab = (arg && arg.tab) || 'overview', A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, bar = (p, col) => `<div class="gbar"><i style="width:${p}%;background:${col}"></i></div>`;
+        const L = govLive();
+        const TABS = [['overview', 'Overview'], ['live', 'Live'], ['vote', 'Vote'], ['account', 'My account'], ['housing', 'Housing'], ['budget', 'Budget'], ['laws', 'Laws'], ['notices', 'Notices'], ['depts', 'Departments']];
+        // the island's numbers: citizens (everyone with a BQ), who's on now, the light over the last day, what the rates raise
+        const citizens = c.bq.taken, online = (typeof others !== 'undefined' ? others.size : 0) + 1, lightHrs = Array.from({ length: 24 }, (_, k) => nepaAt(lagosMs() - 3600e3 - k * 3600e3)).filter(Boolean).length;
+        const rev = Object.entries(c.style).map(([k, v]) => ({ k, name: HOME_STYLES[k][0], n: v.taken, wk: Math.round(v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52)) })).filter((r) => r.n), revWk = rev.reduce((s2, r) => s2 + r.wk, 0);
+        const SPEND = [['Power', 'Steadier light: transformers, the solar farms, inverters for the clinics', 30, '#FACC15'], ['Roads and transport', 'The coastal road, the Blue Line, the bridges', 20, '#38BDF8'], ['Housing', 'New estates on the reclaimed land, upkeep of HQ Row', 15, '#22C55E'], ['Health', 'General Hospital and the clinics', 10, '#F87171'], ['Education', 'Schools and skills: real jobs need real skills', 10, '#A78BFA'], ['Culture', 'The Arena, the festivals, Freedom Park', 5, '#F472B6'], ['Reserve', 'Kept at the Island Reserve Bank for a rainy day', 10, '#94A3B8']];
+        const LAWS = [['Housing', 'Every new Lagosian is assigned a BQ on HQ Row: free for the first week, then ₦3,000 a week.'], ['Housing', 'No one holds more than three homes in the estates.'], ['Housing', 'A home someone lives in is private: go in only when its owner lets you.'], ['Money', 'Income tax (PAYE) is 7% of what you earn on the island.'], ['Money', 'Each home pays a monthly service charge and a land use charge of 0.5% of its value a year.'], ['Money', 'Pay from shifts is capped each day, so nobody can farm the island.'], ['Roads', 'The coastal road is 60 km/h; HQ Row and the estates, 30.'], ['Roads', 'Drive only cars you own, bought at Polanco or Lekki Luxury Cars.'], ['Nightlife', 'The clubs open every night; the DJ hands back the decks when asked.'], ['Conduct', 'Chats are private and encrypted: not even the Government reads them.'], ['Conduct', 'Respect every Lagosian. WYRD acts on reports of abuse.']];
+        const line = (k, v, sub) => `<div class="grow"><span><b>${k}</b>${sub ? `<small>${sub}</small>` : ''}</span><em>${v}</em></div>`;
+        let body = '';
+        if (tab === 'overview') body = `<div class="ggov"><i class="gorb"></i><div><small>Governor of Lagos Island</small><b>WYRD</b><span>"Eko o ni baje. Every Lagosian housed, every street lit."</span></div></div>
+          <div class="gstat"><div><span>Approval</span><b class="${L.approval >= 50 ? 'gon' : 'goff'}">${L.approval}%</b><small class="gdl">${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div style="grid-column:span 2"><span>Treasury</span><b id="govTreas">${naira(L.treasury)}</b><small class="gdl">+${naira(Math.round(L.rateWk))} a week in rates and rent</small></div></div>
+          <div class="msec" style="font-size:15px">Happening now<small>live</small></div><div class="pcard">${L.feed.slice(0, 4).map((f) => `<div class="gfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}<button class="pbtn" data-gt="live" style="margin-top:8px">Everything happening</button></div>
+          <div class="pcard gbill"><small>This week's bill · ${L.bill[2]}</small><b>${esc(L.bill[0])}</b><span>${esc(L.bill[1])}</span>${bar(L.yes / Math.max(1, L.yes + L.no) * 100, 'linear-gradient(90deg,#22C55E,#4ADE80)')}<small>${L.yes} yes · ${L.no} no${L.mine ? ` · you voted ${L.mine}` : ''}</small><button class="pbtn" data-gt="vote" style="margin-top:8px">${L.mine ? 'See the vote' : 'Cast your vote'}</button></div>
+          <div class="gstat"><div><span>Citizens</span><b>${citizens}</b></div><div><span>Online now</span><b>${online}</b></div><div><span>Light today</span><b class="${lightHrs >= 16 ? 'gon' : 'goff'}">${lightHrs}/24h</b></div></div>
+          <div class="gstat"><div><span>Homes free</span><b>${c.all.total - c.all.taken}</b></div><div><span>Lived in</span><b>${c.all.taken}</b></div><div><span>Power</span><b class="${grid ? 'gon' : 'goff'}">${grid ? 'On' : 'Off'}</b></div></div>
+          ${A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day` : '')}${bar(A.cap ? Math.min(100, A.pay / A.cap * 100) : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('Due this week', naira(A.dueWk))}</div>` : '<div class="pcard dim">Sign in to see your rent, tax and pay.</div>'}
+          <div class="pcard">${line('Housing register', `${c.all.taken}/${c.all.total}`, `${c.total} estate homes · ${c.bq.total} BQs`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22D3EE,#A78BFA)')}</div>`;
+        else if (tab === 'account') body = A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day at most` : '')}${line('Income tax (PAYE 7%)', naira(A.paye), `you keep ${naira(A.net)}`)}</div>
+          <div class="rsec">RENT AND RATES</div><div class="pcard">${line('Your BQ on HQ Row', A.trial ? 'Free' : naira(A.rent) + '/wk', A.trial ? `free for your first week, until ${new Date(A.trialEnd).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'a basic apartment, after the free first week')}${A.homes.map((h) => line(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `land use ${naira(h.landUseWk)} a week`)).join('') || '<div class="dim" style="padding:6px 0">No homes bought yet.</div>'}${line('Due this week', naira(A.dueWk))}</div>
+          <div class="lock">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : '<div class="pcard dim">Sign in to WYRD to see your account.</div>';
+        else if (tab === 'housing') body = `<div class="pcard">${line('Every home on the island', `${c.all.taken}/${c.all.total}`, `${c.total} in the estates, ${c.bq.total} BQs on HQ Row`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('BQs on HQ Row', `${c.bq.taken}/${c.bq.total}`, 'assigned to new Lagosians, free their first week')}</div>
+          ${hqSlots.length ? `<div class="msec" style="font-size:15px">Assigned BQs<small>${hqSlots.length}</small></div><div class="pcard">${hqSlots.map((sl, k) => line(`BQ #${k + 1}`, sl.mine ? 'You' : sl.owner ? esc(sl.owner) : 'Assigned', sl.mine ? 'your apartment' : sl.may ? 'open to visitors' : 'private')).join('')}</div>` : ''}
+          <div class="rsec">BY ESTATE</div><div class="pcard">${Object.values(c.est).map((e) => line(esc(e.name), `${e.taken}/${e.total}`, `${e.total - e.taken} free`) + bar(Math.round(e.taken / e.total * 100), e.taken === e.total ? '#F87171' : '#22D3EE')).join('')}</div>
+          <div class="rsec">BY KIND OF HOME</div><div class="pcard">${Object.entries(c.style).map(([k, v]) => line(esc(HOME_STYLES[k][0]), `${v.taken}/${v.total}`, naira(HOME_STYLES[k][1]))).join('')}</div>`;
+        else if (tab === 'budget') body = `<div class="pcard">${line('Rates raised each week', naira(revWk), revWk ? 'service charges and land use, from homes lived in' : 'no homes bought yet')}${rev.map((r) => line(`${esc(r.name)} × ${r.n}`, naira(r.wk) + '/wk')).join('')}</div>
+          <div class="msec" style="font-size:15px">Where it goes</div><div class="pcard">${SPEND.map(([nm, why, p, col]) => line(nm, p + '%', why) + bar(p * 3, col)).join('')}</div>
+          <div class="lock">The rates are set; collection starts when the Treasury opens at the Island Reserve Bank with the financial system.</div>`;
+        else if (tab === 'live') body = `<div class="pcard">${L.feed.map((f) => `<div class="gfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}</div>
+          <div class="msec" style="font-size:15px">Public works</div><div class="pcard">${L.works.map((w) => line(esc(w.nm), Math.round(w.p * 100) + '%', `${w.dep} · ${w.eta}`) + bar(w.p * 100, w.p >= 1 ? '#4ADE80' : 'linear-gradient(90deg,#FACC15,#F97316)')).join('')}</div>
+          <div class="msec" style="font-size:15px">The island right now</div><div class="pcard">${line('Approval of WYRD', L.approval + '%', `${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday: it follows the light, the housing and the weather`)}${line('Treasury', `<span id="govTreas">${naira(L.treasury)}</span>`, `growing by about ${naira(Math.round(L.perSec * 60))} a minute`)}${line('Light in the last day', L.light + '/24 h', L.on ? 'on now' : 'load shedding now')}${line('On the island now', L.online)}</div>`;
+        else if (tab === 'vote') { const tot = Math.max(1, L.yes + L.no), left = L.closes - lagosMs(); body = `<div class="pcard gbill"><small>Bill ${L.wk + 1} · ${L.bill[2]} · closes in ${Math.floor(left / 864e5)}d ${Math.floor(left % 864e5 / 3600e3)}h</small><b>${esc(L.bill[0])}</b><span>${esc(L.bill[1])}</span>
+          ${line('Yes', `${L.yes} · ${Math.round(L.yes / tot * 100)}%`)}${bar(L.yes / tot * 100, '#4ADE80')}${line('No', `${L.no} · ${Math.round(L.no / tot * 100)}%`)}${bar(L.no / tot * 100, '#F87171')}
+          ${L.mine ? `<div class="dim" style="padding:6px 0">You voted <b>${L.mine}</b>. You can change your vote until it closes.</div>` : ''}<div class="qa" style="--ac:#22D3EE;grid-template-columns:1fr 1fr"><button data-vote="yes"><i>👍</i>Yes</button><button data-vote="no"><i>👎</i>No</button></div></div>
+          <div class="msec" style="font-size:15px">Last week</div><div class="pcard">${line(esc(L.last[0]), L.lastYes >= 0.5 ? 'Passed' : 'Failed', `${Math.round(L.lastYes * 100)}% yes · ${L.last[2]}`)}</div>`; }
+        else if (tab === 'laws') body = `<div class="pcard">${LAWS.map(([cat, t], k) => `<div class="glaw"><em>${k + 1}</em><span><small>${cat}</small>${esc(t)}</span></div>`).join('')}</div>`;
+        else if (tab === 'notices') body = [`Power: ${grid ? 'NEPA has light right now.' : 'NEPA took light. Inverters on; go easy on the AC.'}`, `Housing: ${c.taken} of ${c.total} estate homes lived in. ${c.free} for sale in the Homes app.`, 'Every Lagosian keeps a free BQ on HQ Row, whatever else they own.', 'The Treasury opens at the Island Reserve Bank with the financial system: rent, service charges and taxes are collected from then.', 'Speed limit on the coastal road: 60 km/h. The Blue Line runs all day.'].map((t) => `<div class="pcard gnote">✨ ${esc(t)}</div>`).join('');
+        else body = `<div class="pcard">${[['Housing', 'Adaeze Okafor', 'The register: every home, who lives where', 1], ['Treasury', 'Tunde Bakare', 'Rent, rates and tax, at the Island Reserve Bank', 0], ['Power', 'WYRD (National Grid)', 'The National Grid out east: every megawatt the island uses, hour by hour', 1], ['Transport', 'Musa Ibrahim', 'Rides, the Blue Line, the coastal road', 1], ['Culture', 'Folake Adeyemi', 'The Arena, the clubs, the parties', 1], ['Works', 'Emeka Obi', 'The reclaimed land and what gets built on it', 0], ['Law and order', 'Hauwa Bello', 'The island\'s laws, and reports of abuse', 0]].map(([d, who, t, on]) => `<div class="grow"><span><b>${d}</b><small>Commissioner ${who} · ${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>`;
+        show(`<div class="ghero"><i>${ico('gov')}</i><div><h2>Lagos Island Government</h2><span>Administered by WYRD</span></div></div>
+          <div class="gtabs">${TABS.map(([k, l]) => `<button data-gt="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>${body}
+          ${tab !== 'housing' ? '<button class="pbtn" data-go="homes">Homes for sale</button>' : ''}`);
+        pbody.querySelectorAll('[data-gt]').forEach((b) => (b.onclick = () => { stack.pop(); go('gov', { tab: b.dataset.gt }); }));
+        pbody.querySelectorAll('[data-vote]').forEach((b) => (b.onclick = () => { store.set('li.vote.' + L.wk, b.dataset.vote); notify(`You voted ${b.dataset.vote} on "${L.bill[0]}"`, 'gov', ['gov']); render('gov', { tab: 'vote' }); }));
+        // it stays live while you look: the treasury ticks up every second, and the page refreshes every half minute
+        clearInterval(window.__govT); const t0 = Date.now(), tre = L.treasury; window.__govT = setInterval(() => { if (pbody.dataset.app !== 'gov' || phone.style.display === 'none') return clearInterval(window.__govT); const el = $('govTreas'); if (el) el.textContent = naira(Math.round(tre + L.perSec * (Date.now() - t0) / 1000)); if (Date.now() - t0 > 30000) render('gov', { tab }); }, 1000);
+        const hb = pbody.querySelector('[data-go]'); if (hb) hb.onclick = () => go('homes');
+        return;
+      }
       if (app === 'gov') {
         // the Lagos Island Government, run by WYRD. First department open: Housing, the live register. The rest are
         // being set up, each to come alive as its system lands on the island.
@@ -7073,6 +7429,22 @@
           <div class="rsec">DEPARTMENTS</div><div class="pcard">${[['Housing', 'Live: the register above', 1], ['Treasury', 'With the Island Reserve Bank, when the financial system opens'], ['Transport', 'Rides and the roads'], ['Culture', 'The Arena, the clubs, the parties'], ['Works', 'The reclaimed land, and what gets built on it'], ['Law and order', 'The island\'s rules']].map(([d, t, on]) => `<div class="grow"><span><b>${d}</b><small>${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>
           <button class="pbtn" data-go="homes">See homes for sale</button>`);
         pbody.querySelector('[data-go]').onclick = () => go('homes');
+        return;
+      }
+      if (app === 'grid') {
+        // WYRD Grid: your career at the National Grid
+        const rec = gridRecommend(), tr = GJ.track || rec, lv = gridLv(tr), xp = GJ.xp[tr] || 0, nextXp = GRID_XP[lv] ?? xp, pct = lv >= 5 ? 100 : Math.min(100, Math.round((xp - GRID_XP[lv - 1]) / Math.max(1, nextXp - GRID_XP[lv - 1]) * 100)), sh = GJ.shift, tk = gridTask();
+        show(`<div class="ghero" style="background:linear-gradient(135deg,rgba(202,138,4,.35),rgba(79,70,229,.25))"><i style="background:linear-gradient(135deg,#FACC15,#F97316)">${ico('grid')}</i><div><h2>WYRD Grid</h2><span>Careers at the National Grid · run by WYRD</span></div></div>
+          <div class="ggov"><i class="gorb"></i><div><small>Today's briefing</small><span style="font-style:normal">${esc(gridBriefing())}</span></div></div>
+          ${GJ.track ? `<div class="pcard"><div class="grow"><span><b>${GRID_TRACKS[tr].icon} ${GRID_TRACKS[tr].name}</b><small>${GRID_LEVELS[lv - 1]} · level ${lv} of 5 · ${naira(GRID_PAY[lv - 1])} a shift at full marks</small></span><em>${xp} XP</em></div><div class="gbar"><i style="width:${pct}%;background:linear-gradient(90deg,#FACC15,#F97316)"></i></div><small class="dim">${lv >= 5 ? 'Chief: the top of the track.' : xp >= nextXp ? 'Ready for promotion: take the exam.' : `${nextXp - xp} XP to the ${GRID_LEVELS[lv]} exam`}</small></div>
+            ${sh ? `<div class="msec" style="font-size:15px">Your shift</div><div class="pcard">${sh.tasks.map((t2, k) => `<div class="grow"><span><b>${t2.done ? '✅' : t2 === tk ? '⚡' : '⬜'} ${esc(t2.title)}</b><small>${t2.done ? 'scored ' + t2.score + '/100' : 'at ' + esc(t2.spot.name)}</small></span></div>`).join('')}<button class="pbtn" id="gGo">Show me where</button></div>` : '<button class="pbtn" id="gStart">⚡ Start a shift</button>'}
+            ${lv < 5 && xp >= nextXp ? '<button class="pbtn" id="gExam">🎓 Take the certification exam</button>' : ''}` : ''}
+          <div class="msec" style="font-size:15px">${GJ.track ? 'Switch track' : 'Choose your track'}</div>${Object.entries(GRID_TRACKS).map(([k, t2]) => `<button class="pcard gtrack ${k === tr && GJ.track ? 'on' : ''}" data-tr="${k}"><b>${t2.icon} ${t2.name}${k === rec ? ' <em>WYRD recommends</em>' : ''}</b><small>${t2.blurb}</small><small class="dim">Level ${gridLv(k)} · ${GJ.xp[k] || 0} XP</small></button>`).join('')}
+          ${GJ.shifts.length ? `<div class="msec" style="font-size:15px">Your shifts</div><div class="pcard">${GJ.shifts.slice(0, 8).map((s2) => `<div class="grow"><span><b>${GRID_TRACKS[s2.track].icon} ${GRID_TRACKS[s2.track].name}</b><small>${new Date(s2.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · level ${s2.level}</small></span><em>${s2.score}/100${s2.paid ? ' · ' + naira(s2.paid) : ''}</em></div>`).join('')}</div>` : ''}`);
+        pbody.querySelectorAll('[data-tr]').forEach((b) => (b.onclick = () => { if (GJ.shift && !confirm('Switching track ends the shift you are on. Switch?')) return; GJ.track = b.dataset.tr; GJ.shift = null; gridSave(); render('grid'); }));
+        if ($('gStart')) $('gStart').onclick = () => { gridNewShift(tr); closePhone(); const t1 = gridTask(); coachSay(`Shift started. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon, and when you get there the button go show.`, [['Oya', null, true]]); };
+        if ($('gGo')) $('gGo').onclick = () => { const t1 = gridTask(); closePhone(); if (t1) { cam.follow = false; cam.x = t1.spot.x; cam.z = t1.spot.z; coachSay(`There: ${t1.spot.name}. Walk, take a ride, or drive. The beacon dey shine.`, [['Got it', () => { cam.follow = true; return 'x'; }, true]]); } };
+        if ($('gExam')) $('gExam').onclick = () => { closePhone(); gridExam(tr, () => openPhone('grid')); };
         return;
       }
       if (app === 'store') {
@@ -7133,9 +7505,9 @@
         // Home (Nigeria's top songs, new releases, genres, full tracks), Search (both catalogues), Library (liked, recent),
         // Now playing (the big cover, the progress, the controls, what's next)
         const a = arg || {}, tab = a.tab || 'home';
-        const row = (s, i, list) => `<button class="mrow${MP.q[MP.i] && MP.q[MP.i].id === s.id ? ' on' : ''}" data-ml="${list}" data-mi="${i}"><img src="${esc(s.art)}" alt="" loading="lazy"><span class="lt"><b>${esc(s.title)}</b><small>${esc(s.artist)}</small></span>${s.full ? '<em class="full">FULL</em>' : '<em>30s</em>'}<i data-like="${list}:${i}" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</i></button>`;
+        const row = (s, i, list) => `<button class="mrow${MP.q[MP.i] && MP.q[MP.i].id === s.id ? ' on' : ''}" data-ml="${list}" data-mi="${i}"><span class="mno">${MP.q[MP.i] && MP.q[MP.i].id === s.id && !MP.a.paused ? '<i class="meq"><s></s><s></s><s></s></i>' : i + 1}</span><img src="${esc(s.art)}" alt="" loading="lazy"><span class="lt"><b>${esc(s.title)}</b><small>${esc(s.artist)}</small></span>${s.full ? '<em class="full">FULL</em>' : '<em>30s</em>'}<i data-like="${list}:${i}" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</i></button>`;
         const lists = {};
-        const tabs = `<div class="fseg mseg">${[['home', '🏠 Home'], ['search', '🔍 Search'], ['lib', '♥ Library'], ['now', '🎧 Playing']].map(([k, n]) => `<button data-mt="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+        const tabs = `<div class="fseg mseg">${[['home', 'Home'], ['search', 'Search'], ['lib', 'Library'], ['now', 'Playing']].map(([k, n]) => `<button data-mt="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
         const wire = () => {
           pbody.querySelectorAll('[data-mt]').forEach((b) => (b.onclick = () => render('music', { tab: b.dataset.mt })));
           pbody.querySelectorAll('[data-ml]').forEach((b) => (b.onclick = (e) => { const lk = e.target.closest('[data-like]'); const list = lists[b.dataset.ml], i = +b.dataset.mi; if (lk) { lk.classList.toggle('on', mpLike(list[i])); return; } if (CITY.dj && inside && inside.key === CITY.dj) { MP.q = list.filter(Boolean); MP.i = i; djSpin(list[i]); setTimeout(() => render('music', a), 600); return; } mpPlay(list, i); pbody.querySelectorAll('.mrow.on').forEach((r) => r.classList.remove('on')); b.classList.add('on'); }));
@@ -7146,7 +7518,7 @@
         // inside a club: who's on the decks and what's playing, and the button to take over (or hand back)
         const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, onDecks = !!club && CITY.dj === inside.key;
         const dj = club ? `<div class="mdj" style="--h:${club.spot.hue}"><div><small>🎧 ${esc(club.spot.name)} · ${esc(club.spot.vibe)}</small><b>${club.now ? esc(club.now.title) : 'Warming up…'}</b><span>${onDecks ? 'You are on the decks · pick a song to drop it' : 'On the decks: ' + esc(club.now ? club.now.dj : club.spot.dj)}</span></div><button id="mDeck" class="${onDecks ? 'on' : ''}">${onDecks ? 'Hand back' : 'Take the decks'}</button></div>` : '';
-        const head = ahead('music', 'Island Music', 'Charts and new songs · full tracks from independent artists') + dj;
+        const head = dj;
         if (tab === 'now') {
           const s = MP.q[MP.i];
           if (!s) { show(`${head}${tabs}<div class="pcard"><h3>Nothing playing</h3><p class="dim">Pick a song from Home or Search. It keeps playing when you put the phone away.</p></div>`); wire(); return; }
@@ -7156,7 +7528,7 @@
             <div class="mprog"><i id="mNowB"></i></div><div class="dim" id="mNowT">0:00</div>
             <div class="mctl"><button id="mPrev">⏮</button><button id="mNowP" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button id="mNext">⏭</button><button id="mLike" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</button></div>
             <div class="mbass"><span>🔊 Bass</span>${[[0, 'Off'], [6, 'Boost'], [12, 'Max']].map(([v, n]) => `<button data-bass="${v}" class="${AX.bass === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-            <div class="rsec">UP NEXT</div><div class="lst">${MP.q.map((v, i) => i > MP.i && i < MP.i + 12 ? row(v, i, 'q') : '').join('')}</div>`);
+            <div class="msec">Up next</div><div class="lst">${MP.q.map((v, i) => i > MP.i && i < MP.i + 12 ? row(v, i, 'q') : '').join('')}</div>`);
           $('mPrev').onclick = () => { mpNext(-1); render('music', { tab: 'now' }); }; $('mNext').onclick = () => { mpNext(1); render('music', { tab: 'now' }); };
           $('mNowP').onclick = mpToggle; $('mLike').onclick = () => $('mLike').classList.toggle('on', mpLike(s));
           pbody.querySelectorAll('[data-bass]').forEach((b) => (b.onclick = () => { audioCtx(); setBass(+b.dataset.bass); pbody.querySelectorAll('[data-bass]').forEach((o) => o.classList.toggle('on', o === b)); }));
@@ -7166,8 +7538,8 @@
         }
         if (tab === 'lib') {
           lists.liked = MP.liked; lists.recent = MP.recent;
-          show(`${head}${tabs}<div class="rsec">♥ LIKED SONGS · ${MP.liked.length}</div><div class="lst">${MP.liked.map((s, i) => row(s, i, 'liked')).join('') || '<div class="li"><span class="lt"><small>Tap ♥ on a song to keep it here.</small></span></div>'}</div>
-            <div class="rsec">RECENTLY PLAYED</div><div class="lst">${MP.recent.slice(0, 15).map((s, i) => row(s, i, 'recent')).join('') || '<div class="li"><span class="lt"><small>Nothing yet.</small></span></div>'}</div>`);
+          show(`${head}${tabs}<div class="msec">Liked songs<small>${MP.liked.length}</small></div><div class="lst">${MP.liked.map((s, i) => row(s, i, 'liked')).join('') || '<div class="li"><span class="lt"><small>Tap ♥ on a song to keep it here.</small></span></div>'}</div>
+            <div class="msec">Recently played</div><div class="lst">${MP.recent.slice(0, 15).map((s, i) => row(s, i, 'recent')).join('') || '<div class="li"><span class="lt"><small>Nothing yet.</small></span></div>'}</div>`);
           wire(); return;
         }
         if (tab === 'search') {
@@ -7178,7 +7550,7 @@
             const [d1, d2] = await Promise.allSettled([dz('/search?q=' + encodeURIComponent(q) + '&limit=25'), au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=12')]);
             lists.sd = d1.status === 'fulfilled' ? d1.value.data.map(fromDz).filter(Boolean) : []; lists.sa = d2.status === 'fulfilled' ? d2.value.map(fromAu).filter(Boolean) : [];
             if (!$('mRes')) return;
-            $('mRes').innerHTML = `${lists.sd.length ? `<div class="rsec">SONGS</div><div class="lst">${lists.sd.map((s, i) => row(s, i, 'sd')).join('')}</div>` : ''}${lists.sa.length ? `<div class="rsec">FULL TRACKS · INDEPENDENT ARTISTS</div><div class="lst">${lists.sa.map((s, i) => row(s, i, 'sa')).join('')}</div>` : ''}${!lists.sd.length && !lists.sa.length ? '<div class="dim">Nothing found.</div>' : ''}`;
+            $('mRes').innerHTML = `${lists.sd.length ? `<div class="msec">Songs</div><div class="lst">${lists.sd.map((s, i) => row(s, i, 'sd')).join('')}</div>` : ''}${lists.sa.length ? `<div class="msec">Full tracks<small>Independent artists</small></div><div class="lst">${lists.sa.map((s, i) => row(s, i, 'sa')).join('')}</div>` : ''}${!lists.sd.length && !lists.sa.length ? '<div class="dim">Nothing found.</div>' : ''}`;
             wire();
           };
           $('mQ').onkeydown = (e) => { if (e.key === 'Enter') { a.q = $('mQ').value; run(a.q); } };
@@ -7186,7 +7558,7 @@
           return;
         }
         if (tab === 'album' || tab === 'genre') {
-          show(`${head}<div class="rsec">${esc(tab === 'album' ? a.title : a.q).toUpperCase()}</div><button class="pbtn alt" id="mAll">▶ Play all</button><div class="lst" id="mList"><div class="li"><span class="lt"><small>Loading…</small></span></div></div>`);
+          show(`${head}<div class="msec">${esc(tab === 'album' ? a.title : a.q)}</div><button class="pbtn alt" id="mAll">▶ Play all</button><div class="lst" id="mList"><div class="li"><span class="lt"><small>Loading…</small></span></div></div>`);
           const d = tab === 'album' ? await dz('/album/' + a.id) : await dz('/search?q=' + encodeURIComponent(a.q) + '&order=RANKING&limit=40');
           const tr = (tab === 'album' ? d.tracks.data.map((t) => ({ ...t, album: { cover_medium: d.cover_medium } })) : d.data).map(fromDz).filter(Boolean);
           lists.x = tr; $('mList').innerHTML = tr.map((s, i) => row(s, i, 'x')).join('') || '<div class="li"><span class="lt"><small>No songs to play here.</small></span></div>';
@@ -7197,16 +7569,20 @@
         const [top, rel, full] = await Promise.allSettled([dz('/playlist/1362516565/tracks?limit=50'), dz('/editorial/0/releases?limit=12'), au('/tracks/trending?limit=20')]);
         lists.top = top.status === 'fulfilled' ? top.value.data.map(fromDz).filter(Boolean) : [];
         lists.full = full.status === 'fulfilled' ? full.value.map(fromAu).filter(Boolean) : [];
-        let albums = rel.status === 'fulfilled' ? rel.value.data : [], albLabel = '🆕 NEW RELEASES';
-        if (!albums.length) { try { albums = (await dz('/chart/0/albums?limit=12')).data; albLabel = '🔥 TOP ALBUMS'; } catch {} }
+        let albums = rel.status === 'fulfilled' ? rel.value.data : [], albLabel = 'New releases';
+        if (!albums.length) { try { albums = (await dz('/chart/0/albums?limit=12')).data; albLabel = 'Top albums'; } catch {} }
         try { const pl = (await dz('/search/playlist?q=' + encodeURIComponent('new music friday') + '&limit=1')).data[0]; if (pl) lists.fresh = (await dz('/playlist/' + pl.id + '/tracks?limit=25')).data.map(fromDz).filter(Boolean); } catch {}
         const GENRES = [['Afrobeats', '#F59E0B'], ['Amapiano', '#A855F7'], ['Afro gospel', '#0EA5E9'], ['Naija hip hop', '#EF4444'], ['Highlife', '#22C55E'], ['Fuji', '#B45309'], ['Alté', '#EC4899'], ['R&B', '#6366F1']];
         if (!$('mHome')) return;
-        $('mHome').innerHTML = `${lists.fresh && lists.fresh.length ? `<div class="rsec">🆕 NEW MUSIC FRIDAY</div><div class="lst">${lists.fresh.slice(0, 10).map((s, i) => row(s, i, 'fresh')).join('')}</div>` : ''}
-          ${albums.length ? `<div class="rsec">${albLabel}</div><div class="malb">${albums.map((al) => `<button data-album="${al.id}" data-title="${esc(al.title)}"><img src="${esc(al.cover_medium)}" alt="" loading="lazy"><b>${esc(al.title)}</b><small>${esc(al.artist ? al.artist.name : '')}</small></button>`).join('')}</div>` : ''}
-          <div class="rsec">🎚️ GENRES</div><div class="mgen">${GENRES.map(([g, c]) => `<button data-genre="${g}" style="--g:${c}">${g}</button>`).join('')}</div>
-          ${lists.top.length ? `<div class="rsec">🇳🇬 TOP NIGERIA</div><div class="lst">${lists.top.slice(0, 20).map((s, i) => row(s, i, 'top')).join('')}</div>` : ''}
-          ${lists.full.length ? `<div class="rsec">🎧 FULL TRACKS · TRENDING ON AUDIUS</div><div class="lst">${lists.full.map((s, i) => row(s, i, 'full')).join('')}</div>` : ''}
+        const feat = (lists.fresh && lists.fresh[0]) || lists.top[0], playing = MP.q[MP.i];
+        if (feat) lists.feat = [feat];
+        $('mHome').innerHTML = `${playing ? `<button class="mmini" data-mt="now"><img src="${esc(playing.art)}" alt=""><span><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(playing.title)}</b><em>${esc(playing.artist)}</em></span>${MP.a.paused ? '' : '<i class="meq"><s></s><s></s><s></s></i>'}</button>` : ''}
+          ${feat ? `<div class="mfeat" style="--art:url('${esc(feat.art)}')"><div class="mbg"></div><img src="${esc(feat.art)}" alt=""><div class="mft"><small>${lists.fresh && lists.fresh[0] === feat ? 'NEW THIS WEEK' : 'NUMBER ONE IN NIGERIA'}</small><b>${esc(feat.title)}</b><span>${esc(feat.artist)}</span><button class="mplay" data-ml="feat" data-mi="0" aria-label="Play">▶ Play</button></div></div>` : ''}
+          ${lists.fresh && lists.fresh.length ? `<div class="msec">New Music Friday</div><div class="mcards">${lists.fresh.slice(0, 12).map((s, i) => `<button data-ml="fresh" data-mi="${i}" class="${MP.q[MP.i] && MP.q[MP.i].id === s.id ? 'on' : ''}"><img src="${esc(s.art)}" alt="" loading="lazy"><b>${esc(s.title)}</b><small>${esc(s.artist)}</small></button>`).join('')}</div>` : ''}
+          ${albums.length ? `<div class="msec">${albLabel}</div><div class="malb">${albums.map((al) => `<button data-album="${al.id}" data-title="${esc(al.title)}"><img src="${esc(al.cover_medium)}" alt="" loading="lazy"><b>${esc(al.title)}</b><small>${esc(al.artist ? al.artist.name : '')}</small></button>`).join('')}</div>` : ''}
+          <div class="msec">Genres</div><div class="mgen">${GENRES.map(([g, c]) => `<button data-genre="${g}" style="--g:${c}">${g}</button>`).join('')}</div>
+          ${lists.top.length ? `<div class="msec">Top in Nigeria</div><div class="lst">${lists.top.slice(0, 20).map((s, i) => row(s, i, 'top')).join('')}</div>` : ''}
+          ${lists.full.length ? `<div class="msec">Full tracks<small>Trending on Audius</small></div><div class="lst">${lists.full.map((s, i) => row(s, i, 'full')).join('')}</div>` : ''}
           ${!lists.top.length && !lists.full.length ? '<div class="pcard err">Music is offline right now. Try again in a moment.</div>' : ''}
           <div class="lock">Chart songs play as 30-second previews from Deezer; full tracks come from independent artists on Audius.</div>`;
         wire(); return;
@@ -7544,6 +7920,7 @@
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
+    if (!next && !inside) { const tk = gridNear() || (gridTask() && gridTask().type !== "fault" && near("grid", 6) ? gridTask() : null); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; else if (near('grid', 6)) next = { label: '⚡ Careers at the National Grid', run: () => openPhone('grid') }; }
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
     if (!next && sector.id === 'hqrow') {
@@ -7551,11 +7928,9 @@
       if (k != null) {
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
-        else if (!hq) next = { label: '🏚️ Unclaimed lot', run: () => {} };
-        else if (hq.mine || hq.may) next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) };
-        else if (hq.asked === 'pending') next = { label: '⏳ Waiting for the owner to let you in', run: () => {} };
-        else if (hq.asked === 'denied') next = { label: '⛔ The owner said no', run: () => askHq(hq) };
-        else next = { label: '🔔 Ask to enter', run: () => askHq(hq) };
+        else if (!hq) next = null; // vacant: locked
+        else if (hq.mine) next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) };
+        else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }
     }
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
@@ -7779,7 +8154,7 @@
           localStorage.setItem(TOK, a0.token); if (a0.refreshToken) localStorage.setItem(RTOK, a0.refreshToken);
           me$ = null;
           try { await my('setProfile', { handle: u, skills: '', openToWork: false, pubKey: '' }); myName = u; } catch { my('me').then((v) => { myName = v.handle; }).catch(() => {}); }
-          start(); return;
+          newLagosian(); start(); cyberWelcome(u); return;
         }
       }
       const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isNew ? { username: u, email: mail, password: p } : { username: u, password: p }) });
@@ -7791,7 +8166,7 @@
       const a = JSON.parse(t);
       localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
       myName = u.includes('@') ? '' : u; me$ = null; start();
-      if (isNew) { my('setLook', { look: myLook }).catch(() => {}); cyberWelcome(u); } // a new Lagosian: the welcome
+      if (isNew) { newLagosian(); my('setLook', { look: myLook }).catch(() => {}); cyberWelcome(u); } // a new Lagosian: the welcome, then WYRD's onboarding
       my('me').then((v) => { myName = v.handle; if (v.look) { myLook = v.look; store.set('li.look', myLook); } else my('setLook', { look: myLook }).catch(() => {}); }).catch(() => {});
     } catch (e) { errEl.textContent = e.message; }
     finally { btn.disabled = false; btn.textContent = 'Enter Lagos Island'; }
@@ -7821,6 +8196,26 @@
     el.onclick = close; setTimeout(close, 9000);
   }
   { const w = new URLSearchParams(location.search).get('welcome'); if (w) setTimeout(() => cyberWelcome(w), 600); }
+  // ---- personalities and roles: a new Lagosian picks up to three personalities when they sign up; WYRD reads them and
+  // gives them a role on the island, and its guide shows them round by that role
+  const PERSONAS = [['ambitious', '🚀', 'Ambitious'], ['creative', '🎨', 'Creative'], ['social', '🥂', 'Social'], ['adventurous', '🧭', 'Adventurous'], ['analytical', '🧠', 'Analytical'], ['laidback', '🌴', 'Laid-back'], ['competitive', '🏆', 'Competitive'], ['caring', '🤝', 'Caring'], ['nightowl', '🌙', 'Night owl'], ['tech', '💻', 'Tech-savvy'], ['fashion', '👗', 'Fashionable'], ['spiritual', '🙏', 'Spiritual']];
+  const ROLES = {
+    entrepreneur: { name: 'Entrepreneur', icon: '💼', traits: ['ambitious', 'analytical', 'competitive'], desc: 'You see a market in everything. Homes to buy and let, money to grow, the island\'s economy is your playground.' },
+    creative: { name: 'Creative', icon: '🎨', traits: ['creative', 'fashion', 'nightowl'], desc: 'You make things people feel. Music, fashion, the stage at the Arena: the island is your canvas.' },
+    socialite: { name: 'Socialite', icon: '🥂', traits: ['social', 'nightowl', 'fashion', 'laidback'], desc: 'Everyone knows your name. The clubs, the parties, the people: Lagos nights run through you.' },
+    hustler: { name: 'Hustler', icon: '💪', traits: ['ambitious', 'competitive', 'adventurous'], desc: 'You never stop. Shifts, jobs, the next opportunity: you\'ll build it up naira by naira.' },
+    innovator: { name: 'Innovator', icon: '💡', traits: ['tech', 'analytical', 'creative'], desc: 'You build the future. WYRD is your closest ally, and real tech jobs are waiting on the island.' },
+    explorer: { name: 'Explorer', icon: '🧭', traits: ['adventurous', 'laidback', 'spiritual'], desc: 'You want to see it all. From Ilashe\'s beaches to the Blue Line, every corner of the island is yours to find.' },
+    leader: { name: 'Community Leader', icon: '🤝', traits: ['caring', 'social', 'spiritual'], desc: 'People trust you. You bring Lagosians together, host the parties, and keep an eye on how the island is run.' },
+  };
+  function roleFor(picks) { let best = 'hustler', bs = -1; for (const [k, r] of Object.entries(ROLES)) { const sc = r.traits.reduce((s2, t, i) => s2 + (picks.includes(t) ? 3 - Math.min(2, i) : 0), 0); if (sc > bs) { bs = sc; best = k; } } return best; }
+  const persoPicked = new Set();
+  { const box = document.getElementById('perso'), cnt = document.getElementById('psCount');
+    if (box) { box.innerHTML = PERSONAS.map(([k, e, n]) => `<button type="button" data-ps="${k}"><i>${e}</i>${n}</button>`).join('');
+      box.querySelectorAll('[data-ps]').forEach((b) => (b.onclick = () => { const k = b.dataset.ps; if (persoPicked.has(k)) persoPicked.delete(k); else if (persoPicked.size < 3) persoPicked.add(k); box.querySelectorAll('[data-ps]').forEach((o) => { o.classList.toggle('on', persoPicked.has(o.dataset.ps)); o.disabled = !persoPicked.has(o.dataset.ps) && persoPicked.size >= 3; }); cnt.textContent = persoPicked.size ? `${persoPicked.size} of 3` : 'pick up to 3'; })); } }
+  // a new Lagosian: keep what they picked, and have WYRD onboard them after the welcome
+  function newLagosian() { store.set('li.joined', String(Date.now())); const picks = persoPicked.size ? [...persoPicked] : ['ambitious', 'social']; store.set('li.persona', JSON.stringify(picks)); store.set('li.role', roleFor(picks)); store.set('li.onboard', '1'); store.set('li.intro', ''); }
+  const myRole = () => ROLES[store.get('li.role')] || null;
   // ---- WYRD, your guide: a card at the foot of the screen with WYRD's orb, what it says (typed out), and what you can do
   // about it. It shows a newcomer round the island the first time they play, and it looks round your home when you walk in:
   // no bed, nowhere to sit, no table, no TV, no lamp, and it says so and takes you to the Home Store for one.
@@ -7845,16 +8240,39 @@
     while (document.getElementById('cyberwel')) await new Promise((r) => setTimeout(r, 400)); // after the welcome
     touring = true; store.set('li.intro', '1');
     const who = myName && !/^(Guest|Lagosian)$/.test(myName) ? myName : 'friend';
-    const STEPS = [
-      [`Welcome to Lagos Island, ${who}. I'm WYRD. I run this island, and I'll show you round. It takes a minute.`, []],
-      ['Walking: the arrow keys or WASD on a keyboard, the stick at the bottom on a phone. Drag the map to look about, pinch or use + and − to zoom.', []],
-      ['Your phone is top left. Wallet, jobs, your chats, your HQ, rides, music: it all lives there.', [['Open it', () => { openPhone(); return 'next'; }]]],
-      ['Every Lagosian gets a free BQ on HQ Row. It starts empty: furnish it from the Eko Home Store, and invite people round.', [['See my HQ', () => { openPhone('hq'); return 'next'; }]]],
-      ['Naira: work a shift at the refinery, a market stall or a club at night. Real employers post real jobs in the Jobs app too.', [['See jobs', () => { openPhone('jobs'); return 'next'; }]]],
-      ['Getting about: order a ride on your phone, take the Blue Line, or buy a car at Polanco or Lekki Luxury Cars.', [['Order a ride', () => { openPhone('ride'); return 'next'; }]]],
-      ['Homes are for sale from Ajah to Banana Island. The Government app keeps count of every one, and who lives where.', [['Government', () => { openPhone('gov'); return 'next'; }]]],
-      ['That\'s the island. Ask me anything, any time: the WYRD app on your phone, or find me walking the streets. Eko o ni baje.', []],
+    const onboard = store.get('li.onboard') === '1', role = myRole(), picks = (() => { try { return JSON.parse(store.get('li.persona') || '[]'); } catch { return []; } })();
+    if (onboard) {
+      store.set('li.onboard', '');
+      // the analysis, then the role
+      const names = picks.map((k) => (PERSONAS.find((p) => p[0] === k) || [0, '', k])[2]);
+      const r0 = await coachSay(`Welcome to Lagos Island, ${who}. I'm WYRD. You told me you're ${names.join(', ').replace(/, ([^,]*)$/, ' and $1')}. Let me read that…`, [['Read me', null, true], ['Skip', () => 'stop']], 'Analysing');
+      if (r0 !== 'stop' && role) {
+        await coachSay(`${role.icon} You're a ${role.name}. ${role.desc}`, [['Got it', null, true]], 'Your role');
+        // the apartment: every new Lagosian gets one
+        if (signedIn()) await loadHqRow().catch(() => {});
+        const k = hqSlots.findIndex((sl) => sl.mine), lot = k >= 0 ? [...hqIndex].find(([, v]) => v === k) : null;
+        const r1 = await coachSay(`Every Lagosian gets a home. I've assigned you ${k >= 0 ? 'BQ #' + (k + 1) : 'a BQ'} on HQ Row: a basic apartment, yours, free for your first week. It's bare for now. Furnish it from the Eko Home Store and make it yours.`, [...(lot ? [['Take me there', () => { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; return 'home'; }, true]] : []), ['Next', null, !lot]], 'Your apartment');
+        if (r1 === 'home') await new Promise((res) => setTimeout(res, 2500));
+      }
+    }
+    // the tour: the basics, then what matters for your role
+    const ROLE_STEPS = {
+      entrepreneur: [['The Government button in the top bar keeps your money, rent and taxes in one place. Watch it.', 'Government', () => openPhone('gov')], ['Homes are for sale from Ajah to Banana Island. Buy, furnish, and they\'re assets: start small, scale up.', 'See homes', () => openPhone('homes')], ['The Island Reserve Bank by Eko Atlantic: the Treasury opens there with the financial system.', null, null]],
+      creative: [['Island Music has the charts and full tracks from independent artists. In a club, you can take the decks.', 'Island Music', () => openPhone('music')], ['The Arena puts on live shows. Get on its stage.', 'The Arena', () => openPhone('arena')], ['Fashion: Idumota, Falomo and Circle Mall. Dress the part.', 'Fashion', () => openPhone('fashion')]],
+      socialite: [['Six clubs, every night: Ozumba, Club Lekki, Quilox, Secrets Palace, VEIN. Walk in and dance.', null, null], ['Throw a party at your BQ and invite people. The Parties app runs it.', 'Parties', () => openPhone('parties')], ['Link: encrypted chats with anyone on the island.', 'Link', () => openPhone('chats')]],
+      hustler: [['Naira starts with shifts: the refinery, a market stall, a club at night. Walk up and the button appears.', null, null], ['Real employers post real jobs in the Jobs app. Apply.', 'See jobs', () => openPhone('jobs')], ['Okada rides pay too, from the motor parks.', 'Ride', () => openPhone('ride')]],
+      innovator: [['WYRD Tower in VI is my home. Come in and ask me anything: I\'m your closest ally.', null, null], ['The Jobs app has real tech roles from real employers.', 'See jobs', () => openPhone('jobs')], ['The WYRD app: plans, ideas, questions, any time.', 'WYRD', () => openPhone('wyrd')]],
+      explorer: [['Rides go anywhere on the island. Try one.', 'Order a ride', () => openPhone('ride')], ['The Blue Line runs behind the Arena from the bank to the Home Store; the beaches line the coast from Bar Beach to Club Lekki.', null, null], ['Ilashe is across the water: take the causeway or a boat from the jetty.', null, null]],
+      leader: [['The Government app: how the island is run, every home, every notice.', 'Government', () => openPhone('gov')], ['Bring people together: host a party at your place.', 'Parties', () => openPhone('parties')], ['Link: start a group chat for your people.', 'Link', () => openPhone('chats')]],
+    };
+    const base = [
+      ...(onboard ? [] : [[`Welcome to Lagos Island, ${who}. I'm WYRD. I run this island, and I'll show you round. It takes a minute.`, []]]),
+      ['Walking: the arrow keys or WASD on a keyboard; on a phone, the stick appears when you can walk. Drag the map to look about, pinch or scroll to zoom.', []],
+      ...(store.get('li.phoneSeen') ? [] : [['Your phone is top left. Wallet, jobs, your chats, your HQ, rides, music: it all lives there.', [['Open it', () => { openPhone(); return 'next'; }]]]]),
     ];
+    const roleSteps = (ROLE_STEPS[store.get('li.role')] || ROLE_STEPS.hustler).map(([t, lb, fn]) => [t, lb ? [[lb, () => { fn(); return 'next'; }]] : []]);
+    const STEPS = [...base, ...(role ? [[`For a ${role.name}, here's where to start.`, []]] : []), ...roleSteps,
+      ['That\'s the island. Ask me anything, any time: the WYRD app on your phone, or find me walking the streets. Eko o ni baje.', []]];
     for (let k = 0; k < STEPS.length; k++) {
       const [text, extra] = STEPS[k], last = k === STEPS.length - 1;
       const r = await coachSay(text, [...extra, [last ? 'Let\'s go' : 'Next', null, true], ...(last ? [] : [['Skip', () => 'stop']])], `${k + 1} of ${STEPS.length}`);
@@ -7864,7 +8282,7 @@
     touring = false; coachHide();
   }
   // a look round your home when you walk in: the basics a home needs, and the cheapest of each in the Home Store
-  const BASICS = [['bed', 'a bed', ['bed'], 'k:bedSingle'], ['seat', 'anywhere to sit', ['sofa', 'armchair', 'chair', 'couch2', 'stool', 'booth'], 'k:loungeSofa'], ['table', 'a table', ['table', 'coffee', 'desk', 'island'], 'k:tableCoffee'], ['tv', 'a TV', ['tv'], 'k:televisionVintage'], ['lamp', 'a lamp', ['lamp'], 'k:lampRoundFloor']];
+  const BASICS = [['bed', 'a bed', ['bed'], 'k:bedSingle'], ['seat', 'somewhere to sit', ['sofa', 'armchair', 'chair', 'couch2', 'stool', 'booth'], 'k:loungeSofa'], ['table', 'a table', ['table', 'coffee', 'desk', 'island'], 'k:tableCoffee'], ['tv', 'a TV', ['tv'], 'k:televisionVintage'], ['lamp', 'a lamp', ['lamp'], 'k:lampRoundFloor']];
   function homeCheck(R) {
     if (touring || !R || !R.mine || inside !== R) return;
     const day = new Date(lagosMs()).toISOString().slice(0, 10), key = 'li.hc.' + R.key; if (store.get(key) === day) return; // once a day for each home
@@ -7873,8 +8291,8 @@
     store.set(key, day);
     const what = missing.map((m) => m[1]), list = what.length > 1 ? what.slice(0, -1).join(', ') + ' and ' + what[what.length - 1] : what[0], first = missing[0], it = STORE[first[3]];
     const place = R.kind === 'hq' ? 'Your BQ' : 'This home';
-    const why = first[0] === 'bed' ? 'You\'ll want somewhere to sleep.' : first[0] === 'seat' ? 'Guests will want somewhere to sit.' : 'It makes a place a home.';
-    return coachSay(`${place} has no ${list} yet. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
+    const why = first[0] === 'bed' ? 'Abeg, you no fit dey sleep for floor like say you be generator. Even mosquito go laugh you.' : first[0] === 'seat' ? 'When visitors come, dem go stand like bus conductor? No o.' : 'Na small small dem dey build house. Even Dangote start with one bag of cement.';
+    return coachSay(`Ehn ehn! ${place} is missing ${list}. ${why} Eko Home Store get ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'everything you need'}, and dem go deliver am sharp sharp. No go-slow.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
   }
   // ---- a home that works: its devices and fittings, each one something you can use. Walk up to it and the button says
   // what: the TV, the ceiling fan and the AC switch on and off, the inverter shows its battery, the cooker cooks a pot of
@@ -7893,20 +8311,20 @@
     for (const it of R.layout || []) { const kd = kindOf(it); if (['tv', 'lamp', 'speaker', 'fridge'].includes(kd)) out.push({ k: kd, x: it.x, z: it.z, name: (STORE[it.k] ? STORE[it.k].name : kd).toLowerCase(), it }); }
     return out;
   }
-  const SNACKS = ['A cold Malt. Perfect.', 'Chilled zobo.', 'Leftover jollof. Score.', 'A bottle of Chapman, already mixed.', 'Cold water in a sachet. Classic.', 'Suya from last night. Still good.'];
+  const SNACKS = ['Cold Malt! Who keep this one? Na God.', 'Zobo wey don chill well well. Life don sweet.', 'Leftover jollof. Mama must not find out.', 'Chapman, already mixed. You be correct person.', 'Pure water, one sachet. Respect the classics.', 'Suya from yesterday. Still pepper dem dey vex.', 'Empty. Fridge dey look you like say na you chop am.'];
   // what you can do at each one
   function devAction(R, dv) {
     const D = devState(R), say = (text) => bubbles.set('me', { text, until: performance.now() + 4000 }), tog = (key, on, off) => ({ label: D[key] ? off : on, run: () => { D[key] = !D[key]; devSave(R); } });
     switch (dv.k) {
-      case 'tv': { const a = tog('tv', '📺 Watch TV', '📺 Turn the TV off'); const r0 = a.run; a.run = () => { r0(); if (D.tv) say(['NTA News, then Nollywood.', 'Big Brother Naija reruns.', 'Super Eagles highlights!', 'Africa Magic, all night.'][Math.floor(Math.random() * 4)]); }; return a; }
+      case 'tv': { const a = tog('tv', '📺 Watch TV', '📺 Turn the TV off'); const r0 = a.run; a.run = () => { r0(); if (D.tv) say(['Nollywood: the wicked stepmother don enter. Grab popcorn.', 'Big Brother Naija. Who dey house? You, alone.', 'Super Eagles dey lead! Make NEPA no try am.', 'Africa Magic: ritual movie again. Close your eye small.', 'NTA News: "the President has directed…" Change am.'][Math.floor(Math.random() * 5)]); }; return a; }
       case 'fan': return tog('fan', '🌀 Switch the fan on', '🌀 Switch the fan off');
-      case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say('Ahh. 18°C. Lagos heat, defeated.'); }; return a; }
+      case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say(['18°C. Ah! Na so London be?', 'AC don rush. Lagos heat, you don lose.', 'Cold everywhere. Just pray NEPA no carry light now now.'][Math.floor(Math.random() * 3)]); }; return a; }
       case 'inverter': return { label: '🔋 Check the inverter', run: () => openInverter(R) };
-      case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Patience. Good jollof takes time.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof on the fire…'); setTimeout(() => { if (inside === R) say('Jollof ready. Party jollof, smoky bottom and all.'); }, 20000); } };
+      case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Calm down! Good jollof no dey rush. Ghana people rush their own, see wetin happen.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof don enter fire. Smell go reach your neighbour, dem go suddenly remember your name.'); setTimeout(() => { if (inside === R) say('Jollof ready! Party jollof, bottom pot burn small. That one na the best part.'); }, 20000); } };
       case 'fridge': return { label: '🧊 Open the fridge', run: () => say(SNACKS[Math.floor(Math.random() * SNACKS.length)]) };
-      case 'shower': return { label: '🚿 Freshen up', run: () => { if (!nepaAt(lagosMs() - 3600e3)) return say('NEPA took light, so the pumping machine is off. Bucket bath it is.'); D.fresh = Date.now() + 5000; say('Fresh. Ready for the island.'); } };
-      case 'toilet': return { label: '🚽 Use the toilet', run: () => { D.flush = Date.now() + 2500; say(nepaAt(lagosMs() - 3600e3) ? 'Flushed.' : 'Flushed, with the bucket. NEPA took light.'); } };
-      case 'basin': return { label: '🧼 Wash your hands', run: () => say(nepaAt(lagosMs() - 3600e3) ? 'Clean hands. Good.' : 'No water in the tap: NEPA took light. Fetch from the bucket.') };
+      case 'shower': return { label: '🚿 Freshen up', run: () => { if (!nepaAt(lagosMs() - 3600e3)) return say('NEPA don carry light, pumping machine don off. Bucket bath it is. Cold water, sharp sharp!'); D.fresh = Date.now() + 5000; say('You don baff! You dey smell like money now.'); } };
+      case 'toilet': return { label: '🚽 Use the toilet', run: () => { D.flush = Date.now() + 2500; say(nepaAt(lagosMs() - 3600e3) ? 'Flushed. Clean. We move.' : 'No water for tank o. Carry bucket. NEPA no send anybody.'); } };
+      case 'basin': return { label: '🧼 Wash your hands', run: () => say(nepaAt(lagosMs() - 3600e3) ? 'Hand don clean. Corona must not hear word.' : 'Tap dry like Harmattan. NEPA carry light, pump no work. Bucket dey there.') };
       case 'lamp': return tog('lamps', '💡 Switch the lamps on', '💡 Switch the lamps off');
       case 'speaker': return { label: MP.q.length && !MP.a.paused ? '🔊 Pause the music' : '🔊 Play music', run: () => { if (MP.q.length) mpToggle(); else openPhone('music'); } };
     }
@@ -7965,18 +8383,139 @@
     if (D.focus && D.focus.until > performance.now()) { const p = P(D.focus.x, 0.1, D.focus.z), r = K * (3 + Math.sin(t * 4) * 0.5); x.save(); x.strokeStyle = 'rgba(167,139,250,0.95)'; x.shadowColor = '#A78BFA'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); const top = P(D.focus.x, 9 + Math.sin(t * 4), D.focus.z); x.fillStyle = '#A78BFA'; x.beginPath(); x.moveTo(top[0], top[1] + K * 1.4); x.lineTo(top[0] - K, top[1]); x.lineTo(top[0] + K, top[1]); x.closePath(); x.fill(); x.restore(); }
   }
   // WYRD's walk round your home's devices, the first time you're in each home of yours
-  const DEV_TIP = { toilet: 'The toilet. It flushes, and when NEPA takes the light there\'s the bucket.', basin: 'Wash your hands here. The tap needs the pump, and the pump needs light.', tv: 'Walk up to it and tap Watch TV. NTA, Africa Magic, the Super Eagles.', fan: 'Tap to switch it on or off. Lagos heat is no joke.', ac: 'Cold air, when NEPA allows. Switch it on from here.', inverter: 'When NEPA takes light, the inverter keeps you on. Check its battery here.', cooker: 'Stand at the hob and cook a pot of jollof. Twenty seconds, smoky bottom included.', fridge: 'Something cold is always inside. Open it.', shower: 'Freshen up after a long day on the island.', lamp: 'Your lamp. Switch it on for the evening.', speaker: 'It plays your music. Tap to play or pause.' };
+  const DEV_TIP = { toilet: 'The toilet. E dey flush. When NEPA carry light, na bucket be your friend.', basin: 'Wash hand here. Tap need pump, pump need light, light need prayer.', tv: 'Your TV. Africa Magic, Nollywood, Super Eagles. Just no dey cry when the wicked stepmother win.', fan: 'Ceiling fan. Lagos heat no be joke, this one na your bodyguard.', ac: 'AC: cold like abroad, when NEPA gree. Off am before your bill do you strong thing.', inverter: 'Your inverter. When NEPA carry light, na this one dey save your life. Check battery, no let am die.', cooker: 'The cooker. Stand there and cook jollof. If e no burn small for bottom, e no be party jollof.', fridge: 'The fridge. Something cold dey inside… or nothing. Open am and see your destiny.', shower: 'Bathroom. Baff well before you go outside, Lagos traffic no go wait.', lamp: 'Your lamp. On am for evening, make your enemies see say you dey shine.', speaker: 'Speaker. Play Burna, play Wizkid, but no disturb neighbour after 10pm o.' };
   async function homeTour(R) {
     if (touring || !R || !R.mine || inside !== R || store.get('li.devtour.' + R.key)) return;
     store.set('li.devtour.' + R.key, '1'); touring = true;
     const D = devState(R), list = roomDevices(R).filter((dv, k, all) => all.findIndex((v) => v.k === dv.k) === k).slice(0, 7);
-    const r0 = await coachSay(`Welcome home. Everything in here works. Let me show you round: ${list.length} things you can use.`, [['Show me', null, true], ['Not now', () => 'stop']]);
+    const r0 = await coachSay(`Welcome home, my person! Everything for here dey work, no be like government property. Make I show you ${list.length} things wey you fit use.`, [['Oya show me', null, true], ['Later, abeg', () => 'stop']]);
     if (r0 !== 'stop') for (let k = 0; k < list.length; k++) {
       const dv = list[k]; D.focus = { x: dv.x, z: dv.z, until: performance.now() + 60000 };
       const r = await coachSay(`Your ${dv.name}. ${DEV_TIP[dv.k] || ''}`, [[k === list.length - 1 ? 'Done' : 'Next', null, true], ['Skip', () => 'stop']], `${k + 1} of ${list.length}`);
       if (r === 'stop' || inside !== R) break;
     }
     D.focus = null; touring = false; coachHide();
+  }
+  // ================= careers at the National Grid =================
+  // Four tracks, each a real career: Control Room Operator, Lineman, Solar Technician, Plant Engineer. WYRD recommends one
+  // from your role. A shift is three tasks that take time and thought (balancing the island's supply against demand,
+  // going out to a fault and repairing it safely, working the solar farm, reading the turbines), each scored; WYRD writes
+  // the report and the shift is paid by your level and your score. Five levels, Trainee to Chief: each promotion needs
+  // experience and a pass in that track's certification exam. Your career is kept on this device.
+  const GRID_TRACKS = {
+    control: { name: 'Control Room Operator', icon: '🖥️', for: ['innovator', 'leader'], blurb: 'Keep the whole island at 50 Hz: match the turbines, the solar and the import line to what Lagos is using, minute by minute.' },
+    lineman: { name: 'Lineman', icon: '🧗', for: ['hustler', 'explorer'], blurb: 'When a feeder trips anywhere on the island, you go. Isolate, prove dead, earth, repair, restore: in that order, every time.' },
+    solar: { name: 'Solar Technician', icon: '☀️', for: ['creative', 'socialite'], blurb: 'The solar farm is yours: clean the dirty panels, flag the cracked ones, keep every string producing.' },
+    plant: { name: 'Plant Engineer', icon: '⚙️', for: ['entrepreneur'], blurb: 'The turbines are your responsibility. Read their temperatures, vibration and oil, and call it: keep running, ease off, or shut down.' },
+  };
+  const GRID_LEVELS = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'], GRID_XP = [0, 60, 160, 320, 560], GRID_PAY = [12000, 16000, 21000, 27000, 34000];
+  const GRID_EXAM = {
+    control: [['The island is in balance when the frequency is…', ['50 Hz', '60 Hz', '45 Hz'], 0], ['Demand jumps and the frequency falls. You…', ['Raise generation', 'Cut generation', 'Wait'], 0], ['A turbine trips. The quickest power to bring in is…', ['Spinning reserve / the import line', 'A new power station', 'The solar farm at night'], 0], ['Solar output at 9 pm is…', ['About zero', 'At its highest', 'The same as noon'], 0], ['When can frequency go too high?', ['When generation exceeds demand', 'When demand exceeds generation', 'Never'], 0], ['The evening peak in Lagos comes mostly from…', ['Lights, ACs and TVs when people get home', 'The solar farm', 'Midnight'], 0]],
+    lineman: [['Before touching a line, the first step is…', ['Open the breaker to isolate it', 'Replace the part', 'Remove the earths'], 0], ['After isolating, you must…', ['Prove it dead with a tester', 'Close the breaker', 'Climb straight up'], 0], ['Earths are applied to…', ['Protect you if the line is re-energised', 'Make it brighter', 'Hold the pylon up'], 0], ['A blown fuse is replaced with…', ['A fuse of the right rating', 'Any wire', 'A bigger fuse'], 0], ['The last step before restoring is…', ['Remove the earths', 'Apply more earths', 'Leave the site'], 0], ['Rain on a cracked insulator causes…', ['Flashover and trips', 'Nothing', 'Better conduction'], 0]],
+    solar: [['A dusty panel produces…', ['Less power', 'More power', 'The same'], 0], ['A cracked panel should be…', ['Flagged for replacement', 'Cleaned harder', 'Ignored'], 0], ['Solar panels produce the most around…', ['Midday', 'Midnight', 'Sunrise only'], 0], ['Harmattan season means…', ['More dust: clean more often', 'No sun at all', 'Panels freeze'], 0], ['Panels in a string share…', ['Current: one bad panel drags the string', 'Nothing', 'Their colour'], 0], ['The best time to clean panels is…', ['Early morning or evening', 'Noon in full sun', 'During a storm'], 0]],
+    plant: [['Turbine bearing vibration above the limit means…', ['Shut down for inspection', 'Run harder', 'Nothing'], 0], ['Exhaust temperature a little high, everything else normal:', ['Reduce load', 'Shut down at once', 'Ignore it'], 0], ['Low oil pressure risks…', ['Bearing damage', 'Better efficiency', 'Nothing'], 0], ['All readings normal. You…', ['Keep it running', 'Shut it down', 'Reduce load to zero'], 0], ['Why keep spinning reserve?', ['To cover a trip instantly', 'To waste gas', 'For decoration'], 0], ['The cooling towers…', ['Reject heat from the cycle', 'Make the electricity', 'Store gas'], 0]],
+  };
+  const gridLoad = () => { try { return JSON.parse(store.get('li.grid') || 'null'); } catch { return null; } };
+  const GJ = Object.assign({ track: null, xp: {}, level: {}, shifts: [], shift: null, notes: {} }, gridLoad() || {});
+  const gridSave = () => store.set('li.grid', JSON.stringify(GJ));
+  const gridRecommend = () => { const r = store.get('li.role'); return Object.entries(GRID_TRACKS).find(([, t]) => t.for.includes(r))?.[0] || 'control'; };
+  const gridLv = (tr) => GJ.level[tr] || 1;
+  // where the work is: the Grid itself (its control centre, the solar farm, the turbine hall), or a fault out on the island
+  const gridPlace = () => PLACES.find((p) => p[0] === 'grid');
+  function gridSpot(kind) { const p = gridPlace(); if (!p) return null; const a = p[1] * T, b = p[2] * T, c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
+    return { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; }
+  function faultSpot(seed) { const dist = SECTORS.filter((s2) => ['lagos', 'ikoyi', 'vi', 'lekki', 'ajah', 'hqrow'].includes(s2.id) && !s2.sand), R2 = rnd(seed), sct = dist[Math.floor(R2() * dist.length)], [i0, j0, i1, j1] = sct.rect, pool = roadTiles.filter(([i, j]) => i >= i0 && i <= i1 && j >= j0 && j <= j1), [ti, tj] = pool[Math.floor(R2() * pool.length)] || [i0, j0]; return { x: ti * T + T / 2, z: tj * T + T / 2, name: `a feeder fault in ${sct.name}` }; }
+  // a shift: three tasks for your track (a lineman's start at the Grid, collecting the van)
+  function gridNewShift(tr) {
+    const seed = Date.now() % 100000, mk = (type, title, spot) => ({ type, title, spot, done: false, score: 0 });
+    const tasks = tr === 'control' ? [mk('balance', 'Morning ramp-up', gridSpot('control')), mk('balance', 'The evening peak', gridSpot('control')), mk('balance', 'Turbine 2 trips!', gridSpot('control'))]
+      : tr === 'lineman' ? [mk('van', 'Collect the crew van', gridSpot('gate')), mk('fault', 'Repair the fault', faultSpot(seed)), mk('fault', 'Second call-out', faultSpot(seed + 7))]
+      : tr === 'solar' ? [mk('solar', 'Clean and inspect, rows A to C', gridSpot('solar')), mk('solar', 'Clean and inspect, rows D to F', gridSpot('solar')), mk('turbine', 'Inverter station readings', gridSpot('control'))]
+      : [mk('turbine', 'Morning rounds', gridSpot('turbine')), mk('turbine', 'Load change review', gridSpot('turbine')), mk('turbine', 'End of shift handover', gridSpot('turbine'))];
+    GJ.shift = { track: tr, tasks, at: Date.now() }; gridSave();
+  }
+  const gridTask = () => GJ.shift && GJ.shift.tasks.find((tk) => !tk.done);
+  // the beacon over where you have to go
+  function gridJobDraw() {
+    const tk = gridTask(); if (!tk || !tk.spot || inside) return;
+    const t = performance.now() / 1000, base = P(tk.spot.x, 0, tk.spot.z), top = P(tk.spot.x, 40, tk.spot.z);
+    x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createLinearGradient(base[0], base[1], top[0], top[1]); g.addColorStop(0, 'rgba(250,204,21,0.55)'); g.addColorStop(1, 'rgba(250,204,21,0)'); x.fillStyle = g; x.fillRect(base[0] - K * 1.2, top[1], K * 2.4, base[1] - top[1]); x.restore();
+    const r = K * (3 + Math.sin(t * 4)); x.strokeStyle = '#FACC15'; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.ellipse(base[0], base[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
+    x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const lbl = `⚡ ${tk.title}`, w = x.measureText(lbl).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(top[0] - w / 2, top[1] - 12, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(lbl, top[0], top[1] - 1);
+  }
+  function gridJobFx() {} // the plant's own marking is the beacon
+  const gridNear = () => { const tk = gridTask(); return tk && tk.spot && Math.hypot(me.x - tk.spot.x, me.z - tk.spot.z) < 18 ? tk : null; };
+  // ---- the task screens
+  const gpEl = document.createElement('div'); gpEl.id = 'gridTask'; document.body.append(gpEl);
+  let gpTimer = 0;
+  const gpClose = () => { clearInterval(gpTimer); gpEl.classList.remove('on'); };
+  function gpShow(html) { gpEl.innerHTML = html; gpEl.classList.add('on'); }
+  function gridDo(tk) {
+    const done = (score, note) => { clearInterval(gpTimer); tk.done = true; tk.score = Math.round(Math.max(0, Math.min(100, score))); tk.note = note; gridSave();
+      gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : 'Finish the shift'}</button>`);
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
+    if (tk.type === 'van') { gpShow(`<div class="gphd"><b>Collect the crew van</b><button class="gpx2">✕</button></div><p>Sign out van GC-02, check the ladder, the tester, the earthing kit and the spares.</p><div class="gpchk">${['Ladder secured', 'Voltage tester working', 'Earthing kit complete', 'Spare fuses and insulators', 'Radio checked with control'].map((t2, k) => `<label><input type="checkbox" data-c="${k}"> ${t2}</label>`).join('')}</div><button class="gpgo">Sign out the van</button>`);
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { const n2 = gpEl.querySelectorAll('[data-c]:checked').length; done(n2 * 20, n2 === 5 ? 'Every check done. Control has you on the radio.' : `You skipped ${5 - n2} check${5 - n2 > 1 ? 's' : ''}. On a real call-out that can cost a life.`); }; return; }
+    if (tk.type === 'balance') { // supply against demand for 90 seconds: keep the frequency inside 49.8 to 50.2 Hz
+      const S = { t: 0, t1: 300, t2: 300, t3: 250, imp: 100, inBand: 0, ticks: 0, low: 50 }, scen = tk.title, sun = solarAt(lagosMs() - 3600e3);
+      const demandAt = (s2) => { const base = scen.includes('peak') ? 1180 + s2 * 2.4 : scen.includes('Morning') ? 820 + s2 * 2.8 : 1050; return base + Math.sin(s2 / 6) * 30 + (s2 > 40 && s2 < 55 && scen.includes('peak') ? 140 : 0); };
+      const draw = () => { const dem = Math.round(demandAt(S.t)), tripped = scen.includes('trips') && S.t >= 20, gen = Math.round(S.t1 + (tripped ? 0 : S.t2) + S.t3 + S.imp + sun * 0.6), f = 50 + (gen - dem) / 400, ok = f >= 49.8 && f <= 50.2;
+        const stat = `<div class="gphd"><b>${esc(scen)}</b><span>${Math.max(0, 90 - S.t)} s</span></div>
+          <div class="gpfreq ${ok ? 'ok' : 'bad'}"><b>${f.toFixed(2)} Hz</b><small>keep it between 49.80 and 50.20</small></div>
+          <div class="gprow2"><span>Demand</span><b>${dem} MW</b></div><div class="gprow2"><span>Generation</span><b>${gen} MW</b></div>${S.t > 40 && S.t < 55 && scen.includes('peak') ? '<div class="gpwarn">The Arena show just started: +140 MW</div>' : ''}${tripped ? '<div class="gpwarn">Turbine 2 tripped! Pick up the load.</div>' : ''}`;
+        if (!gpEl.querySelector('#gpStat')) { gpShow(`<div id="gpStat"></div>${[['t1', 'Turbine 1', 400], ['t2', 'Turbine 2', 400], ['t3', 'Turbine 3', 400], ['imp', 'Import line', 250]].map(([k, l, mx]) => `<label class="gpsl"><span>${l}</span><input type="range" min="0" max="${mx}" step="10" value="${S[k]}" data-s="${k}"><b>${S[k]}</b></label>`).join('')}<div class="gprow2"><span>Solar (by the sky)</span><b>${Math.round(sun * 0.6)} MW</b></div>`);
+          gpEl.querySelectorAll('[data-s]').forEach((r) => (r.oninput = () => { S[r.dataset.s] = +r.value; r.nextElementSibling.textContent = r.value; })); }
+        gpEl.querySelector('#gpStat').innerHTML = stat; const t2el = gpEl.querySelector('[data-s="t2"]'); if (tripped && !t2el.disabled) { t2el.disabled = true; t2el.previousElementSibling.textContent = 'Turbine 2 (tripped)'; }
+        S.ticks++; if (ok) S.inBand++; S.low = Math.min(S.low, f); };
+      draw(); gpTimer = setInterval(() => { S.t++; if (S.t >= 90) { const sc = S.inBand / Math.max(1, S.ticks) * 100; GJ.notes.lowHz = S.low.toFixed(2); done(sc, sc > 85 ? 'Rock steady. The island never knew how close it came.' : sc > 60 ? `Mostly in band. Lowest you let it fall: ${S.low.toFixed(2)} Hz. Keep more reserve ready.` : `The frequency wandered: lowest ${S.low.toFixed(2)} Hz. Watch demand and move before it does.`); } else draw(); }, 1000); return; }
+    if (tk.type === 'fault') { // the safe repair: the right steps in the right order, the right part
+      const kinds = [['a blown fuse', 'Fuse, 63 A'], ['a cracked insulator', 'Insulator, 33 kV'], ['a burnt jumper', 'Jumper cable']], R2 = rnd(Math.round(tk.spot.x + tk.spot.z)), fk = kinds[Math.floor(R2() * 3)];
+      const STEPS = ['Open the breaker', 'Prove it dead with the tester', 'Apply the earths', `Replace ${fk[0].replace(/^a /, 'the ')}`, 'Remove the earths', 'Close the breaker and restore'];
+      const order = [...STEPS].sort(() => R2() - 0.5); let next = 0, strikes = 0, part = null;
+      const draw = () => { gpShow(`<div class="gphd"><b>Fault: ${esc(fk[0])}</b><span>step ${next + 1} of 6</span></div><p>Feeder ${tk.spot.name.replace('a feeder fault in ', '')} is down. Do it safely, in order.${strikes ? ` <b style="color:#F87171">Safety strikes: ${strikes}</b>` : ''}</p>
+          ${next === 3 && !part ? `<div class="gpsec2">Pick the right part</div><div class="gpopts">${kinds.map((k2) => `<button data-p="${esc(k2[1])}">${esc(k2[1])}</button>`).join('')}</div>` : `<div class="gpopts">${order.map((s2) => `<button data-st="${esc(s2)}" ${STEPS.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`}`);
+        gpEl.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { if (b.dataset.p === fk[1]) { part = fk[1]; draw(); } else { strikes++; draw(); } }));
+        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { if (b.dataset.st === STEPS[next]) { next++; if (next === 3 && !part) return draw(); if (next >= 6) return done(100 - strikes * 18, strikes ? `Restored, but with ${strikes} safety strike${strikes > 1 ? 's' : ''}. Out there, one is too many.` : 'Textbook. Isolated, proved dead, earthed, repaired, restored. The street has light.'); draw(); } else { strikes++; draw(); } })); };
+      draw(); return; }
+    if (tk.type === 'solar') { // 24 panels, some dusty, some cracked, 60 seconds
+      const R2 = rnd(Date.now() % 9999), P2 = Array.from({ length: 24 }, () => { const r = R2(); return r < 0.35 ? 'dust' : r < 0.47 ? 'crack' : 'ok'; }); let tleft = 60, right = 0, wrong = 0;
+      const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${tleft} s</span></div><p>Tap a dusty panel to clean it, a cracked one to flag it. Leave the good ones.</p><div class="gppan">${P2.map((v, k) => `<button data-k="${k}" class="${v}"></button>`).join('')}</div><div class="gprow2"><span>Done right</span><b>${right}</b></div>`);
+        gpEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, v = P2[k]; if (v === 'dust' || v === 'crack') { right++; P2[k] = v === 'dust' ? 'clean' : 'flag'; } else if (v === 'ok') { wrong++; P2[k] = 'oops'; } draw(); })); };
+      draw(); gpTimer = setInterval(() => { tleft--; const left = P2.filter((v) => v === 'dust' || v === 'crack').length; if (tleft <= 0 || !left) { const total = right + left; done(total ? right / total * 100 - wrong * 8 : 100, left ? `${left} panel${left > 1 ? 's' : ''} left undone${wrong ? `, ${wrong} good one${wrong > 1 ? 's' : ''} touched for nothing` : ''}.` : wrong ? 'All done, but you fiddled with good panels. Time is money.' : 'Every string producing. Clean work.'); } else { const el = gpEl.querySelector('.gphd span'); if (el) el.textContent = tleft + ' s'; } }, 1000); return; }
+    if (tk.type === 'turbine') { // three machines' readings: call each one
+      const R2 = rnd(Date.now() % 7777), units = [1, 2, 3].map((u) => { const kind = Math.floor(R2() * 3); return { u, temp: kind === 1 ? 612 + Math.round(R2() * 15) : 560 + Math.round(R2() * 25), vib: kind === 2 ? 11 + Math.round(R2() * 4) : 3 + Math.round(R2() * 3), oil: kind === 2 ? 1.6 : 2.6 + Math.round(R2() * 5) / 10, right: ['keep', 'reduce', 'shut'][kind] }; });
+      const pick = {}; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
+          ${units.map((un) => `<div class="gpunit"><b>Turbine ${un.u}</b><span>${un.temp} °C · ${un.vib} mm/s · ${un.oil} bar</span><div class="gpopts sm">${[['keep', 'Keep running'], ['reduce', 'Reduce load'], ['shut', 'Shut down']].map(([k, l]) => `<button data-u="${un.u}" data-a="${k}" class="${pick[un.u] === k ? 'sel' : ''}">${l}</button>`).join('')}</div></div>`).join('')}<button class="gpgo">Log the decisions</button>`);
+        gpEl.querySelectorAll('[data-u]').forEach((b) => (b.onclick = () => { pick[b.dataset.u] = b.dataset.a; draw(); }));
+        gpEl.querySelector('.gpgo').onclick = () => { const ok = units.filter((un) => pick[un.u] === un.right).length; done(ok / 3 * 100, ok === 3 ? 'Every call right. The plant runs safe and earns.' : `${3 - ok} wrong call${3 - ok > 1 ? 's' : ''}. ${units.filter((un) => pick[un.u] !== un.right).map((un) => `Turbine ${un.u} needed: ${{ keep: 'keep running', reduce: 'reduce load', shut: 'shut down' }[un.right]}`).join('. ')}.`); }; };
+      draw(); }
+  }
+  // the end of a shift: the report, the pay, the experience, and the next step in the career
+  async function gridFinish() {
+    const sh = GJ.shift; if (!sh) return; const tr = sh.track, lv = gridLv(tr), score = Math.round(sh.tasks.reduce((s2, tk) => s2 + tk.score, 0) / sh.tasks.length), xp = Math.round(10 + score / 5);
+    GJ.xp[tr] = (GJ.xp[tr] || 0) + xp; let paid = null, payNote = '';
+    try { const v = await my('gridShift', { level: lv, score }); paid = v.paid; if (typeof pnaira !== 'undefined' && v.naira != null) pnaira.textContent = naira(v.naira); } catch (e) { payNote = /enough for today|just finished/i.test(e.message) ? e.message : 'Pay is held until the National Grid payroll goes live on the server.'; }
+    GJ.shifts.unshift({ at: Date.now(), track: tr, level: lv, score, paid, xp }); GJ.shifts.length = Math.min(30, GJ.shifts.length); GJ.shift = null; gridSave();
+    const canExam = lv < 5 && GJ.xp[tr] >= GRID_XP[lv];
+    notify(`Grid shift done: ${score}/100${paid ? `, paid ${naira(paid)}` : ''}`, 'money', ['grid']);
+    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : payNote} +${xp} XP.${canExam ? ' You have the experience for promotion: take the certification exam in the WYRD Grid app.' : ''}`, [['WYRD Grid', () => { openPhone('grid'); return 'x'; }, true], ['Later', null]]);
+  }
+  // the certification exam for the next level: five questions, four to pass
+  function gridExam(tr, onDone) {
+    const R2 = rnd(Date.now() % 5555), qs = [...GRID_EXAM[tr]].sort(() => R2() - 0.5).slice(0, 5); let k = 0, right = 0;
+    const draw = () => { const [q, opts] = qs[k]; const order = opts.map((o, i) => [o, i]).sort(() => R2() - 0.5);
+      gpShow(`<div class="gphd"><b>${esc(GRID_TRACKS[tr].name)} certification</b><span>${k + 1} of 5</span></div><p class="gpq">${esc(q)}</p><div class="gpopts">${order.map(([o, i]) => `<button data-i="${i}">${esc(o)}</button>`).join('')}</div>`);
+      gpEl.querySelectorAll('[data-i]').forEach((b) => (b.onclick = () => { if (+b.dataset.i === qs[k][2]) right++; k++; if (k < 5) return draw(); const pass = right >= 4;
+        gpShow(`<div class="gphd"><b>${pass ? 'Passed!' : 'Not this time'}</b><button class="gpx2">✕</button></div><div class="gpbig">${right}<small>/5</small></div><p>${pass ? `Promoted to ${GRID_LEVELS[gridLv(tr)]}. Your pay goes up from your next shift.` : 'You need four right. Study the job and sit it again.'}</p>`);
+        if (pass) { GJ.level[tr] = gridLv(tr) + 1; gridSave(); notify(`Promoted: ${GRID_LEVELS[GJ.level[tr] - 1]} ${GRID_TRACKS[tr].name}`, 'money', ['grid']); }
+        gpEl.querySelector('.gpx2').onclick = () => { gpClose(); onDone && onDone(); }; })); };
+    draw();
+  }
+  // WYRD's briefing for today: who you are, how your last shift went, the island's state
+  function gridBriefing() {
+    const tr = GJ.track || gridRecommend(), last = GJ.shifts.find((s2) => s2.track === tr), grid = nepaAt(lagosMs() - 3600e3), h = new Date(lagosMs()).getUTCHours(), rain = WX && WX.cur && WX.cur.rain > 0.1, nm = myName || 'my person';
+    const tips = { control: h >= 17 && h <= 22 ? 'Evening peak is coming: everybody go on AC and TV at once. Keep reserve ready.' : 'Demand dey climb small small this morning. Move before it moves you.', lineman: rain ? 'Rain dey fall: insulators go flash over. Plenty call-outs today, no rush the safety.' : 'Dry day, but feeders still dey trip. Isolate, prove dead, earth. Always.', solar: WX && WX.cur && WX.cur.haze > 0.2 ? 'Harmattan dust don cover the panels. Na cleaning day.' : 'Good sun today. Every clean panel na money.', plant: grid ? 'The turbines dey carry the whole island. Watch the vibration.' : 'NEPA dey load-shed: turbines go dey stressed when we bring them back. Read every gauge.' };
+    return `${nm}, ${GRID_TRACKS[tr].icon} ${GRID_LEVELS[gridLv(tr) - 1]} ${GRID_TRACKS[tr].name}. ${last ? `Your last shift: ${last.score}/100${last.score < 70 ? `. We go do better today${tr === 'control' && GJ.notes.lowHz ? ` (frequency dipped to ${GJ.notes.lowHz} Hz)` : ''}.` : '. Keep that standard.'}` : 'Your first shift. Take am easy, learn the job.'} ${tips[tr]} The grid ${grid ? 'has light right now' : 'is load-shedding right now'}.`;
   }
   document.getElementById('guest').onclick = () => { myName = store.get('li.name') || 'Guest'; start(); };
   for (const el of [emailIn, nameIn, passIn, pass2In]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });

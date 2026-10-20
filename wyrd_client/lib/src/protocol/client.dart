@@ -879,6 +879,19 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {'place': place},
   );
 
+  /// A shift at the National Grid: paid by career level (Trainee to Chief) and how well it went (score 0..100), one every 40 minutes, within the daily cap.
+  _ida.Future<String> gridShift(
+    int level,
+    int score,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridShift',
+    {
+      'level': level,
+      'score': score,
+    },
+  );
+
   /// My last receipts (JSON list).
   _ida.Future<String> receipts() => caller.callServerEndpoint<String>(
     'islandMe',

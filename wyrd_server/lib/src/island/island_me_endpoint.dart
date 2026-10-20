@@ -255,6 +255,36 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
   });
 
+  /// A shift at the National Grid: paid by career level (Trainee to Chief) and how well it went (score 0..100), one every 40 minutes, within the daily cap.
+  Future<String> gridShift(Session session, int level, int score) => _money(
+    session,
+    (u) async {
+      const pays = [12000, 16000, 21000, 27000, 34000];
+      final lv = level.clamp(1, 5), sc = score.clamp(0, 100);
+      await WorldAuthority.citizen(session, u);
+      final earned = await _earnedToday(session, u);
+      if (earned >= dailyCap)
+        return _err(
+          'You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.',
+        );
+      final pay = min((pays[lv - 1] * (0.5 + 0.5 * sc / 100)).round(), dailyCap - earned);
+      final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
+      final r = await Bank.post(
+        session,
+        u,
+        key: 'island:shift:${u.uuid}:grid:$bucket',
+        amount: pay,
+        kind: 'job',
+        counter: 'city:services',
+        memo: 'National Grid shift',
+      );
+      if (r.repeat)
+        return _err('You just finished a grid shift. The next one opens in a while.');
+      final c = await Bank.fresh(session, u);
+      return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': 'National Grid shift'});
+    },
+  );
+
   static String _n(int v) => v.toString().replaceAllMapped(
     RegExp(r'\B(?=(\d{3})+(?!\d))'),
     (_) => ',',
@@ -946,6 +976,7 @@ class IslandMeEndpoint extends Endpoint {
           final req = asked[p.authUserId.uuid];
           return {
             'slot': p.id,
+            'resident': p.handle, // HQ Row is public: each BQ's resident, shouted out on the Row's billboard
             'color': p.hqColor,
             'mine': mine,
             'may': may,

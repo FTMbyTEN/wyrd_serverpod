@@ -65,6 +65,7 @@ islandMe:
   - setLook:
   - keyOf:
   - work:
+  - gridShift:
   - receipts:
   - send:
   - casino:
