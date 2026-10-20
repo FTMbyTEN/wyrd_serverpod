@@ -2670,6 +2670,13 @@ class EndpointRewardsAdmin extends _isc.EndpointRef {
     },
   );
 
+  /// Pay the game half of any completed gig that is missing it (safe to run twice: each pays once).
+  _ida.Future<String> repairGameRewards() => caller.callServerEndpoint<String>(
+    'rewardsAdmin',
+    'repairGameRewards',
+    {},
+  );
+
   _ida.Future<String> reviews() => caller.callServerEndpoint<String>(
     'rewardsAdmin',
     'reviews',
