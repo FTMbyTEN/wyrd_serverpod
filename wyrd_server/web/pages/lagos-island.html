@@ -1178,8 +1178,6 @@
   const L = document.getElementById('launch'), bar = document.getElementById('lbari'), pct = document.getElementById('lpct'), nm = document.getElementById('lname');
   // the name, letter by letter (each slams in a beat after the last)
   nm.innerHTML = [...nm.textContent].map((c, i) => c === ' ' ? '<span style="width:.28em"></span>' : `<span style="animation-delay:${(1.6 + i * 0.055).toFixed(3)}s">${c}</span>`).join('');
-  const sa = navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
-  { const d = document.createElement('div'); d.style.cssText = 'position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font:600 9px sans-serif;color:#94A3B8;opacity:.7'; d.textContent = `${screen.width}×${screen.height} · ${innerWidth}×${innerHeight} · ${sa ? 'app' : 'web'}`; document.getElementById('launch').append(d); }
   const t0 = performance.now(), MIN = 3600, MAX = 9000; let loaded = document.readyState === 'complete', shown = 0, gone = false;
   addEventListener('load', () => { loaded = true; });
   const finish = () => { if (gone) return; gone = true; bar.style.width = '100%'; pct.textContent = 'READY'; L.classList.add('out'); setTimeout(() => L.remove(), 950); };
@@ -1585,7 +1583,6 @@
           <div class="psec">Settings</div>
           <div class="ptog">${T2.map(([k, n, s, on]) => `<button data-pt2="${k}" class="${on ? 'on' : ''}"><span><span>${n}</span><small>${s}</small></span><span class="sw"></span></button>`).join('')}
             <button data-pt2="hqset"><span><span>HQ settings</span><small>Name, colour, door</small></span></button><button data-pt2="share"><span><span>Share profile</span><small>Invite a friend</small></span></button></div>
-          <div class="pfoot" style="font-size:10px;opacity:.4">screen ${screen.width}×${screen.height} · view ${innerWidth}×${innerHeight} · game ${Math.round(document.getElementById('c').getBoundingClientRect().height)} · ${navigator.standalone ? 'app' : matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'} · ${(VER.now || '').slice(5, 16)}</div>
           <div class="pfoot">${esc(online)} on the island now · Lagos time ${String(new Date(lagosMs()).getUTCHours()).padStart(2, '0')}:${String(new Date(lagosMs()).getUTCMinutes()).padStart(2, '0')}</div></div>`;
       el.querySelector('.px').onclick = closePass;
       el.querySelector('#pHq').onclick = () => { closePass(); if (phone.style.display === 'block') closePhone(); goHQ(); };
