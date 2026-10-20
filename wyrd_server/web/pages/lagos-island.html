@@ -6,6 +6,12 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#4F9FD8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lagos Island">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1086,6 +1092,13 @@
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
   function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
+  // full screen on a phone: the first time you tap into the island, the browser's own bars go away (Android and most
+  // browsers). If you leave full screen yourself it doesn't pull you back. On an iPhone, Safari can't do this for a web
+  // page: add Lagos Island to the home screen and it opens full screen like an app (see the manifest).
+  let fsAsked = false;
+  const wantFs = () => MOBILE && !fsAsked && !document.fullscreenElement && !matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches && document.documentElement.requestFullscreen;
+  addEventListener('pointerup', () => { if (!wantFs()) return; fsAsked = true; document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); }, { capture: true });
+
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
   let co = 1, si = 0, sp = 1, cp = 0, K = 1;
   function setCam() {
@@ -6963,33 +6976,106 @@
     if (C2.fog > 0.02) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(226,232,240,${0.55 * C2.fog})`); g.addColorStop(1, `rgba(226,232,240,${0.25 * C2.fog})`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
     if (C2.haze > 0.02) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(217,164,95,${0.42 * C2.haze})`); g.addColorStop(1, `rgba(194,140,80,${0.2 * C2.haze})`); x.fillStyle = g; x.fillRect(0, 0, W, H);
       x.fillStyle = `rgba(250,220,170,${0.35 * C2.haze})`; for (let k = 0; k < 60; k++) { const d = DROPS[k], px = ((d.x * W + t * 40 * d.s * Math.sign(wx || 1)) % W + W) % W, py = ((d.y * H + Math.sin(t + k) * 8) % H + H) % H; x.fillRect(px, py, 2, 2); } }
-    // the rain: streaks slanted by the wind, faster for the nearer ones, splashes where they land
+    // the rain, in three layers by depth: far drops faint, thin and slow, near ones brighter, thicker and faster; the
+    // slant follows the real wind and sways in gusts. Splashes are little crowns that land somewhere new each time, and
+    // heavy rain raises a spray mist near the ground. A phone draws about half as many drops.
     if (C2.rain > 0.02) {
-      const n = Math.round(DROPS.length * C2.rain), slant = Math.max(-0.6, Math.min(0.6, (P(wx, 0, wz)[0] - P(0, 0, 0)[0]) / 40)), len = 14 + 10 * C2.rain;
-      x.save(); x.strokeStyle = night > 0.5 ? 'rgba(186,230,253,0.35)' : 'rgba(226,232,240,0.55)'; x.lineWidth = 1; x.beginPath();
-      for (let k = 0; k < n; k++) { const d = DROPS[k], fall = t * (700 * d.s), py = ((d.y * H + fall) % (H + 40)) - 20, px = ((d.x * W + fall * slant) % W + W) % W; x.moveTo(px, py); x.lineTo(px - slant * len * d.s, py - len * d.s); }
-      x.stroke();
-      x.strokeStyle = 'rgba(226,232,240,0.4)'; x.beginPath(); for (let k = 0; k < n / 4; k++) { const d = DROPS[k], ph = (t * 2.2 + d.x * 7) % 1, px = d.y * W, py = (d.x * 0.85 + 0.12) * H, r = 2 + ph * 5; x.moveTo(px + r, py); x.ellipse(px, py, r, r * 0.35, 0, 0, Math.PI * 2); } x.globalAlpha = 0.6; x.stroke(); x.restore();
+      const n = Math.round(DROPS.length * C2.rain * (MOBILE ? 0.55 : 1)), gust = 1 + Math.sin(t * 0.35) * 0.25 + Math.sin(t * 1.1) * 0.08;
+      const slant = Math.max(-0.7, Math.min(0.7, (P(wx, 0, wz)[0] - P(0, 0, 0)[0]) / 40 * gust)), base = 12 + 12 * C2.rain, nightC = night > 0.5;
+      x.save(); x.lineCap = 'round';
+      for (const [lo, hi, w, a] of [[0, 0.9, 0.7, nightC ? 0.18 : 0.28], [0.9, 1.1, 1, nightC ? 0.3 : 0.45], [1.1, 9, 1.5, nightC ? 0.42 : 0.62]]) {
+        x.strokeStyle = nightC ? `rgba(186,230,253,${a})` : `rgba(235,242,250,${a})`; x.lineWidth = w; x.beginPath();
+        for (let k = 0; k < n; k++) { const d = DROPS[k]; if (d.s < lo || d.s >= hi) continue; const fall = t * (520 + 420 * (d.s - 0.7)), len = base * d.s * d.s, py = ((d.y * H + fall) % (H + 60)) - 30, px = ((d.x * W + fall * slant) % W + W) % W; x.moveTo(px, py); x.lineTo(px - slant * len, py - len); }
+        x.stroke();
+      }
+      // splashes: a ring and a flick of droplets, each at a fresh spot every time it lands
+      x.strokeStyle = nightC ? 'rgba(186,230,253,0.45)' : 'rgba(241,245,249,0.6)'; x.fillStyle = x.strokeStyle; x.lineWidth = 1; x.beginPath();
+      const spl = [];
+      for (let k = 0; k < n / 3; k++) { const d = DROPS[k], cyc = t * 2.4 + d.x * 7, ph = cyc % 1, R = rnd(k * 9973 + Math.floor(cyc) * 31), px = R() * W, py = (0.2 + R() * 0.78) * H, r = (1.5 + ph * 4.5) * (0.6 + d.s * 0.5);
+        x.moveTo(px + r, py); x.ellipse(px, py, r, r * 0.32, 0, 0, Math.PI * 2); if (ph < 0.35) spl.push([px, py, ph]); }
+      x.globalAlpha = 0.7; x.stroke();
+      for (const [px, py, ph] of spl) { const up = ph * 14; x.fillRect(px - 3 - ph * 6, py - up, 1.4, 1.4); x.fillRect(px + 2 + ph * 6, py - up * 0.8, 1.4, 1.4); x.fillRect(px, py - up * 1.2, 1.2, 1.2); }
+      x.globalAlpha = 1;
+      if (C2.rain > 0.4) { const g = x.createLinearGradient(0, H * 0.55, 0, H); g.addColorStop(0, 'rgba(226,232,240,0)'); g.addColorStop(1, `rgba(226,232,240,${0.14 * (C2.rain - 0.4)})`); x.fillStyle = g; x.fillRect(0, H * 0.55, W, H * 0.45); } // the spray mist
+      x.restore();
     }
-    // lightning: a jagged bolt from the clouds and the whole sky flashing, the thunder a moment later
+    // lightning: each strike has a distance. Close ones are a forked bolt (a glowing core, branches) with the classic
+    // double or triple flicker and a bright flash over everything; far ones are a sheet of light inside the clouds.
+    // The thunder follows as sound does: a crack within half a second for a close one, a long low rumble seconds later
+    // for a far one.
     if (C2.storm > 0.3) {
-      if (now > BOLT.next) { BOLT.at = now; BOLT.next = now + 5000 + Math.random() * 14000; const pts = []; let bx = W * (0.2 + Math.random() * 0.6), by = 0; while (by < H * 0.6) { pts.push([bx, by]); bx += (Math.random() - 0.5) * 50; by += 20 + Math.random() * 30; } BOLT.pts = pts; setTimeout(() => thunder(0.6 + Math.random() * 0.4), 400 + Math.random() * 1600); }
-      const age = now - BOLT.at;
-      if (age < 600) { const a = age < 80 ? 0.55 : age < 160 ? 0.15 : age < 230 ? 0.4 : Math.max(0, 0.2 - (age - 230) / 1800); x.fillStyle = `rgba(226,232,255,${a * C2.storm})`; x.fillRect(0, 0, W, H);
-        if (age < 260 && BOLT.pts) { x.save(); x.strokeStyle = 'rgba(255,255,255,0.95)'; x.shadowColor = '#C7D2FE'; x.shadowBlur = 18; x.lineWidth = 2.5; x.beginPath(); BOLT.pts.forEach(([px, py], k) => (k ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); x.restore(); } }
+      if (now > BOLT.next) {
+        const dist = Math.random(), near = dist < 0.4; BOLT.at = now; BOLT.dist = dist; BOLT.next = now + 4000 + Math.random() * 12000;
+        BOLT.flicks = near ? (Math.random() < 0.5 ? [0, 90, 210] : [0, 120]) : [0];
+        BOLT.pts = null; BOLT.branches = [];
+        if (near) { const pts = []; let bx = W * (0.15 + Math.random() * 0.7), by = -10; const target = H * (0.45 + Math.random() * 0.3);
+          while (by < target) { pts.push([bx, by]); bx += (Math.random() - 0.5) * 46; by += 14 + Math.random() * 24; if (Math.random() < 0.18 && pts.length > 2) { const br = [[bx, by]]; let cx2 = bx, cy2 = by, dir = Math.random() < 0.5 ? -1 : 1; for (let q = 0; q < 4 + Math.random() * 5; q++) { cx2 += dir * (8 + Math.random() * 22); cy2 += 10 + Math.random() * 18; br.push([cx2, cy2]); } BOLT.branches.push(br); } }
+          pts.push([bx, target]); BOLT.pts = pts; }
+        BOLT.sheetX = W * (0.1 + Math.random() * 0.8);
+        const delay = near ? 150 + dist * 900 : 1800 + dist * 4500; setTimeout(() => thunder(dist), delay);
+      }
+      const age = now - BOLT.at, near = BOLT.pts != null;
+      let flash = 0; for (const f of BOLT.flicks || []) { const a2 = age - f; if (a2 >= 0 && a2 < 70) flash = Math.max(flash, 1); else if (a2 >= 70 && a2 < 420) flash = Math.max(flash, Math.max(0, 0.35 - (a2 - 70) / 1000)); }
+      if (flash > 0) {
+        if (near) { x.fillStyle = `rgba(226,232,255,${0.42 * flash * C2.storm})`; x.fillRect(0, 0, W, H); }
+        else { const g = x.createRadialGradient(BOLT.sheetX, 0, 0, BOLT.sheetX, 0, H * 0.9); g.addColorStop(0, `rgba(210,220,255,${0.32 * flash * C2.storm})`); g.addColorStop(1, 'rgba(210,220,255,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+        if (near && flash > 0.5) { // the bolt: a wide soft glow, then a bright core, branches thinner
+          const line = (pts) => { x.beginPath(); pts.forEach(([px, py], k) => (k ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); };
+          x.save(); x.lineJoin = 'round'; x.lineCap = 'round';
+          x.strokeStyle = 'rgba(165,180,252,0.35)'; x.lineWidth = 9; line(BOLT.pts);
+          x.strokeStyle = 'rgba(199,210,254,0.7)'; x.lineWidth = 4; line(BOLT.pts);
+          x.strokeStyle = '#FFFFFF'; x.lineWidth = 1.8; line(BOLT.pts);
+          x.lineWidth = 1; x.strokeStyle = 'rgba(224,231,255,0.85)'; for (const br of BOLT.branches) line(br);
+          x.restore();
+        }
+      }
     }
     wxSound();
   }
-  // the sound of it: rain as filtered noise (dull through a roof when you're inside), thunder as a low rumble
-  const WXS = { g: null, lp: null };
+  // the sound of it, in stereo. Rain is three layers: a soft wash (pink noise), the patter of single drops (sparse
+  // ticks), and, in heavy rain, a low roar; inside it becomes rain drumming on the roof. Thunder is made for each
+  // strike: a sharp crack when it's close, then a rolling rumble (a few rolls, a long tail, a little echo); a far one
+  // is only a low, long rumble.
+  const WXS = { on: false };
+  function noiseBuffer(c, secs, kind, ch = 2) {
+    const b = c.createBuffer(ch, Math.floor(c.sampleRate * secs), c.sampleRate);
+    for (let q = 0; q < ch; q++) { const d = b.getChannelData(q); let b0 = 0, b1 = 0, b2 = 0, br = 0;
+      for (let k = 0; k < d.length; k++) { const w = Math.random() * 2 - 1;
+        if (kind === 'pink') { b0 = 0.99765 * b0 + w * 0.099046; b1 = 0.963 * b1 + w * 0.2965164; b2 = 0.57 * b2 + w * 1.0526913; d[k] = (b0 + b1 + b2 + w * 0.1848) * 0.16; }
+        else if (kind === 'brown') { br = (br + 0.02 * w) / 1.02; d[k] = br * 3.2; }
+        else d[k] = Math.random() < 0.0016 ? (Math.random() * 2 - 1) * (0.5 + Math.random() * 0.5) : 0; } } // patter: sparse ticks
+    return b;
+  }
   function wxSound() {
     const c = AX.ctx; if (!c) return;
-    if (!WXS.g) { const b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1; const s = c.createBufferSource(); s.buffer = b; s.loop = true; const bp = c.createBiquadFilter(); bp.type = 'highpass'; bp.frequency.value = 400; WXS.lp = c.createBiquadFilter(); WXS.lp.type = 'lowpass'; WXS.lp.frequency.value = 5000; WXS.g = c.createGain(); WXS.g.gain.value = 0; s.connect(bp); bp.connect(WXS.lp); WXS.lp.connect(WXS.g); WXS.g.connect(c.destination); s.start(); }
-    const want = CITY.on ? WX.cur.rain * (inside ? 0.06 : 0.16) : 0; WXS.g.gain.value += (want - WXS.g.gain.value) * 0.05; WXS.lp.frequency.value = inside ? 700 : 5000;
+    if (!WXS.on) { WXS.on = true;
+      const loop = (buf) => { const s = c.createBufferSource(); s.buffer = buf; s.loop = true; s.start(0, Math.random() * buf.duration); return s; };
+      WXS.out = c.createBiquadFilter(); WXS.out.type = 'lowpass'; WXS.out.frequency.value = 9000; WXS.out.connect(c.destination);
+      WXS.wash = c.createGain(); WXS.wash.gain.value = 0; const wf = c.createBiquadFilter(); wf.type = 'highpass'; wf.frequency.value = 250; loop(noiseBuffer(c, 3, 'pink')).connect(wf); wf.connect(WXS.wash); WXS.wash.connect(WXS.out);
+      WXS.pat = c.createGain(); WXS.pat.gain.value = 0; const pf = c.createBiquadFilter(); pf.type = 'bandpass'; pf.frequency.value = 3200; pf.Q.value = 0.7; loop(noiseBuffer(c, 2, 'ticks')).connect(pf); pf.connect(WXS.pat); WXS.pat.connect(WXS.out);
+      WXS.roar = c.createGain(); WXS.roar.gain.value = 0; const rf = c.createBiquadFilter(); rf.type = 'lowpass'; rf.frequency.value = 380; loop(noiseBuffer(c, 3, 'brown')).connect(rf); rf.connect(WXS.roar); WXS.roar.connect(WXS.out);
+    }
+    const r = CITY.on ? WX.cur.rain : 0, k = 0.04, set = (g, v) => { g.gain.value += (v - g.gain.value) * k; };
+    set(WXS.wash, r * (inside ? 0.05 : 0.11)); set(WXS.pat, r * (inside ? 0.5 : 0.32)); set(WXS.roar, Math.max(0, r - 0.45) * (inside ? 0.25 : 0.35));
+    WXS.out.frequency.value += ((inside ? 900 : 9000) - WXS.out.frequency.value) * 0.1; // through the roof, only the low drumming
   }
-  function thunder(v) {
-    const c = AX.ctx; if (!c || !CITY.on) return; const len = 3.5, b = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = b.getChannelData(0); let lp = 0; for (let k = 0; k < d.length; k++) { lp += 0.02 * ((Math.random() * 2 - 1) - lp); d[k] = lp * 6 * Math.pow(1 - k / d.length, 1.5) * (0.7 + 0.3 * Math.sin(k / 3000)); }
-    const s = c.createBufferSource(), g = c.createGain(); s.buffer = b; g.gain.value = v * (inside ? 0.5 : 1); s.connect(g); g.connect(c.destination); s.start();
+  function thunder(dist = 0.5) {
+    const c = AX.ctx; if (!c || !CITY.on) return;
+    const near = dist < 0.4, len = near ? 6 : 8, b = c.createBuffer(2, Math.floor(c.sampleRate * len), c.sampleRate), sr = c.sampleRate;
+    const rolls = Array.from({ length: 3 + Math.floor(Math.random() * 3) }, (_, q) => [(near ? 0.15 : 0.3) + q * (0.5 + Math.random() * 0.9), 0.5 + Math.random() * 0.5]);
+    for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); let br = 0, lp = 0;
+      for (let k = 0; k < d.length; k++) { const s = k / sr, w = Math.random() * 2 - 1; br = (br + 0.025 * w) / 1.025; lp += 0.12 * (w - lp);
+        let env = Math.pow(Math.max(0, 1 - s / len), 1.6);
+        let roll = 0.25; for (const [at, amp] of rolls) { const u = s - at; if (u > 0) roll += amp * Math.exp(-u * 2.2) * (1 - Math.exp(-u * 30)); }
+        let v = br * 4.2 * env * roll;
+        if (near && s < 0.25) v += lp * 1.6 * Math.exp(-s * 22) * (ch ? 0.9 : 1); // the crack
+        d[k] = v * (ch ? 0.92 + 0.08 * Math.sin(s * 3) : 1); } }
+    const src = c.createBufferSource(); src.buffer = b;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; const t0 = c.currentTime; f.frequency.setValueAtTime(near ? 2400 : 520, t0); f.frequency.exponentialRampToValueAtTime(near ? 260 : 180, t0 + len * 0.8);
+    const g = c.createGain(); g.gain.value = (near ? 1 : 0.55 + (1 - dist) * 0.4) * (inside ? 0.45 : 1);
+    const echo = c.createDelay(1); echo.delayTime.value = 0.23 + Math.random() * 0.15; const fb = c.createGain(); fb.gain.value = 0.32; const ef = c.createBiquadFilter(); ef.type = 'lowpass'; ef.frequency.value = 400;
+    src.connect(f); f.connect(g); g.connect(c.destination); g.connect(echo); echo.connect(ef); ef.connect(fb); fb.connect(echo); ef.connect(c.destination);
+    src.start(); src.onended = () => { try { fb.gain.value = 0; } catch {} };
   }
   // the weather for the phone: the real one (see WX)
   function lagosWeather() { return { temp: WX.temp ?? '–', icon: ico({ storm: 'storm', rain: 'rain', drizzle: 'rain', fog: 'fog', haze: 'fog', overcast: 'cloud', cloudy: 'cloud', partly: WX.isDay !== 0 ? 'partly' : 'moon', clear: WX.isDay !== 0 ? 'sun' : 'moon' }[WX.kind] || 'sun', 'wxic'), text: WX.text }; }
