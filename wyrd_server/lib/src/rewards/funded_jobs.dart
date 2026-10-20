@@ -96,7 +96,7 @@ abstract final class FundedJobs {
             'id': o.id, 'type': o.type, 'title': o.title, 'gameReward': o.gameReward, 'cashKobo': o.cashKobo,
             'line': RewardMath.rewardLine(o.gameReward, o.cashKobo), 'completeMinutes': o.completeMinutes, 'closesAt': o.closesAt.toIso8601String(),
             if (o.type == funded) 'funding': paused ? 'paused' : (RewardMath.capacity(unc, o.cashKobo, o.feeKobo) > 0 ? 'available' : 'exhausted'),
-            if (mine[o.id] != null) 'mine': mine[o.id]!.status,
+            if (mine[o.id] != null) ...{'mine': mine[o.id]!.status, 'acceptanceId': mine[o.id]!.id, 'deadline': mine[o.id]!.deadline.toIso8601String()},
           },
     ];
   }

@@ -5822,6 +5822,19 @@
     if (v && v.error) throw new Error(v.error);
     return v;
   }
+  async function rw(method, args = {}) {
+    const go = () => fetch(`${API}/rewards/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) });
+    let r = await go();
+    if (r.status === 401 && await refresh()) r = await go();
+    if (r.status === 401) throw new Error('signin');
+    if (!r.ok) throw new Error('Something went wrong (' + r.status + ').');
+    const t = await r.text(); let v = JSON.parse(t); if (typeof v === 'string') v = JSON.parse(v);
+    if (v && v.error) throw new Error(v.error);
+    return v;
+  }
+  // real earnings are in kobo; shown as naira, with kobo only when there are some
+  const kobo = (k) => '₦' + Math.floor((k || 0) / 100).toLocaleString('en-NG') + ((k || 0) % 100 ? '.' + String((k || 0) % 100).padStart(2, '0') : '');
+  const rkey = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const naira = (n) => '₦' + Number(n || 0).toLocaleString('en-NG');
 
@@ -6561,7 +6574,8 @@
         const icon = (m, a) => /ride|okada/i.test(m) ? '🛵' : /casino/i.test(m) ? '🎰' : /home store/i.test(m) ? '🛋️' : /bought a/i.test(m) ? '🔑' : /ticket/i.test(m) ? '🎟️' : /^to |^from /i.test(m) ? '↔️' : a > 0 ? '💼' : '🧾';
         const EARN = [['refinery', '🛢️', 'Refinery shift', '₦6,500'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🪩', 'Club night shift', 'nights']];
         show(`${ahead('wallet', 'Wallet', 'Naira on the island\'s books')}
-          <div class="hero" style="--ac:#FCEE0A"><div class="hl">Balance</div><div class="hv">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>Earned today ${naira(me$.earnedToday || 0)} of ${naira(cap)}</small></div>
+          <div class="hero" style="--ac:#FCEE0A"><div class="hl">Game Wallet · game currency, not withdrawable</div><div class="hv">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>Earned today ${naira(me$.earnedToday || 0)} of ${naira(cap)}</small></div>
+          <div id="realBox"></div>
           <div class="qa" style="--ac:#FCEE0A"><button id="wSend"><i>↗️</i>Send</button><button id="wEarn"><i>💼</i>Earn</button><button id="wShop"><i>🛋️</i>Store</button><button id="wCars"><i>🚗</i>Cars</button></div>
           <div class="pcard" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their name on the island"><input id="sAmt" type="number" min="50" max="50000" placeholder="Amount (₦50 to ₦50,000)"><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">Send</button></div>
           <div id="earnBox" style="display:none"><div class="rsec">WHERE TO EARN</div><div class="lst">${EARN.map(([k, ic, n, pay]) => `<button class="li" data-earn="${k}"><span class="ic">${ic}</span><span class="lt"><b>${n}</b><small>${pay} a shift · ride there</small></span><span class="lr">›</span></button>`).join('')}</div></div>
@@ -6569,7 +6583,39 @@
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
         $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => toggle('earnBox', 'wEarn'); $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
         pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
+        rw('earnings').then((e) => { if (!e || e.mode === 'off' || !$('realBox')) return;
+          $('realBox').innerHTML = `<button class="hero" id="wReal" style="--ac:#22C55E;width:100%;text-align:left;border:0;cursor:pointer"><div class="hl">Real Earnings${e.mode === 'sandbox' ? ' · SANDBOX, no real money' : ''}</div><div class="hv">${kobo(e.availableKobo)}</div><small>available · ${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out ›</small></button>`;
+          $('wReal').onclick = () => go('earn'); }).catch(() => {});
         $('sGo').onclick = async () => { try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); render('wallet'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'earn') {
+        const [e, board] = await Promise.all([rw('earnings'), rw('jobs')]);
+        if (!e || e.mode === 'off') { show(`${ahead('wallet', 'Real Earnings', 'Not open yet')}<div class="pcard dim">Paid gigs with a real cash part are not open yet. Your Game Wallet is unchanged.</div>`); return; }
+        const sb = e.mode === 'sandbox', ST = { requested: '⏳ Requested', submitted: '📤 Sent to the bank', pending: '⏳ With the bank', unknown: '❔ Checking with the bank', paid: '✅ Paid', failed: '↩️ Failed, money back in Available', returned: '↩️ Returned by the bank, money back in Available' };
+        const funded = board.filter((j) => j.type === 'FUNDED_SPLIT_JOB');
+        const when = (s) => new Date(s).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const fundTag = (f) => f === 'available' ? '<span class="tag" style="background:rgba(34,197,94,.15);color:#86EFAC">🟢 Cash reward funded</span>' : f === 'paused' ? '<span class="tag">⏸ New places paused</span>' : '<span class="tag">⚪ Cash fund used up</span>';
+        const MINE = { completed: '✅ Done, reward paid', review: '🔎 Being checked', expired: '⌛ Time ran out', cancelled: 'Given up', rejected: '✖ Not confirmed' };
+        show(`${ahead('wallet', 'Real Earnings', sb ? 'SANDBOX · test money only, nothing goes to a bank' : 'Cash from funded gigs')}
+          ${sb ? '<div class="pcard" style="border:1px dashed #F59E0B;color:#FDE68A">🧪 Sandbox. These amounts are for testing. No real money moves.</div>' : ''}
+          <div class="hero" style="--ac:#22C55E"><div class="hl">Available to withdraw</div><div class="hv">${kobo(e.availableKobo)}</div><small>Pending ${kobo(e.pendingKobo)}${e.nextAvailableAt ? ' · next ready ' + when(e.nextAvailableAt) : ''} · Being paid out ${kobo(e.inFlightKobo)}</small></div>
+          <div class="pcard dim">Pending cash is checked first and can't be withdrawn yet. Game currency (G₦) goes to your Game Wallet and can't be withdrawn.</div>
+          <div class="rsec">PAID GIGS</div>
+          ${funded.map((j) => `<div class="jc"><div class="jh"><div><b>${esc(j.title)}</b><small>Do it within ${j.completeMinutes} min · offer closes ${when(j.closesAt)}</small></div></div>
+            <p><b>${esc(j.line)}</b></p><div>${fundTag(j.funding)}</div>
+            ${j.mine === 'accepted' ? `<div class="dim" style="margin-top:8px">Taken · finish by ${when(j.deadline)}</div><button class="pbtn" data-done="${j.acceptanceId}" style="margin-top:6px">I've done it</button> <button class="pbtn alt" data-drop="${j.acceptanceId}">Give it up</button>`
+              : j.mine ? `<div class="dim" style="margin-top:8px">${MINE[j.mine] || esc(j.mine)}</div>`
+              : j.funding === 'available' ? `<button class="pbtn" data-take="${j.id}" style="margin-top:8px">Take this gig</button>` : ''}</div>`).join('') || '<div class="pcard dim">No paid gigs right now.</div>'}
+          <div class="rsec">WITHDRAW</div>
+          <div class="pcard">${e.canWithdraw ? `<input id="wdAmt" type="number" min="${e.minWithdrawalKobo / 100}" placeholder="Amount in naira (at least ${kobo(e.minWithdrawalKobo)})"><input id="wdTo" maxlength="80" placeholder="${sb ? 'Any test account name' : 'Your verified account'}"><div class="dim">Bank fee ${kobo(e.feeKobo)}, ${e.feePayer === 'house' ? 'paid by the game' : 'taken from the amount'}.</div><button class="pbtn" id="wdGo">Withdraw</button>`
+            : `<div class="dim">${e.minWithdrawalKobo ? 'You can withdraw once ' + kobo(e.minWithdrawalKobo) + ' is available.' : 'Withdrawals are not open yet.'}</div>`}</div>
+          <div class="rsec">WITHDRAWALS</div><div class="lst">${e.withdrawals.map((w) => `<div class="li"><span class="ic">🏦</span><span class="lt"><b>${ST[w.status] || esc(w.status)}</b><small>${esc(w.ref)} · ${when(w.at)}</small></span><span class="lr">${kobo(w.amountKobo)}</span></div>`).join('') || '<div class="li"><span class="lt"><small>No withdrawals yet.</small></span></div>'}</div>`);
+        const note = (t) => { const n = document.createElement('div'); n.className = 'pcard'; n.textContent = t; pbody.prepend(n); setTimeout(() => n.remove(), 6000); };
+        pbody.querySelectorAll('[data-take]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { await rw('accept', { offerId: Number(b.dataset.take), requestKey: rkey() }); render('earn'); } catch (er) { b.disabled = false; fail(er); } }));
+        pbody.querySelectorAll('[data-done]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { const r = await rw('complete', { acceptanceId: Number(b.dataset.done), delivered: true }); await render('earn'); if (r.note) note(r.note); } catch (er) { b.disabled = false; fail(er); } }));
+        pbody.querySelectorAll('[data-drop]').forEach((b) => (b.onclick = async () => { try { await rw('cancel', { acceptanceId: Number(b.dataset.drop) }); render('earn'); } catch (er) { fail(er); } }));
+        if ($('wdGo')) { const key = rkey(); $('wdGo').onclick = async () => { $('wdGo').disabled = true; try { await rw('withdraw', { amountKobo: Math.round(Number($('wdAmt').value) * 100), beneficiary: $('wdTo').value, requestKey: key }); render('earn'); } catch (er) { $('wdGo').disabled = false; fail(er); } }; }
         return;
       }
       if (app === 'jobs') {
