@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Lagos Island">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1124,9 +1124,6 @@
   body.ovl #tApp, body.ovl #tFs, body.ovl #tAppTip { display: none !important; }
   #tAppTip, .touch #tAppTip { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(156px + env(safe-area-inset-top)) !important; }
   #tAppTip::after { left: auto !important; right: 12px; bottom: auto !important; top: -8px; border: 8px solid transparent !important; border-top: 0 !important; border-bottom-color: #0F172A !important; }
-  html.standalone, html.standalone body { overflow: visible !important; }
-  html.standalone canvas#c, html.standalone #launch { top: 0 !important; bottom: auto !important; height: var(--fullH, 100vh) !important; }
-  html.standalone #phone { height: var(--fullH, 100vh) !important; bottom: auto !important; }
 </style>
 </head>
 <body>
@@ -1182,8 +1179,6 @@
   // the name, letter by letter (each slams in a beat after the last)
   nm.innerHTML = [...nm.textContent].map((c, i) => c === ' ' ? '<span style="width:.28em"></span>' : `<span style="animation-delay:${(1.6 + i * 0.055).toFixed(3)}s">${c}</span>`).join('');
   const sa = navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
-  const fullH = () => Math.max(innerHeight, (innerWidth > innerHeight ? Math.min : Math.max)(screen.width, screen.height));
-  if (sa) { document.documentElement.classList.add('standalone'); const setH = () => document.documentElement.style.setProperty('--fullH', fullH() + 'px'); setH(); addEventListener('resize', setH); addEventListener('orientationchange', () => setTimeout(setH, 250)); }
   { const d = document.createElement('div'); d.style.cssText = 'position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font:600 9px sans-serif;color:#94A3B8;opacity:.7'; d.textContent = `${screen.width}×${screen.height} · ${innerWidth}×${innerHeight} · ${sa ? 'app' : 'web'}`; document.getElementById('launch').append(d); }
   const t0 = performance.now(), MIN = 3600, MAX = 9000; let loaded = document.readyState === 'complete', shown = 0, gone = false;
   addEventListener('load', () => { loaded = true; });
@@ -1542,10 +1537,7 @@
   let quality = 1; // drops when frames run slow
   const cvMain = cv.getContext('2d');
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
-  // an iPhone home-screen app reports a viewport that stops short of the home bar: there the game takes the phone's whole
-  // physical screen (its long side in portrait, its short side in landscape), so nothing shows under it
-  function fitStandalone() { if (!(navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || matchMedia('(pointer: coarse)').matches)) return; const land = innerWidth > innerHeight, sh = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height); const want = Math.max(innerHeight, sh, document.documentElement.clientHeight); cv.style.top = '0px'; cv.style.bottom = 'auto'; cv.style.height = want + 'px'; }
-  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); fitStandalone(); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   { const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
     const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
