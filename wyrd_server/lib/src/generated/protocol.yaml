@@ -61,6 +61,7 @@ island:
   - spin:
   - say:
 islandMe:
+  - setEmail:
   - me:
   - setProfile:
   - setLook:

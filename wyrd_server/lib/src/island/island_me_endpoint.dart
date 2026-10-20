@@ -9,6 +9,7 @@ import '../generated/protocol.dart';
 import '../world/bank.dart';
 import '../world/world_authority.dart';
 import 'grid_career.dart';
+import 'island_auth_endpoint.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
 ///
@@ -89,6 +90,12 @@ class IslandMeEndpoint extends Endpoint {
   };
 
   /// Who I am on the island, my naira, and whether I can check job posts. JSON.
+  /// Add my real email (an account made with only a username gets asked for it the first time the phone opens).
+  Future<String> setEmail(Session session, String email) async {
+    final err = await IslandAuthEndpoint.setEmail(session, _user(session), email);
+    return err == null ? jsonEncode({'ok': true}) : _err(err);
+  }
+
   Future<String> me(Session session) async {
     final u = _user(session);
     final p = await _profile(session, u);
@@ -99,6 +106,7 @@ class IslandMeEndpoint extends Endpoint {
       'earnedToday': await _earnedToday(session, u),
       'dailyCap': dailyCap,
       'operator': await DroneService.isOperator(session, u),
+      'hasEmail': await IslandAuthEndpoint.hasEmail(session, u), // false: signed up with only a username; the phone asks once
       'requests': await IslandAccess.db.count(
         session,
         where: (t) => t.ownerId.equals(u) & t.status.equals('pending'),

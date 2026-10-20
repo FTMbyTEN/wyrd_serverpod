@@ -1490,6 +1490,25 @@ class Endpoints extends _is.EndpointDispatch {
       name: 'islandMe',
       endpoint: endpoints['islandMe']!,
       methodConnectors: {
+        'setEmail': _is.MethodConnector(
+          name: 'setEmail',
+          params: {
+            'email': _is.ParameterDescription(
+              name: 'email',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .setEmail(
+                    session,
+                    params['email'],
+                  ),
+        ),
         'me': _is.MethodConnector(
           name: 'me',
           params: {},

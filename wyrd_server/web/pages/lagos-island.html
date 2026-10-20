@@ -753,6 +753,14 @@
   /* Install app: a pill at the bottom-left, gone once installed */
   #tApp { position: fixed; left: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 15; display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; border: 0; background: linear-gradient(135deg, #0EA5E9, #22C55E); color: #fff; font: 800 13px 'Plus Jakarta Sans', sans-serif; box-shadow: 0 8px 22px rgba(14,165,233,.35); cursor: pointer; }
   #tApp em { font-style: normal; } .touch #tApp { bottom: calc(150px + env(safe-area-inset-bottom)); }
+  #tApp { animation: appPulse 2.2s ease-in-out infinite; } #tApp span { font-size: 16px; }
+  @keyframes appPulse { 0%, 100% { box-shadow: 0 8px 22px rgba(14,165,233,.35), 0 0 0 0 rgba(34,197,94,.55); } 50% { box-shadow: 0 8px 22px rgba(14,165,233,.35), 0 0 0 10px rgba(34,197,94,0); } }
+  #tAppTip { position: fixed; left: 12px; bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 16; max-width: 260px; padding: 12px 34px 12px 14px; border-radius: 16px; background: #0F172A; color: #E2E8F0; font: 600 13px/1.4 'Plus Jakarta Sans', sans-serif; box-shadow: 0 14px 34px rgba(2,6,23,.45); animation: tipIn .3s ease-out; cursor: pointer; }
+  #tAppTip b { display: block; color: #4ADE80; margin-bottom: 3px; } #tAppTip i { position: absolute; right: 12px; top: 10px; font-style: normal; opacity: .6; }
+  #tAppTip::after { content: ''; position: absolute; left: 34px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: #0F172A; }
+  .touch #tAppTip { bottom: calc(202px + env(safe-area-inset-bottom)); }
+  @keyframes tipIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #tApp { animation: none; } }
 </style>
 </head>
 <body>
@@ -1136,9 +1144,18 @@
   function appBtn() {
     let b = document.getElementById('tApp');
     if (APP.installed) { if (b) b.remove(); return; }
-    if (!b) { b = document.createElement('button'); b.id = 'tApp'; b.title = 'Install Lagos Island as an app'; b.innerHTML = '<span>⬇</span><em>Install app</em>'; b.onclick = (e) => { e.stopPropagation(); appInstall(b.querySelector('em')); }; document.body.append(b); }
+    if (!b) { b = document.createElement('button'); b.id = 'tApp'; b.title = 'Download Lagos Island to your phone'; b.innerHTML = '<span>📲</span><em>Get the app</em>'; b.onclick = (e) => { e.stopPropagation(); appInstall(b.querySelector('em')); }; document.body.append(b); }
   }
   setTimeout(appBtn, 1500);
+  // the first time: a pointer at the button saying what it is (once per device)
+  setTimeout(() => { if (APP.installed || store.get('li.appHint')) return; const b = document.getElementById('tApp'); if (!b) return; store.set('li.appHint', '1');
+    const tip = document.createElement('div'); tip.id = 'tAppTip'; tip.innerHTML = '<b>📲 This is the download button</b><span>Tap it to put Lagos Island on your phone: it opens full screen, instantly, like an app.</span><i>✕</i>'; document.body.append(tip);
+    const bye = () => tip.remove(); tip.onclick = bye; b.addEventListener('click', bye, { once: true }); setTimeout(bye, 14000); }, 6000);
+  // the download happens by itself: a few seconds in, the whole game goes onto the device (not on a data-saver connection)
+  setTimeout(() => { if (!navigator.connection || !navigator.connection.saveData) appDownload(null).catch(() => {}); }, 9000);
+  // Chrome, Edge and Android: the install offer comes up on the next tap (once a day at most); a browser can't install
+  // without one tap from you, and an iPhone allows no offer at all (the button shows the steps)
+  addEventListener('pointerdown', () => { if (!APP.prompt || APP.installed) return; const day = new Date().toDateString(); if (store.get('li.appAsked') === day) return; store.set('li.appAsked', day); const pr = APP.prompt; APP.prompt = null; pr.prompt(); pr.userChoice.catch(() => {}); }, { capture: true });
   addEventListener('pointerup', () => { if (!wantFs()) return; fsAsked = true; document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); }, { capture: true });
 
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
@@ -3150,30 +3167,25 @@
     const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-0.5, 1, -0.35); G3.scene.add(sun);
     G3.cam = new THREE.Camera(); G3.cam.matrixAutoUpdate = false;
     const loader = new GLTFLoader(); if (T.MeshoptDecoder) loader.setMeshoptDecoder(T.MeshoptDecoder); G3.loader = loader; G3.loading = {}; // the models are meshopt-compressed
-    for (const [model, file] of Object.entries(GLB_FOR)) {
-      loader.load(CAR_BASE + file + '.glb', (gltf) => {
-        // stand it on the ground, centred, its length along x, scaled to the real car's length in metres
+    // the cars and the jet: each model loads the first time one is on screen (the drawn shape stands in until then)
+    G3.vehicle = (model) => {
+      if (G3.protos[model] || G3.loading[model]) return; const jet = model === 'jet', file = jet ? 'jet' : GLB_FOR[model]; if (!file) return; G3.loading[model] = 1;
+      loader.load((jet ? JET_BASE : CAR_BASE) + file + '.glb', (gltf) => {
+        // on the ground, centred, its length along x; a car scaled to the real car's length in metres, the jet to one unit
         const inner = gltf.scene, box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
         inner.position.set(-ctr.x, -box.min.y, -ctr.z);
         const pivot = new THREE.Group(); pivot.add(inner); if (size.z > size.x) pivot.rotation.y = Math.PI / 2;
-        const norm = new THREE.Group(); norm.add(pivot); norm.scale.setScalar((CAR_SPEC[model] || CAR_SPEC.corolla).L / Math.max(size.x, size.z));
+        const norm = new THREE.Group(); norm.add(pivot); norm.scale.setScalar((jet ? 1 : (CAR_SPEC[model] || CAR_SPEC.corolla).L) / Math.max(size.x, size.z));
         G3.protos[model] = norm; G3.pool[model] = [];
       }, undefined, () => {});
-    }
-    // the private jet (Poly by Google, CC BY): on the ground, centred, nose towards +x, one unit long (the caller scales it)
-    loader.load(JET_BASE + 'jet.glb', (gltf) => {
-      const inner = gltf.scene, box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
-      inner.position.set(-ctr.x, -box.min.y, -ctr.z);
-      const pivot = new THREE.Group(); pivot.add(inner); if (size.z > size.x) pivot.rotation.y = Math.PI / 2;
-      const norm = new THREE.Group(); norm.add(pivot); norm.scale.setScalar(1 / Math.max(size.x, size.z));
-      G3.protos.jet = norm; G3.pool.jet = [];
-    }, undefined, () => {});
+    };
     G3.ok = true; setTimeout(initPeople, 0); // the people start loading straight away (the sign-up picture shows them)
   }
   window.addEventListener('three-ready', initThree); initThree();
   // queue a car for this frame's 3D pass (false when there's no model for it, or 3D is off)
   function car3d(cx, cz, model, ang, sc, tint, y = 0, pitch = 0) { // y: height off the ground; pitch: nose up (radians)
-    if (!G3.on || !G3.ok || !G3.protos[model]) return false;
+    if (!G3.on || !G3.ok) return false;
+    if (!G3.protos[model]) { G3.vehicle(model); return false; } // its model loads now; the drawn one this frame
     G3.queue.push({ cx, cz, model, ang, sc, tint, y, pitch }); return true;
   }
   // queue a store piece of furniture; its model loads the first time it's needed (false until then: draw the shape instead)
@@ -7372,6 +7384,7 @@
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
     if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin'); // a ride, the free harbour tour and the airport's boards need no account
     try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
+    if (me$ && me$.hasEmail === false && app !== 'addemail') return render('addemail', { then: app, arg }); // signed up with a username only: the email first
     if (app) go(app, arg); else render('home');
   }
   async function render(app, arg) { pbody.dataset.app = app;
@@ -7547,6 +7560,13 @@
           if (g) go('thread', { ...g, name: names[gs.indexOf(g)] }); else go('newchat', { dm: true, who: b.dataset.dm });
         }));
         pbody.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => go('thread', { ...gs[b.dataset.g], name: names[b.dataset.g] })));
+        return;
+      }
+      if (app === 'addemail') {
+        // an account made with only a username: its email, once, before the phone opens (it's where a password reset goes)
+        show(`${ahead('me', 'One more thing', 'Your phone needs your email')}<div class="pcard"><p>Add your email to use your phone. It's where a password reset goes, and it stays private: nobody on the island sees it.</p><input id="aeMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"><button class="pbtn" id="aeGo">Save and open my phone</button></div>`);
+        $('aeGo').onclick = async () => { const b = $('aeGo'); b.disabled = true; try { await my('setEmail', { email: $('aeMail').value }); me$.hasEmail = true; const t = arg && arg.then; if (t) go(t, arg.arg); else render('home'); } catch (e) { b.disabled = false; fail(e); } };
+        $('aeMail').onkeydown = (e) => { if (e.key === 'Enter') $('aeGo').click(); };
         return;
       }
       if (app === 'people') {
@@ -8588,7 +8608,7 @@
   });
   pass2In.addEventListener('input', checkMatch);
   document.getElementById('peek').onclick = (e) => { const show = passIn.type === 'password'; passIn.type = pass2In.type = show ? 'text' : 'password'; e.target.textContent = show ? 'Hide' : 'Show'; };
-  const showFor = (n) => { for (const id of ['lEmail', 'rules', 'lConfirm', 'pwMeter', 'pwSay', 'pwMatch']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lookPick').style.display = n ? '' : 'none'; document.getElementById('lName').textContent = n ? 'Username' : 'Username or email'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Username or email'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
+  const showFor = (n) => { for (const id of ['rules', 'lConfirm', 'pwMeter', 'pwSay', 'pwMatch']) document.getElementById(id).style.display = n ? '' : 'none'; document.getElementById('lEmail').style.display = 'none'; /* no email at the door: the phone asks for it */ document.getElementById('forgot').style.display = n ? 'none' : 'block'; document.getElementById('lookPick').style.display = n ? '' : 'none'; document.getElementById('lName').textContent = 'Username'; nameIn.placeholder = n ? 'e.g. tunde.lagos' : 'Your username'; passIn.placeholder = n ? 'Create a password' : 'Your password'; errEl.textContent = ''; };
   let isNew = true;
   call('online', {}).then((n) => { if (typeof n === 'number') document.getElementById('crowd').textContent = n === 1 ? '1 Lagosian' : n + ' Lagosians'; }).catch(() => {});
   // the character picker: man or woman, and a new look (skin, hair, style, clothes) with each tap
@@ -8716,29 +8736,17 @@
     const u = nameIn.value.trim(), p = passIn.value, mail = emailIn.value.trim().toLowerCase();
     errEl.textContent = '';
     if (isNew) {
-      if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { errEl.textContent = 'Enter a valid email address.'; emailIn.focus(); return; }
       if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(u)) { errEl.textContent = 'Usernames are 3 to 20 letters, digits, _ . or -.'; nameIn.focus(); return; }
       if (!strong(p)) { errEl.textContent = 'Your password still needs small work: tick all four boxes 😉'; passIn.focus(); return; }
       if (p !== pass2In.value) { errEl.textContent = 'Your two passwords no match o 🤨'; pass2In.focus(); return; }
-    } else if (!u || !p) { errEl.textContent = 'Enter your username (or email) and password.'; return; }
+    } else if (!u || !p) { errEl.textContent = 'Enter your username and password.'; return; }
     const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = isNew ? 'Making your account…' : 'Signing in…';
     try {
       if (isNew) {
         const ask = (m, b) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then((r) => r.ok ? r.text() : 'true');
-        const [avail, free] = await Promise.all([ask('available', { username: u }), ask('emailFree', { email: mail })]); // both at once
-        if (avail.trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
-        if (free.trim() === 'false') {
-          // already on WYRD: sign in with that email and password, and take the username chosen here
-          const r0 = await fetch(`${API}/islandAuth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: mail, password: p }) });
-          if (!r0.ok) throw new Error('That email already has a WYRD account. Use your WYRD password, or tap "I have an account".');
-          const a0 = JSON.parse(await r0.text());
-          localStorage.setItem(TOK, a0.token); if (a0.refreshToken) localStorage.setItem(RTOK, a0.refreshToken);
-          me$ = null;
-          try { await my('setProfile', { handle: u, skills: '', openToWork: false, pubKey: '' }); myName = u; } catch { my('me').then((v) => { myName = v.handle; }).catch(() => {}); }
-          newLagosian(); start(); cyberWelcome(u); return;
-        }
+        if ((await ask('available', { username: u })).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
       }
-      const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isNew ? { username: u, email: mail, password: p } : { username: u, password: p }) });
+      const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isNew ? { username: u, email: '', password: p } : { username: u, password: p }) });
       const t = await r.text();
       if (!r.ok) {
         let m = t; try { const j = JSON.parse(t); m = j.message || j.error || j.reason || t; } catch {}

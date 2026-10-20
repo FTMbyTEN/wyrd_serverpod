@@ -667,8 +667,8 @@ class EndpointGreeting extends _isc.EndpointRef {
       );
 }
 
-/// One account for Lagos Island and WYRD: a username, an email and a password, chosen at the door of
-/// the island. Registering makes a WYRD account (the same email/password provider the app uses, so
+/// One account for Lagos Island and WYRD: a username and a password, chosen at the door of the island (the email is
+/// added on the phone the first time it's opened; until then the account carries a placeholder, username@$domain). Registering makes a WYRD account (the same email/password provider the app uses, so
 /// "forgot password" works through that email) and the island name; signing in works with the
 /// username or the email, on the island and in the WYRD app.
 /// {@category Endpoint}
@@ -841,6 +841,14 @@ class EndpointIslandMe extends _isc.EndpointRef {
   String get name => 'islandMe';
 
   /// Who I am on the island, my naira, and whether I can check job posts. JSON.
+  /// Add my real email (an account made with only a username gets asked for it the first time the phone opens).
+  _ida.Future<String> setEmail(String email) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'setEmail',
+        {'email': email},
+      );
+
   _ida.Future<String> me() => caller.callServerEndpoint<String>(
     'islandMe',
     'me',
