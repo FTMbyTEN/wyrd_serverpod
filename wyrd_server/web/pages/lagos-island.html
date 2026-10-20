@@ -7822,8 +7822,10 @@
         return;
       }
       if (app === 'chats') {
-        const seen = linkSeen(), gs = await my('inbox', { seenJson: JSON.stringify(linkSeen()) });
-        const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return '🔒 (can\'t open on this device)'; } }));
+        const seen = linkSeen(), all = await my('inbox', { seenJson: JSON.stringify(linkSeen()) });
+        // one row per person: older duplicate private chats with the same person (made before this was fixed) fold into the latest
+        const dmSeen = new Set(), gs = all.filter((g) => { if (g.members.length !== 2) return true; const o = g.members.find((m) => m !== me$.handle); if (dmSeen.has(o)) return false; dmSeen.add(o); return true; });
+        const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return g.members.length === 2 ? g.members.find((m) => m !== me$.handle) : g.members.filter((m) => m !== me$.handle).join(', '); } }));
         const people = [...new Map([...others.values()].filter((o) => o.name && o.name !== me$.handle && !/^(Guest|Lagosian)$/.test(o.name)).map((o) => [o.name, o])).values()];
         // each conversation's latest message (opened here, on the device) and how many you haven't seen; newest first
         const last = await Promise.all(gs.map(async (g) => {
@@ -7912,7 +7914,7 @@
         return;
       }
       if (app === 'thread') {
-        const g = arg, key = await groupKey(g);
+        const g = arg; let key; try { key = await groupKey(g); } catch { return show(`<div class="lkHead">${avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div class="t"><b>${esc(g.name)}</b><small>🔒 Encrypted</small></div></div><div class="lkList" style="margin-top:14px"><div class="lkEmpty"><b>🔐</b>This chat's key is on another device (or another web address of the game). Open Lagos Island where you started it to read it. Your keys never leave your device, so nobody else can open it either.</div></div>`); }
         show(`<div class="lkHead">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#6366F1,#0EA5E9)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div class="t"><b>${esc(g.name)}</b><small id="tSub">${g.members.length > 2 ? g.members.map(esc).join(', ') : (others && [...others.values()].some((o) => o.name === g.members.find((m) => m !== me$.handle)) ? '● On the island now' : '🔒 Encrypted')}</small></div><button id="tAdd" aria-label="Add someone" title="Add someone">➕</button><button id="tLeave" aria-label="Leave" title="Leave">🚪</button></div>
           <div class="msgs" id="tMsgs"><div class="lock">🔒 Messages here are locked on your devices. Not even the server or WYRD can read them.</div></div>
           <div class="typing" id="tTyping"></div>
