@@ -64,6 +64,7 @@ import 'island/island_grid_career.dart' as _if4nrr5f;
 import 'island/island_grid_work.dart' as _irf3px15;
 import 'island/island_group.dart' as _ia3qph7z;
 import 'island/island_home.dart' as _ii0e1z5r;
+import 'island/island_jet.dart' as _ixzf1cvb;
 import 'island/island_job.dart' as _ifd0cm6h;
 import 'island/island_member.dart' as _inkhm4mi;
 import 'island/island_message.dart' as _i4pfszr3;
@@ -189,6 +190,7 @@ export 'island/island_grid_career.dart';
 export 'island/island_grid_work.dart';
 export 'island/island_group.dart';
 export 'island/island_home.dart';
+export 'island/island_jet.dart';
 export 'island/island_job.dart';
 export 'island/island_member.dart';
 export 'island/island_message.dart';
@@ -2785,6 +2787,94 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_jet',
+      dartName: 'IslandJet',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'model',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'tail',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'livery',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'showName',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'price',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'boughtAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_jet_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'island_jet_tail_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'tail',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -7574,6 +7664,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ii0e1z5r.IslandHome) {
       return _ii0e1z5r.IslandHome.fromJson(data) as T;
     }
+    if (t == _ixzf1cvb.IslandJet) {
+      return _ixzf1cvb.IslandJet.fromJson(data) as T;
+    }
     if (t == _ifd0cm6h.IslandJob) {
       return _ifd0cm6h.IslandJob.fromJson(data) as T;
     }
@@ -7953,6 +8046,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_ii0e1z5r.IslandHome?>()) {
       return (data != null ? _ii0e1z5r.IslandHome.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ixzf1cvb.IslandJet?>()) {
+      return (data != null ? _ixzf1cvb.IslandJet.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ifd0cm6h.IslandJob?>()) {
       return (data != null ? _ifd0cm6h.IslandJob.fromJson(data) : null) as T;
@@ -8668,6 +8764,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _irf3px15.IslandGridWork => 'IslandGridWork',
       _ia3qph7z.IslandGroup => 'IslandGroup',
       _ii0e1z5r.IslandHome => 'IslandHome',
+      _ixzf1cvb.IslandJet => 'IslandJet',
       _ifd0cm6h.IslandJob => 'IslandJob',
       _inkhm4mi.IslandMember => 'IslandMember',
       _i4pfszr3.IslandMessage => 'IslandMessage',
@@ -8824,6 +8921,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'IslandGroup';
       case _ii0e1z5r.IslandHome():
         return 'IslandHome';
+      case _ixzf1cvb.IslandJet():
+        return 'IslandJet';
       case _ifd0cm6h.IslandJob():
         return 'IslandJob';
       case _inkhm4mi.IslandMember():
@@ -9116,6 +9215,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'IslandHome') {
       return deserialize<_ii0e1z5r.IslandHome>(data['data']);
+    }
+    if (dataClassName == 'IslandJet') {
+      return deserialize<_ixzf1cvb.IslandJet>(data['data']);
     }
     if (dataClassName == 'IslandJob') {
       return deserialize<_ifd0cm6h.IslandJob>(data['data']);
@@ -9512,6 +9614,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ia3qph7z.IslandGroup.t;
       case _ii0e1z5r.IslandHome:
         return _ii0e1z5r.IslandHome.t;
+      case _ixzf1cvb.IslandJet:
+        return _ixzf1cvb.IslandJet.t;
       case _ifd0cm6h.IslandJob:
         return _ifd0cm6h.IslandJob.t;
       case _inkhm4mi.IslandMember:

@@ -1326,6 +1326,16 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['island'] as _i1elbils.IslandEndpoint)
                   .housing(session),
         ),
+        'hangars': _is.MethodConnector(
+          name: 'hangars',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['island'] as _i1elbils.IslandEndpoint)
+                  .hangars(session),
+        ),
         'tick': _is.MethodConnector(
           name: 'tick',
           params: {
@@ -2640,6 +2650,85 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
                   .bookFlight(
+                    session,
+                    params['dest'],
+                  ),
+        ),
+        'myJet': _is.MethodConnector(
+          name: 'myJet',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .myJet(session),
+        ),
+        'buyJet': _is.MethodConnector(
+          name: 'buyJet',
+          params: {
+            'model': _is.ParameterDescription(
+              name: 'model',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'livery': _is.ParameterDescription(
+              name: 'livery',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).buyJet(
+                    session,
+                    params['model'],
+                    params['livery'],
+                  ),
+        ),
+        'setJet': _is.MethodConnector(
+          name: 'setJet',
+          params: {
+            'livery': _is.ParameterDescription(
+              name: 'livery',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'showName': _is.ParameterDescription(
+              name: 'showName',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).setJet(
+                    session,
+                    params['livery'],
+                    params['showName'],
+                  ),
+        ),
+        'flyJet': _is.MethodConnector(
+          name: 'flyJet',
+          params: {
+            'dest': _is.ParameterDescription(
+              name: 'dest',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).flyJet(
                     session,
                     params['dest'],
                   ),

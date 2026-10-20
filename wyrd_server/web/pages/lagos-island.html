@@ -711,6 +711,8 @@
   @keyframes swipeHint { 50% { transform: translateY(-5px); opacity: .55; } }
   #lockscr .lid { bottom: 178px !important; }
   #lockscr.unlocking .lbot .lu { opacity: 0 !important; transition: opacity .1s !important; } /* WYRD ID speaks instead */
+  /* the jet colour picker */
+  .jsw { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; } .jsw button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); cursor: pointer; padding: 0; } .jsw button.on { border-color: #FACC15; box-shadow: 0 0 0 2px rgba(250,204,21,.4); }
 </style>
 </head>
 <body>
@@ -2892,7 +2894,7 @@
     flat(hx + 0.6, hz + 0.6, hx + w - 0.6, hz + d, 0.07, '#F5F0E6');
     const glowIn = () => { const p = P(hx + w / 2, 4, hz + d / 2); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * w * 0.6); g.addColorStop(0, 'rgba(255,236,200,0.45)'); g.addColorStop(1, 'rgba(255,236,200,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * w * 0.6, 0, Math.PI * 2); x.fill(); x.restore(); };
     glow.push(glowIn);
-    jet(hx + w / 2, hz + d / 2 + 2, k); flush3d();
+    const own = HANGARS.list[k]; jet(hx + w / 2, hz + d / 2 + 2, own ? own.livery : k); flush3d(); // an owner's jet, in their colours
     // the arched roof, in ribs
     const ribs = 7;
     for (let r = 0; r <= ribs; r++) {
@@ -2903,7 +2905,7 @@
     const back = []; for (let u = 0; u <= 10; u++) { const ang = Math.PI * u / 10; back.push(P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, hz)); }
     const front = back.map((_, u) => { const ang = Math.PI * u / 10; return P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, hz + d); });
     x.fillStyle = 'rgba(203,213,225,0.55)'; x.beginPath(); x.moveTo(back[0][0], back[0][1]); for (const p of back) x.lineTo(p[0], p[1]); for (let u = front.length - 1; u >= 0; u--) x.lineTo(front[u][0], front[u][1]); x.closePath(); x.fill();
-    const sg = P(hx + w / 2, 10.5, hz + d); x.save(); x.font = `800 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#B08A43'; x.fillText(['EKO JET CLUB', 'ATLANTIC AVIATION', 'ISLAND PRIVATE'][k % 3], sg[0], sg[1]); x.restore();
+    const sg = P(hx + w / 2, 10.5, hz + d); x.save(); x.font = `800 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#B08A43'; x.fillText(own ? (own.name ? '@' + own.name.toUpperCase() : own.tail) : ['EKO JET CLUB', 'ATLANTIC AVIATION', 'ISLAND PRIVATE'][k % 3], sg[0], sg[1]); x.restore();
   }
   // a private jet: a slim white fuselage with a gold cheatline, swept wings with winglets, a T-tail, engines at the back
   let JET_TURN = 0; // which way the model's nose points (checked in the preview)
@@ -5356,7 +5358,7 @@
     return f < 0.1 ? 'takeoff' : joy ? (f < 0.9 ? 'island' : 'landing') : f < 0.42 ? 'out' : f < 0.58 ? 'there' : f < 0.9 ? 'home' : 'landing';
   }
   const CABIN_SAY = {
-    takeoff: (d) => `Good day, this is Captain Ade. Cabin crew, seats for take-off. ${d[0] === 'island' ? 'We\'ll take you round the island.' : `Next stop, ${d[1]}.`}`,
+    takeoff: (d, own) => `Good day, this is Captain Ade${own ? ', and welcome aboard ' + own + ', your own jet' : ''}. Cabin crew, seats for take-off. ${d[0] === 'island' ? 'We\'ll take you round the island.' : `Next stop, ${d[1]}.`}`,
     out: (d) => `We're cruising at 41,000 feet on our way to ${d[1]}. Relax, the bar is open.`,
     there: (d) => `Welcome to ${d[1]} ${d[3]}! Have a look out of the window. We head home shortly.`,
     home: () => 'Wheels up for Lagos. We\'ll have you home soon.',
@@ -5365,7 +5367,7 @@
   };
   function drawCabin(R, now) {
     const t = now / 1000, ph = cabinPhase(R), d = AIR.find(R.flight) || AIR_JOY, nt = Math.min(1, night * 1.2);
-    if (R.said !== ph) { R.said = ph; bubbles.set('captain', { text: CABIN_SAY[ph](d), until: performance.now() + 6500 }); }
+    if (R.said !== ph) { R.said = ph; bubbles.set('captain', { text: CABIN_SAY[ph](d, R.own), until: performance.now() + 6500 }); }
     // the windows: ovals down the wall, each a little view of the same sky
     const A = cloudArt(nt), speed = ph === 'takeoff' || ph === 'landing' ? 40 : ph === 'there' ? 6 : 22;
     for (let wx = 7; wx < R.w - 6; wx += 6) {
@@ -6165,6 +6167,41 @@
     const t = await r.text(); if (!t) return null;
     const v = JSON.parse(t); return typeof v === 'string' ? JSON.parse(v) : v;
   }
+  // ---- private jets: the three newest in the airport's hangars (by registration and colour; the owner's name only where
+  // they chose to show it), refreshed a minute at a time, and your own jet in the Airport app
+  const HANGARS = { list: [] };
+  const hangarsLoad = () => call('hangars', {}).then((v) => { if (Array.isArray(v)) HANGARS.list = v; }).catch(() => {});
+  hangarsLoad(); setInterval(hangarsLoad, 60000);
+  const JETS = { light: ['Light jet', 6, 60000000, 'Six seats, Abuja and Accra in comfort'], midsize: ['Midsize jet', 8, 120000000, 'Eight seats, any of our cities nonstop'], heavy: ['Long-range jet', 13, 250000000, 'Thirteen seats, a bedroom, London nonstop'] };
+  const jetFee = (d) => (d[0] === 'island' ? 2000 : Math.floor(d[4] / 4)); // fuel and handling for your own jet
+  async function myJetBox(el) {
+    if (!el) return;
+    if (!signedIn()) { el.innerHTML = '<div class="rsec">YOUR OWN JET</div><div class="pcard dim">Sign in to buy a jet of your own: fly anywhere for just the fuel, your registration on a hangar door.</div>'; return; }
+    let j = null; try { j = (await my('myJet')).jet; } catch (e) { el.innerHTML = '<div class="rsec">YOUR OWN JET</div><div class="pcard dim">Private jets open when the server update goes live.</div>'; return; }
+    const sw = (sel) => `<div class="jsw">${LIVERY.map((c, k) => `<button data-liv="${k}" class="${k === sel ? 'on' : ''}" style="background:${c}" aria-label="Colour ${k + 1}"></button>`).join('')}</div>`;
+    if (!j) {
+      let liv = 1;
+      el.innerHTML = `<div class="rsec">BUY A JET</div><div class="pcard"><div class="dim">Your colours</div>${sw(liv)}</div>
+        <div class="lst">${Object.entries(JETS).map(([k, v]) => `<button class="li" data-buy="${k}"><span class="ic">🛩️</span><span class="lt"><b>${v[0]}</b><small>${v[3]} · ${v[1]} seats</small></span><span class="lr">${naira(v[2])}</span></button>`).join('')}</div>
+        <div class="lock">One jet each. It gets its own 5N- registration and a place in a hangar. Flying it costs only fuel and handling.</div>`;
+      el.querySelectorAll('[data-liv]').forEach((b) => (b.onclick = () => { liv = +b.dataset.liv; el.querySelectorAll('[data-liv]').forEach((o) => o.classList.toggle('on', o === b)); }));
+      el.querySelectorAll('[data-buy]').forEach((b) => (b.onclick = async () => { const v = JETS[b.dataset.buy]; if (!confirm(`Buy a ${v[0]} for ${naira(v[2])}?`)) return; b.disabled = true;
+        try { const r = await my('buyJet', { model: b.dataset.buy, livery: liv }); if (r.naira != null) pnaira.textContent = naira(r.naira); notify(`Your ${v[0]} is in the hangar: ${r.jet.tail}`, 'money', ['airport']); hangarsLoad(); myJetBox(el); } catch (e) { b.disabled = false; fail(e); } }));
+      return;
+    }
+    el.innerHTML = `<div class="rsec">YOUR JET</div><div class="pcard"><div class="row"><span><b style="font-size:17px">🛩️ ${esc(j.tail)}</b><br><span class="dim">${esc(j.name)}</span></span><b style="color:${LIVERY[j.livery]}">■■■</b></div>
+        <div class="dim" style="margin-top:6px">Repaint</div>${sw(j.livery)}<label class="row" style="margin-top:6px"><span>Show my name on the hangar</span><input type="checkbox" id="jName" ${j.showName ? 'checked' : ''}></label></div>
+      <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-own="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}</b><small>Your jet · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">${naira(jetFee(d))} fuel</span></button>`).join('')}</div>`;
+    const save = async (patch) => { try { const r = await my('setJet', { livery: patch.livery ?? j.livery, showName: patch.showName ?? j.showName }); j = r.jet; hangarsLoad(); } catch (e) { fail(e); } };
+    el.querySelectorAll('[data-liv]').forEach((b) => (b.onclick = async () => { el.querySelectorAll('[data-liv]').forEach((o) => o.classList.toggle('on', o === b)); await save({ livery: +b.dataset.liv }); }));
+    el.querySelector('#jName').onchange = (e) => save({ showName: e.target.checked });
+    el.querySelectorAll('[data-own]').forEach((b) => (b.onclick = async () => { const d = AIR.find(b.dataset.own); b.disabled = true;
+      try { const r = await my('flyJet', { dest: d[0] }); if (r.naira != null) pnaira.textContent = naira(r.naira);
+        closePhone(); const ap = PLACES.find((p) => p[0] === 'airport'); if (ap && !inside) at$(ap);
+        enterRoom('jetcabin', `place:flight:own:${j.tail}`, `🛩️ ${j.tail} · ${d[0] === 'island' ? 'Round the island' : 'Lagos – ' + d[1]}`, { flight: d[0], own: j.tail, from: Date.now(), until: Date.now() + d[5] * 1000 });
+      } catch (e) { b.disabled = false; fail(e); } }));
+  }
+
   // who just arrived: their name drops in under the phone and floats up as it fades
   const everSeen = new Set(), joinsEl = document.getElementById('joins');
   let ticked = false;
@@ -6838,17 +6875,10 @@
   if (WX_FORCE) { wxApply(); Object.assign(WX.cur, WX.target); } // testing: the forced weather at once, not eased in
   // the drops (in screen space) and the clouds (in the world), the lightning, the sound
   const DROPS = Array.from({ length: 420 }, () => ({ x: Math.random(), y: Math.random(), s: 0.7 + Math.random() * 0.6 }));
-  // ---- the clouds: soft, fluffy, seen from above. Each is a small picture painted once, then only stamped each frame (no
-  // gradients or shapes built per frame). Painting: a cumulus outline (a body of big puffs and smaller bumps round its
-  // edge) drawn solid at a quarter size and scaled up, which softens the edge without seams inside; then each puff lit
-  // on its sunny top-left and shaded on its lower right, and the underside a little darker. Only the set the sky needs
-  // is kept (day or night; both only while dusk or dawn cross-fades): five pictures, 192 px wide on a computer
-  // (about 0.46 MB), 128 px on a phone (0.2 MB), each painted in a couple of milliseconds.
-  // They float above the town (so they slide against it as the camera moves), drift with the real wind, follow the
-  // real cloud cover, and stay see-through: thinner round your own character, fainter as you zoom in, gone indoors.
-  const CLOUD_ALT = 95, CLOUD_SPAN = [460, 360]; // the clouds fill a window round the camera; each keeps its own spot in the world inside it
-  const CLOUDS = Array.from({ length: MOBILE ? 12 : 18 }, (_, k) => ({ x: Math.random() * CLOUD_SPAN[0], z: Math.random() * CLOUD_SPAN[1], r: 32 + Math.random() * 30, v: k % 5, stretch: 1.15 + Math.random() * 0.5, drift: 0.85 + Math.random() * 0.3, k }));
-  const CLOUD_ART = { day: null, night: null, shadow: null };
+  // ---- cloud pictures, for the view out of the jet cabin's windows: each a small picture painted once (a cumulus outline
+  // drawn small and scaled up so it has no seams, each puff lit and shaded), only painted when someone is flying.
+  const CLOUD_ART = { day: null, night: null };
+  const HAZE = { g: null, h: 0, night: false };
   function cloudPaint(v, tone) {
     const R = rnd(20261020 + v * 977), w = MOBILE ? 128 : 192, hh = Math.round(w * 0.62), c = document.createElement('canvas'); c.width = w; c.height = hh; const g = c.getContext('2d');
     const heads = [];
@@ -6872,35 +6902,7 @@
     const A = CLOUD_ART, wantDay = nt < 0.98, wantNight = nt > 0.02;
     if (wantDay && !A.day) A.day = [0, 1, 2, 3, 4].map((v) => cloudPaint(v, 'day')); else if (!wantDay) A.day = null;
     if (wantNight && !A.night) A.night = [0, 1, 2, 3, 4].map((v) => cloudPaint(v, 'night')); else if (!wantNight) A.night = null;
-    if (!A.shadow) { const s = document.createElement('canvas'), sw = MOBILE ? 48 : 64; s.width = sw; s.height = sw; const g = s.getContext('2d');
-      const gr = g.createRadialGradient(sw / 2, sw / 2, 0, sw / 2, sw / 2, sw / 2); gr.addColorStop(0, 'rgba(15,23,42,1)'); gr.addColorStop(0.6, 'rgba(15,23,42,0.5)'); gr.addColorStop(1, 'rgba(15,23,42,0)'); g.fillStyle = gr; g.fillRect(0, 0, sw, sw); A.shadow = s; }
     return A;
-  }
-  // where a cloud is: still, in the window centred on the patch of ground the sky above the view
-  // covers (the clouds are high and seen at a slant, so the ground under the clouds in view is a little down-screen); a cloud leaving one side comes
-  // back on the other, off screen
-  const wrapC = (v, c, s) => c + ((((v - c) % s) + s * 1.5) % s) - s / 2;
-  function cloudAt(cl) { const [ox, oz] = toWorldDir(0, CLOUD_ALT * cp), cx = cam.x + ox, cz = cam.z + oz; return [wrapC(cl.x, cx, CLOUD_SPAN[0]), wrapC(cl.z, cz, CLOUD_SPAN[1])]; } // they stay still: each keeps its place in the sky
-  function drawCloudShadows(C2, t, wx, wz, n) {
-    const s = cloudArt(Math.min(1, night * 1.2)).shadow; x.save(); x.globalAlpha = 0.22 * C2.cloud;
-    for (let k = 0; k < n; k++) { const cl = CLOUDS[k], [cx, cz] = cloudAt(cl), q = P(cx + 28, 0, cz + 18), rw = cl.r * K * cl.stretch, rh = cl.r * K * sp * 0.8; // the sun is high and a little to the south-west
-      if (q[0] + rw < 0 || q[0] - rw > W || q[1] + rh < 0 || q[1] - rh > H) continue; x.drawImage(s, q[0] - rw, q[1] - rh, rw * 2, rh * 2); }
-    x.restore();
-  }
-  function drawClouds(C2, t, wx, wz, n) {
-    const nt = Math.min(1, night * 1.2), A = cloudArt(nt), me0 = P(me.x, 0, me.z), clear = Math.min(W, H) * 0.2;
-    const zoomFade = Math.max(0, Math.min(1, (1.8 - cam.user) / 0.6)), base = (0.62 + 0.28 * C2.cloud) * zoomFade; // zoom in past the clouds for a clear view
-    if (WX_FORCE) window.__clouds = { K, zoomFade, base, n, cover: C2.cloud }; // testing only (?weather=...)
-    x.save();
-    for (let k = 0; k < n; k++) {
-      const cl = CLOUDS[k], [cx, cz] = cloudAt(cl), q = P(cx, CLOUD_ALT, cz), rw = cl.r * K * cl.stretch, rh = rw * 0.62;
-      if (q[0] + rw < 0 || q[0] - rw > W || q[1] + rh < 0 || q[1] - rh > H) continue;
-      const dm = Math.hypot(q[0] - me0[0], q[1] - me0[1]), near = playing && !inside ? Math.min(1, 0.55 + 0.45 * dm / clear) : 1; // thinner over your own character
-      const a = base * near; if (a < 0.02) continue;
-      if (A.day) { x.globalAlpha = a * (1 - nt); x.drawImage(A.day[cl.v], q[0] - rw, q[1] - rh, rw * 2, rh * 2); }
-      if (A.night) { x.globalAlpha = a * nt * 0.8; x.drawImage(A.night[cl.v], q[0] - rw, q[1] - rh, rw * 2, rh * 2); }
-    }
-    x.restore();
   }
   const BOLT = { at: 0, next: 0, pts: null };
   function drawWeather(now) {
@@ -6908,15 +6910,16 @@
     const t = now / 1000, wr = (WX.windDir + 180) * Math.PI / 180, wv = Math.min(1.4, WX.wind / 20);
     const wx = Math.sin(wr) * wv * 30, wz = -Math.cos(wr) * wv * 30; // the wind, in world units per second
     // cloud shadows drifting over the island
-    const nCl = inside ? 0 : Math.round(CLOUDS.length * Math.max(0.2, Math.min(1, C2.cloud * 1.15))); // how many: the real cover (a few wisps even on a clear day)
-    if (nCl && C2.cloud > 0.05) drawCloudShadows(C2, t, wx, wz, nCl);
+    // a very light haze over the island: a pale wash from the top of the view, fading out by the middle; a little
+    // more on a cloudy day, less as you zoom in. One gradient, rebuilt only when the screen size changes.
+    if (!inside) { const a = (0.07 + 0.07 * C2.cloud) * Math.max(0.35, Math.min(1, (2 - cam.user) / 1)); if (!HAZE.g || HAZE.h !== H) { HAZE.h = H; HAZE.g = x.createLinearGradient(0, 0, 0, H * 0.6); HAZE.g.addColorStop(0, night > 0.5 ? 'rgba(120,140,190,1)' : 'rgba(232,240,250,1)'); HAZE.g.addColorStop(1, 'rgba(232,240,250,0)'); HAZE.night = night > 0.5; }
+      if (HAZE.night !== night > 0.5) HAZE.h = 0; x.save(); x.globalAlpha = a; x.fillStyle = HAZE.g; x.fillRect(0, 0, W, H * 0.6); x.restore(); }
     // the grey cast of an overcast or wet day; fog; harmattan dust
     const grey = Math.max(0, C2.cloud - 0.35) * 0.28 + C2.rain * 0.12 + C2.storm * 0.12;
     if (grey > 0.01) { x.fillStyle = `rgba(51,65,85,${grey})`; x.fillRect(0, 0, W, H); }
     if (C2.fog > 0.02) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(226,232,240,${0.55 * C2.fog})`); g.addColorStop(1, `rgba(226,232,240,${0.25 * C2.fog})`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
     if (C2.haze > 0.02) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(217,164,95,${0.42 * C2.haze})`); g.addColorStop(1, `rgba(194,140,80,${0.2 * C2.haze})`); x.fillStyle = g; x.fillRect(0, 0, W, H);
       x.fillStyle = `rgba(250,220,170,${0.35 * C2.haze})`; for (let k = 0; k < 60; k++) { const d = DROPS[k], px = ((d.x * W + t * 40 * d.s * Math.sign(wx || 1)) % W + W) % W, py = ((d.y * H + Math.sin(t + k) * 8) % H + H) % H; x.fillRect(px, py, 2, 2); } }
-    if (nCl) drawClouds(C2, t, wx, wz, nCl);
     // the rain: streaks slanted by the wind, faster for the nearer ones, splashes where they land
     if (C2.rain > 0.02) {
       const n = Math.round(DROPS.length * C2.rain), slant = Math.max(-0.6, Math.min(0.6, (P(wx, 0, wz)[0] - P(0, 0, 0)[0]) / 40)), len = 14 + 10 * C2.rain;
@@ -7615,9 +7618,11 @@
         show(`${ahead('airport', 'Lagos Island Airport', 'Private jets, every minute')}
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#FACC15">✈ Departures</h3>${rows([0, 1, 2, 3, 4].map((k) => { const s = s0 + k, d = AIR.dep(s), st = AIR.depStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} ${esc(d[1])} <span class="dim">${d[2]}</span></span><b style="color:${stCol(st)}">Gate ${AIR.gate(s)} · ${st}</b></div>`; }))}</div>
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#38BDF8">🛬 Arrivals</h3>${rows([-1, 0, 1, 2].map((k) => { const s = s0 + k, d = AIR.arr(s), st = AIR.arrStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} from ${esc(d[1])}</span><b style="color:${stCol(st)}">${st}</b></div>`; }))}</div>
+          <div id="myJetBox"></div>
           <div class="rsec">FLY SOMEWHERE</div>
           <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-fly="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}${d[0] === 'island' ? '' : ' <span class="dim">' + d[2] + '</span>'}</b><small>${d[0] === 'island' ? 'Round the island and back' : 'There, a look round, and home'} · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">G${naira(d[4])}</span></button>`).join('')}</div>
           <div class="lock">Paid from your wallet. Everyone who books the same flight in the same minute is on the same jet.</div>`);
+        myJetBox($('myJetBox'));
         pbody.querySelectorAll('[data-fly]').forEach((b) => (b.onclick = async () => {
           const d = AIR.find(b.dataset.fly); b.disabled = true;
           try {

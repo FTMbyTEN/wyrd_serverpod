@@ -1,0 +1,21 @@
+### A private jet someone owns at Lagos Island Airport (one each): its kind, its registration (5N-XXX, Nigeria's
+### prefix), its livery (an index into the game's colours), and whether the owner's name is shown on its hangar.
+class: IslandJet
+table: island_jet
+fields:
+  authUserId: UuidValue
+  ### light | midsize | heavy (IslandMeEndpoint.jetCatalog)
+  model: String
+  tail: String
+  livery: int
+  ### the owner's island name on the hangar door (off unless they turn it on)
+  showName: bool, default=false
+  price: int
+  boughtAt: DateTime
+indexes:
+  island_jet_user_idx:
+    fields: authUserId
+    unique: true
+  island_jet_tail_idx:
+    fields: tail
+    unique: true

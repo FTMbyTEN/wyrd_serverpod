@@ -56,6 +56,24 @@ class IslandEndpoint extends Endpoint {
     return _housing!;
   }
 
+  /// The airport's hangars, public: the three newest private jets, by registration and colour; the owner's island name
+  /// only where they chose to show it. Cached for 30 seconds.
+  static String? _hangars;
+  static DateTime _hangarsAt = DateTime.fromMillisecondsSinceEpoch(0);
+  Future<String> hangars(Session session) async {
+    if (_hangars != null && DateTime.now().difference(_hangarsAt) < const Duration(seconds: 30)) return _hangars!;
+    final jets = await IslandJet.db.find(session, orderBy: (t) => t.boughtAt.desc(), limit: 3);
+    final out = <Map<String, dynamic>>[];
+    for (final j in jets) {
+      String? name;
+      if (j.showName) name = (await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(j.authUserId)))?.handle;
+      out.add({'tail': j.tail, 'model': j.model, 'livery': j.livery, if (name != null) 'name': name});
+    }
+    _hangars = jsonEncode(out);
+    _hangarsAt = DateTime.now();
+    return _hangars!;
+  }
+
   /// Here I am; who's around? [since]: the last chat line already seen (0 the first time).
   Future<String> tick(
     Session session,

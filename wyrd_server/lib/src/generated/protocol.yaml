@@ -55,6 +55,7 @@ islandAuth:
   - login:
 island:
   - housing:
+  - hangars:
   - tick:
   - online:
   - spin:
@@ -114,6 +115,10 @@ islandMe:
   - parties:
   - charterYacht:
   - bookFlight:
+  - myJet:
+  - buyJet:
+  - setJet:
+  - flyJet:
   - room:
   - saveRoom:
   - shows:

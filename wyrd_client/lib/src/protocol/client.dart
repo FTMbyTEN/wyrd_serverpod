@@ -744,6 +744,12 @@ class EndpointIsland extends _isc.EndpointRef {
     {},
   );
 
+  _ida.Future<String> hangars() => caller.callServerEndpoint<String>(
+    'island',
+    'hangars',
+    {},
+  );
+
   /// Here I am; who's around? [since]: the last chat line already seen (0 the first time).
   _ida.Future<String> tick(
     String id,
@@ -1399,6 +1405,46 @@ class EndpointIslandMe extends _isc.EndpointRef {
         'bookFlight',
         {'dest': dest},
       );
+
+  /// My jet, if I have one.
+  _ida.Future<String> myJet() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myJet',
+    {},
+  );
+
+  /// Buy a jet (one each): the price comes out of my wallet; it gets its own registration and lives in a hangar.
+  _ida.Future<String> buyJet(
+    String model,
+    int livery,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyJet',
+    {
+      'model': model,
+      'livery': livery,
+    },
+  );
+
+  /// Repaint my jet, or show / hide my name on its hangar.
+  _ida.Future<String> setJet(
+    int livery,
+    bool showName,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setJet',
+    {
+      'livery': livery,
+      'showName': showName,
+    },
+  );
+
+  /// Fly my own jet: no seat to buy, only the fuel and handling (a quarter of a seat's price; N2,000 round the island).
+  _ida.Future<String> flyJet(String dest) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'flyJet',
+    {'dest': dest},
+  );
 
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
   /// owner and the people they've let in.

@@ -1991,6 +1991,71 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'dest': dest, 'name': f.name, 'naira': after.naira});
   });
 
+  /// Private jets for sale at Lagos Island Airport (one each), by kind.
+  static const jetCatalog = {
+    'light': (name: 'Light jet', seats: 6, price: 60000000),
+    'midsize': (name: 'Midsize jet', seats: 8, price: 120000000),
+    'heavy': (name: 'Long-range jet', seats: 13, price: 250000000),
+  };
+  static const jetLiveries = 10; // the game's jet colours (LIVERY on the page)
+
+  static Map<String, dynamic> _jetJson(IslandJet j) => {'model': j.model, 'name': jetCatalog[j.model]?.name ?? j.model, 'tail': j.tail, 'livery': j.livery, 'showName': j.showName, 'price': j.price};
+
+  /// My jet, if I have one.
+  Future<String> myJet(Session session) async {
+    final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    return jsonEncode({'jet': j == null ? null : _jetJson(j)});
+  }
+
+  /// Buy a jet (one each): the price comes out of my wallet; it gets its own registration and lives in a hangar.
+  Future<String> buyJet(Session session, String model, int livery) => _money(session, (u) async {
+    final m = jetCatalog[model];
+    if (m == null) return _err('That jet is not for sale.');
+    if (livery < 0 || livery >= jetLiveries) return _err('Pick one of the colours.');
+    if (await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)) != null) return _err('You already have a jet in the hangar.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < m.price) return _err('A ${m.name} is N${_n(m.price)}. You have N${_n(c.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:jet:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -m.price, kind: 'fee', counter: 'city:market', memo: 'Bought a ${m.name}');
+    if (r.short != null) return _err('Not enough naira.');
+    final rnd = Random.secure();
+    IslandJet? j;
+    for (var k = 0; k < 8 && j == null; k++) { // a fresh registration: 5N- and three letters
+      final tail = '5N-${String.fromCharCodes([for (var i = 0; i < 3; i++) 65 + rnd.nextInt(26)])}';
+      try {
+        j = await IslandJet.db.insertRow(session, IslandJet(authUserId: u, model: model, tail: tail, livery: livery, price: m.price, boughtAt: DateTime.now().toUtc()));
+      } catch (_) {
+        if (await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)) != null) break; // bought at the same moment elsewhere
+      }
+    }
+    final after = await Bank.fresh(session, u);
+    if (j == null) return _err('The registry is busy. Your naira is safe: ask an operator to finish the registration.');
+    return jsonEncode({'jet': _jetJson(j), 'naira': after.naira});
+  });
+
+  /// Repaint my jet, or show / hide my name on its hangar.
+  Future<String> setJet(Session session, int livery, bool showName) async {
+    final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    if (j == null) return _err('You don\'t have a jet.');
+    if (livery < 0 || livery >= jetLiveries) return _err('Pick one of the colours.');
+    final j2 = await IslandJet.db.updateRow(session, j.copyWith(livery: livery, showName: showName));
+    return jsonEncode({'jet': _jetJson(j2)});
+  }
+
+  /// Fly my own jet: no seat to buy, only the fuel and handling (a quarter of a seat's price; N2,000 round the island).
+  Future<String> flyJet(Session session, String dest) => _money(session, (u) async {
+    final f = flights[dest];
+    if (f == null) return _err('There\'s no flight there.');
+    final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
+    if (j == null) return _err('You don\'t have a jet. Buy one, or book a seat.');
+    final fee = dest == 'island' ? 2000 : f.price ~/ 4;
+    final w = await WorldAuthority.citizen(session, u);
+    if (w.naira < fee) return _err('Fuel and handling to ${f.name} is N${_n(fee)}. You have N${_n(w.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:jetfly:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -fee, kind: 'fee', counter: 'city:services', memo: 'Lagos Island Airport: fuel and handling for ${j.tail} to ${f.name}');
+    if (r.short != null) return _err('Not enough naira.');
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'dest': dest, 'name': f.name, 'tail': j.tail, 'fee': fee, 'naira': after.naira});
+  });
+
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {

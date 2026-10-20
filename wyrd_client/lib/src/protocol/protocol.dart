@@ -59,6 +59,7 @@ import 'island/island_grid_career.dart' as _if4nrr5f;
 import 'island/island_grid_work.dart' as _irf3px15;
 import 'island/island_group.dart' as _ia3qph7z;
 import 'island/island_home.dart' as _ii0e1z5r;
+import 'island/island_jet.dart' as _ixzf1cvb;
 import 'island/island_job.dart' as _ifd0cm6h;
 import 'island/island_member.dart' as _inkhm4mi;
 import 'island/island_message.dart' as _i4pfszr3;
@@ -184,6 +185,7 @@ export 'island/island_grid_career.dart';
 export 'island/island_grid_work.dart';
 export 'island/island_group.dart';
 export 'island/island_home.dart';
+export 'island/island_jet.dart';
 export 'island/island_job.dart';
 export 'island/island_member.dart';
 export 'island/island_message.dart';
@@ -378,6 +380,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ii0e1z5r.IslandHome) {
       return _ii0e1z5r.IslandHome.fromJson(data) as T;
+    }
+    if (t == _ixzf1cvb.IslandJet) {
+      return _ixzf1cvb.IslandJet.fromJson(data) as T;
     }
     if (t == _ifd0cm6h.IslandJob) {
       return _ifd0cm6h.IslandJob.fromJson(data) as T;
@@ -758,6 +763,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ii0e1z5r.IslandHome?>()) {
       return (data != null ? _ii0e1z5r.IslandHome.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ixzf1cvb.IslandJet?>()) {
+      return (data != null ? _ixzf1cvb.IslandJet.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ifd0cm6h.IslandJob?>()) {
       return (data != null ? _ifd0cm6h.IslandJob.fromJson(data) : null) as T;
@@ -1470,6 +1478,7 @@ class Protocol extends _isc.SerializationManager {
       _irf3px15.IslandGridWork => 'IslandGridWork',
       _ia3qph7z.IslandGroup => 'IslandGroup',
       _ii0e1z5r.IslandHome => 'IslandHome',
+      _ixzf1cvb.IslandJet => 'IslandJet',
       _ifd0cm6h.IslandJob => 'IslandJob',
       _inkhm4mi.IslandMember => 'IslandMember',
       _i4pfszr3.IslandMessage => 'IslandMessage',
@@ -1626,6 +1635,8 @@ class Protocol extends _isc.SerializationManager {
         return 'IslandGroup';
       case _ii0e1z5r.IslandHome():
         return 'IslandHome';
+      case _ixzf1cvb.IslandJet():
+        return 'IslandJet';
       case _ifd0cm6h.IslandJob():
         return 'IslandJob';
       case _inkhm4mi.IslandMember():
@@ -1914,6 +1925,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'IslandHome') {
       return deserialize<_ii0e1z5r.IslandHome>(data['data']);
+    }
+    if (dataClassName == 'IslandJet') {
+      return deserialize<_ixzf1cvb.IslandJet>(data['data']);
     }
     if (dataClassName == 'IslandJob') {
       return deserialize<_ifd0cm6h.IslandJob>(data['data']);
