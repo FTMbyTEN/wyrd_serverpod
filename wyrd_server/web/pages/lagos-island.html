@@ -935,6 +935,38 @@
   /* starting a chat */
   #pbody[data-app="newchat"] .pcard { border-radius: 22px !important; } #pbody[data-app="newchat"] .pbtn { background: linear-gradient(135deg, var(--lk1), var(--lk2)) !important; color: #fff !important; border-radius: 14px !important; }
   #pbody[data-app="newchat"] .pbtn:disabled { opacity: .6; }
+  /* ================= People 2 ================= */
+  .pi { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -3px; }
+  #pbody[data-app="people"] { --pp1: #0EA5E9; --pp2: #6366F1; --ppInk: #0F172A; --ppDim: #64748B; --ppCard: #fff; --ppLine: rgba(15,23,42,.07); }
+  #phone.os-dark #pbody[data-app="people"] { --pp1: #FF2E88; --pp2: #00C2FF; --ppInk: #F1F5F9; --ppDim: #94A3B8; --ppCard: rgba(255,255,255,.05); --ppLine: rgba(255,255,255,.08); }
+  .ppTop { display: flex; align-items: flex-end; justify-content: space-between; margin: 2px 2px 12px; } .ppTop h2 { margin: 0; font: 800 30px/1 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; color: var(--ppInk); } .ppTop small { display: block; margin-top: 4px; font: 600 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .ppSeg { display: flex; gap: 4px; padding: 4px; margin-bottom: 12px; border-radius: 14px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); }
+  .ppSeg button { flex: 1; position: relative; padding: 8px 4px; border: 0; border-radius: 10px; background: none; cursor: pointer; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); transition: background .15s, color .15s; }
+  .ppSeg button.on { background: linear-gradient(135deg, var(--pp1), var(--pp2)); color: #fff; box-shadow: 0 4px 12px rgba(14,165,233,.25); }
+  .ppSeg button i { position: absolute; top: 2px; right: 6px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: #EF4444; color: #fff; font: 800 10px/16px sans-serif; font-style: normal; }
+  .ppSearch { position: relative; margin-bottom: 12px; } .ppSearch .pi { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ppDim); }
+  .ppSearch input { width: 100%; box-sizing: border-box; margin: 0 !important; padding: 12px 14px 12px 40px !important; border-radius: 14px !important; border: 0 !important; background: var(--ppCard) !important; box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk) !important; font: 500 14px 'Plus Jakarta Sans', sans-serif !important; }
+  .ppSec { margin: 12px 4px 6px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ppDim); }
+  .ppList { border-radius: 20px; overflow: hidden; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine), 0 6px 20px rgba(15,23,42,.04); }
+  .ppRow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border: 0; background: none; text-align: left; color: var(--ppInk); position: relative; cursor: pointer; box-sizing: border-box; }
+  .ppRow + .ppRow::before { content: ""; position: absolute; left: 70px; right: 0; top: 0; height: 1px; background: var(--ppLine); }
+  .ppRow .av2 { width: 44px !important; height: 44px !important; flex: none; } .ppRow .t { flex: 1; min-width: 0; } .ppRow .t b { display: block; font: 700 15px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppRow .t small { display: block; margin-top: 2px; font: 500 12.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppRow .go { color: var(--ppDim); } .ppAct { display: flex; gap: 6px; }
+  .ppIc { width: 36px; height: 36px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: var(--ppCard); color: var(--ppInk); box-shadow: inset 0 0 0 1px var(--ppLine); }
+  .ppIc.yes { background: linear-gradient(135deg, var(--pp1), var(--pp2)); color: #fff; box-shadow: 0 4px 12px rgba(14,165,233,.3); } .ppIc.no { color: #EF4444; } .ppIc:disabled { opacity: .5; }
+  .ppTag { padding: 4px 9px; border-radius: 999px; font: 700 11px 'Plus Jakarta Sans', sans-serif; background: rgba(148,163,184,.16); color: var(--ppDim); display: inline-flex; align-items: center; gap: 4px; } .ppTag .pi { width: 13px; height: 13px; }
+  .ppEmpty { padding: 28px 20px; text-align: center; color: var(--ppDim); font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; } .ppEmpty .pi { width: 34px; height: 34px; display: block; margin: 0 auto 8px; color: var(--pp1); }
+  /* a profile: on the island (over a home) and in the app */
+  .pfhd { display: flex; align-items: center; gap: 14px; } .pfhd .av2 { width: 60px !important; height: 60px !important; font-size: 20px; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--pp1, #0EA5E9) !important; }
+  .pfhd b { display: block; font: 800 19px 'Plus Jakarta Sans', sans-serif; } .pfhd small { display: block; margin-top: 2px; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .65; }
+  .pfrows { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 4px; } .pfrows span { display: flex; align-items: center; gap: 8px; padding: 10px 11px; border-radius: 14px; background: rgba(148,163,184,.12); font: 600 12.5px/1.3 'Plus Jakarta Sans', sans-serif; min-width: 0; }
+  .pfrows span .pi { color: var(--pp1, #0EA5E9); } .pfrows span em { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .pfrows span.w { grid-column: 1 / -1; }
+  .pfact { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; } .pfact .row2 { display: flex; gap: 8px; } .pfact .row2 .pbtn { flex: 1; margin: 0 !important; }
+  .pfact .pbtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 14px !important; } .pfact .pbtn:not(.alt) { background: linear-gradient(135deg, #0EA5E9, #6366F1) !important; color: #fff !important; }
+  .pfact input { margin: 0 !important; border-radius: 14px !important; } .pfact > *, .pfact .row2 { width: 100% !important; box-sizing: border-box; } .pfact input { text-align: left !important; padding: 11px 14px !important; }
+  #pbody[data-app="people"] .pfOne { padding: 18px; border-radius: 24px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine), 0 10px 30px rgba(15,23,42,.06); color: var(--ppInk); }
+  .shsum { display: none !important; }
 </style>
 </head>
 <body>
@@ -6405,23 +6437,25 @@
   // ---- people: a Lagosian's public profile (never their wallet, email, messages, where they are, who their friends are
   // or what's inside their home), real friend requests (they see it, they accept or decline), and finding people
   const sinceStr = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-NG', { month: 'long', year: 'numeric' }); };
+  const PI = { home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>', work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>', tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>', plane: '<path d="M2 16l20-6-20-6 3 6z"/><path d="M5 10h8"/>', users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/>', add: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/>', check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', go: '<path d="M9 6l6 6-6 6"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', inbox: '<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>', spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>' };
+  const pi = (k) => `<svg class="pi" viewBox="0 0 24 24" aria-hidden="true">${PI[k] || ''}</svg>`;
   const REL = { none: '➕ Add friend', sent: '⏳ Request sent', received: '✓ Accept request', friends: '✓ Friends', me: '' };
   function profileHtml(p) {
     return `<div class="pfhd">${avatar(p.handle)}<div><b>@${esc(p.handle)}</b><small>Lagosian since ${sinceStr(p.since)}</small></div></div>
-      <div class="pfrows"><span>🏠 ${esc(p.hq)}</span>${p.careers && p.careers.length ? `<span>💼 ${p.careers.slice(0, 2).map(esc).join(' · ')}</span>` : ''}${p.skills ? `<span>🧰 ${esc(p.skills)}</span>` : ''}${p.jet ? `<span>🛩️ ${esc(p.jet)}</span>` : ''}<span>👥 ${p.friends} friend${p.friends === 1 ? '' : 's'}</span></div>`;
+      <div class="pfrows"><span class="w">${pi('home')}<em>${esc(p.hq)}</em></span>${p.careers && p.careers.length ? `<span class="w">${pi('work')}<em>${p.careers.slice(0, 2).map(esc).join(' · ')}</em></span>` : ''}${p.skills ? `<span>${pi('tools')}<em>${esc(p.skills)}</em></span>` : ''}${p.jet ? `<span>${pi('plane')}<em>${esc(p.jet)}</em></span>` : ''}<span>${pi('users')}<em>${p.friends} friend${p.friends === 1 ? '' : 's'}</em></span></div>`;
   }
   // the buttons for me and them; [done] after anything changes
   function relActions(host, p, done) {
     host.innerHTML = '';
-    const b = (label, fn, cls = '') => { const e = document.createElement('button'); e.className = 'pbtn ' + cls; e.textContent = label; e.onclick = async () => { e.disabled = true; try { await fn(); } catch (er) { e.disabled = false; (typeof fail === 'function' ? fail : alert)(er.message ? er : new Error(String(er))); } }; host.append(e); return e; };
+    const b = (icon, label, fn, cls = '', into = host) => { const e = document.createElement('button'); e.className = 'pbtn ' + cls; e.innerHTML = pi(icon) + esc(label); e.onclick = async () => { e.disabled = true; try { await fn(); } catch (er) { e.disabled = false; (typeof fail === 'function' ? fail : alert)(er.message ? er : new Error(String(er))); } }; into.append(e); return e; };
     if (p.rel === 'me') return;
     if (p.rel === 'none') {
       const inp = document.createElement('input'); inp.maxLength = 140; inp.placeholder = `Say hi to @${p.handle} (optional)`; host.append(inp);
-      b('➕ Send friend request', async () => { const r = await my('friendRequest', { handle: p.handle, note: inp.value }); p.rel = r.rel; notify(r.rel === 'friends' ? `You and ${p.handle} are friends` : `Friend request sent to ${p.handle}`, 'link', ['people']); done(p); });
-    } else if (p.rel === 'sent') b('⏳ Request sent · cancel', async () => { await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
-    else if (p.rel === 'received') { b('✓ Accept', async () => { await my('friendRespond', { handle: p.handle, accept: true }); p.rel = 'friends'; notify(`You and ${p.handle} are friends`, 'link', ['people']); done(p); }); b('✕ Decline', async () => { await my('friendRespond', { handle: p.handle, accept: false }); p.rel = 'none'; done(p); }, 'alt'); }
-    else if (p.rel === 'friends') b('✓ Friends · remove', async () => { if (!confirm(`Remove ${p.handle} from your friends?`)) return; await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
-    b('💬 Message', async () => { card.style.display = 'none'; openPhone('newchat', { dm: true, who: p.handle }); }, 'alt');
+      b('add', 'Send friend request', async () => { const r = await my('friendRequest', { handle: p.handle, note: inp.value }); p.rel = r.rel; MY_CACHE.clear(); done(p); });
+    } else if (p.rel === 'sent') b('clock', 'Request sent · cancel', async () => { await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
+    else if (p.rel === 'received') { const r2 = document.createElement('div'); r2.className = 'row2'; host.append(r2); b('check', 'Accept', async () => { await my('friendRespond', { handle: p.handle, accept: true }); p.rel = 'friends'; done(p); }, '', r2); b('x', 'Decline', async () => { await my('friendRespond', { handle: p.handle, accept: false }); p.rel = 'none'; done(p); }, 'alt', r2); }
+    else if (p.rel === 'friends') b('check', 'Friends · remove', async () => { if (!confirm(`Remove ${p.handle} from your friends?`)) return; await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
+    b('chat', 'Message', async () => { card.style.display = 'none'; openPhone('newchat', { dm: true, who: p.handle }); }, 'alt');
   }
   // the card over a home: who lives there, from their public profile, and what you can do
   async function residentCard(o) {
@@ -6537,7 +6571,7 @@
     const d = document.createElement('div'), dot = document.createElement('i');
     d.className = 'j'; dot.style.background = color || '#22B573';
     d.append(dot, document.createTextNode(`${name || 'Someone'} joined`));
-    notify(`${name || 'Someone'} ${String(name).startsWith('🔔') ? '' : 'joined the island'}`.trim(), 'island');
+    notify(`${name || 'Someone'} ${String(name).startsWith('🔔') ? '' : 'joined the island'}`.trim(), 'join');
     joinsEl.append(d);
     while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove();
     setTimeout(() => d.remove(), 6200);
@@ -7124,8 +7158,8 @@
     const room = CITY.dj, s = clubSrc(room); if (!room || !s || !song) return;
     deckPlay(s, { ...song, dj: myName || 'You', local: true }, 0);
     MP.a.pause();
-    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) notify('Someone else is on the decks here right now', 'music'); }
-    catch { notify('You are playing it here; the whole club hears your set once the island server is updated', 'music'); }
+    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) tick('Someone else is on the decks here right now'); }
+    catch { tick('Couldn\'t start your set here. Try again.'); }
   }
   function djNext() { if (!MP.q.length) return; MP.i = (MP.i + 1) % MP.q.length; djSpin(MP.q[MP.i]); }
   function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '' }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
@@ -7147,7 +7181,7 @@
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
     tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tm.innerHTML = ico('music');
-    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); notify(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
+    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tick(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
     tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
     document.getElementById('tDj').onclick = () => openPhone('music'); // see who's playing, take the decks inside a club
     for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
@@ -7391,10 +7425,10 @@
     if (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3)) out.push({ i: '🔌', t: 'NEPA took light', s: 'Inverters on. The Grid has work if you want it.', run: () => go('grid'), w: 5 });
     if (signedIn() && earned < cap && h >= 7 && h < 22) out.push({ i: '💼', t: `You can still earn ${naira(cap - earned)} today`, s: 'A refinery shift pays ₦6,500; the Grid and the airport pay by level', run: () => go('jobs'), w: 4 });
     if (typeof AIR !== 'undefined') { const s = AIR.slot() + 1, d = AIR.dep(s); out.push({ i: '✈️', t: `Next flight: ${d[1]} at ${AIR.hhmm(s)}`, s: `Gate ${AIR.gate(s)} · a seat from ${naira(d[4])}`, run: () => go('airport'), w: 2 }); }
-    if (h >= 20 || h < 3) out.push({ i: '🎶', t: 'The clubs are open', s: 'DJ Eko Nights is on the island', run: () => go('music'), w: 3 });
+    const playing = (typeof CITY !== 'undefined' && CITY.srcs || []).filter((s) => s.room && s.now); if (playing.length) out.push({ i: '🎶', t: `${playing.length} club${playing.length > 1 ? 's' : ''} playing now`, s: playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(' · '), run: () => go('music'), w: 3 });
     return out.sort((a, b) => b.w - a.w);
   }
-  const w4Brief = () => { const s = w4Suggest().slice(0, 2); return s.length ? s.map((v) => v.t).join(' · ') : 'All quiet on the island.'; };
+  const w4Brief = () => { const s = w4Suggest().filter((v) => v.w >= 7).slice(0, 2); return s.map((v) => v.t).join(' · '); }; // the lock screen: only what's waiting for you
   // the smart bar: apps, people and places as you type; Enter with nothing matching asks WYRD
   function w4Home() {
     const sug = w4Suggest().slice(0, 3);
@@ -7447,8 +7481,8 @@
   // WYRD OS: it boots once, then each time you pick it up it's on the lock screen until you tap
   let booted = false, lockGo = null;
   const notes = []; // the notification centre: every note keeps where it leads (tap to open) and whether you've seen it
-  const NOTE_ICON = { wyrd: '✨', gov: '🏛️', chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
-  const NOTE_GROUP = { chat: 'Island chat', link: 'Messages' };
+  const NOTE_ICON = { join: '👋', wyrd: '✨', gov: '🏛️', chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
+  const NOTE_GROUP = { chat: 'Island chat', link: 'Messages', join: 'Arrivals' };
   let hqReqs = 0;
   function notify(text, kind = 'island', open = null, from = '') {
     notes.unshift({ text, kind, open, from, at: new Date(), seen: false }); notes.length = Math.min(notes.length, 60); updBadge(); headsUp(notes[0]);
@@ -7468,7 +7502,7 @@
     } catch {}
   }
   function headsUp(n) {
-    if (!HUP.on || n.kind === 'chat') return;
+    if (!HUP.on || n.kind === 'chat' || n.kind === 'join') return;
     const tile = NOTE_TILE[n.kind] || '', title = n.from || (n.kind === 'link' ? 'Link' : 'WYRD OS');
     if (document.hidden) {
       if ('Notification' in window && Notification.permission === 'granted') { const o = { body: n.text, icon: 'icon-192.png', badge: 'icon-192.png', tag: n.kind + ':' + (n.from || ''), renotify: true };
@@ -7496,7 +7530,7 @@
   function buildShade() {
     const wx = lagosWeather();
     const groups = new Map(); notes.forEach((n, i) => { const g = NOTE_GROUP[n.kind] || 'WYRD OS'; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(noteHtml(n, i)); });
-    const order = ['Messages', 'Island chat', 'WYRD OS'].filter((g) => groups.has(g));
+    const order = ['Messages', 'WYRD OS', 'Island chat', 'Arrivals'].filter((g) => groups.has(g));
     shadeEl.classList.toggle("night", nightNow() > 0.5); shadeEl.classList.toggle("day", nightNow() <= 0.5);
     shadeEl.innerHTML = `<div class="sky"><i></i></div><button class="shx" aria-label="Close">✕</button><div class="grab" aria-label="Close"></div><div class="shin"><div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
       <button class="cct${osMode === 'light' ? ' on' : ''}" data-cc="mode"><b>${osMode === 'light' ? '☀️' : '🌙'}</b><span>${osMode === 'light' ? 'Light' : 'Dark'}</span><small>Appearance</small></button>
@@ -7634,7 +7668,7 @@
       const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos<div class="lbrief">✨ ${esc(w4Brief())}</div>`;
+      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos${w4Brief() ? `<div class="lbrief">${esc(w4Brief())}</div>` : ''}`;
       if (!L.querySelector('.lnet')) { L.insertAdjacentHTML('afterbegin', '<div class="lscan" aria-hidden="true"></div><div class="lnet"><i></i>NETWATCH · LINK SECURE</div><div class="lbeam" aria-hidden="true"></div><div class="lid" aria-live="polite"></div>'); }
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
@@ -7863,28 +7897,31 @@
         // People: requests waiting for you, your friends, the newest Lagosians, and a search; tap anyone for their profile
         const tab = (arg && arg.tab) || PEOPLE_TAB.tab;
         if (arg && arg.handle) { // one person's profile
-          show(`${ahead('people', 'Profile', 'What every Lagosian can see')}<div class="pcard" id="pfOne"><div class="dim">Loading…</div></div>`);
+          show(`<div class="ppTop"><div><h2 style="font-size:24px">Profile</h2><small>What every Lagosian can see</small></div></div><div class="pfOne" id="pfOne"><div class="ppEmpty">Loading…</div></div>`);
           try { const p = await my('publicProfile', { handle: arg.handle }); const el = $('pfOne'), draw = () => { el.innerHTML = profileHtml(p) + '<div class="pfact"></div>'; relActions(el.querySelector('.pfact'), p, draw); }; draw(); } catch (e) { fail(e); }
           return;
         }
         let f = { friends: [], incoming: [], sent: [] }; try { f = await my('friends'); FR.list = f; } catch (e) { return fail(e); }
-        const row = (r, extra = '') => `<button class="li" data-pf="${esc(r.handle)}"><span class="ic">${avatar(r.handle)}</span><span class="lt"><b>@${esc(r.handle)}</b><small>${r.note ? '"' + esc(r.note) + '"' : 'Lagosian since ' + sinceStr(r.since)}</small></span><span class="lr">${extra}</span></button>`;
-        show(`${ahead('people', 'People', 'Friends, requests and new Lagosians')}
-          <div class="chips" style="--ac:#38BDF8">${[['requests', `Requests${f.incoming.length ? ' · ' + f.incoming.length : ''}`], ['friends', `Friends · ${f.friends.length}`], ['new', 'New on the island'], ['find', 'Find']].map(([k, n]) => `<button data-pt="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+        const row = (r, right = pi('go')) => `<button class="ppRow" data-pf="${esc(r.handle)}">${avatar(r.handle)}<span class="t"><b>@${esc(r.handle)}</b><small>${r.note ? '“' + esc(r.note) + '”' : 'Lagosian since ' + sinceStr(r.since)}</small></span><span class="go">${right}</span></button>`;
+        const empty = (icon, text) => `<div class="ppList"><div class="ppEmpty">${pi(icon)}${text}</div></div>`;
+        show(`<div class="ppTop"><div><h2>People</h2><small>${f.friends.length} friend${f.friends.length === 1 ? '' : 's'}${f.incoming.length ? ` · ${f.incoming.length} waiting for you` : ''}</small></div></div>
+          <div class="ppSeg">${[['requests', 'Requests', f.incoming.length], ['friends', 'Friends', 0], ['new', 'New', 0], ['find', 'Find', 0]].map(([k, n, c]) => `<button data-pt="${k}" class="${tab === k ? 'on' : ''}">${n}${c ? `<i>${c}</i>` : ''}</button>`).join('')}</div>
           <div id="pplBody"></div>`);
         const body = $('pplBody');
         const wire = () => body.querySelectorAll('[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf })));
         if (tab === 'requests') {
-          body.innerHTML = (f.incoming.length ? `<div class="rsec">WAITING FOR YOU</div><div class="lst">${f.incoming.map((r) => `<div class="li"><span class="ic">${avatar(r.handle)}</span><span class="lt" data-pf="${esc(r.handle)}" style="cursor:pointer"><b>@${esc(r.handle)}</b><small>${r.note ? '"' + esc(r.note) + '"' : 'wants to be friends'}</small></span><span class="lr"><button class="pbtn" data-acc="${esc(r.handle)}">✓</button> <button class="pbtn alt" data-dec="${esc(r.handle)}">✕</button></span></div>`).join('')}</div>` : '<div class="pcard dim">No requests waiting. Find someone and say hello.</div>')
-            + (f.sent.length ? `<div class="rsec">YOU ASKED</div><div class="lst">${f.sent.map((r) => row(r, '⏳')).join('')}</div>` : '');
-          body.querySelectorAll('[data-acc],[data-dec]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { const acc = !!b.dataset.acc; await my('friendRespond', { handle: b.dataset.acc || b.dataset.dec, accept: acc }); if (acc) notify(`You and ${b.dataset.acc} are friends`, 'link', ['people']); render('people', { tab: 'requests' }); } catch (e) { b.disabled = false; fail(e); } }));
-          body.querySelectorAll('.lt[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf })));
+          body.innerHTML = (f.incoming.length ? `<div class="ppSec">Waiting for you</div><div class="ppList">${f.incoming.map((r) => `<div class="ppRow">${avatar(r.handle)}<span class="t" data-pf="${esc(r.handle)}"><b>@${esc(r.handle)}</b><small>${r.note ? '“' + esc(r.note) + '”' : 'wants to be friends'}</small></span><span class="ppAct"><button class="ppIc no" data-dec="${esc(r.handle)}" aria-label="Decline">${pi('x')}</button><button class="ppIc yes" data-acc="${esc(r.handle)}" aria-label="Accept">${pi('check')}</button></span></div>`).join('')}</div>` : empty('inbox', 'No requests waiting.<br>Find someone and say hello.'))
+            + (f.sent.length ? `<div class="ppSec">You asked</div><div class="ppList">${f.sent.map((r) => row(r, `<span class="ppTag">${pi('clock')}Pending</span>`)).join('')}</div>` : '');
+          body.querySelectorAll('[data-acc],[data-dec]').forEach((b) => (b.onclick = async (e) => { e.stopPropagation(); b.disabled = true; try { await my('friendRespond', { handle: b.dataset.acc || b.dataset.dec, accept: !!b.dataset.acc }); MY_CACHE.clear(); render('people', { tab: 'requests' }); } catch (er) { b.disabled = false; fail(er); } }));
           wire();
-        } else if (tab === 'friends') { body.innerHTML = f.friends.length ? `<div class="lst">${f.friends.map((r) => row(r, '💬')).join('')}</div>` : '<div class="pcard dim">No friends yet. Tap a neighbour\'s home, or look in New on the island.</div>'; wire(); }
-        else {
-          body.innerHTML = `${tab === 'find' ? '<input id="pplQ" maxlength="30" placeholder="Search by username" autocomplete="off">' : ''}<div id="pplList" class="lst"><div class="li"><span class="lt"><small>Loading…</small></span></div></div>`;
-          const load = async (q) => { try { const list = await my('people', { query: q || '' }); $('pplList').innerHTML = list.map((r) => row(r, '›')).join('') || '<div class="li"><span class="lt"><small>Nobody found.</small></span></div>'; body.querySelectorAll('[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf }))); } catch (e) { fail(e); } };
-          if (tab === 'find') { let tm = 0; $('pplQ').oninput = (e) => { clearTimeout(tm); tm = setTimeout(() => load(e.target.value.trim()), 300); }; $('pplList').innerHTML = '<div class="li"><span class="lt"><small>Type a name to search.</small></span></div>'; $('pplQ').focus(); }
+        } else if (tab === 'friends') {
+          body.innerHTML = f.friends.length ? `<div class="ppList">${f.friends.map((r) => row(r, `<button class="ppIc" data-msg="${esc(r.handle)}" aria-label="Message">${pi('chat')}</button>`)).join('')}</div>` : empty('users', 'No friends yet.<br>Tap a neighbour\'s home, or look in New.');
+          body.querySelectorAll('[data-msg]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); go('newchat', { dm: true, who: b.dataset.msg }); }));
+          wire();
+        } else {
+          body.innerHTML = `${tab === 'find' ? `<div class="ppSearch">${pi('search')}<input id="pplQ" maxlength="30" placeholder="Search by username" autocomplete="off"></div>` : '<div class="ppSec">Newest on the island</div>'}<div id="pplList"><div class="ppList"><div class="ppEmpty">Loading…</div></div></div>`;
+          const load = async (q) => { try { const list = await my('people', { query: q || '' }); $('pplList').innerHTML = list.length ? `<div class="ppList">${list.map((r) => row(r)).join('')}</div>` : empty('search', 'Nobody found.'); $('pplList').querySelectorAll('[data-pf]').forEach((b) => (b.onclick = () => go('people', { handle: b.dataset.pf }))); } catch (e) { fail(e); } };
+          if (tab === 'find') { let tm = 0; $('pplQ').oninput = (e) => { clearTimeout(tm); tm = setTimeout(() => load(e.target.value.trim()), 300); }; $('pplList').innerHTML = empty('search', 'Type a name to search.'); $('pplQ').focus(); }
           else load('');
         }
         pbody.querySelectorAll('[data-pt]').forEach((b) => (b.onclick = () => { PEOPLE_TAB.tab = b.dataset.pt; render('people', { tab: b.dataset.pt }); }));
@@ -8098,7 +8135,7 @@
           const o = ACCS[id], on = curAcc.includes(id), list = curAcc.filter((v) => ACCS[v].slot !== o.slot); if (!on) list.push(id);
           q[6] = list.join('+'); myLook = q.join(','); store.set('li.look', myLook);
           try { await my('setLook', { look: myLook }); } catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); }
-          notify(on ? `Took off: ${o.name}` : `Now wearing: ${o.brand} ${o.name}`, 'fashion');
+          tick(on ? `Took off: ${o.name}` : `Now wearing: ${o.brand} ${o.name}`);
         };
         const DEPTS = [['Sportswear', '👟'], ['Streetwear', '🧢'], ['Native', '🪡'], ['Formal', '👔'], ['Luxury', '💎'], ['Accessories', '🕶️']];
         const FAB = ['Cotton', 'Denim', 'Fleece', 'Silk', 'Leather'], PAT = ['', 'Stripes', 'Two-tone', 'Print', 'Side stripe', 'Monogram'];
@@ -8420,7 +8457,7 @@
           pbody.querySelectorAll('[data-ml]').forEach((b) => (b.onclick = (e) => { const lk = e.target.closest('[data-like]'); const list = lists[b.dataset.ml], i = +b.dataset.mi; if (lk) { lk.classList.toggle('on', mpLike(list[i])); return; } if (CITY.dj && inside && inside.key === CITY.dj) { MP.q = list.filter(Boolean); MP.i = i; djSpin(list[i]); setTimeout(() => render('music', a), 600); return; } mpPlay(list, i); pbody.querySelectorAll('.mrow.on').forEach((r) => r.classList.remove('on')); b.classList.add('on'); }));
           pbody.querySelectorAll('[data-album]').forEach((b) => (b.onclick = () => go('music', { tab: 'album', id: b.dataset.album, title: b.dataset.title })));
           pbody.querySelectorAll('[data-genre]').forEach((b) => (b.onclick = () => go('music', { tab: 'genre', q: b.dataset.genre })));
-          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); notify('Handed the decks back to ' + club.spot.dj, 'music'); } else { CITY.dj = inside.key; notify(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
+          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); tick('Handed the decks back to ' + club.spot.dj); } else { CITY.dj = inside.key; tick(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
         };
         // inside a club: who's on the decks and what's playing, and the button to take over (or hand back)
         const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, onDecks = !!club && CITY.dj === inside.key;
@@ -8779,6 +8816,8 @@
   const PARTY_THEMES = { afro: ['Afrobeats night', ['#F97316', '#22C55E', '#FACC15'], '🔥'], piano: ['Amapiano', ['#8B5CF6', '#38BDF8', '#EC4899'], '🎹'], owambe: ['Owambe', ['#D4AF37', '#7C3AED', '#DC2626'], '💃'] };
   let partiesLive = {}; // room key -> { host, theme, open, until (ms), place, mine, invited }
   const partyAt = (key) => { const p = partiesLive[key]; return p && p.until > Date.now() ? p : null; };
+  // a passing line in the ticker (bottom left): for confirmations of what you just did, which aren't news
+  function tick(text) { const d = document.createElement('div'), dot = document.createElement('i'); d.className = 'j'; dot.style.background = '#38BDF8'; d.append(dot, document.createTextNode(text)); joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 5000); }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');
     d.className = 'j'; dot.style.background = '#F472B6'; d.append(dot, document.createTextNode(text));
