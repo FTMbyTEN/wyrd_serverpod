@@ -878,6 +878,63 @@
   #lockscr .lnotes .n > i { flex: 0 0 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-style: normal; font-size: 16px; background: var(--nt); }
   #lockscr .lnotes .n > div { flex: 1; min-width: 0; } #lockscr .lnotes .n b { display: block; font: 800 13px 'Plus Jakarta Sans', sans-serif; } #lockscr .lnotes .n span { font: 500 13px 'Plus Jakarta Sans', sans-serif; }
   #phone.os-light #lockscr .lnotes .n { background: rgba(255,255,255,.85) !important; box-shadow: 0 8px 22px rgba(15,23,42,.10) !important; }
+  /* ================= Link 2: the chats list and conversations, redesigned ================= */
+  #pbody[data-app="chats"], #pbody[data-app="thread"], #pbody[data-app="newchat"] { --lk1: #0EA5E9; --lk2: #6366F1; --lkInk: #0F172A; --lkDim: #64748B; --lkCard: #fff; --lkLine: rgba(15,23,42,.07); --lkThem: #fff; --lkThemInk: #0F172A; }
+  #phone.os-dark #pbody[data-app="chats"], #phone.os-dark #pbody[data-app="thread"], #phone.os-dark #pbody[data-app="newchat"] { --lk1: #FF2E88; --lk2: #00C2FF; --lkInk: #F1F5F9; --lkDim: #94A3B8; --lkCard: rgba(255,255,255,.05); --lkLine: rgba(255,255,255,.08); --lkThem: rgba(255,255,255,.08); --lkThemInk: #F1F5F9; }
+  /* the list */
+  .lkTop { display: flex; align-items: center; justify-content: space-between; margin: 2px 2px 10px; } .lkTop h2 { margin: 0; font: 800 30px/1 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; color: var(--lkInk); }
+  .lkTop small { display: block; margin-top: 4px; font: 600 12px 'Plus Jakarta Sans', sans-serif; color: var(--lkDim); } .lkTop small b { color: var(--lk1); }
+  .lkBtns { display: flex; gap: 8px; } .lkBtns button { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; font-size: 17px; background: linear-gradient(135deg, var(--lk1), var(--lk2)); color: #fff; box-shadow: 0 6px 16px rgba(14,165,233,.3); }
+  .lkBtns button.alt { background: var(--lkCard); color: var(--lkInk); box-shadow: inset 0 0 0 1px var(--lkLine); }
+  .lkSearch { width: 100%; box-sizing: border-box; margin: 0 0 12px !important; padding: 11px 14px 11px 38px !important; border-radius: 14px !important; border: 0 !important; background: var(--lkCard) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2394A3B8' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 3.5 3.5'/%3E%3C/svg%3E") 13px 50% no-repeat !important; box-shadow: inset 0 0 0 1px var(--lkLine); font: 500 14px 'Plus Jakarta Sans', sans-serif !important; color: var(--lkInk) !important; }
+  .lkOn { display: flex; gap: 14px; overflow-x: auto; margin: 0 -16px 8px; padding: 4px 16px 8px; scrollbar-width: none; } .lkOn::-webkit-scrollbar { display: none; }
+  .lkOn button { flex: none; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: 0; background: none; cursor: pointer; font: 600 11px 'Plus Jakarta Sans', sans-serif; color: var(--lkInk); }
+  .lkOn button > span:first-child { position: relative; padding: 2px; border-radius: 50%; background: conic-gradient(var(--lk1), var(--lk2), var(--lk1)); } .lkOn .av2 { width: 50px !important; height: 50px !important; box-shadow: 0 0 0 2px var(--lkBg, #F8FAFC) !important; }
+  #phone.os-dark .lkOn .av2 { --lkBg: #0B0B14; }
+  .lkOn button > span:first-child::after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 12px; height: 12px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 2.5px #fff; }
+  .lkOn button > span:last-child { max-width: 58px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lkSec { margin: 10px 4px 6px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--lkDim); }
+  .lkList { border-radius: 20px; overflow: hidden; background: var(--lkCard); box-shadow: inset 0 0 0 1px var(--lkLine), 0 6px 20px rgba(15,23,42,.04); }
+  .lkRow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; background: none; cursor: pointer; text-align: left; color: var(--lkInk); position: relative; transition: background .15s; }
+  .lkRow + .lkRow::before { content: ""; position: absolute; left: 74px; right: 0; top: 0; height: 1px; background: var(--lkLine); }
+  .lkRow:hover { background: rgba(14,165,233,.05); } .lkRow .av2 { width: 48px !important; height: 48px !important; flex: none; font-size: 18px; }
+  .lkRow .t { flex: 1; min-width: 0; } .lkRow .t b { display: block; font: 700 15px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lkRow .t small { display: block; margin-top: 2px; font: 500 13px 'Plus Jakarta Sans', sans-serif; color: var(--lkDim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lkRow .r { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; align-self: flex-start; padding-top: 2px; } .lkRow .r small { font: 600 11px 'Plus Jakarta Sans', sans-serif; color: var(--lkDim); }
+  .lkRow .r em { min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; display: grid; place-items: center; font: 800 11px sans-serif; font-style: normal; color: #fff; background: linear-gradient(135deg, var(--lk1), var(--lk2)); }
+  .lkRow.unr .t b { font-weight: 800; } .lkRow.unr .t small { color: var(--lkInk); font-weight: 600; } .lkRow.unr .r small { color: var(--lk1); }
+  .lkEmpty { padding: 28px 20px; text-align: center; color: var(--lkDim); font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; } .lkEmpty b { display: block; font-size: 34px; margin-bottom: 6px; }
+  .lkLock { margin: 14px 8px 4px; text-align: center; font: 500 11.5px/1.5 'Plus Jakarta Sans', sans-serif; color: var(--lkDim); }
+  /* a conversation */
+  #pbody[data-app="thread"] { padding-top: 0 !important; }
+  .lkHead { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 10px; margin: 0 -16px 6px; padding: 10px 14px; background: color-mix(in srgb, var(--lkCard) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--lkLine); }
+  #phone.os-light .lkHead { background: rgba(255,255,255,.86); } #phone.os-dark .lkHead { background: rgba(11,11,20,.86); }
+  .lkHead .av2 { width: 40px !important; height: 40px !important; flex: none; } .lkHead .t { flex: 1; min-width: 0; } .lkHead .t b { display: block; font: 800 15px 'Plus Jakarta Sans', sans-serif; color: var(--lkInk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lkHead .t small { display: block; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; color: var(--lkDim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .lkHead .t small.typ { color: var(--lk1); }
+  .lkHead button { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--lkCard); box-shadow: inset 0 0 0 1px var(--lkLine); cursor: pointer; font-size: 15px; color: var(--lkInk); }
+  #pbody[data-app="thread"] .msgs { gap: 2px; padding: 4px 0 6px; }
+  #pbody[data-app="thread"] .msg { max-width: 78%; padding: 8px 12px 6px; border: 0 !important; border-radius: 20px; background: var(--lkThem); color: var(--lkThemInk); box-shadow: 0 1px 2px rgba(15,23,42,.08); font: 500 14.5px/1.4 'Plus Jakarta Sans', sans-serif; margin-top: 8px; animation: lkIn .22s ease-out; }
+  #pbody[data-app="thread"] .msg.cont { margin-top: 2px; border-top-left-radius: 8px; } #pbody[data-app="thread"] .msg.me.cont { border-top-left-radius: 20px; border-top-right-radius: 8px; }
+  #pbody[data-app="thread"] .msg.me { background: linear-gradient(135deg, var(--lk1), var(--lk2)); color: #fff; box-shadow: 0 4px 12px rgba(14,165,233,.22); }
+  #pbody[data-app="thread"] .msg b { color: var(--lk1); font: 800 12px 'Plus Jakarta Sans', sans-serif; margin-bottom: 1px; }
+  #pbody[data-app="thread"] .msg time { display: block; text-align: right; margin-top: 2px; font: 600 10.5px 'Plus Jakarta Sans', sans-serif; opacity: .6; }
+  #pbody[data-app="thread"] .msg .tk.rd { color: #fff; opacity: 1; font-weight: 800; } #phone.os-light #pbody[data-app="thread"] .msg .tk.rd { color: #BAE6FD; }
+  #pbody[data-app="thread"] .msg.pend { opacity: .65; } #pbody[data-app="thread"] .msg.fail { background: #FEE2E2 !important; color: #991B1B !important; cursor: pointer; }
+  #pbody[data-app="thread"] .msg.fail time::after { content: " · Not sent, tap to retry"; font-weight: 800; }
+  #pbody[data-app="thread"] .mday { align-self: center; margin: 14px 0 4px; padding: 4px 12px; border-radius: 999px; background: var(--lkCard); box-shadow: inset 0 0 0 1px var(--lkLine); font: 700 11px 'Plus Jakarta Sans', sans-serif; color: var(--lkDim); }
+  #pbody[data-app="thread"] .lock { align-self: center; max-width: 86%; margin: 6px 0 4px; padding: 8px 12px; border-radius: 14px; background: rgba(250,204,21,.14); color: var(--lkInk); font: 500 11.5px/1.45 'Plus Jakarta Sans', sans-serif; text-align: center; }
+  #pbody[data-app="thread"] .typing { margin: 6px 0 2px; }
+  #pbody[data-app="thread"] .qrep { display: flex; gap: 6px; overflow-x: auto; margin: 4px -16px 0; padding: 4px 16px; scrollbar-width: none; } #pbody[data-app="thread"] .qrep::-webkit-scrollbar { display: none; }
+  #pbody[data-app="thread"] .qrep button { flex: none; padding: 7px 12px; border-radius: 999px; border: 0; background: var(--lkCard); box-shadow: inset 0 0 0 1px var(--lkLine); color: var(--lkInk); font: 600 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #pbody[data-app="thread"] .comp { align-items: center; gap: 8px; background: transparent !important; padding: 8px 12px 12px !important; margin: 4px -16px -12px !important; }
+  #phone.os-light #pbody[data-app="thread"] .comp { background: linear-gradient(0deg, #F1F5F9 75%, rgba(241,245,249,0)) !important; } #phone.os-dark #pbody[data-app="thread"] .comp { background: linear-gradient(0deg, #0B0B14 75%, rgba(11,11,20,0)) !important; }
+  #pbody[data-app="thread"] .comp input { flex: 1; margin: 0 !important; padding: 12px 16px !important; border-radius: 999px !important; border: 0 !important; background: var(--lkCard) !important; box-shadow: inset 0 0 0 1px var(--lkLine), 0 4px 14px rgba(15,23,42,.06) !important; color: var(--lkInk) !important; font: 500 14.5px 'Plus Jakarta Sans', sans-serif !important; }
+  #pbody[data-app="thread"] .comp .pbtn { flex: none; width: 44px !important; height: 44px; margin: 0 !important; padding: 0 !important; border-radius: 50% !important; background: linear-gradient(135deg, var(--lk1), var(--lk2)) !important; color: #fff !important; font-size: 17px; box-shadow: 0 6px 16px rgba(14,165,233,.35); transition: transform .12s; }
+  #pbody[data-app="thread"] .comp .pbtn:active { transform: scale(.9); }
+  @keyframes lkIn { from { transform: translateY(6px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  /* starting a chat */
+  #pbody[data-app="newchat"] .pcard { border-radius: 22px !important; } #pbody[data-app="newchat"] .pbtn { background: linear-gradient(135deg, var(--lk1), var(--lk2)) !important; color: #fff !important; border-radius: 14px !important; }
+  #pbody[data-app="newchat"] .pbtn:disabled { opacity: .6; }
 </style>
 </head>
 <body>
@@ -6608,15 +6665,21 @@
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
   const MY_READS = new Set(['me', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
+  const MY_QUIET = new Set(['live', 'typing', 'read', 'messages']); // chat traffic that changes nothing the cache holds
+  const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
   async function my(method, args = {}) {
-    if (!MY_READS.has(method)) { MY_CACHE.clear(); return myNet(method, args); }
+    if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) MY_CACHE.clear(); return myNet(method, args); }
     const key = method + JSON.stringify(args), hit = MY_CACHE.get(key);
     if (hit && performance.now() - hit.at < 20000) return hit.p;
     const pr = myNet(method, args); MY_CACHE.set(key, { at: performance.now(), p: pr }); pr.catch(() => MY_CACHE.delete(key));
     return pr;
   }
   async function myNet(method, args = {}) {
-    const go = () => fetch(`${API}/islandMe/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) });
+    const wait = method === 'live' ? 30000 : 15000;
+    const go = async () => { for (let k = 0; ; k++) { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), wait);
+      try { const r = await fetch(`${API}/islandMe/${method}`, { method: 'POST', signal: ac.signal, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) }); if (r.status >= 502 && r.status <= 504 && k < 2 && MY_AGAIN.has(method)) throw new Error('busy'); return r; }
+      catch (e) { if (k >= 2 || !MY_AGAIN.has(method)) throw new Error(navigator.onLine === false ? 'You\'re offline. Check your connection.' : 'Can\'t reach the island right now. Try again.'); await new Promise((ok) => setTimeout(ok, 600 * (k + 1))); }
+      finally { clearTimeout(tm); } } };
     let r = await go();
     if (r.status === 401 && await refresh()) r = await go();
     if (r.status === 401) throw new Error('signin');
@@ -7771,14 +7834,12 @@
         const order = gs.map((_, i) => i).sort((p, q) => last[q].id - last[p].id);
         const unreadAll = last.reduce((n, l) => n + l.unread, 0);
         // who's on the island now (tap to talk), then your conversations with their latest line; everything locked on your device
-        show(`${ahead('chats', 'Link', `🔒 End-to-end encrypted${unreadAll ? ` · <b style="color:#FF003C">${unreadAll} new</b>` : ''}`)}
-          <div class="rsec">ON THE ISLAND NOW ${people.length ? `<span class="dim">· ${people.length}</span>` : ''}</div>
-          ${people.length ? `<div class="ppl">${people.map((o) => `<button data-dm="${esc(o.name)}"><span class="onl">${avatar(o.name)}</span><span>${esc(o.name)}</span></button>`).join('')}</div>` : '<div class="dim" style="margin:0 2px 12px">Nobody else signed in nearby right now.</div>'}
-          <div class="qa" style="--ac:#FF003C;grid-template-columns:1fr 1fr"><button id="cDm"><i>✉️</i>Private</button><button id="cGroup"><i>👥</i>New group</button></div>
-          ${gs.length > 3 ? '<input id="cQ" class="ssearch" placeholder="🔍 Search conversations">' : ''}
-          <div class="rsec">CONVERSATIONS</div>
-          <div class="lst" id="cList">${order.map((i) => { const g = gs[i], l = last[i]; return `<button class="li${l.unread ? ' unr' : ''}" data-g="${i}" data-name="${esc((names[i] + ' ' + g.members.join(' ')).toLowerCase())}">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || names[i])}<span class="lt"><b>${esc(names[i])}</b><small>${l.id ? `${esc(l.from)}: ${esc(l.t)}` : g.members.length > 2 ? g.members.length + ' people · say hello' : 'Say hello'}</small></span><span class="lr2">${l.at ? `<small>${chatTime(l.at)}</small>` : ''}${l.unread ? `<em>${l.unread}</em>` : ''}</span></button>`; }).join('') || '<div class="li"><span class="lt"><small>No conversations yet. Say hello to someone on the island.</small></span></div>'}</div>
-          <div class="lock" style="margin-top:4px">The server only ever holds scrambled text. WYRD can't read your chats.</div>`);
+        show(`<div class="lkTop"><div><h2>Link</h2><small>🔒 End-to-end encrypted${unreadAll ? ` · <b>${unreadAll} new</b>` : ''}</small></div><div class="lkBtns"><button id="cGroup" class="alt" aria-label="New group" title="New group">👥</button><button id="cDm" aria-label="New message" title="New message">✏️</button></div></div>
+          ${gs.length ? '<input id="cQ" class="lkSearch" placeholder="Search" autocomplete="off">' : ''}
+          ${people.length ? `<div class="lkSec">On the island now · ${people.length}</div><div class="lkOn">${people.map((o) => `<button data-dm="${esc(o.name)}"><span>${avatar(o.name)}</span><span>${esc(o.name)}</span></button>`).join('')}</div>` : ''}
+          <div class="lkSec">Chats</div>
+          ${gs.length ? `<div class="lkList" id="cList">${order.map((i) => { const g = gs[i], l = last[i]; return `<button class="lkRow${l.unread ? ' unr' : ''}" data-g="${i}" data-name="${esc((names[i] + ' ' + g.members.join(' ')).toLowerCase())}">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#6366F1,#0EA5E9)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || names[i])}<span class="t"><b>${esc(names[i])}</b><small>${l.id ? `${l.from === 'You' ? 'You: ' : g.members.length > 2 ? esc(l.from) + ': ' : ''}${esc(l.t)}` : g.members.length > 2 ? g.members.length + ' people · say hello' : 'Say hello 👋'}</small></span><span class="r">${l.at ? `<small>${chatTime(l.at)}</small>` : ''}${l.unread ? `<em>${l.unread}</em>` : ''}</span></button>`; }).join('')}</div>` : '<div class="lkList"><div class="lkEmpty"><b>💬</b>No chats yet. Tap ✏️ to message someone, or a face above to say hello.</div></div>'}
+          <div class="lkLock">🔒 Messages are locked on your devices. The server only holds scrambled text, and WYRD can't read them.</div>`);
         if ($('cQ')) $('cQ').oninput = () => { const q = $('cQ').value.trim().toLowerCase(); pbody.querySelectorAll('#cList [data-name]').forEach((b) => (b.style.display = b.dataset.name.includes(q) ? '' : 'none')); };
         $('cDm').onclick = () => go('newchat', { dm: true });
         $('cGroup').onclick = () => go('newchat', { dm: false });
@@ -7831,28 +7892,32 @@
         const opt = arg || { dm: false };
         show(`${ahead('chats', opt.dm ? 'Private chat' : 'New group', '🔒 End-to-end encrypted')}<div class="pcard">${opt.dm ? '' : '<input id="nName" maxlength="40" placeholder="Group name (encrypted too)">'}<input id="nWho" value="${esc(opt.who || '')}" placeholder="${opt.dm ? 'Their username' : 'Usernames, comma separated'}"><button class="pbtn" id="nGo">${opt.dm ? 'Start private conversation' : 'Start group'}</button><p class="dim">Each person gets the chat's key locked to their own device key. Nobody else can open it, not even the server.</p></div>`);
         $('nGo').onclick = async () => {
+          const btn = $('nGo'); if (btn.disabled) return; btn.disabled = true; const label = btn.textContent; btn.textContent = 'Opening…';
           try {
-            const who = [...new Set($('nWho').value.split(',').map((s) => s.trim()).filter(Boolean))].filter((h) => h !== me$.handle);
+            const who = [...new Set($('nWho').value.split(',').map((s) => s.trim().replace(/^@/, '')).filter(Boolean))].filter((h) => h.toLowerCase() !== me$.handle.toLowerCase());
             if (!who.length) throw new Error('Add at least one person.');
+            if (who.length === 1) { const have = (await my('inbox', { seenJson: JSON.stringify(linkSeen()) })).find((v) => v.members.length === 2 && v.members.some((m) => m.toLowerCase() === who[0].toLowerCase()));
+              if (have) { let nm = who[0]; try { nm = dec.decode(await open(await groupKey(have), have.nameCt)); } catch {} stack.pop(); return go('thread', { ...have, name: nm }); } }
             const raw = crypto.getRandomValues(new Uint8Array(32)), gk = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
             const k = await keyPair(), members = [{ handle: me$.handle, wrappedKey: await seal(await shared(k.pubJwk), raw) }];
             for (const h of who) { const p = await my('keyOf', { handle: h }); members.push({ handle: p.handle, wrappedKey: await seal(await shared(p.pubKey), raw) }); }
             if (opt.dm && who.length !== 1) throw new Error('A private conversation is with one person.');
             const name = ($('nName') && $('nName').value.trim()) || [me$.handle, ...who].join(', ');
             const g = await my('createGroup', { nameCt: await seal(gk, enc.encode(name)), wrapperPub: k.pubJwk, members: JSON.stringify(members) });
-            groupKeys.set(g.id, gk); stack.pop(); go('chats');
-          } catch (e) { fail(e); }
+            if (!g.existing) groupKeys.set(g.id, gk);
+            MY_CACHE.clear(); const gs2 = await my('inbox', { seenJson: JSON.stringify(linkSeen()) }), made = gs2.find((v) => v.id === g.id);
+            stack.pop(); if (made) { let nm = name; try { nm = dec.decode(await open(await groupKey(made), made.nameCt)); } catch {} go('thread', { ...made, name: nm }); } else go('chats');
+          } catch (e) { btn.disabled = false; btn.textContent = label; fail(e); }
         };
         return;
       }
       if (app === 'thread') {
         const g = arg, key = await groupKey(g);
-        show(`<div class="ahead" style="--ac:#FF003C">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div><h2 style="font-size:15px">${esc(g.name)}</h2><span>🔒 ${g.members.map(esc).join(', ')}</span></div></div>
-          <div class="chips" style="--ac:#FF003C"><button id="tAdd">➕ Add someone</button><button id="tLeave">🚪 Leave</button></div>
-          <div class="msgs" id="tMsgs"><div class="lock" style="text-align:center">🔒 Messages here are locked on your devices. Not even the server or WYRD can read them.</div></div>
+        show(`<div class="lkHead">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#6366F1,#0EA5E9)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div class="t"><b>${esc(g.name)}</b><small id="tSub">${g.members.length > 2 ? g.members.map(esc).join(', ') : (others && [...others.values()].some((o) => o.name === g.members.find((m) => m !== me$.handle)) ? '● On the island now' : '🔒 Encrypted')}</small></div><button id="tAdd" aria-label="Add someone" title="Add someone">➕</button><button id="tLeave" aria-label="Leave" title="Leave">🚪</button></div>
+          <div class="msgs" id="tMsgs"><div class="lock">🔒 Messages here are locked on your devices. Not even the server or WYRD can read them.</div></div>
           <div class="typing" id="tTyping"></div>
           <div class="qrep">${['👍', '😂', '🙏', '🔥', 'On my way 🛵', 'Where you dey?'].map((v) => `<button data-q="${esc(v)}">${esc(v)}</button>`).join('')}</div>
-          <div class="comp"><input id="tText" maxlength="2000" placeholder="Message (encrypted)"><button class="pbtn" id="tGo" aria-label="Send">➤</button></div>`);
+          <div class="comp"><input id="tText" maxlength="2000" placeholder="Message" autocomplete="off" enterkeyhint="send"><button class="pbtn" id="tGo" aria-label="Send">➤</button></div>`);
         let since = 0, lastDay = '', lastFrom = '';
         const group = g.members.length > 2;
         // the messages land as they're sent: the chat waits on the server (live), which answers the moment there's a new
@@ -7860,12 +7925,13 @@
         let reads = {}, typers = [], typT = 0, readSent = 0, lastTyping = 0;
         const myTok = (threadTok = {}), still = () => threadTok === myTok && phone.style.display === 'block' && !!$('tMsgs');
         const ticks = () => { for (const d of $('tMsgs').querySelectorAll('.msg.me[data-id]')) { const id = +d.dataset.id, by = Object.entries(reads).filter(([, v]) => v >= id).map(([h]) => h), tk = d.querySelector('.tk'); if (!tk) continue; tk.textContent = by.length ? '✓✓' : '✓'; tk.classList.toggle('rd', !!by.length); tk.title = by.length ? (group ? 'Seen by ' + by.join(', ') : 'Seen') : 'Sent'; } };
-        const showTyping = () => { const el = $('tTyping'); if (!el) return; clearTimeout(typT); const who = typers.map((v) => v.h); el.innerHTML = who.length ? `${group ? esc(who.join(', ')) + ' ' : ''}<i></i><i></i><i></i>` : ''; el.classList.toggle('on', !!who.length); if (who.length) { pbody.scrollTop = pbody.scrollHeight; typT = setTimeout(() => { typers = []; showTyping(); }, Math.max(...typers.map((v) => v.ms)) + 300); } };
+        const showTyping = () => { const el = $('tTyping'); if (!el) return; clearTimeout(typT); const who = typers.map((v) => v.h); el.innerHTML = who.length ? `${group ? esc(who.join(', ')) + ' ' : ''}<i></i><i></i><i></i>` : ''; el.classList.toggle('on', !!who.length); const sub = $('tSub'); if (sub) { if (!sub.dataset.was) sub.dataset.was = sub.innerHTML; sub.classList.toggle('typ', !!who.length); sub.innerHTML = who.length ? `${group ? esc(who.join(', ')) + ' ' : ''}typing…` : sub.dataset.was; } if (who.length) { pbody.scrollTop = pbody.scrollHeight; typT = setTimeout(() => { typers = []; showTyping(); }, Math.max(...typers.map((v) => v.ms)) + 300); } };
         const markRead = () => { if (document.visibilityState === 'visible' && since > readSent) { readSent = since; my('read', { groupId: g.id, upTo: since }).catch(() => {}); } };
         const add = async (ms) => {
           for (const m of ms) {
             if (m.id <= since) continue;
             since = Math.max(since, m.id);
+            if ($('tMsgs').querySelector(`.msg[data-id="${m.id}"]`)) { lastFrom = m.from; continue; }
             let t; try { t = JSON.parse(dec.decode(await open(key, m.ct))).t; } catch { t = '🔒 (can\'t open)'; }
             const when = m.at ? new Date(m.at) : new Date(), day = when.toDateString();
             if (day !== lastDay) { lastDay = day; lastFrom = ''; const s = document.createElement('div'); s.className = 'mday'; s.textContent = day === new Date().toDateString() ? 'Today' : when.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }); $('tMsgs').append(s); }
@@ -7879,14 +7945,27 @@
         const pull = async () => { await add(await my('messages', { groupId: g.id, since })); ticks(); };
         pbody.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { $('tText').value = b.dataset.q; send(); }));
         await pull(); markRead();
-        (async () => { let ver = -1;
+        (async () => { let ver = -1, fails = 0;
           while (still()) {
             try { const r = await my('live', { groupId: g.id, since, ver }); if (!still()) return; ver = r.ver; await add(r.messages); typers = r.typing || []; reads = r.reads || {}; showTyping(); ticks(); markRead(); }
-            catch { if (still()) chatTimer = setInterval(() => pull().catch(() => {}), 3000); return; } // a server without live chat: fall back to asking every 3 s
+            catch (e) { if (!still()) return; if (/Not your chat/.test(e.message)) return; ver = -1; await new Promise((ok) => setTimeout(ok, Math.min(15000, 1000 * 2 ** (fails = (fails || 0) + 1)))); pull().catch(() => {}); continue; }
+            fails = 0;
           }
         })();
         $('tText').addEventListener('input', () => { if (Date.now() - lastTyping > 3000) { lastTyping = Date.now(); my('typing', { groupId: g.id }).catch(() => {}); } });
-        const send = async () => { const t = $('tText').value.trim(); if (!t) return; $('tText').value = ''; try { await my('post', { groupId: g.id, ct: await seal(key, enc.encode(JSON.stringify({ t }))) }); await pull(); } catch (e) { fail(e); } };
+        const post = async (d) => {
+          d.classList.remove('fail'); d.classList.add('pend');
+          try { if (!d.ct) d.ct = await seal(key, enc.encode(JSON.stringify({ t: d.txt })));
+            const r = await my('postOnce', { groupId: g.id, ct: d.ct, cid: d.cid });
+            d.classList.remove('pend'); d.dataset.id = r.id; d.onclick = null;
+            if ($('tMsgs').querySelectorAll(`.msg[data-id="${r.id}"]`).length > 1) d.remove(); // the live chat drew it first
+            ticks();
+          } catch (e) { d.classList.remove('pend'); d.classList.add('fail'); d.onclick = () => post(d); }
+        };
+        const send = () => { const t = $('tText').value.trim(); if (!t) return; $('tText').value = ''; $('tText').focus();
+          const d = document.createElement('div'); d.className = 'msg me' + (lastFrom === me$.handle ? ' cont' : ''); lastFrom = me$.handle;
+          d.cid = rkey(); d.txt = t; d.innerHTML = `${esc(t)}<time>${new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} <span class="tk">✓</span></time>`;
+          $('tMsgs').append(d); pbody.scrollTop = pbody.scrollHeight; post(d); };
         $('tGo').onclick = send; $('tText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
         $('tAdd').onclick = async () => { const h = prompt('Their island name'); if (!h) return; try { const p = await my('keyOf', { handle: h.trim() }); const raw = await open(await shared(g.wrapperPub), g.wrappedKey); const k = await keyPair(); await my('addMember', { groupId: g.id, handle: p.handle, wrappedKey: await seal(await shared(p.pubKey), raw), wrapperPub: k.pubJwk }); g.members.push(p.handle); render('thread', g); } catch (e) { fail(e); } };
         $('tLeave').onclick = async () => { if (!confirm('Leave this chat?')) return; await my('leaveGroup', { groupId: g.id }).catch(fail); back(); };

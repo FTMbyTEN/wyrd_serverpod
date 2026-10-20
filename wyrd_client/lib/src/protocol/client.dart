@@ -1088,6 +1088,22 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Post a message with the phone's own id for it ([cid]): sending it again (a retry after a dropped connection,
+  /// a double tap) returns the first one instead of posting it twice.
+  _ida.Future<String> postOnce(
+    int groupId,
+    String ct,
+    String cid,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'postOnce',
+    {
+      'groupId': groupId,
+      'ct': ct,
+      'cid': cid,
+    },
+  );
+
   /// Add someone to a chat I'm in, with the group key wrapped for them.
   _ida.Future<String> addMember(
     int groupId,

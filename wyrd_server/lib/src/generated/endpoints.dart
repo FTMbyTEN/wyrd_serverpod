@@ -1993,6 +1993,37 @@ class Endpoints extends _is.EndpointDispatch {
                     params['members'],
                   ),
         ),
+        'postOnce': _is.MethodConnector(
+          name: 'postOnce',
+          params: {
+            'groupId': _is.ParameterDescription(
+              name: 'groupId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'ct': _is.ParameterDescription(
+              name: 'ct',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'cid': _is.ParameterDescription(
+              name: 'cid',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .postOnce(
+                    session,
+                    params['groupId'],
+                    params['ct'],
+                    params['cid'],
+                  ),
+        ),
         'addMember': _is.MethodConnector(
           name: 'addMember',
           params: {

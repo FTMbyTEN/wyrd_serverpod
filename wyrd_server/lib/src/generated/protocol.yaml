@@ -84,6 +84,7 @@ islandMe:
   - pendingJobs:
   - reviewJob:
   - createGroup:
+  - postOnce:
   - addMember:
   - leaveGroup:
   - groups:

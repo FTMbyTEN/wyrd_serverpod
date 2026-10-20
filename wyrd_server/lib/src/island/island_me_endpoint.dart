@@ -737,6 +737,24 @@ class IslandMeEndpoint extends Endpoint {
       );
     }
     if (!hasMe) return _err('Include yourself.');
+    final who = {for (final r in rows) r.authUserId.uuid}.toList()..sort();
+    if (who.length != rows.length) return _err('Someone is in the list twice.');
+    final sig = '${u.uuid}|${who.join(',')}';
+    final recent = _made[sig];
+    if (recent != null && DateTime.now().difference(recent.$2) < const Duration(seconds: 30)) return jsonEncode({'id': recent.$1, 'existing': true});
+    if (rows.length == 2) {
+      final other = rows.firstWhere((r) => r.authUserId != u).authUserId;
+      final mineIds = {for (final m in await IslandMember.db.find(session, where: (t) => t.authUserId.equals(u))) m.groupId};
+      if (mineIds.isNotEmpty) {
+        final both = {for (final m in await IslandMember.db.find(session, where: (t) => t.groupId.inSet(mineIds) & t.authUserId.equals(other))) m.groupId};
+        if (both.isNotEmpty) {
+          final all = await IslandMember.db.find(session, where: (t) => t.groupId.inSet(both));
+          for (final gid in both) {
+            if (all.where((m) => m.groupId == gid).length == 2) return jsonEncode({'id': gid, 'existing': true});
+          }
+        }
+      }
+    }
     final g = await IslandGroup.db.insertRow(
       session,
       IslandGroup(createdBy: u, nameCt: nameCt, createdAt: now),
@@ -744,7 +762,26 @@ class IslandMeEndpoint extends Endpoint {
     await IslandMember.db.insert(session, [
       for (final r in rows) r.copyWith(groupId: g.id!),
     ]);
+    _made[sig] = (g.id!, DateTime.now());
+    if (_made.length > 2000) _made.removeWhere((_, v) => DateTime.now().difference(v.$2) > const Duration(minutes: 1));
     return jsonEncode({'id': g.id});
+  }
+  static final _made = <String, (int, DateTime)>{}; // who made which chat with whom, just now (a second tap opens the same one)
+  static final _posted = <String, (int, DateTime)>{}; // a message's id by the phone's own id for it, for 10 minutes
+
+  /// Post a message with the phone's own id for it ([cid]): sending it again (a retry after a dropped connection,
+  /// a double tap) returns the first one instead of posting it twice.
+  Future<String> postOnce(Session session, int groupId, String ct, String cid) async {
+    final u = _user(session);
+    if (cid.isEmpty || cid.length > 64) return _err('Bad message.');
+    final k = '${u.uuid}|$cid', was = _posted[k];
+    if (was != null) return jsonEncode({'id': was.$1, 'again': true});
+    final r = jsonDecode(await post(session, groupId, ct));
+    if (r is Map && r['id'] is int) {
+      _posted[k] = (r['id'] as int, DateTime.now());
+      if (_posted.length > 5000) _posted.removeWhere((_, v) => DateTime.now().difference(v.$2) > const Duration(minutes: 10));
+    }
+    return jsonEncode(r);
   }
 
   /// Add someone to a chat I'm in, with the group key wrapped for them.
@@ -850,12 +887,17 @@ class IslandMeEndpoint extends Endpoint {
       for (final p in await IslandProfile.db.find(session, where: (t) => t.authUserId.inSet({for (final m in members) m.authUserId}))) p.authUserId.uuid: p.handle,
     };
     final out = <Map<String, dynamic>>[];
-    for (final m in mine) {
-      final g = groups[m.groupId];
-      if (g == null) continue;
-      final last = await IslandMessage.db.findFirstRow(session, where: (t) => t.groupId.equals(g.id!), orderBy: (t) => t.id.desc());
-      final s = (seen['${g.id}'] as num?)?.toInt() ?? 0;
-      final unread = last == null || last.id! <= s ? 0 : await IslandMessage.db.count(session, where: (t) => t.groupId.equals(g.id!) & (t.id > s) & t.senderId.notEquals(u));
+    final live = [for (final m in mine) if (groups[m.groupId] != null) m];
+    final lasts = await Future.wait([for (final m in live) IslandMessage.db.findFirstRow(session, where: (t) => t.groupId.equals(m.groupId), orderBy: (t) => t.id.desc())]);
+    final unreads = await Future.wait([
+      for (var i = 0; i < live.length; i++)
+        () {
+          final s = (seen['${live[i].groupId}'] as num?)?.toInt() ?? 0, last = lasts[i];
+          return last == null || last.id! <= s ? Future.value(0) : IslandMessage.db.count(session, where: (t) => t.groupId.equals(live[i].groupId) & (t.id > s) & t.senderId.notEquals(u));
+        }(),
+    ]);
+    for (var i = 0; i < live.length; i++) {
+      final m = live[i], g = groups[m.groupId]!, last = lasts[i], unread = unreads[i];
       out.add({
         'id': g.id,
         'nameCt': g.nameCt,
