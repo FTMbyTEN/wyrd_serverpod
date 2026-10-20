@@ -5822,8 +5822,8 @@
     if (v && v.error) throw new Error(v.error);
     return v;
   }
-  async function rw(method, args = {}) {
-    const go = () => fetch(`${API}/rewards/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) });
+  async function rw(method, args = {}, ep = 'rewards') {
+    const go = () => fetch(`${API}/${ep}/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) });
     let r = await go();
     if (r.status === 401 && await refresh()) r = await go();
     if (r.status === 401) throw new Error('signin');
@@ -5834,6 +5834,7 @@
   }
   // real earnings are in kobo; shown as naira, with kobo only when there are some
   const kobo = (k) => '₦' + Math.floor((k || 0) / 100).toLocaleString('en-NG') + ((k || 0) % 100 ? '.' + String((k || 0) % 100).padStart(2, '0') : '');
+  const rwa = (method, args = {}) => rw(method, args, 'rewardsAdmin');
   const rkey = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const naira = (n) => '₦' + Number(n || 0).toLocaleString('en-NG');
@@ -6586,7 +6587,41 @@
         rw('earnings').then((e) => { if (!e || e.mode === 'off' || !$('realBox')) return;
           $('realBox').innerHTML = `<button class="hero" id="wReal" style="--ac:#22C55E;width:100%;text-align:left;border:0;cursor:pointer"><div class="hl">Real Earnings${e.mode === 'sandbox' ? ' · SANDBOX, no real money' : ''}</div><div class="hv">${kobo(e.availableKobo)}</div><small>available · ${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out ›</small></button>`;
           $('wReal').onclick = () => go('earn'); }).catch(() => {});
+        rwa('dashboard').then((d) => { if (!d || !d.can || !$('realBox')) return; const b = document.createElement('button'); b.className = 'pbtn alt'; b.style.margin = '6px 0'; b.textContent = '🏦 Treasury (admin)'; b.onclick = () => go('treasury'); $('realBox').after(b); }).catch(() => {});
         $('sGo').onclick = async () => { try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); render('wallet'); } catch (e) { fail(e); } };
+        return;
+      }
+      if (app === 'treasury') {
+        let d; try { d = await rwa('dashboard'); } catch (er) { show(`${ahead('wallet', 'Treasury', 'Admins only')}<div class="pcard dim">Not allowed.</div>`); return; }
+        const n = d.ngnKobo, g = d.gn, can = d.can, rv = can.operator ? await rwa('reviews').catch(() => []) : [];
+        const when = (s) => new Date(s).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const row = (k, v) => `<div class="row"><span>${k}</span><b>${v}</b></div>`, gn = (v) => 'G₦' + Number(v || 0).toLocaleString('en-NG');
+        const ok = (b, t) => `<div class="row"><span>${t}</span><b>${b ? '✅ balanced' : '⚠️ NOT balanced'}</b></div>`;
+        const sw = (k, label) => `<div class="row"><span>${label}</span>${can.operator ? `<button class="pbtn ${d.switches[k] ? '' : 'alt'}" data-sw="${k}" data-on="${d.switches[k] ? 0 : 1}">${d.switches[k] ? 'Paused · resume' : 'Running · pause'}</button>` : `<b>${d.switches[k] ? 'Paused' : 'Running'}</b>`}</div>`;
+        const pol = d.policy, bp = pol ? pol.cashShareBp : 167;
+        show(`${ahead('wallet', 'Treasury', 'Admins only · every action is recorded')}
+          <div class="pcard" style="border:1px dashed #F59E0B;color:#FDE68A">Mode: <b>${d.mode.toUpperCase()}</b>${d.mode === 'live' ? '' : ' · no real money moves'} · funded jobs ${d.fundedJobsEnabled ? 'ON' : 'OFF'}. WYRD can explain these figures but never moves money.</div>
+          <div class="pcard"><h3>🏙️ Virtual City Treasury (game currency)</h3>${row('Issued', gn(g.issued))}${row('In the treasury', gn(g.treasury))}${row('Set aside for taken gigs', gn(g.reserved))}${row('Paid to players', gn(g.paidToPlayers))}${ok(d.gnBalanced, 'Check')}</div>
+          <div class="pcard"><h3>🏦 Real Rewards Fund (real naira)</h3>${row('Recorded as received', kobo(n.fundedTotal))}${row('Free to back new gigs', kobo(n.uncommitted))}${row('Set aside for taken gigs', kobo(n.reservedAcceptedJobs))}${row('Fee allowance set aside', kobo(n.feeAllowanceReserved))}${row('Players: pending', kobo(n.pendingEarnings))}${row('Players: available', kobo(n.availableUnpaidEarnings))}${row('Being paid out', kobo(n.inFlightPayouts))}${row('Fees being paid', kobo(n.feesInFlight))}${row('Paid out (confirmed)', kobo(n.confirmedPaid))}${row('Provider fees', kobo(n.providerFees))}${ok(d.ngnBalanced, 'Every naira in one place')}${row('Ledger reconciliation', esc(typeof d.reconciliation === 'object' ? JSON.stringify(d.reconciliation) : d.reconciliation))}${row('Completed gigs with game pay missing', d.gameRewardsUnpaid)}<p class="dim">${esc(d.note)}</p></div>
+          <div class="pcard"><h3>Switches</h3>${sw('funded_jobs_paused', 'New funded places')}${sw('payouts_paused', 'New payouts')}<p class="dim">Pausing never cancels what players already earned or took.</p></div>
+          <div class="pcard"><h3>Money in (two people)</h3>${can.operator ? `<select id="fUnit"><option value="NGN">Real naira → Real Rewards Fund</option><option value="GN">Game currency → City Treasury</option></select><input id="fAmt" type="number" min="1" placeholder="Amount (naira, or G₦)"><input id="fEv" maxlength="200" placeholder="Evidence, e.g. the bank statement line"><button class="pbtn" id="fGo">Propose</button>` : ''}
+            ${d.funding.map((f) => `<div class="row"><span>#${f.id} ${f.unit === 'NGN' ? kobo(f.amount) : gn(f.amount)} · ${esc(f.evidence)}<br><span class="dim">${f.status}${f.mine ? ' · yours' : ''} · ${when(f.at)}</span></span>${f.status === 'proposed' && can.approver && !f.mine ? `<span><button class="pbtn" data-fd="${f.id}" data-ok="1">Approve</button><button class="pbtn alt" data-fd="${f.id}" data-ok="0">Reject</button></span>` : ''}</div>`).join('') || '<div class="dim">No funding yet.</div>'}
+            <p class="dim">Nothing is added until a different admin approves it.</p></div>
+          <div class="pcard"><h3>Reward policy</h3>${pol ? row('Version ' + pol.version, (pol.cashShareBp / 100) + '% cash · fee allowance ' + kobo(pol.feeAllowanceKobo) + ' · hold ' + pol.holdHours + 'h') : '<div class="dim">No policy yet.</div>'}
+            ${can.operator ? `<input id="pBp" type="number" placeholder="Cash share, basis points (167 = 1.67%)" value="${bp}"><input id="pFee" type="number" placeholder="Fee allowance, naira" value="${pol ? pol.feeAllowanceKobo / 100 : 835}"><input id="pHold" type="number" placeholder="Hold, hours" value="${pol ? pol.holdHours : 0}"><button class="pbtn alt" id="pGo">Save as a new version</button><p class="dim">Gigs already offered keep the version they were made with.</p>` : ''}</div>
+          <div class="pcard"><h3>Funded gigs</h3>${can.operator ? `<input id="oTitle" maxlength="80" placeholder="Title"><input id="oBasis" type="number" min="1" placeholder="Reward basis (e.g. 30000)"><div class="dim" id="oPrev"></div><input id="oHours" type="number" value="24" placeholder="Open for (hours)"><input id="oPlaces" type="number" placeholder="Places (blank = as many as the fund backs)"><button class="pbtn" id="oGo">Offer</button>` : ''}
+            ${d.offers.map((o) => `<div class="row"><span>${esc(o.title)}<br><span class="dim">${esc(o.line)} · ${o.status} · closes ${when(o.closesAt)}</span></span></div>`).join('') || '<div class="dim">No gigs yet.</div>'}</div>
+          ${can.operator ? `<div class="pcard"><h3>Flagged completions (${rv.length})</h3>${rv.map((r) => `<div class="row"><span>#${r.id} · ${kobo(r.cashKobo)} + ${gn(r.gameReward)}<br><span class="dim">${esc(r.note || '')} · ${when(r.acceptedAt)}</span></span><span><button class="pbtn" data-rv="${r.id}" data-ok="1">Confirm</button><button class="pbtn alt" data-rv="${r.id}" data-ok="0">Reject</button></span></div>`).join('') || '<div class="dim">Nothing to check.</div>'}</div>` : ''}
+          <button class="pbtn alt" id="tCsv">Export the books (CSV)</button>`);
+        const act = (fn) => async (ev) => { ev.target.disabled = true; try { await fn(ev.target); render('treasury'); } catch (er) { ev.target.disabled = false; fail(er); } };
+        pbody.querySelectorAll('[data-sw]').forEach((b) => (b.onclick = act((t) => rwa('setSwitch', { key: t.dataset.sw, on: t.dataset.on === '1' }))));
+        pbody.querySelectorAll('[data-fd]').forEach((b) => (b.onclick = act((t) => rwa('decideFunding', { fundingId: Number(t.dataset.fd), approve: t.dataset.ok === '1' }))));
+        pbody.querySelectorAll('[data-rv]').forEach((b) => (b.onclick = act((t) => rwa('decideReview', { acceptanceId: Number(t.dataset.rv), confirm: t.dataset.ok === '1', note: t.dataset.ok === '1' ? 'confirmed by admin' : 'not confirmed by admin' }))));
+        if ($('fGo')) $('fGo').onclick = act(() => { const u = $('fUnit').value, a = Number($('fAmt').value); return rwa('proposeFunding', { unit: u, amount: u === 'NGN' ? Math.round(a * 100) : Math.round(a), evidence: $('fEv').value }); });
+        if ($('pGo')) $('pGo').onclick = act(() => rwa('newPolicy', { cashShareBp: Number($('pBp').value), feeAllowanceKobo: Math.round(Number($('pFee').value) * 100), holdHours: Number($('pHold').value) }));
+        if ($('oBasis')) $('oBasis').oninput = () => { const b = Math.floor(Number($('oBasis').value) || 0), c = Math.floor(b * bp / 10000); $('oPrev').textContent = b > 0 ? `Players see: G₦${(b - c).toLocaleString('en-NG')} game currency + ₦${c.toLocaleString('en-NG')} cash` : ''; };
+        if ($('oGo')) $('oGo').onclick = act(() => rwa('createOffer', { type: 'FUNDED_SPLIT_JOB', title: $('oTitle').value, basis: Number($('oBasis').value), closesInHours: Number($('oHours').value) || 24, campaignId: null, policyVersion: null, places: $('oPlaces').value ? Number($('oPlaces').value) : null }));
+        $('tCsv').onclick = async () => { try { const t = await fetch(`${API}/rewardsAdmin/exportCsv`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: '{}' }).then((r) => r.json()); const csv = typeof t === 'string' ? t : JSON.stringify(t); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'rewards-books.csv'; a.click(); } catch (er) { fail(er); } };
         return;
       }
       if (app === 'earn') {

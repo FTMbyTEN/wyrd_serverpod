@@ -5,6 +5,7 @@ import 'package:serverpod/serverpod.dart';
 import '../drone/drone_service.dart';
 import '../generated/protocol.dart';
 import 'funded_jobs.dart';
+import 'reward_config.dart';
 import 'reward_ledger.dart';
 import 'reward_math.dart';
 
@@ -134,6 +135,22 @@ abstract final class RewardAdmin {
       'switches': switches,
       'reconciliation': await RewardLedger.reconcile(s),
       'gameRewardsUnpaid': await _gameUnpaid(s),
+      // for the admin screen: what this admin may do, money waiting for a second person, the policy in force, recent offers
+      'can': {for (final r in [viewer, operator, approver]) r: await has(s, by, r)},
+      'mode': RewardConfig.current.livePayoutsEnabled ? 'live' : (RewardConfig.current.sandbox ? 'sandbox' : 'off'),
+      'fundedJobsEnabled': RewardConfig.current.fundedJobsEnabled,
+      'funding': [
+        for (final f in await RewardFunding.db.find(s, orderBy: (t) => t.createdAt.desc(), limit: 20))
+          {'id': f.id, 'unit': f.unit, 'amount': f.amount, 'evidence': f.evidence, 'status': f.status, 'mine': f.proposedBy == by, 'at': f.createdAt.toIso8601String()},
+      ],
+      'policy': switch (await RewardPolicy.db.findFirstRow(s, orderBy: (t) => t.version.desc())) {
+        final p? => {'version': p.version, 'cashShareBp': p.cashShareBp, 'feeAllowanceKobo': p.feeAllowanceKobo, 'holdHours': p.holdHours},
+        null => null,
+      },
+      'offers': [
+        for (final o in await JobOffer.db.find(s, orderBy: (t) => t.createdAt.desc(), limit: 20))
+          {'id': o.id, 'type': o.type, 'title': o.title, 'line': RewardMath.rewardLine(o.gameReward, o.cashKobo), 'status': o.status, 'closesAt': o.closesAt.toIso8601String()},
+      ],
       'note': 'Internal figures. "fundedTotal" is what admins recorded as received; it must still be matched against the bank and provider statements.',
     };
   }
