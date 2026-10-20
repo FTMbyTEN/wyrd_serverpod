@@ -9305,7 +9305,7 @@
   if (signedIn()) my('myCars').then((l) => { myCarsL = l; const a = l.find((c2) => c2.active); if (a) myCar = a.model + ':' + a.color; }).catch(() => {});
 
   // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
-  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('passport'), errEl = document.getElementById('err');
+  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), errEl = document.getElementById('err');
   const emailIn = document.getElementById('email'), pass2In = document.getElementById('pass2');
   const RULES = { len: (p) => p.length >= 8, up: (p) => /[A-Z]/.test(p), low: (p) => /[a-z]/.test(p), num: (p) => /[0-9]/.test(p) };
   const strong = (p) => Object.values(RULES).every((f) => f(p));
