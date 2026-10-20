@@ -79,6 +79,27 @@ class IslandAuthEndpoint extends Endpoint {
     return null;
   }
 
+  /// Opening the phone: the player confirms their game ID with their email and their game password. Checked against
+  /// the account's own password hash (no new sign-in is made). An account still on the placeholder gets this email.
+  static Future<String?> confirmPhone(Session s, UuidValue u, String email, String password) async {
+    final mail = email.trim().toLowerCase();
+    _throttle(s, 'phone:${u.uuid}', 12);
+    final a = await EmailAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+    if (a == null) return "This account can't open a phone.";
+    final placeholder = a.email.endsWith('@$domain');
+    if (!placeholder && a.email != mail) return "That email doesn't match this game ID.";
+    try {
+      final who = await AuthServices.instance.emailIdp.utils.authentication.authenticate(s, email: a.email, password: password, transaction: null);
+      if (who != u) return "That password doesn't match this game ID.";
+    } on EmailAuthenticationTooManyAttemptsException {
+      return 'Too many tries. Wait a while and try again.';
+    } catch (_) {
+      return "That password doesn't match this game ID.";
+    }
+    if (placeholder) return setEmail(s, u, mail);
+    return null;
+  }
+
   /// Is this email free?
   Future<bool> emailFree(Session session, String email) async =>
       await AuthServices.instance.emailIdp.admin.findAccount(session, email: email.trim().toLowerCase()) == null;

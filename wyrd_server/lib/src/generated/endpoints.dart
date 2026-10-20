@@ -1509,6 +1509,31 @@ class Endpoints extends _is.EndpointDispatch {
                     params['email'],
                   ),
         ),
+        'confirmPhone': _is.MethodConnector(
+          name: 'confirmPhone',
+          params: {
+            'email': _is.ParameterDescription(
+              name: 'email',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'password': _is.ParameterDescription(
+              name: 'password',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .confirmPhone(
+                    session,
+                    params['email'],
+                    params['password'],
+                  ),
+        ),
         'me': _is.MethodConnector(
           name: 'me',
           params: {},

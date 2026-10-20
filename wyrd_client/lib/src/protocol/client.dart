@@ -849,6 +849,19 @@ class EndpointIslandMe extends _isc.EndpointRef {
         {'email': email},
       );
 
+  /// Confirm my game ID with my email and game password before the phone opens.
+  _ida.Future<String> confirmPhone(
+    String email,
+    String password,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'confirmPhone',
+    {
+      'email': email,
+      'password': password,
+    },
+  );
+
   _ida.Future<String> me() => caller.callServerEndpoint<String>(
     'islandMe',
     'me',

@@ -96,6 +96,12 @@ class IslandMeEndpoint extends Endpoint {
     return err == null ? jsonEncode({'ok': true}) : _err(err);
   }
 
+  /// Confirm my game ID with my email and game password before the phone opens.
+  Future<String> confirmPhone(Session session, String email, String password) async {
+    final err = await IslandAuthEndpoint.confirmPhone(session, _user(session), email, password);
+    return err == null ? jsonEncode({'ok': true}) : _err(err);
+  }
+
   Future<String> me(Session session) async {
     final u = _user(session);
     final p = await _profile(session, u);

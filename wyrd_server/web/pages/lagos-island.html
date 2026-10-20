@@ -26,7 +26,7 @@
   #phone, #phone * { scrollbar-color: #FCEE0A transparent; }
   #phone ::-webkit-scrollbar { width: 5px; }
   #phone ::-webkit-scrollbar-thumb { border: 0; border-radius: 0; background: linear-gradient(180deg, #FCEE0A, #FF003C); box-shadow: 0 0 6px rgba(252,238,10,.6); }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  html, body { margin: 0; height: 100%; height: 100dvh; width: 100%; overscroll-behavior: none; position: fixed; inset: 0; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
   .pill { background: #fff; border-radius: 999px; box-shadow: var(--shadow); }
   #card .offer { margin: 10px 0 2px; } #card .offer strong { display: block; font-size: 16px; color: var(--ink); } #card .offer small { display: block; color: var(--dim); }
@@ -967,6 +967,46 @@
   .pfact input { margin: 0 !important; border-radius: 14px !important; } .pfact > *, .pfact .row2 { width: 100% !important; box-sizing: border-box; } .pfact input { text-align: left !important; padding: 11px 14px !important; }
   #pbody[data-app="people"] .pfOne { padding: 18px; border-radius: 24px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine), 0 10px 30px rgba(15,23,42,.06); color: var(--ppInk); }
   .shsum { display: none !important; }
+  /* ================= Wallet 2, and the phone's ID check ================= */
+  #pbody[data-app="wallet"], #pbody[data-app="unlock"] { --pp1: #0EA5E9; --pp2: #6366F1; --ppInk: #0F172A; --ppDim: #64748B; --ppCard: #fff; --ppLine: rgba(15,23,42,.07); }
+  #phone.os-dark #pbody[data-app="wallet"], #phone.os-dark #pbody[data-app="unlock"] { --pp1: #FF2E88; --pp2: #00C2FF; --ppInk: #F1F5F9; --ppDim: #94A3B8; --ppCard: rgba(255,255,255,.05); --ppLine: rgba(255,255,255,.08); }
+  .wCard { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: 26px; color: #fff; background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.22), transparent 55%), linear-gradient(135deg, #0F766E 0%, #0EA5E9 52%, #6366F1 100%); box-shadow: 0 16px 34px rgba(14,165,233,.3); }
+  #phone.os-dark .wCard { background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.14), transparent 55%), linear-gradient(135deg, #1E1B4B 0%, #9D174D 55%, #0E7490 100%); box-shadow: 0 16px 34px rgba(0,0,0,.45); }
+  .wCard::after { content: ""; position: absolute; right: -40px; bottom: -60px; width: 190px; height: 190px; border-radius: 50%; border: 26px solid rgba(255,255,255,.08); }
+  .wCard .k { display: flex; justify-content: space-between; align-items: center; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .06em; text-transform: uppercase; opacity: .85; }
+  .wCard .v { margin: 10px 0 2px; font: 800 36px/1.05 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; } .wCard .s { font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .85; }
+  .wCard .bar { position: relative; z-index: 1; height: 7px; margin: 14px 0 7px; border-radius: 4px; background: rgba(255,255,255,.25); overflow: hidden; } .wCard .bar i { display: block; height: 100%; border-radius: 4px; background: #fff; }
+  .wCard .chip { width: 34px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #FDE68A, #F59E0B); opacity: .9; }
+  .wAct { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 6px; }
+  .wAct button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0; border: 0; background: none; cursor: pointer; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppInk); }
+  .wAct button span { width: 52px; height: 52px; border-radius: 18px; display: grid; place-items: center; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine), 0 6px 16px rgba(15,23,42,.06); color: var(--pp1); transition: transform .12s; }
+  .wAct button span .pi { width: 22px; height: 22px; } .wAct button.on span { background: linear-gradient(135deg, var(--pp1), var(--pp2)); color: #fff; } .wAct button:active span { transform: scale(.92); }
+  .wSheet { margin: 8px 0; padding: 16px; border-radius: 22px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine), 0 10px 26px rgba(15,23,42,.06); color: var(--ppInk); animation: lkIn .2s ease-out; }
+  .wSheet h3 { margin: 0 0 10px; font: 800 16px 'Plus Jakarta Sans', sans-serif; } .wSheet input { margin: 0 0 8px !important; border-radius: 14px !important; }
+  .wAmts { display: flex; gap: 6px; margin: 0 0 10px; } .wAmts button { flex: 1; padding: 8px 0; border-radius: 12px; border: 0; cursor: pointer; background: rgba(148,163,184,.14); color: var(--ppInk); font: 700 12.5px 'Plus Jakarta Sans', sans-serif; }
+  .wSheet .pbtn, .ulk .pbtn { width: 100%; margin: 4px 0 0 !important; border-radius: 14px !important; background: linear-gradient(135deg, var(--pp1), var(--pp2)) !important; color: #fff !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .wSec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 4px 6px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ppDim); }
+  .wRow { display: flex; align-items: center; gap: 12px; padding: 11px 14px; position: relative; color: var(--ppInk); }
+  .wRow + .wRow::before { content: ""; position: absolute; left: 66px; right: 0; top: 0; height: 1px; background: var(--ppLine); }
+  .wRow .ic2 { width: 40px; height: 40px; flex: none; border-radius: 13px; display: grid; place-items: center; font-size: 18px; background: rgba(148,163,184,.14); }
+  .wRow .ic2.in { background: rgba(34,197,94,.14); } .wRow .t { flex: 1; min-width: 0; } .wRow .t b { display: block; font: 700 14px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wRow .t small { display: block; margin-top: 2px; font: 500 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); } .wRow .amt { font: 800 14px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; } .wRow .amt.pos { color: #16A34A; }
+  button.wRow { width: 100%; border: 0; background: none; cursor: pointer; text-align: left; }
+  .wDay { padding: 10px 14px 4px; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .wReal { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 10px; padding: 14px 16px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; background: var(--ppCard); box-shadow: inset 0 0 0 1px rgba(34,197,94,.35); color: var(--ppInk); }
+  .wReal .ic2 { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: rgba(34,197,94,.15); color: #16A34A; } .wReal b { display: block; font: 800 18px 'Plus Jakarta Sans', sans-serif; } .wReal small { display: block; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  /* the ID check before the phone opens */
+  .ulk { padding: 8px 4px; color: var(--ppInk); } .ulk .badge { width: 64px; height: 64px; margin: 10px auto 12px; border-radius: 22px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--pp1), var(--pp2)); box-shadow: 0 12px 28px rgba(14,165,233,.35); } .ulk .badge .pi { width: 30px; height: 30px; }
+  .ulk h2 { margin: 0; text-align: center; font: 800 24px 'Plus Jakarta Sans', sans-serif; } .ulk > p { margin: 6px 8px 16px; text-align: center; font: 500 13.5px/1.5 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .ulk .id { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; border-radius: 16px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); } .ulk .id .av2 { width: 38px !important; height: 38px !important; }
+  .ulk .id b { display: block; font: 800 14px 'Plus Jakarta Sans', sans-serif; } .ulk .id small { font: 600 11.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .ulk label { display: block; margin: 0 4px 5px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .ulk .fld { position: relative; margin-bottom: 12px; } .ulk .fld .pi { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ppDim); }
+  .ulk .fld input { width: 100%; box-sizing: border-box; margin: 0 !important; padding: 13px 14px 13px 40px !important; border-radius: 14px !important; border: 0 !important; background: var(--ppCard) !important; box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk) !important; font: 500 14.5px 'Plus Jakarta Sans', sans-serif !important; }
+  .ulk .err { min-height: 18px; margin: 0 4px 6px; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #DC2626; } .ulk .fine { margin: 12px 6px 0; text-align: center; font: 500 11.5px/1.5 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  #tFs { position: fixed; right: calc(12px + env(safe-area-inset-right)); top: calc(62px + env(safe-area-inset-top)); z-index: 15; width: 38px; height: 38px; border-radius: 12px; border: 0; cursor: pointer; display: grid; place-items: center; background: rgba(15,23,42,.55); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+  #tFs svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (display-mode: fullscreen), (display-mode: standalone) { #tFs { display: none; } }
 </style>
 </head>
 <body>
@@ -1316,11 +1356,21 @@
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
   function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
+  if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (W !== innerWidth || H !== innerHeight) resize(); });
+  addEventListener('orientationchange', () => setTimeout(resize, 250));
   // full screen on a phone: the first time you tap into the island, the browser's own bars go away (Android and most
   // browsers). If you leave full screen yourself it doesn't pull you back. On an iPhone, Safari can't do this for a web
   // page: add Lagos Island to the home screen and it opens full screen like an app (see the manifest).
   let fsAsked = false;
-  const wantFs = () => MOBILE && !fsAsked && !document.fullscreenElement && !matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches && document.documentElement.requestFullscreen;
+  const de = document.documentElement, fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const fsCan = !!(de.requestFullscreen || de.webkitRequestFullscreen), installedApp = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone;
+  const fsGo = () => { const r = de.requestFullscreen ? de.requestFullscreen({ navigationUI: 'hide' }) : de.webkitRequestFullscreen && de.webkitRequestFullscreen(); if (r && r.catch) r.catch(() => {}); };
+  const fsOut = () => { (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document); };
+  const wantFs = () => MOBILE && !fsAsked && !fsEl() && !installedApp() && fsCan;
+  if (!installedApp()) setTimeout(() => { const b = document.createElement('button'); b.id = 'tFs'; b.setAttribute('aria-label', 'Full screen'); b.title = 'Full screen';
+    const draw = () => (b.innerHTML = fsEl() ? '<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'); draw();
+    b.onclick = (e) => { e.stopPropagation(); fsAsked = true; if (fsEl()) return fsOut(); if (fsCan) fsGo(); else appInstall(null); };
+    document.addEventListener('fullscreenchange', draw); document.addEventListener('webkitfullscreenchange', draw); document.body.append(b); }, 1200);
 
   // ---- the app: install Lagos Island like an app, with all of it downloaded onto the device (the service worker keeps
   // the page, every model and texture, and three.js, so it opens at once and loads nothing again). Chrome, Edge and
@@ -1344,7 +1394,7 @@
     await appDownload(btn);
     if (APP.prompt) { APP.prompt.prompt(); const r = await APP.prompt.userChoice.catch(() => null); APP.prompt = null; if (r && r.outcome === 'accepted') return; }
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    card.innerHTML = `<b>📲 Install Lagos Island</b><span>Everything is downloaded to this device: it opens instantly and full screen.</span><div class="offer"><strong>${iOS ? 'On iPhone or iPad' : 'In your browser'}</strong><small>${iOS ? 'Tap the Share button <b>⬆︎</b> in Safari, then <b>Add to Home Screen</b>.' : 'Open the browser menu <b>⋮</b> and choose <b>Install app</b> (or <b>Add to Home screen</b>).'}</small></div>`;
+    card.innerHTML = `<b>📲 Install Lagos Island</b><span>Everything is downloaded to this device: it opens instantly and full screen.</span><div class="offer"><strong>${iOS ? 'On iPhone or iPad' : 'In your browser'}</strong><small>${iOS ? 'Safari can\'t hide its bars for a web page. Tap the Share button <b>⬆︎</b>, then <b>Add to Home Screen</b>, and open Lagos Island from your home screen: it fills the whole screen, notch to edge.' : 'Open the browser menu <b>⋮</b> and choose <b>Install app</b> (or <b>Add to Home screen</b>).'}</small></div>`;
     card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 15000);
   }
   function appBtn() {
@@ -1362,7 +1412,7 @@
   // Chrome, Edge and Android: the install offer comes up on the next tap (once a day at most); a browser can't install
   // without one tap from you, and an iPhone allows no offer at all (the button shows the steps)
   addEventListener('pointerdown', () => { if (!APP.prompt || APP.installed) return; const day = new Date().toDateString(); if (store.get('li.appAsked') === day) return; store.set('li.appAsked', day); const pr = APP.prompt; APP.prompt = null; pr.prompt(); pr.userChoice.catch(() => {}); }, { capture: true });
-  addEventListener('pointerup', () => { if (!wantFs()) return; fsAsked = true; document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); }, { capture: true });
+  addEventListener('pointerup', () => { if (!wantFs()) return; fsAsked = true; fsGo(); }, { capture: true });
 
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
   let co = 1, si = 0, sp = 1, cp = 0, K = 1;
@@ -6437,7 +6487,7 @@
   // ---- people: a Lagosian's public profile (never their wallet, email, messages, where they are, who their friends are
   // or what's inside their home), real friend requests (they see it, they accept or decline), and finding people
   const sinceStr = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-NG', { month: 'long', year: 'numeric' }); };
-  const PI = { home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>', work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>', tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>', plane: '<path d="M2 16l20-6-20-6 3 6z"/><path d="M5 10h8"/>', users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/>', add: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/>', check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', go: '<path d="M9 6l6 6-6 6"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', inbox: '<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>', spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>' };
+  const PI = { home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>', work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>', tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>', plane: '<path d="M2 16l20-6-20-6 3 6z"/><path d="M5 10h8"/>', users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/>', add: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/>', check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', go: '<path d="M9 6l6 6-6 6"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', inbox: '<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>', spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>', send: '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>', car: '<path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="16" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="18" r=".6"/><circle cx="16.5" cy="18" r=".6"/>', bank: '<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>', key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M14 9l2 2"/>', shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/>', trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>' };
   const pi = (k) => `<svg class="pi" viewBox="0 0 24 24" aria-hidden="true">${PI[k] || ''}</svg>`;
   const REL = { none: '➕ Add friend', sent: '⏳ Request sent', received: '✓ Accept request', friends: '✓ Friends', me: '' };
   function profileHtml(p) {
@@ -7697,6 +7747,8 @@
     });
   }
   const CYLOAD = `<div class="cyload"><div class="cyring"><i></i><i></i><b></b></div><div class="cyg" data-t="LOADING">LOADING</div><div class="cybar"><i></i></div><small class="cylog"><span>// linking to WYRD OS</span><span>// decrypting your keys</span><span>// syncing the island</span></small></div>`;
+  // the phone opens for the account's owner: their email and game password confirm the game ID (remembered 12 hours here)
+  const phoneOk = () => { try { const v = JSON.parse(store.get('li.phoneOk') || 'null'); return !!(v && me$ && v.h === me$.handle && Date.now() - v.at < 12 * 3600e3); } catch { return false; } };
   async function openPhone(app, arg) { store.set('li.phoneSeen', '1');
     // already open (tapping piece after piece in the Home Store, say): just show the next thing, no lock screen
     if (phone.style.display === 'block' && app && signedIn() && me$ && keyed) { shadeEl.classList.remove('on'); if (stack.length > 1 && stack[stack.length - 1][0] === app) stack.pop(); return go(app, arg); } // the next piece replaces the last, so Back stays short
@@ -7709,7 +7761,7 @@
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
     if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin'); // a ride, the free harbour tour and the airport's boards need no account
     try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
-    if (me$ && me$.hasEmail === false && app !== 'addemail') return render('addemail', { then: app, arg }); // signed up with a username only: the email first
+    if (me$ && !phoneOk() && app !== 'unlock') return render('unlock', { then: app, arg }); // your email and game password first: it confirms the game ID
     if (app) go(app, arg); else render('home');
   }
   async function render(app, arg) { pbody.dataset.app = app;
@@ -7741,21 +7793,29 @@
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap));
         const icon = (m, a) => /ride|okada/i.test(m) ? '🛵' : /casino/i.test(m) ? '🎰' : /home store/i.test(m) ? '🛋️' : /bought a/i.test(m) ? '🔑' : /ticket/i.test(m) ? '🎟️' : /^to |^from /i.test(m) ? '↔️' : a > 0 ? '💼' : '🧾';
         const EARN = [['refinery', '🛢️', 'Refinery shift', '₦6,500'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🎶', 'Club night shift', 'nights']];
-        show(`${ahead('wallet', 'Wallet', 'Naira on the island\'s books')}
-          <div class="hero" style="--ac:#FCEE0A"><div class="hl">Game Wallet · game currency, not withdrawable</div><div class="hv">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>Earned today ${naira(me$.earnedToday || 0)} of ${naira(cap)}</small></div>
+        const when = (at) => new Date(at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+        const dayOf = (at) => { const d = new Date(at), t = new Date(); if (d.toDateString() === t.toDateString()) return 'Today'; t.setDate(t.getDate() - 1); return d.toDateString() === t.toDateString() ? 'Yesterday' : d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' }); };
+        let lastDay = ''; const rows = r.map((e) => { const d = e.at ? dayOf(e.at) : ''; const head = d && d !== lastDay ? `<div class="wDay">${d}</div>` : ''; if (d) lastDay = d;
+          return head + `<div class="wRow"><span class="ic2${e.amount > 0 ? ' in' : ''}">${icon(e.memo, e.amount)}</span><span class="t"><b>${esc(e.memo)}</b>${e.at ? `<small>${when(e.at)}</small>` : ''}</span><span class="amt ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</span></div>`; }).join('');
+        const spent = r.filter((e) => e.amount < 0 && e.at && dayOf(e.at) === 'Today').reduce((n, e) => n - e.amount, 0);
+        show(`<div class="ppTop"><div><h2>Wallet</h2><small>@${esc(me$.handle)} · game naira</small></div></div>
+          <div class="wCard"><div class="k"><span>Balance</span><span class="chip"></span></div><div class="v">${naira(me$.naira)}</div><div class="s">Game currency · can't be withdrawn</div>
+            <div class="bar"><i style="width:${pct}%"></i></div><div class="s" style="display:flex;justify-content:space-between"><span>Earned today ${naira(me$.earnedToday || 0)}</span><span>of ${naira(cap)}</span></div></div>
+          <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button><button id="wShop"><span>${pi('bag')}</span>Store</button><button id="wCars"><span>${pi('car')}</span>Cars</button></div>
           <div id="realBox"></div>
-          <div class="qa" style="--ac:#FCEE0A"><button id="wSend"><i>↗️</i>Send</button><button id="wEarn"><i>💼</i>Earn</button><button id="wShop"><i>🛋️</i>Store</button><button id="wCars"><i>🚗</i>Cars</button></div>
-          <div class="pcard" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their name on the island"><input id="sAmt" type="number" min="50" max="50000" placeholder="Amount (₦50 to ₦50,000)"><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">Send</button></div>
-          <div id="earnBox" style="display:none"><div class="rsec">WHERE TO EARN</div><div class="lst">${EARN.map(([k, ic, n, pay]) => `<button class="li" data-earn="${k}"><span class="ic">${ic}</span><span class="lt"><b>${n}</b><small>${pay} a shift · ride there</small></span><span class="lr">›</span></button>`).join('')}</div></div>
-          <div class="rsec">RECEIPTS</div><div class="lst">${r.map((e) => `<div class="li"><span class="ic">${icon(e.memo, e.amount)}</span><span class="lt"><b>${esc(e.memo)}</b>${e.at ? `<small>${new Date(e.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small>` : ''}</span><span class="lr ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</span></div>`).join('') || '<div class="li"><span class="lt"><small>Nothing yet. Work a shift to get paid.</small></span></div>'}</div>`);
+          <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
+          <div id="earnBox" style="display:none"><div class="wSec"><span>Where to earn</span></div><div class="ppList">${EARN.map(([k, ic, n, pay]) => `<button class="wRow" data-earn="${k}"><span class="ic2">${ic}</span><span class="t"><b>${n}</b><small>${pay} a shift · ride there</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`).join('')}</div></div>
+          <div class="wSec"><span>Activity</span>${spent ? `<span>Spent today ${naira(spent)}</span>` : ''}</div>
+          <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
+        pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
         $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => toggle('earnBox', 'wEarn'); $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
         pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
         rw('earnings').then((e) => { if (!e || e.mode === 'off' || !$('realBox')) return;
-          $('realBox').innerHTML = `<button class="hero" id="wReal" style="--ac:#22C55E;width:100%;text-align:left;border:0;cursor:pointer"><div class="hl">Real Earnings${e.mode === 'sandbox' ? ' · SANDBOX, no real money' : ''}</div><div class="hv">${kobo(e.availableKobo)}</div><small>available · ${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out ›</small></button>`;
+          $('realBox').innerHTML = `<button class="wReal" id="wReal"><span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Real earnings${e.mode === 'sandbox' ? ' · sandbox, no real money' : ''}</small><b>${kobo(e.availableKobo)}</b><small>${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`;
           $('wReal').onclick = () => go('earn'); }).catch(() => {});
         rwa('dashboard').then((d) => { if (!d || !d.can || !$('realBox')) return; const b = document.createElement('button'); b.className = 'pbtn alt'; b.style.margin = '6px 0'; b.textContent = '🏦 Treasury (admin)'; b.onclick = () => go('treasury'); $('realBox').after(b); }).catch(() => {});
-        $('sGo').onclick = async () => { try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); render('wallet'); } catch (e) { fail(e); } };
+        $('sGo').onclick = async () => { const sb = $('sGo'); if (sb.disabled) return; sb.disabled = true; try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); tick(`Sent ${naira(Number($('sAmt').value))} to ${$('sTo').value}`); render('wallet'); } catch (e) { sb.disabled = false; fail(e); } };
         return;
       }
       if (app === 'treasury') {
@@ -7884,6 +7944,22 @@
           if (g) go('thread', { ...g, name: names[gs.indexOf(g)] }); else go('newchat', { dm: true, who: b.dataset.dm });
         }));
         pbody.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => go('thread', { ...gs[b.dataset.g], name: names[b.dataset.g] })));
+        return;
+      }
+      if (app === 'unlock') {
+        const first = me$.hasEmail === false;
+        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>Confirm it's you</h2><p>${first ? 'Add your email and enter your game password to open your phone. Your email is where a password reset goes.' : 'Enter the email and game password on this account to open your phone.'}</p>
+          <div class="id">${avatar(me$.handle)}<div><b>@${esc(me$.handle)}</b><small>Game ID</small></div></div>
+          <label for="uMail">Email</label><div class="fld">${pi('mail')}<input id="uMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email"></div>
+          <label for="uPass">Game password</label><div class="fld">${pi('key')}<input id="uPass" type="password" maxlength="128" placeholder="Your password" autocomplete="current-password"></div>
+          <div class="err" id="uErr"></div><button class="pbtn" id="uGo">${pi('check')}Open my phone</button>
+          <div class="fine">Nobody on the island sees your email. This device remembers you for 12 hours.</div></div>`);
+        const goOn = async () => { const b = $('uGo'), err = $('uErr'); if (b.disabled) return; err.textContent = '';
+          const mail = $('uMail').value.trim(), pw = $('uPass').value; if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { err.textContent = 'Enter your email address.'; return $('uMail').focus(); } if (!pw) { err.textContent = 'Enter your game password.'; return $('uPass').focus(); }
+          b.disabled = true; b.innerHTML = 'Checking…';
+          try { await my('confirmPhone', { email: mail, password: pw }); me$.hasEmail = true; store.set('li.phoneOk', JSON.stringify({ h: me$.handle, at: Date.now() })); stack = [['home']]; const t = arg && arg.then; if (t) go(t, arg.arg); else render('home'); }
+          catch (e) { b.disabled = false; b.innerHTML = pi('check') + 'Open my phone'; $('uPass').value = ''; err.textContent = e.message === 'signin' ? 'Sign in again.' : e.message; } };
+        $('uGo').onclick = goOn; $('uPass').onkeydown = (e) => { if (e.key === 'Enter') goOn(); }; $('uMail').onkeydown = (e) => { if (e.key === 'Enter') $('uPass').focus(); }; $('uMail').focus();
         return;
       }
       if (app === 'addemail') {
