@@ -1535,7 +1535,10 @@
   let quality = 1; // drops when frames run slow
   const cvMain = cv.getContext('2d');
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
-  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
+  // an iPhone home-screen app reports a viewport that stops short of the home bar: there the game takes the phone's whole
+  // physical screen (its long side in portrait, its short side in landscape), so nothing shows under it
+  function fitStandalone() { if (!(navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches)) return; const land = innerWidth > innerHeight, sh = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height); const want = Math.max(innerHeight, sh); cv.style.height = want + 'px'; document.documentElement.style.height = document.body.style.height = want + 'px'; }
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); fitStandalone(); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   { const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
     const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
