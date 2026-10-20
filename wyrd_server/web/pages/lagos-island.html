@@ -26,8 +26,9 @@
   #phone, #phone * { scrollbar-color: #FCEE0A transparent; }
   #phone ::-webkit-scrollbar { width: 5px; }
   #phone ::-webkit-scrollbar-thumb { border: 0; border-radius: 0; background: linear-gradient(180deg, #FCEE0A, #FF003C); box-shadow: 0 0 6px rgba(252,238,10,.6); }
-  html, body { margin: 0; height: 100%; height: 100dvh; width: 100%; overscroll-behavior: none; position: fixed; inset: 0; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  html, body { margin: 0; height: 100%; width: 100%; overscroll-behavior: none; position: fixed; inset: 0; overflow: hidden; background: #3A86C8; color: var(--ink); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  canvas#c { top: 0; bottom: auto; width: 100vw; height: 100vh; height: 100lvh; min-height: 100%; }
   .pill { background: #fff; border-radius: 999px; box-shadow: var(--shadow); }
   #card .offer { margin: 10px 0 2px; } #card .offer strong { display: block; font-size: 16px; color: var(--ink); } #card .offer small { display: block; color: var(--dim); }
   #leave { left: 14px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 64px; height: 64px; display: none; font-size: 22px; line-height: 1; }
@@ -1098,6 +1099,23 @@
   #upd i { flex: none; font-style: normal; font-size: 20px; }
   /* on a real phone the device shows its own time and battery: the drawn ones go (the bar stays: tap it for the control centre) */
   @media (max-width: 600px), (pointer: coarse) and (max-height: 500px) { #pbar #pclock, #pbar .sys { visibility: hidden !important; } }
+  /* ================= Jobs 2 ================= */
+  #pbody[data-app="jobs"] { --pp1: #F59E0B; --pp2: #F97316; --ppInk: #0F172A; --ppDim: #64748B; --ppCard: #fff; --ppLine: rgba(15,23,42,.07); }
+  #phone.os-dark #pbody[data-app="jobs"] { --pp1: #FACC15; --pp2: #FF2E88; --ppInk: #F1F5F9; --ppDim: #94A3B8; --ppCard: rgba(255,255,255,.05); --ppLine: rgba(255,255,255,.08); }
+  .jbHero { position: relative; overflow: hidden; padding: 16px; border-radius: 24px; color: #fff; background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.25), transparent 60%), linear-gradient(135deg, #F59E0B, #F97316 55%, #DB2777); box-shadow: 0 14px 30px rgba(249,115,22,.28); }
+  .jbHero small { display: block; font: 700 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .06em; text-transform: uppercase; opacity: .85; } .jbHero b { display: block; margin: 4px 0 2px; font: 800 22px/1.2 'Plus Jakarta Sans', sans-serif; } .jbHero span { font: 600 12.5px 'Plus Jakarta Sans', sans-serif; opacity: .9; }
+  .jbHero .row { display: flex; gap: 8px; margin-top: 12px; } .jbHero .row button { flex: 1; padding: 9px 0; border: 0; border-radius: 12px; cursor: pointer; background: rgba(255,255,255,.22); color: #fff; font: 800 12.5px 'Plus Jakarta Sans', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 6px; } .jbHero .row .pi { width: 15px; height: 15px; }
+  .jbCard { margin-top: 10px; padding: 14px; border-radius: 22px; background: var(--ppCard); color: var(--ppInk); box-shadow: inset 0 0 0 1px var(--ppLine), 0 6px 18px rgba(15,23,42,.05); }
+  .jbTop { display: flex; align-items: center; gap: 12px; } .jbTop .av2 { width: 46px !important; height: 46px !important; border-radius: 14px !important; flex: none; } .jbTop .t { flex: 1; min-width: 0; }
+  .jbTop b { display: block; font: 800 15.5px/1.25 'Plus Jakarta Sans', sans-serif; } .jbTop small { display: block; margin-top: 2px; font: 600 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .jbRing { --m: 0; flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--pp1) calc(var(--m) * 1%), rgba(148,163,184,.2) 0); }
+  .jbRing span { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--ppCard); font: 800 11px 'Plus Jakarta Sans', sans-serif; color: var(--ppInk); } #phone.os-dark .jbRing span { background: #14141F; }
+  .jbCard p { margin: 10px 0 8px; font: 500 13.5px/1.5 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } .jbCard.open p { -webkit-line-clamp: unset; }
+  .jbTags { display: flex; flex-wrap: wrap; gap: 6px; } .jbTags span { padding: 5px 10px; border-radius: 999px; background: rgba(148,163,184,.14); font: 700 11.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppInk); } .jbTags .pay { background: rgba(34,197,94,.14); color: #15803D; } #phone.os-dark .jbTags .pay { color: #4ADE80; }
+  .jbAct { display: flex; gap: 8px; margin-top: 12px; } .jbAct .pbtn { flex: 1; margin: 0 !important; border-radius: 14px !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; } .jbAct .pbtn:not(.alt) { background: linear-gradient(135deg, var(--pp1), var(--pp2)) !important; color: #fff !important; }
+  .jbDone { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: rgba(34,197,94,.12); color: #15803D; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; } #phone.os-dark .jbDone { color: #4ADE80; }
+  .jbNote { display: none; margin-top: 10px; } .jbCard.open .jbNote { display: block; } .jbNote textarea { width: 100%; box-sizing: border-box; margin: 0 0 8px !important; border-radius: 14px !important; }
+  #pbody[data-app="jobs"] .ppSeg button.on { box-shadow: 0 4px 12px rgba(249,115,22,.3); }
 </style>
 </head>
 <body>
@@ -1445,8 +1463,11 @@
   let quality = 1; // drops when frames run slow
   const cvMain = cv.getContext('2d');
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
-  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
+  { const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
+    setTimeout(seaBg, 0); setInterval(seaBg, 20000); }
   if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (W !== innerWidth || H !== innerHeight) resize(); });
   addEventListener('orientationchange', () => setTimeout(resize, 250));
   // full screen on a phone: the first time you tap into the island, the browser's own bars go away (Android and most
@@ -6867,7 +6888,7 @@
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
     if (!inside) wyrdStep(dt);
     if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); { const sp0 = P(me.x, 0, me.z), seen = sp0[0] > 0 && sp0[0] < W && sp0[1] > 0 && sp0[1] < H; stickEl.classList.toggle('show', stickId != null || (playing && seen && !pose && phoneEl0.style.display !== 'block' && !document.querySelector('#hello:not([style*="none"])'))); } } // the joystick: only while your character is on screen and free to walk
-    if (x === cvMain && (W !== innerWidth || H !== innerHeight)) resize(); // a preview put back a stale size (the window changed while it drew): fit the screen again
+    if (x === cvMain && (W !== innerWidth || H < innerHeight)) resize(); // a preview put back a stale size (the window changed while it drew): fit the screen again
     draw();
     requestAnimationFrame(frame);
   }
@@ -8085,16 +8106,19 @@
         const list = await my('jobs');
         // filters (all, your matches, applied), cards with the company's avatar, a match ring, skill tags; Apply opens a note
         const shown = list.filter((j) => jobsTab === 'applied' ? j.applied : jobsTab === 'match' ? j.match != null && j.match >= 50 : true);
-        show(`${ahead('jobs', 'Jobs', 'Real employers, checked before they show')}
-          <div class="qa" style="--ac:#00F0FF"><button id="jPost"><i>➕</i>Post</button><button id="jMine"><i>📋</i>My posts</button><button id="jProf"><i>🪪</i>Skills</button>${me$.operator ? '<button id="jQueue"><i>✅</i>Check</button>' : '<button id="jHelp"><i>✨</i>Ask WYRD</button>'}</div>
-          <div class="chips" style="--ac:#00F0FF">${[['all', `All · ${list.length}`], ['match', me$.openToWork ? 'Matches' : 'Matches (turn on in Skills)'], ['applied', 'Applied']].map(([k, n]) => `<button data-jt="${k}" class="${jobsTab === k ? 'on' : ''}">${n}</button>`).join('')}</div>
-          ${shown.map((j) => `<div class="jc" data-job="${j.id}"><div class="jh">${avatar(j.company)}<div><b>${esc(j.title)}</b><small>${esc(j.company)} · ${esc(j.location)}</small></div>${j.match != null ? `<div class="jm" style="--m:${j.match}"><span>${j.match}%</span></div>` : ''}</div>
-            <p>${esc(j.about)}</p><div><span class="tag" style="background:rgba(252,238,10,.14);color:#FDE68A">💰 ${esc(j.pay)}</span>${String(j.skills).split(',').map((s) => s.trim()).filter(Boolean).slice(0, 6).map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>
-            ${j.applied ? `<div class="dim" style="margin-top:8px">✅ Applied · contact: ${esc(j.contact)}</div>` : `<button class="pbtn" data-open="${j.id}" style="margin-top:8px">Apply</button><div class="ja"><textarea data-note="${j.id}" rows="2" placeholder="A short note to the employer (they'll see your name, your skills and this)"></textarea><button class="pbtn" data-apply="${j.id}">Send application</button></div>`}</div>`).join('') || `<div class="pcard dim">${jobsTab === 'all' ? 'No jobs open yet. Employers: post one.' : 'Nothing here yet.'}</div>`}`);
+        const matches = list.filter((j) => j.match != null && j.match >= 50).length, applied = list.filter((j) => j.applied).length;
+        show(`<div class="ppTop"><div><h2>Jobs</h2><small>Real employers, checked before they show</small></div></div>
+          <div class="jbHero"><small>${me$.openToWork ? 'Open to work' : 'Not looking'}</small><b>${list.length} job${list.length === 1 ? '' : 's'} open</b><span>${matches} match your skills · ${applied} applied</span>
+            <div class="row"><button id="jPost">${pi('add')}Post</button><button id="jMine">${pi('inbox')}My posts</button><button id="jProf">${pi('tools')}Skills</button>${me$.operator ? `<button id="jQueue">${pi('check')}Check</button>` : `<button id="jHelp">${pi('spark')}Ask</button>`}</div></div>
+          <div class="ppSeg" style="margin-top:12px">${[['all', 'All', list.length], ['match', 'Matches', matches], ['applied', 'Applied', applied]].map(([k, n, c]) => `<button data-jt="${k}" class="${jobsTab === k ? 'on' : ''}">${n}${c ? ' · ' + c : ''}</button>`).join('')}</div>
+          ${jobsTab === 'match' && !me$.openToWork ? '<div class="ppList"><div class="ppEmpty">Turn on "open to work" in Skills to see your matches.</div></div>' : ''}
+          ${shown.map((j) => `<div class="jbCard" data-job="${j.id}"><div class="jbTop">${avatar(j.company)}<div class="t"><b>${esc(j.title)}</b><small>${esc(j.company)} · ${esc(j.location)}</small></div>${j.match != null ? `<div class="jbRing" style="--m:${j.match}"><span>${j.match}%</span></div>` : ''}</div>
+            <p>${esc(j.about)}</p><div class="jbTags"><span class="pay">${esc(j.pay)}</span>${String(j.skills).split(',').map((s) => s.trim()).filter(Boolean).slice(0, 5).map((s) => `<span>${esc(s)}</span>`).join('')}</div>
+            ${j.applied ? `<div class="jbDone">${pi('check')}Applied · contact: ${esc(j.contact)}</div>` : `<div class="jbAct"><button class="pbtn" data-open="${j.id}">${pi('send')}Apply</button></div><div class="jbNote"><textarea data-note="${j.id}" rows="3" placeholder="A short note to the employer (they'll see your name, your skills and this)"></textarea><button class="pbtn" data-apply="${j.id}" style="width:100%;border-radius:14px;background:linear-gradient(135deg,var(--pp1),var(--pp2));color:#fff">Send application</button></div>`}</div>`).join('') || `<div class="ppList"><div class="ppEmpty">${pi('work')}${jobsTab === 'all' ? 'No jobs open yet. Employers: post one.' : 'Nothing here yet.'}</div></div>`}`);
         $('jPost').onclick = () => go('postjob'); $('jMine').onclick = () => go('myjobs'); $('jProf').onclick = () => go('me'); if ($('jQueue')) $('jQueue').onclick = () => go('queue'); if ($('jHelp')) $('jHelp').onclick = () => go('wyrd');
         pbody.querySelectorAll('[data-jt]').forEach((b) => (b.onclick = () => { jobsTab = b.dataset.jt; render('jobs'); }));
-        pbody.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { b.closest('.jc').classList.add('open'); b.style.display = 'none'; }));
-        pbody.querySelectorAll('[data-apply]').forEach((b) => (b.onclick = async () => { try { await my('apply', { jobId: Number(b.dataset.apply), note: pbody.querySelector(`[data-note="${b.dataset.apply}"]`).value }); render('jobs'); } catch (e) { fail(e); } }));
+        pbody.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { const c = b.closest('.jbCard'); c.classList.add('open'); b.parentElement.style.display = 'none'; const t = c.querySelector('textarea'); if (t) t.focus(); }));
+        pbody.querySelectorAll('[data-apply]').forEach((b) => (b.onclick = async () => { if (b.disabled) return; b.disabled = true; try { await my('apply', { jobId: Number(b.dataset.apply), note: pbody.querySelector(`[data-note="${b.dataset.apply}"]`).value }); render('jobs'); } catch (e) { b.disabled = false; fail(e); } }));
         return;
       }
       if (app === 'postjob') {
