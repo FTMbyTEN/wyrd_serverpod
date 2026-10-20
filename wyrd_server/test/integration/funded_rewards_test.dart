@@ -7,6 +7,7 @@ import 'package:wyrd_server/src/rewards/reward_config.dart';
 import 'package:wyrd_server/src/rewards/reward_ledger.dart';
 import 'package:wyrd_server/src/rewards/reward_math.dart';
 import 'package:wyrd_server/src/rewards/reward_seed.dart';
+import 'package:wyrd_server/src/rewards/rewards_future_call.dart';
 import 'package:wyrd_server/src/rewards/withdrawals.dart';
 import 'package:wyrd_server/src/world/bank.dart';
 import 'package:wyrd_server/src/world/world_authority.dart';
@@ -272,12 +273,29 @@ void main() {
 
     test('the first policy is seeded once: 1.67% cash, and a new version never changes it', () async {
       final p = await RewardSeed.ensurePolicy(s);
-      expect([p!.version, p.cashShareBp, p.feeAllowanceKobo], [1, 167, 83500]);
+      expect([p!.version, p.cashShareBp, p.feeAllowanceKobo], [1, 167, 65000]);
       expect(await RewardSeed.ensurePolicy(s), isNull);
-      await RewardAdmin.newPolicy(s, admin1, cashShareBp: 167, feeAllowanceKobo: 83500, holdHours: 72);
+      await RewardAdmin.newPolicy(s, admin1, cashShareBp: 167, feeAllowanceKobo: 65000, holdHours: 72);
       expect(await RewardSeed.ensurePolicy(s), isNull);
       expect((await RewardPolicy.db.find(s)).map((r) => r.version).toList()..sort(), [1, 2]);
       expect(RewardMath.split(30000, (await RewardPolicy.db.findFirstRow(s, where: (t) => t.version.equals(1)))!.cashShareBp).toString(), 'G₦29499 + ₦501');
+    });
+
+    test('the rewards tick releases held cash, expires overdue gigs, and repairs missing game pay, once', () async {
+      await fund(10000);
+      final o = await offer(fee: 5000);
+      final done = player(), late = player();
+      final a = await FundedJobs.accept(s, done, o.id!, 'tick-a-${done.uuid}');
+      final b = await FundedJobs.accept(s, late, o.id!, 'tick-b-${late.uuid}');
+      await age(a.id!);
+      await FundedJobs.complete(s, done, a.id!, delivered: true);
+      await s.db.unsafeExecute('UPDATE "job_acceptance" SET "deadline" = now() - interval \'1 minute\' WHERE "id" = ${b.id}');
+      await s.db.unsafeExecute('UPDATE "reward_earning" SET "availableAt" = now() - interval \'1 minute\'');
+      await RewardsFutureCall().tick(s);
+      expect(await RewardLedger.balance(s, RewardLedger.available(done)), 50100, reason: 'held cash released without the player opening anything');
+      expect((await JobAcceptance.db.findById(s, b.id!))!.status, 'expired');
+      expect(await FundedJobs.repairGameRewards(s), 0, reason: 'game pay already landed, nothing to repair');
+      await books();
     });
 
     test('dual approval: the proposer cannot approve their own funding', () async {

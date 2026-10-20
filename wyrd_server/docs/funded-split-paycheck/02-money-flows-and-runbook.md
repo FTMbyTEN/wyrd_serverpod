@@ -56,12 +56,12 @@ sequenceDiagram
 
 ### A funded gig, from offer to paycheck
 
-Example at policy v1 (167 bp, rounded down): basis 30,000 → **G₦29,499 + ₦501**. Fee allowance ₦835.
+Example at policy v1 (167 bp, rounded down): basis 30,000 → **G₦29,499 + ₦501**. Fee allowance ₦650 (the spec's test-3 figure).
 
 ```mermaid
 flowchart TD
-  O[Admin offers gig: snapshot G₦29,499 + ₦501, fee ₦835, policy v1] --> T{Player takes it}
-  T -->|one transaction, campaign row locked| R["ngn:fund:uncommitted → reserved ₦501 + fee_reserved ₦835<br/>gn:treasury → gn:reserved G₦29,499"]
+  O[Admin offers gig: snapshot G₦29,499 + ₦501, fee ₦650, policy v1] --> T{Player takes it}
+  T -->|one transaction, campaign row locked| R["ngn:fund:uncommitted → reserved ₦501 + fee_reserved ₦650<br/>gn:treasury → gn:reserved G₦29,499"]
   T -->|fund can't cover it / paused / limits| X[Refused, nothing moves]
   R --> C{Player reports done}
   C -->|too fast or suspicious| V[Review: admin confirms or rejects]
@@ -144,6 +144,9 @@ Every admin action is written to `reward_audit`. WYRD (the AI) can explain figur
 2. Propose; a second admin checks the bank and approves.
 3. Match `fundedTotal` on the Treasury screen against the bank statement after each funding.
 
+### Housekeeping (automatic)
+Every 5 minutes `RewardsFutureCall` (identifier `rewards-tick`) moves cash past its hold to available, gives back the reservation of gigs past their deadline, and pays any missing game pay. Each step is idempotent. Failures are logged as `[rewards] … failed` and retried on the next tick.
+
 ### Daily checks
 - Both ✅ balanced on the Treasury screen.
 - "Completed gigs with game pay missing" is 0. If not, see below.
@@ -164,15 +167,13 @@ Treasury → Switches → pause **New funded places** and **New payouts**. Nothi
 3. Fix only with new, balancing journals (never edits), with a second admin's approval. Note the reason in the audit.
 
 ### Game pay missing on a completed gig
-`FundedJobs.repairGameRewards` re-posts the game half with the same idempotency key (`funded:{id}:game`), so running it twice pays once. **Not yet wired to a schedule or a button**; see open items.
+`FundedJobs.repairGameRewards` re-posts the game half with the same idempotency key (`funded:{id}:game`), so running it twice pays once. It runs every 5 minutes (`RewardsFutureCall`), and operators can run it now from the Treasury screen (**Pay the missing game pay now**, shown when the count is above 0).
 
 ### Change the cash share, fee allowance or hold
 Treasury → Reward policy → save a new version. Existing offers keep theirs. Only offers created afterwards use it.
 
 ## 7. Open items before anything goes live
 
-- Run `matureDue` (pending → available) and `expireDue` on a schedule. Today they run when a player opens their earnings or the job board.
-- Wire `repairGameRewards` to a schedule or an admin button.
 - A real payout provider adapter, KYC and beneficiary verification.
 - The published verification hold (policy v1 has 0 hours), limits, fees and terms.
 - Everything under "launch blockers" in `01-assessment-and-plan.md`: legal classification, terms, age and jurisdiction rules, disputes, reconciliation against real bank statements.

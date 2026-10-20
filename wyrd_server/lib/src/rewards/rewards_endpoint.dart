@@ -141,6 +141,19 @@ class RewardsAdminEndpoint extends Endpoint {
     }
   }
 
+  /// Pay the game half of any completed gig that is missing it (safe to run twice: each pays once).
+  Future<String> repairGameRewards(Session session) async {
+    try {
+      final by = _user(session);
+      await RewardAdmin.need(session, by, RewardAdmin.operator);
+      final n = await FundedJobs.repairGameRewards(session);
+      await RewardAdmin.audit(session, by, 'repair_game_rewards', {'paid': n});
+      return jsonEncode({'paid': n});
+    } catch (e) {
+      return _err(e);
+    }
+  }
+
   Future<String> reviews(Session session) async {
     try {
       return jsonEncode(await RewardAdmin.reviews(session, _user(session)));

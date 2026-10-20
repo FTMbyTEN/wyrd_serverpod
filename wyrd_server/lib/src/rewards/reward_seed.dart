@@ -4,11 +4,11 @@ import '../generated/protocol.dart';
 import 'reward_admin.dart';
 
 /// The first reward policy, written once at startup if there is none. Owner decision D9 (2026-10-19): 1.67% cash,
-/// rounded down. The fee allowance (₦835) is the brief's test-3 figure; the hold is 0 because no live hold has been
+/// rounded down. The fee allowance (₦650) is the brief's test-3 figure (₦835 cash + ₦650 allowance per reward); the hold is 0 because no live hold has been
 /// published yet (D4) -- an admin sets the real one with a new policy version before anything goes live.
 /// Writing a policy moves no money; offers only use it when an admin creates them.
 abstract final class RewardSeed {
-  static const cashShareBp = 167, feeAllowanceKobo = 83500, holdHours = 0;
+  static const cashShareBp = 167, feeAllowanceKobo = 65000, holdHours = 0;
 
   static Future<RewardPolicy?> ensurePolicy(Session s) async {
     if (await RewardPolicy.db.findFirstRow(s) != null) return null;

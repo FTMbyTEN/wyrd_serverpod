@@ -25,6 +25,7 @@ import '../mind/self_config_future_call.dart' as _ishes48l;
 import '../mind/self_question_future_call.dart' as _i51wt927;
 import '../mind/sleep_future_call.dart' as _iunmcnpr;
 import '../mind/synthesis_future_call.dart' as _i5fxv39a;
+import '../rewards/rewards_future_call.dart' as _iuqjj46u;
 
 /// Invokes a future call.
 typedef _InvokeFutureCall =
@@ -79,6 +80,7 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
       'SelfQuestionTickFutureCall': SelfQuestionTickFutureCall(),
       'SleepTickFutureCall': SleepTickFutureCall(),
       'SynthesisTickFutureCall': SynthesisTickFutureCall(),
+      'RewardsTickFutureCall': RewardsTickFutureCall(),
     };
     _futureCallManager = futureCallManager;
     _serverId = serverId;
@@ -222,6 +224,8 @@ class _FutureCallRef {
   late final sleep = _SleepFutureCallDispatcher(_invokeFutureCall);
 
   late final synthesis = _SynthesisFutureCallDispatcher(_invokeFutureCall);
+
+  late final rewards = _RewardsFutureCallDispatcher(_invokeFutureCall);
 }
 
 class _AgentFutureCallDispatcher {
@@ -367,6 +371,19 @@ class _SynthesisFutureCallDispatcher {
   }
 }
 
+class _RewardsFutureCallDispatcher {
+  _RewardsFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> tick() {
+    return _invokeFutureCall(
+      'RewardsTickFutureCall',
+      null,
+    );
+  }
+}
+
 class AgentTickFutureCall extends _is.FutureCall
     implements _is.InvokableFutureCall {
   @override
@@ -485,5 +502,16 @@ class SynthesisTickFutureCall extends _is.FutureCall
     _is.SerializableModel? object,
   ) async {
     await _i5fxv39a.SynthesisFutureCall().tick(session);
+  }
+}
+
+class RewardsTickFutureCall extends _is.FutureCall
+    implements _is.InvokableFutureCall {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _is.SerializableModel? object,
+  ) async {
+    await _iuqjj46u.RewardsFutureCall().tick(session);
   }
 }

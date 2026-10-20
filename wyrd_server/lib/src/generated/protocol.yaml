@@ -246,6 +246,7 @@ rewardsAdmin:
   - setSwitch:
   - newPolicy:
   - createOffer:
+  - repairGameRewards:
   - reviews:
   - decideReview:
   - exportCsv:

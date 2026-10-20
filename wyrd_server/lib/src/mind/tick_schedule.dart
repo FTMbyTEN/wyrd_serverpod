@@ -2,6 +2,7 @@
 /// StatusEndpoint, so the two can't drift apart.
 class TickSchedule {
   static const growthSnapshot = Duration(minutes: 30);
+  static const rewards = Duration(minutes: 5);
   static const diaryCheck = Duration(minutes: 10);
   static const reasoning = Duration(seconds: 30);
   static const selfQuestion = Duration(seconds: 30);

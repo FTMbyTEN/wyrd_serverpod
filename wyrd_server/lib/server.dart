@@ -237,6 +237,7 @@ void run(List<String> args) async {
     'dream-idle-check',
     'sleep-check',
     'agent-tick',
+    'rewards-tick',
   ]) {
     await pod.futureCalls.cancel(id);
   }
@@ -295,5 +296,11 @@ void run(List<String> args) async {
       .callRecurring(identifier: 'agent-tick')
       .every(TickSchedule.agent)
       .agent
+      .tick();
+  // rewards housekeeping: hold release, expiry, game-pay repair (RewardsFutureCall)
+  await pod.futureCalls
+      .callRecurring(identifier: 'rewards-tick')
+      .every(TickSchedule.rewards)
+      .rewards
       .tick();
 }

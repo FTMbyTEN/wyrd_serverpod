@@ -4652,6 +4652,17 @@ class Endpoints extends _is.EndpointDispatch {
                         params['places'],
                       ),
         ),
+        'repairGameRewards': _is.MethodConnector(
+          name: 'repairGameRewards',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewardsAdmin'] as _i4hn2z2u.RewardsAdminEndpoint)
+                      .repairGameRewards(session),
+        ),
         'reviews': _is.MethodConnector(
           name: 'reviews',
           params: {},
