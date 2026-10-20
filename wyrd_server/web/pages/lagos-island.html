@@ -1003,10 +1003,96 @@
   .ulk label { display: block; margin: 0 4px 5px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
   .ulk .fld { position: relative; margin-bottom: 12px; } .ulk .fld .pi { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ppDim); }
   .ulk .fld input { width: 100%; box-sizing: border-box; margin: 0 !important; padding: 13px 14px 13px 40px !important; border-radius: 14px !important; border: 0 !important; background: var(--ppCard) !important; box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk) !important; font: 500 14.5px 'Plus Jakarta Sans', sans-serif !important; }
+  .ulk .err:empty { background: none !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; }
   .ulk .err { min-height: 18px; margin: 0 4px 6px; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #DC2626; } .ulk .fine { margin: 12px 6px 0; text-align: center; font: 500 11.5px/1.5 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
   #tFs { position: fixed; right: calc(12px + env(safe-area-inset-right)); top: calc(62px + env(safe-area-inset-top)); z-index: 15; width: 38px; height: 38px; border-radius: 12px; border: 0; cursor: pointer; display: grid; place-items: center; background: rgba(15,23,42,.55); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
   #tFs svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   @media (display-mode: fullscreen), (display-mode: standalone) { #tFs { display: none; } }
+  /* ================= Lock screen 2 ================= */
+  #phone.os-light #lockscr, #phone #lockscr { justify-content: flex-start !important; gap: 0; padding: calc(54px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom)) !important; font-family: 'Plus Jakarta Sans', sans-serif;
+    background: radial-gradient(60% 40% at 15% 12%, rgba(56,189,248,.55), transparent 70%), radial-gradient(55% 40% at 90% 30%, rgba(167,139,250,.5), transparent 70%), radial-gradient(70% 45% at 30% 95%, rgba(52,211,153,.4), transparent 70%), radial-gradient(60% 40% at 95% 85%, rgba(251,146,60,.35), transparent 70%), linear-gradient(180deg, #EAF6FF, #F3EEFF 60%, #EFFAF5) !important; }
+  #phone.os-dark #lockscr { background: radial-gradient(60% 40% at 15% 12%, rgba(14,165,233,.45), transparent 70%), radial-gradient(55% 40% at 90% 30%, rgba(236,72,153,.38), transparent 70%), radial-gradient(70% 45% at 30% 95%, rgba(99,102,241,.4), transparent 70%), linear-gradient(180deg, #050816, #0B0B1E 60%, #07070D) !important; }
+  #phone #lockscr .lscan, #phone #lockscr .lbeam, #phone #lockscr .lnet { display: none !important; }
+  #phone #lockscr .lpad { display: flex; justify-content: center; margin-bottom: 6px; color: #0F172A; opacity: .75; } #phone.os-dark #lockscr .lpad { color: #fff; }
+  #phone #lockscr .lpad svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; } #phone #lockscr .lpad .sh { transition: transform .35s cubic-bezier(.3,1.4,.5,1); transform-origin: 16px 10px; }
+  #phone #lockscr.unlocking .lpad .sh { transform: translateY(-3px) rotate(-28deg); } #phone #lockscr.unlocking .lpad { color: #16A34A; opacity: 1; }
+  #phone #lockscr .ltop { gap: 0 !important; } #phone #lockscr .ld { font: 700 15px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; color: #1E293B !important; text-shadow: none !important; opacity: .8; }
+  #phone #lockscr .lt { font: 800 86px/1 'Plus Jakarta Sans', sans-serif !important; letter-spacing: -.04em; margin: 2px 0 0; animation: none !important; text-shadow: none !important; color: transparent !important; background: linear-gradient(180deg, #0F172A, #334155); -webkit-background-clip: text; background-clip: text; }
+  #phone.os-dark #lockscr .ld { color: #E2E8F0 !important; } #phone.os-dark #lockscr .lt { background: linear-gradient(180deg, #fff, #CBD5E1); -webkit-background-clip: text; background-clip: text; }
+  #phone #lockscr .lwx { display: none !important; }
+  #phone #lockscr .lwid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin: 16px 0 14px; }
+  #phone #lockscr .lwid > div { min-width: 0; padding: 10px 11px; border-radius: 18px; background: rgba(255,255,255,.55); backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 6px 18px rgba(15,23,42,.06); color: #0F172A; }
+  #phone.os-dark #lockscr .lwid > div { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); color: #F1F5F9; }
+  #phone #lockscr .lwid small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #phone #lockscr .lwid b { display: flex; align-items: center; gap: 5px; margin-top: 4px; font: 800 16px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #phone #lockscr .lwid b .wxic { width: 20px; height: 20px; }
+  #phone #lockscr .lwid span { display: block; margin-top: 1px; font: 600 11px 'Plus Jakarta Sans', sans-serif; opacity: .65; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #phone #lockscr .lnotes { flex: 1 1 auto; min-height: 0; overflow-y: auto; justify-content: flex-start; gap: 8px !important; scrollbar-width: none; } #phone #lockscr .lnotes::-webkit-scrollbar { display: none; }
+  #phone #lockscr .lnotes .n { background: rgba(255,255,255,.62) !important; backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 8px 22px rgba(15,23,42,.08) !important; color: #0F172A !important; animation: lkIn .3s ease-out both; }
+  #phone.os-dark #lockscr .lnotes .n { background: rgba(255,255,255,.09) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12) !important; color: #F1F5F9 !important; }
+  #phone #lockscr .lnotes .n small { margin-left: auto; align-self: flex-start; font: 600 11px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; opacity: .6; color: inherit !important; }
+  #phone #lockscr .lnotes .n span { display: block; font: 500 13px/1.35 'Plus Jakarta Sans', sans-serif; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #phone #lockscr .lmore { align-self: center; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.5); font: 700 11.5px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; color: #334155 !important; } #phone.os-dark #lockscr .lmore { background: rgba(255,255,255,.1); color: #CBD5E1 !important; }
+  #phone #lockscr .lmus { border-radius: 22px !important; background: rgba(255,255,255,.62) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #0F172A !important; } #phone.os-dark #lockscr .lmus { background: rgba(255,255,255,.09) !important; color: #F1F5F9 !important; }
+  #phone #lockscr .lempty { margin-top: 10px; text-align: center; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #475569; opacity: .75; } #phone.os-dark #lockscr .lempty { color: #CBD5E1; }
+  #phone #lockscr .lq[data-lq="music"] { display: none !important; }
+  #phone #lockscr .lbot { flex: none; margin-top: 10px; justify-content: space-between !important; flex-wrap: nowrap !important; padding: 0 6px; }
+  #phone #lockscr .lq { width: 52px !important; height: 52px !important; border: 0 !important; font-size: 20px; background: rgba(255,255,255,.55) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 6px 16px rgba(15,23,42,.08) !important; transition: transform .12s; }
+  #phone.os-dark #lockscr .lq { background: rgba(255,255,255,.1) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14) !important; } #phone #lockscr .lq:active { transform: scale(.9); }
+  #phone #lockscr .lbot .lu { order: 0 !important; flex: 1 !important; flex-basis: auto !important; font: 700 12px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .02em !important; color: #334155 !important; animation: none !important; opacity: .85; }
+  #phone.os-dark #lockscr .lbot .lu { color: #E2E8F0 !important; }
+  #phone #lockscr .lbot .lu::before { width: 120px !important; height: 5px !important; margin: 0 auto 8px !important; background: currentColor !important; opacity: .55; animation: luBob 1.8s ease-in-out infinite; }
+  @keyframes luBob { 50% { transform: translateY(-5px); } }
+  #phone #lockscr .lid { bottom: calc(96px + env(safe-area-inset-bottom)) !important; font: 800 12px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .04em !important; color: #16A34A !important; text-shadow: none !important; }
+  #phone #lockscr.unlocking .ltop, #phone #lockscr.unlocking .lwid, #phone #lockscr.unlocking .lnotes, #phone #lockscr.unlocking .lbot { transition: transform .4s cubic-bezier(.4,0,.2,1) .15s, opacity .35s .15s; transform: translateY(-40px) scale(.97); opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { #phone #lockscr .lbot .lu::before { animation: none; } }
+  /* ================= the player passport (the palm) and Home 2 ================= */
+  #title .logo { cursor: pointer; transition: transform .15s; } #title .logo:hover { transform: scale(1.08); } #title .logo:active { transform: scale(.92); }
+  #passportVeil { position: fixed; inset: 0; z-index: 70; background: rgba(2,6,23,.38); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); opacity: 0; transition: opacity .25s; }
+  #passportVeil.on { opacity: 1; }
+  #passport { position: fixed; left: 50%; top: calc(8px + env(safe-area-inset-top)); z-index: 71; width: min(420px, calc(100vw - 16px)); max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain;
+    transform: translate(-50%, -16px) scale(.97); opacity: 0; transition: transform .3s cubic-bezier(.2,1.1,.3,1), opacity .2s; border-radius: 28px; background: rgba(248,250,252,.96); color: #0F172A; box-shadow: 0 30px 70px rgba(2,6,23,.4); font-family: 'Plus Jakarta Sans', sans-serif; scrollbar-width: none; }
+  #passport::-webkit-scrollbar { display: none; } #passport.on { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  #passport.dark { background: rgba(12,12,24,.96); color: #F1F5F9; box-shadow: 0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08); }
+  #passport .phd { position: relative; padding: 22px 18px 18px; border-radius: 28px 28px 0 0; color: #fff; background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.25), transparent 60%), linear-gradient(135deg, #0F766E, #0EA5E9 50%, #6366F1); overflow: hidden; }
+  #passport.dark .phd { background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.14), transparent 60%), linear-gradient(135deg, #1E1B4B, #9D174D 55%, #0E7490); }
+  #passport .phd::after { content: ""; position: absolute; right: -50px; top: -50px; width: 180px; height: 180px; border-radius: 50%; border: 24px solid rgba(255,255,255,.09); }
+  #passport .px { position: absolute; right: 12px; top: 12px; z-index: 2; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255,255,255,.22); color: #fff; font-size: 15px; cursor: pointer; }
+  #passport .pme { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; } #passport .pme .av2 { width: 64px !important; height: 64px !important; font-size: 22px; box-shadow: 0 0 0 3px rgba(255,255,255,.85) !important; }
+  #passport .pme b { display: block; font: 800 21px 'Plus Jakarta Sans', sans-serif; } #passport .pme small { display: block; margin-top: 2px; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .85; }
+  #passport .ptags { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; } #passport .ptags span { padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.2); font: 700 11.5px 'Plus Jakarta Sans', sans-serif; display: inline-flex; align-items: center; gap: 5px; } #passport .ptags .pi { width: 13px; height: 13px; }
+  #passport .pbody { padding: 14px 14px 16px; }
+  #passport .pstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  #passport .pstats button { padding: 11px 10px; border: 0; border-radius: 18px; cursor: pointer; text-align: left; background: #fff; color: inherit; box-shadow: inset 0 0 0 1px rgba(15,23,42,.07), 0 4px 12px rgba(15,23,42,.04); min-width: 0; }
+  #passport.dark .pstats button { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  #passport .pstats small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; opacity: .55; } #passport .pstats b { display: block; margin-top: 3px; font: 800 16px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #passport .pstats .bar { height: 5px; margin-top: 6px; border-radius: 3px; background: rgba(148,163,184,.25); overflow: hidden; } #passport .pstats .bar i { display: block; height: 100%; background: linear-gradient(90deg, #22C55E, #0EA5E9); }
+  #passport .psec { margin: 16px 4px 8px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; opacity: .55; }
+  #passport .phq { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; color: #fff; background: linear-gradient(135deg, var(--hq, #F97316), #111827 140%); box-shadow: 0 10px 24px rgba(15,23,42,.18); }
+  #passport .phq .ic3 { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.2); } #passport .phq .ic3 .pi { width: 22px; height: 22px; }
+  #passport .phq b { display: block; font: 800 15px 'Plus Jakarta Sans', sans-serif; } #passport .phq small { display: block; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .85; } #passport .phq em { margin-left: auto; padding: 7px 12px; border-radius: 999px; background: #fff; color: #0F172A; font: 800 12px 'Plus Jakarta Sans', sans-serif; font-style: normal; white-space: nowrap; }
+  #passport .pgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 6px; }
+  #passport .pgrid button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 2px 0; border: 0; background: none; cursor: pointer; color: inherit; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; }
+  #passport .pgrid button span { position: relative; width: 50px; height: 50px; border-radius: 17px; display: grid; place-items: center; color: #fff; background: var(--g); box-shadow: 0 6px 14px rgba(15,23,42,.14); transition: transform .12s; } #passport .pgrid button:active span { transform: scale(.9); }
+  #passport .pgrid button span .pi { width: 22px; height: 22px; } #passport .pgrid button span i { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #EF4444; color: #fff; font: 800 10.5px/18px sans-serif; font-style: normal; box-shadow: 0 0 0 2px #fff; }
+  #passport .ptog { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  #passport .ptog button { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 0; border-radius: 16px; cursor: pointer; text-align: left; background: #fff; color: inherit; box-shadow: inset 0 0 0 1px rgba(15,23,42,.07); font: 700 13px 'Plus Jakarta Sans', sans-serif; }
+  #passport.dark .ptog button { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  #passport .ptog button small { display: block; font: 600 11px 'Plus Jakarta Sans', sans-serif; opacity: .55; } #passport .ptog button .sw { margin-left: auto; width: 34px; height: 20px; border-radius: 10px; background: rgba(148,163,184,.4); position: relative; flex: none; transition: background .2s; }
+  #passport .ptog button .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; } #passport .ptog button.on .sw { background: #22C55E; } #passport .ptog button.on .sw::after { transform: translateX(14px); }
+  #passport .pfoot { margin-top: 14px; text-align: center; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; opacity: .5; }
+  #passport .pguest { padding: 18px 16px; text-align: center; } #passport .pguest p { margin: 0 0 12px; font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; opacity: .75; }
+  #passport .pguest .pbtn { width: 100%; border-radius: 14px !important; background: linear-gradient(135deg, #0EA5E9, #6366F1) !important; color: #fff !important; }
+  /* the phone's home screen */
+  .hHi { display: flex; align-items: center; gap: 12px; margin: 2px 2px 12px; } .hHi .av2 { width: 44px !important; height: 44px !important; cursor: pointer; } .hHi div { flex: 1; min-width: 0; }
+  .hHi small { display: block; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .6; } .hHi b { display: block; font: 800 22px/1.15 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hHi button.nb { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center; background: rgba(255,255,255,.7); color: #0F172A; box-shadow: inset 0 0 0 1px rgba(15,23,42,.06); }
+  #phone.os-dark .hHi button.nb { background: rgba(255,255,255,.08); color: #fff; } .hHi button.nb i { position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 0 2px #fff; }
+  #phone.os-light #pbody[data-app="home"] .widget, #phone.os-light #pbody[data-app="home"] .mw, #phone.os-light #pbody[data-app="home"] .tw, #phone.os-light #pbody[data-app="home"] .wmini, #phone.os-light #pbody[data-app="home"] .wfit, #phone.os-light #pbody[data-app="home"] .w4sug button {
+    background: rgba(255,255,255,.72) !important; backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); border: 0 !important; border-radius: 22px !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 8px 22px rgba(15,23,42,.06) !important; }
+  #pbody[data-app="home"] .hsec { margin: 18px 4px 8px !important; font: 800 11px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .08em !important; text-transform: uppercase; opacity: .55; }
+  #pbody[data-app="home"] .apps { gap: 14px 8px !important; } #pbody[data-app="home"] .app { font: 700 11.5px 'Plus Jakarta Sans', sans-serif !important; }
+  #pbody[data-app="home"] .app i { border-radius: 18px !important; box-shadow: 0 6px 14px rgba(15,23,42,.12) !important; transition: transform .12s; } #pbody[data-app="home"] .app:active i { transform: scale(.9); }
+  #phone.os-light #pbody[data-app="home"] .dock { background: rgba(255,255,255,.6) !important; backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-radius: 28px !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 10px 26px rgba(15,23,42,.1) !important; }
 </style>
 </head>
 <body>
@@ -1372,6 +1458,52 @@
     b.onclick = (e) => { e.stopPropagation(); fsAsked = true; if (fsEl()) return fsOut(); if (fsCan) fsGo(); else appInstall(null); };
     document.addEventListener('fullscreenchange', draw); document.addEventListener('webkitfullscreenchange', draw); document.body.append(b); }, 1200);
 
+  // ---- the player passport: tap the palm. Everything about you on the island, your HQ, your places and things, and the switches
+  function goHQ() { (async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; tickerSay('Home: you\'re at your HQ'); } else tickerSay('Your HQ isn\'t on the map yet'); })().catch(() => tickerSay('Can\'t reach the island right now')); }
+  async function openPass() {
+    let veil = document.getElementById('passportVeil'), el = document.getElementById('passport');
+    if (!el) { veil = document.createElement('div'); veil.id = 'passportVeil'; el = document.createElement('div'); el.id = 'passport'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Your passport'); document.body.append(veil, el); veil.onclick = closePass; addEventListener('keydown', (e) => { if (e.key === 'Escape') closePass(); }); }
+    el.className = osMode === 'light' ? '' : 'dark'; veil.style.display = el.style.display = 'block'; requestAnimationFrame(() => { veil.classList.add('on'); el.classList.add('on'); });
+    const wx = lagosWeather(), online = (document.getElementById('count') || {}).textContent || '1';
+    if (!signedIn()) { el.innerHTML = `<div class="phd"><button class="px" aria-label="Close">✕</button><div class="pme">${avatar(myName || 'Guest')}<div><b>${esc(myName || 'Guest')}</b><small>Exploring as a guest · ${esc(sector.name)}</small></div></div></div><div class="pguest"><p>Sign in to get your HQ, your wallet, friends, chats, cars and a jet. One username and password.</p><button class="pbtn" id="pIn">Sign in or make an account</button></div>`;
+      el.querySelector('.px').onclick = closePass; el.querySelector('#pIn').onclick = () => { closePass(); openPhone(); }; return; }
+    const draw = (pf, extra) => {
+      const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), fr = FR.list || { friends: [], incoming: [] }, unread = notes.filter((n) => !n.seen && n.kind === 'link').length;
+      const hq = me$.hq || {}, careers = (pf && pf.careers) || [];
+      const A = [['wallet', 'Wallet', 'bank', 'linear-gradient(135deg,#0EA5E9,#6366F1)', 0], ['chats', 'Link', 'chat', 'linear-gradient(135deg,#34D399,#0EA5E9)', unread], ['people', 'People', 'users', 'linear-gradient(135deg,#38BDF8,#818CF8)', fr.incoming.length], ['homes', 'Homes', 'home', 'linear-gradient(135deg,#FB923C,#EF4444)', 0],
+        ['garage', 'Garage', 'car', 'linear-gradient(135deg,#64748B,#0F172A)', 0], ['airport', 'Airport', 'plane', 'linear-gradient(135deg,#22D3EE,#3B82F6)', 0], ['jobs', 'Jobs', 'work', 'linear-gradient(135deg,#FBBF24,#F97316)', 0], ['fashion', 'Wardrobe', 'bag', 'linear-gradient(135deg,#F472B6,#A855F7)', 0],
+        ['ride', 'Ride', 'go', 'linear-gradient(135deg,#2DD4BF,#0891B2)', 0], ['grid', 'The Grid', 'spark', 'linear-gradient(135deg,#FACC15,#EAB308)', 0], ['music', 'Music', 'trend', 'linear-gradient(135deg,#EC4899,#8B5CF6)', 0], ['wyrd', 'WYRD', 'shield', 'linear-gradient(135deg,#6366F1,#0EA5E9)', 0]];
+      const T2 = [['mode', osMode === 'light' ? 'Light' : 'Dark', 'Appearance', osMode === 'light'], ['alerts', 'Alerts', HUP.on ? 'On' : 'Silent', HUP.on], ['sound', 'City sound', CITY.on ? 'On' : 'Off', CITY.on], ['3d', '3D models', G3.on ? 'On' : 'Off', G3.on]];
+      el.innerHTML = `<div class="phd"><button class="px" aria-label="Close">✕</button><div class="pme">${avatar(me$.handle)}<div><b>@${esc(me$.handle)}</b><small>${pf && pf.since ? 'Lagosian since ' + sinceStr(pf.since) : 'Lagosian'} · now in ${esc(sector.name)}</small></div></div>
+          <div class="ptags">${careers.slice(0, 2).map((c) => `<span>${pi('work')}${esc(c)}</span>`).join('')}${pf && pf.jet ? `<span>${pi('plane')}${esc(pf.jet)}</span>` : ''}<span>${pi('users')}${fr.friends.length} friend${fr.friends.length === 1 ? '' : 's'}</span><span>${wx.icon} ${wx.temp}° Lagos</span></div></div>
+        <div class="pbody">
+          <div class="pstats"><button data-pa="wallet"><small>Wallet</small><b>${naira(me$.naira)}</b><div class="bar"><i style="width:${pct}%"></i></div></button><button data-pa="homes"><small>Homes</small><b>${extra.homes}</b></button><button data-pa="garage"><small>Cars</small><b>${extra.cars}</b></button></div>
+          <div class="psec">Your HQ</div>
+          <button class="phq" id="pHq" style="--hq:${esc(hq.color || '#F97316')}"><span class="ic3">${pi('home')}</span><span><b>${esc(hq.name || me$.handle + "'s HQ")}</b><small>${hq.locked ? 'Invite only' : 'Open door'}${me$.requests ? ` · ${me$.requests} at your door` : ''}</small></span><em>Go home</em></button>
+          <div class="psec">Everything</div>
+          <div class="pgrid">${A.map(([k, n, ic, g, c]) => `<button data-pa="${k}"><span style="--g:${g}">${pi(ic)}${c ? `<i>${c}</i>` : ''}</span>${n}</button>`).join('')}</div>
+          <div class="psec">Settings</div>
+          <div class="ptog">${T2.map(([k, n, s, on]) => `<button data-pt2="${k}" class="${on ? 'on' : ''}"><span><span>${n}</span><small>${s}</small></span><span class="sw"></span></button>`).join('')}
+            <button data-pt2="hqset"><span><span>HQ settings</span><small>Name, colour, door</small></span></button><button data-pt2="share"><span><span>Share profile</span><small>Invite a friend</small></span></button></div>
+          <div class="pfoot">${esc(online)} on the island now · Lagos time ${String(new Date(lagosMs()).getUTCHours()).padStart(2, '0')}:${String(new Date(lagosMs()).getUTCMinutes()).padStart(2, '0')}</div></div>`;
+      el.querySelector('.px').onclick = closePass;
+      el.querySelector('#pHq').onclick = () => { closePass(); if (phone.style.display === 'block') closePhone(); goHQ(); };
+      el.querySelectorAll('[data-pa]').forEach((b) => (b.onclick = () => { closePass(); openPhone(b.dataset.pa); }));
+      el.querySelectorAll('[data-pt2]').forEach((b) => (b.onclick = async () => { const k = b.dataset.pt2;
+        if (k === 'mode') { osMode = osMode === 'light' ? 'dark' : 'light'; store.set('li.osMode', osMode); applyMode(); el.className = 'on' + (osMode === 'light' ? '' : ' dark'); }
+        else if (k === 'alerts') { HUP.on = !HUP.on; store.set('li.alerts', HUP.on ? 'on' : 'off'); }
+        else if (k === 'sound') { const tc = document.querySelector('#topR [data-city], #tCity'); if (tc) tc.click(); else { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); } }
+        else if (k === '3d') G3.on = !G3.on;
+        else if (k === 'hqset') { closePass(); return openPhone('hq'); }
+        else if (k === 'share') { const url = location.origin + location.pathname, t = `Find me on Lagos Island: @${me$.handle}`; try { if (navigator.share) await navigator.share({ title: 'Lagos Island', text: t, url }); else { await navigator.clipboard.writeText(t + ' ' + url); tickerSay('Invite copied'); } } catch {} return; }
+        draw(pf, extra); }));
+    };
+    const extra = { homes: '…', cars: '…' }; draw(null, extra);
+    const [pf, homes, cars] = await Promise.all([my('publicProfile', { handle: me$.handle }).catch(() => null), my('myHomes').catch(() => []), my('myCars').catch(() => []), FR.list ? null : my('friends').then((f) => (FR.list = f)).catch(() => null)]);
+    extra.homes = Array.isArray(homes) ? homes.length : 0; extra.cars = Array.isArray(cars) ? cars.length : 0; if (el.classList.contains('on')) draw(pf, extra);
+  }
+  function closePass() { const v = document.getElementById('passportVeil'), el = document.getElementById('passport'); if (!el) return; v.classList.remove('on'); el.classList.remove('on'); setTimeout(() => { if (!el.classList.contains('on')) v.style.display = el.style.display = 'none'; }, 260); }
+  { const lg = document.querySelector('#title .logo'); if (lg) { lg.setAttribute('role', 'button'); lg.setAttribute('aria-label', 'Your passport'); lg.title = 'You on Lagos Island'; lg.addEventListener('click', (e) => { e.stopPropagation(); openPass(); }); } }
   // ---- the app: install Lagos Island like an app, with all of it downloaded onto the device (the service worker keeps
   // the page, every model and texture, and three.js, so it opens at once and loads nothing again). Chrome, Edge and
   // Android install in one tap; an iPhone or iPad adds it to the home screen from Safari's Share menu (Apple allows no
@@ -6615,7 +6747,7 @@
   }
 
   // who just arrived: their name drops in under the phone and floats up as it fades
-  const everSeen = new Set(), joinsEl = document.getElementById('joins');
+  const everSeen = new Set(), joinedAt = new Map(), joinsEl = document.getElementById('joins');
   let ticked = false;
   function showJoin(name, color) {
     const d = document.createElement('div'), dot = document.createElement('i');
@@ -6638,7 +6770,7 @@
         if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color, look: p.look });
         else {
           others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z, look: p.look });
-          if (ticked && !everSeen.has(p.id)) showJoin(p.name, p.color);
+          const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && Date.now() - (joinedAt.get(nm) || 0) > 600000) { joinedAt.set(nm, Date.now()); showJoin(nm, p.color); }
         }
         everSeen.add(p.id);
       }
@@ -7208,8 +7340,8 @@
     const room = CITY.dj, s = clubSrc(room); if (!room || !s || !song) return;
     deckPlay(s, { ...song, dj: myName || 'You', local: true }, 0);
     MP.a.pause();
-    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) tick('Someone else is on the decks here right now'); }
-    catch { tick('Couldn\'t start your set here. Try again.'); }
+    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) tickerSay('Someone else is on the decks here right now'); }
+    catch { tickerSay('Couldn\'t start your set here. Try again.'); }
   }
   function djNext() { if (!MP.q.length) return; MP.i = (MP.i + 1) % MP.q.length; djSpin(MP.q[MP.i]); }
   function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '' }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
@@ -7231,7 +7363,7 @@
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
     tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tm.innerHTML = ico('music');
-    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tick(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
+    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tickerSay(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
     tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
     document.getElementById('tDj').onclick = () => openPhone('music'); // see who's playing, take the decks inside a club
     for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
@@ -7535,6 +7667,9 @@
   const NOTE_GROUP = { chat: 'Island chat', link: 'Messages', join: 'Arrivals' };
   let hqReqs = 0;
   function notify(text, kind = 'island', open = null, from = '') {
+    text = String(text ?? '').trim(); if (!text || /^undefined\b/.test(text)) return;
+    const dup = notes.findIndex((n) => n.text === text && n.kind === kind && (n.from || '') === (from || '') && Date.now() - n.at < 30 * 60000);
+    if (dup >= 0) { const [n] = notes.splice(dup, 1); n.at = new Date(); notes.unshift(n); if (shadeEl && shadeEl.classList.contains('on')) buildShade(); return; }
     notes.unshift({ text, kind, open, from, at: new Date(), seen: false }); notes.length = Math.min(notes.length, 60); updBadge(); headsUp(notes[0]);
     if (shadeEl && shadeEl.classList.contains('on')) buildShade();
   }
@@ -7614,14 +7749,14 @@
   // Link: new messages from other players reach you anywhere on the island, opened on this device like the app does.
   // It starts as soon as you're signed in (your profile and keys load in the background), asks once for all your chats,
   // and also tells you about messages that came while you were away (once each).
-  const LINK = { told: {} };
+  const LINK = { told: (() => { try { return JSON.parse(store.get('li.told') || '{}'); } catch { return {}; } })() };
   async function linkPoll() {
     if (!signedIn() || !me$ || !keyed) return;
     try {
       const seen = linkSeen(), gs = await myNet('inbox', { seenJson: JSON.stringify(seen) });
       for (const g of gs) {
         const m = g.lastMsg; if (!m || m.mine || m.id <= (seen[g.id] || 0) || m.id <= (LINK.told[g.id] || 0)) continue;
-        LINK.told[g.id] = m.id;
+        LINK.told[g.id] = m.id; store.set('li.told', JSON.stringify(LINK.told));
         const viewing = phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'thread' && stack[stack.length - 1][1] && stack[stack.length - 1][1].id === g.id;
         if (viewing) continue;
         let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒 New message'; }
@@ -7718,18 +7853,26 @@
       const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos${w4Brief() ? `<div class="lbrief">${esc(w4Brief())}</div>` : ''}`;
+      document.getElementById('lockw').innerHTML = '';
+      if (!L.querySelector('.lpad')) { L.querySelector('.ltop').insertAdjacentHTML('afterbegin', '<div class="lpad" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>'); L.querySelector('.ltop').insertAdjacentHTML('afterend', '<div class="lwid"></div>'); }
+      const online = document.getElementById('count') ? document.getElementById('count').textContent : '';
+      L.querySelector('.lwid').innerHTML = `<div><small>Lagos</small><b>${wx.icon}${wx.temp}°</b><span>${esc(wx.text)}</span></div>`
+        + `<div><small>Wallet</small><b>${me$ && signedIn() ? naira(me$.naira) : '—'}</b><span>${me$ && signedIn() ? 'game naira' : 'sign in'}</span></div>`
+        + `<div><small>Island</small><b>${esc(online || '0')}</b><span>online now</span></div>`;
+      clearInterval(lockScreen.t); lockScreen.t = setInterval(() => { if (L.style.display === 'none') return clearInterval(lockScreen.t); const n = new Date(lagosMs()); document.getElementById('lockt').textContent = String(n.getUTCHours()).padStart(2, '0') + ':' + String(n.getUTCMinutes()).padStart(2, '0'); }, 5000);
       if (!L.querySelector('.lnet')) { L.insertAdjacentHTML('afterbegin', '<div class="lscan" aria-hidden="true"></div><div class="lnet"><i></i>NETWATCH · LINK SECURE</div><div class="lbeam" aria-hidden="true"></div><div class="lid" aria-live="polite"></div>'); }
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
-      document.getElementById('lockn').innerHTML = lm + notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
+      const fresh = notes.filter((n) => !n.seen && n.kind !== 'join');
+      document.getElementById('lockn').innerHTML = lm + fresh.slice(0, 4).map((n) => noteHtml(n, notes.indexOf(n))).join('') + (fresh.length > 4 ? `<div class="lmore">${fresh.length - 4} more notifications</div>` : '') + (!fresh.length && !lm ? '<div class="lempty">No new notifications</div>' : '');
+      document.getElementById('lockn').querySelectorAll('.n').forEach((el) => (el.style.setProperty('--nt', NOTE_TILE[(notes[+el.dataset.ni] || {}).kind] || 'linear-gradient(135deg,#38BDF8,#6366F1)')));
       document.getElementById('lockn').querySelectorAll('[data-lm]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); audioCtx(); const k = b.dataset.lm; if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); b.closest('.lmus').querySelector('[data-lm=play]').textContent = MP.a.paused ? '▶' : '⏸'; }));
-      L.querySelector('.lu').textContent = 'Swipe up to unlock';
+      L.querySelector('.lu').textContent = 'Swipe up to open';
       L.classList.remove('unlocking'); L.style.display = 'flex';
       let busy = false, y0 = null;
       const unlock = (then) => { if (busy) return; busy = true;
-        L.querySelector('.lid').textContent = 'WYRD ID // NEURAL MATCH…'; L.classList.add('unlocking'); islandSet('il-lock il-scan', null, '', '🔒', '');
-        setTimeout(() => { L.querySelector('.lid').textContent = 'WYRD ID ✓ WELCOME BACK'; islandSet('il-unlock', null, 'WYRD ID', '✓', ''); islHoldUntil = performance.now() + 900; }, 380);
+        L.querySelector('.lid').textContent = ''; L.classList.add('unlocking'); islandSet('il-lock il-scan', null, '', '🔒', '');
+        setTimeout(() => { L.querySelector('.lid').textContent = me$ && signedIn() ? `Welcome back, ${me$.handle}` : 'Welcome to Lagos Island'; islandSet('il-unlock', null, 'WYRD ID', '✓', ''); islHoldUntil = performance.now() + 900; }, 380);
         setTimeout(() => { L.style.display = 'none'; L.classList.remove('unlocking'); L.querySelector('.lid').textContent = ''; then && then(); done(); }, 700); };
       L.onpointerdown = (e) => { y0 = e.clientY; };
       L.onpointerup = (e) => { if (y0 != null && y0 - e.clientY > 40) unlock(); y0 = null; }; // a swipe up
@@ -7772,16 +7915,18 @@
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
-        show(`${w4Home()}
+        const unseen = notes.some((n) => !n.seen);
+        show(`<div class="hHi">${avatar(me$.handle)}<div><small>${hi}</small><b>${esc(me$.handle)}</b></div><button class="nb" id="hBell" aria-label="Notifications">${pi('inbox')}${unseen ? '<i></i>' : ''}</button></div>${w4Home()}
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
-          ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🎶</i></button>`; })()}
+          ${(() => { const live = arenaLive(), playing = (CITY.srcs || []).filter((s) => s.room && s.now); return playing.length || live ? `<button class="tw" data-app="${live ? 'arena' : 'music'}"><div><small>Live now</small><b>${playing.length ? `${playing.length} club${playing.length > 1 ? 's' : ''} playing · ${esc(playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(', '))}` : 'The Arena is live'}</b><span>${live && playing.length ? '● The Arena is live too' : 'Tap to listen'}</span></div><i>🎶</i></button>` : ''; })()}
           <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
             <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
+        { const av = pbody.querySelector('.hHi .av2'); if (av) av.onclick = () => openPass(); $('hBell').onclick = () => { buildShade(); shadeEl.classList.add('on'); setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); }; }
         if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
         pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
@@ -7815,7 +7960,7 @@
           $('realBox').innerHTML = `<button class="wReal" id="wReal"><span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Real earnings${e.mode === 'sandbox' ? ' · sandbox, no real money' : ''}</small><b>${kobo(e.availableKobo)}</b><small>${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`;
           $('wReal').onclick = () => go('earn'); }).catch(() => {});
         rwa('dashboard').then((d) => { if (!d || !d.can || !$('realBox')) return; const b = document.createElement('button'); b.className = 'pbtn alt'; b.style.margin = '6px 0'; b.textContent = '🏦 Treasury (admin)'; b.onclick = () => go('treasury'); $('realBox').after(b); }).catch(() => {});
-        $('sGo').onclick = async () => { const sb = $('sGo'); if (sb.disabled) return; sb.disabled = true; try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); tick(`Sent ${naira(Number($('sAmt').value))} to ${$('sTo').value}`); render('wallet'); } catch (e) { sb.disabled = false; fail(e); } };
+        $('sGo').onclick = async () => { const sb = $('sGo'); if (sb.disabled) return; sb.disabled = true; try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); tickerSay(`Sent ${naira(Number($('sAmt').value))} to ${$('sTo').value}`); render('wallet'); } catch (e) { sb.disabled = false; fail(e); } };
         return;
       }
       if (app === 'treasury') {
@@ -8211,7 +8356,7 @@
           const o = ACCS[id], on = curAcc.includes(id), list = curAcc.filter((v) => ACCS[v].slot !== o.slot); if (!on) list.push(id);
           q[6] = list.join('+'); myLook = q.join(','); store.set('li.look', myLook);
           try { await my('setLook', { look: myLook }); } catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); }
-          tick(on ? `Took off: ${o.name}` : `Now wearing: ${o.brand} ${o.name}`);
+          tickerSay(on ? `Took off: ${o.name}` : `Now wearing: ${o.brand} ${o.name}`);
         };
         const DEPTS = [['Sportswear', '👟'], ['Streetwear', '🧢'], ['Native', '🪡'], ['Formal', '👔'], ['Luxury', '💎'], ['Accessories', '🕶️']];
         const FAB = ['Cotton', 'Denim', 'Fleece', 'Silk', 'Leather'], PAT = ['', 'Stripes', 'Two-tone', 'Print', 'Side stripe', 'Monogram'];
@@ -8533,7 +8678,7 @@
           pbody.querySelectorAll('[data-ml]').forEach((b) => (b.onclick = (e) => { const lk = e.target.closest('[data-like]'); const list = lists[b.dataset.ml], i = +b.dataset.mi; if (lk) { lk.classList.toggle('on', mpLike(list[i])); return; } if (CITY.dj && inside && inside.key === CITY.dj) { MP.q = list.filter(Boolean); MP.i = i; djSpin(list[i]); setTimeout(() => render('music', a), 600); return; } mpPlay(list, i); pbody.querySelectorAll('.mrow.on').forEach((r) => r.classList.remove('on')); b.classList.add('on'); }));
           pbody.querySelectorAll('[data-album]').forEach((b) => (b.onclick = () => go('music', { tab: 'album', id: b.dataset.album, title: b.dataset.title })));
           pbody.querySelectorAll('[data-genre]').forEach((b) => (b.onclick = () => go('music', { tab: 'genre', q: b.dataset.genre })));
-          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); tick('Handed the decks back to ' + club.spot.dj); } else { CITY.dj = inside.key; tick(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
+          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); tickerSay('Handed the decks back to ' + club.spot.dj); } else { CITY.dj = inside.key; tickerSay(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
         };
         // inside a club: who's on the decks and what's playing, and the button to take over (or hand back)
         const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, onDecks = !!club && CITY.dj === inside.key;
@@ -8893,7 +9038,7 @@
   let partiesLive = {}; // room key -> { host, theme, open, until (ms), place, mine, invited }
   const partyAt = (key) => { const p = partiesLive[key]; return p && p.until > Date.now() ? p : null; };
   // a passing line in the ticker (bottom left): for confirmations of what you just did, which aren't news
-  function tick(text) { const d = document.createElement('div'), dot = document.createElement('i'); d.className = 'j'; dot.style.background = '#38BDF8'; d.append(dot, document.createTextNode(text)); joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 5000); }
+  function tickerSay(text) { const d = document.createElement('div'), dot = document.createElement('i'); d.className = 'j'; dot.style.background = '#38BDF8'; d.append(dot, document.createTextNode(text)); joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 5000); }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');
     d.className = 'j'; dot.style.background = '#F472B6'; d.append(dot, document.createTextNode(text));
@@ -9007,7 +9152,7 @@
   if (signedIn()) my('myCars').then((l) => { myCarsL = l; const a = l.find((c2) => c2.active); if (a) myCar = a.model + ':' + a.color; }).catch(() => {});
 
   // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
-  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), errEl = document.getElementById('err');
+  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('passport'), errEl = document.getElementById('err');
   const emailIn = document.getElementById('email'), pass2In = document.getElementById('pass2');
   const RULES = { len: (p) => p.length >= 8, up: (p) => /[A-Z]/.test(p), low: (p) => /[a-z]/.test(p), num: (p) => /[0-9]/.test(p) };
   const strong = (p) => Object.values(RULES).every((f) => f(p));
