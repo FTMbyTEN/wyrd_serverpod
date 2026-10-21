@@ -1515,6 +1515,14 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {'query': query},
   );
 
+  /// This phone's push address (from its browser), so it can be woken while the game is closed.
+  _ida.Future<String> pushSubscribe(String endpoint) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'pushSubscribe',
+        {'endpoint': endpoint},
+      );
+
   /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
   _ida.Future<String> wake(int ver) => caller.callServerEndpoint<String>(
     'islandMe',

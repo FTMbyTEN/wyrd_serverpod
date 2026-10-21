@@ -7968,7 +7968,7 @@
   }
   function hideHup() { clearTimeout(HUP.tm); if (HUP.el) HUP.el.classList.remove('on', 'ping'); }
   // system notifications for when the game is in the background: asked once, on a tap, after you've signed in
-  addEventListener('pointerdown', () => { if (!signedIn() || !('Notification' in window) || Notification.permission !== 'default' || store.get('li.askedNotif')) return; store.set('li.askedNotif', '1'); try { Notification.requestPermission(); } catch {} }, { passive: true });
+  addEventListener('pointerdown', () => { if (!signedIn() || !('Notification' in window) || Notification.permission !== 'default' || store.get('li.askedNotif')) return; store.set('li.askedNotif', '1'); try { Notification.requestPermission().then((v) => { if (v === 'granted') pushSetup(); }); } catch {} }, { passive: true });
   // the light wallpaper turns lilac in the evening
   setInterval(() => phone.classList.toggle('eve', nightNow() > 0.5), 60000); phone.classList.toggle('eve', nightNow() > 0.5);
   const ago = (d) => { const s = (Date.now() - d) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s / 60) + 'm' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
@@ -8044,9 +8044,22 @@
     waking = false;
   }
   addEventListener('visibilitychange', () => { if (!document.hidden && signedIn()) wakeLoop(); });
+  // web push: register this phone with its browser's push service (with the game's public key) and tell the server
+  // its address, so messages and friend news reach it while the game is closed
+  const PUSH_PUBLIC = 'BA6OYiZS2uy2fjNIw51NhMS-rsrSdgbxsPgrvlITDkt--AePVBaEeyxJUy7XxzTLS58FOxitbOyBXhPGtSyp5cY';
+  async function pushSetup() {
+    try {
+      if (!signedIn() || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window) || Notification.permission !== 'granted') return;
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) { const raw = Uint8Array.from(atob(PUSH_PUBLIC.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)); sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: raw }); }
+      if (store.get('li.pushEp') !== sub.endpoint + '|' + (me$ ? me$.handle : '')) { await myNet('pushSubscribe', { endpoint: sub.endpoint }); store.set('li.pushEp', sub.endpoint + '|' + (me$ ? me$.handle : '')); }
+    } catch {}
+  }
+  if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', (m) => { if (m.data && m.data.type === 'open-phone' && signedIn()) openPhone('chats'); });
   async function warmUp() {
     if (!signedIn() || (me$ && keyed)) return;
-    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); wakeLoop(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); for (const [m, a] of [['receipts', {}], ['friends', {}], ['homes', {}], ['inbox', { seenJson: JSON.stringify(linkSeen()) }]]) my(m, a).catch(() => {}); } catch {}
+    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); wakeLoop(); pushSetup(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); for (const [m, a] of [['receipts', {}], ['friends', {}], ['homes', {}], ['inbox', { seenJson: JSON.stringify(linkSeen()) }]]) my(m, a).catch(() => {}); } catch {}
   }
   setTimeout(warmUp, 1200);
   // ================= WYRD OS 2 =================

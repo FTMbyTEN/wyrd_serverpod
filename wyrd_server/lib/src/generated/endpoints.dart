@@ -2875,6 +2875,25 @@ class Endpoints extends _is.EndpointDispatch {
                     params['query'],
                   ),
         ),
+        'pushSubscribe': _is.MethodConnector(
+          name: 'pushSubscribe',
+          params: {
+            'endpoint': _is.ParameterDescription(
+              name: 'endpoint',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .pushSubscribe(
+                    session,
+                    params['endpoint'],
+                  ),
+        ),
         'wake': _is.MethodConnector(
           name: 'wake',
           params: {

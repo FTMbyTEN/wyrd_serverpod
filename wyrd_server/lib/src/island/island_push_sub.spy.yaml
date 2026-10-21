@@ -1,0 +1,14 @@
+### A phone's web-push address (from the browser's push service), so the game can tell a player something happened
+### while the game is closed. Only the address is kept: pushes carry no content.
+class: IslandPushSub
+table: island_push_sub
+fields:
+  authUserId: UuidValue
+  endpoint: String
+  createdAt: DateTime
+indexes:
+  island_push_sub_endpoint_idx:
+    fields: endpoint
+    unique: true
+  island_push_sub_user_idx:
+    fields: authUserId

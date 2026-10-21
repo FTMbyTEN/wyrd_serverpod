@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 
 import '../drone/drone_service.dart';
@@ -979,7 +980,7 @@ class IslandMeEndpoint extends Endpoint {
     _typing[groupId]?.remove(h);
     _bump(groupId);
     for (final mb in await IslandMember.db.find(session, where: (t) => t.groupId.equals(groupId))) {
-      if (mb.authUserId != u) _ping(mb.authUserId);
+      if (mb.authUserId != u) _ping(mb.authUserId, session);
     }
     return jsonEncode({'id': m.id});
   }
@@ -2245,12 +2246,56 @@ class IslandMeEndpoint extends Endpoint {
   /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
   static final _uver = <String, int>{};
   static final _uwait = <String, List<Completer<void>>>{};
-  static void _ping(UuidValue who) {
-    final k = who.uuid;
+  static void _ping(UuidValue who, [Session? session]) {
+    final k = who.uuid, listening = (_uwait[k] ?? const []).isNotEmpty;
     _uver[k] = (_uver[k] ?? 0) + 1;
     for (final c in _uwait.remove(k) ?? <Completer<void>>[]) {
       if (!c.isCompleted) c.complete();
     }
+    if (!listening && session != null) unawaited(_push(session, who));
+  }
+
+  // ---------------- web push: a wake-up to the player's phones while the game is closed ----------------
+  static final _pushed = <String, DateTime>{};
+  static final _pushHttp = http.Client();
+
+  /// Wake [who]'s phones (no content: the notification is generic, the game shows the real thing). At most once in 30 s.
+  static Future<void> _push(Session req, UuidValue who) async {
+    final secret = (req.passwords['pushSecret'] ?? '').trim();
+    if (secret.isEmpty) return;
+    final last = _pushed[who.uuid];
+    if (last != null && DateTime.now().difference(last) < const Duration(seconds: 30)) return;
+    _pushed[who.uuid] = DateTime.now();
+    // its own session: the request that caused it may already have finished
+    final s = await Serverpod.instance.createSession(enableLogging: false);
+    try {
+      for (final sub in await IslandPushSub.db.find(s, where: (t) => t.authUserId.equals(who), limit: 5)) {
+        final r = await _pushHttp.post(Uri.parse('https://play.lagos-island.workers.dev/push'), headers: {'x-push-secret': secret, 'Content-Type': 'application/json'}, body: jsonEncode({'endpoint': sub.endpoint, 'ttl': 3600})).timeout(const Duration(seconds: 10));
+        final st = (jsonDecode(r.body) as Map)['status'];
+        if (st == 404 || st == 410) await IslandPushSub.db.deleteRow(s, sub); // the phone unsubscribed or reinstalled
+      }
+    } catch (e) {
+      s.log('[push] ${who.uuid}: $e', level: LogLevel.warning);
+    } finally {
+      await s.close();
+    }
+  }
+
+  /// This phone's push address (from its browser), so it can be woken while the game is closed.
+  Future<String> pushSubscribe(Session session, String endpoint) async {
+    final u = _user(session);
+    final ep = Uri.tryParse(endpoint);
+    if (ep == null || ep.scheme != 'https' || endpoint.length > 900) return _err('Bad address.');
+    final had = await IslandPushSub.db.findFirstRow(session, where: (t) => t.endpoint.equals(endpoint));
+    if (had != null && had.authUserId != u) await IslandPushSub.db.deleteRow(session, had); // the phone changed hands
+    if (had == null || had.authUserId != u) {
+      if (await IslandPushSub.db.count(session, where: (t) => t.authUserId.equals(u)) >= 5) {
+        final oldest = await IslandPushSub.db.findFirstRow(session, where: (t) => t.authUserId.equals(u), orderBy: (t) => t.createdAt);
+        if (oldest != null) await IslandPushSub.db.deleteRow(session, oldest);
+      }
+      await IslandPushSub.db.insertRow(session, IslandPushSub(authUserId: u, endpoint: endpoint, createdAt: DateTime.now().toUtc()));
+    }
+    return jsonEncode({'ok': true});
   }
 
   /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
@@ -2272,7 +2317,7 @@ class IslandMeEndpoint extends Endpoint {
     if (p == null) return _err('No Lagosian by that name.');
     if (p.authUserId == u) return _err('That\'s you.');
     final back = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u));
-    if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); _ping(p.authUserId); return jsonEncode({'rel': 'friends'}); }
+    if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); _ping(p.authUserId, session); return jsonEncode({'rel': 'friends'}); }
     if (back != null && back.status == 'accepted') return jsonEncode({'rel': 'friends'});
     final day = DateTime.now().toUtc().subtract(const Duration(days: 1));
     if (await IslandFriend.db.count(session, where: (t) => t.fromUser.equals(u) & (t.createdAt > day)) >= 30) return _err('That\'s a lot of requests for one day. Try again tomorrow.');
@@ -2284,7 +2329,7 @@ class IslandMeEndpoint extends Endpoint {
       if (mine.decidedAt != null && DateTime.now().toUtc().difference(mine.decidedAt!) < const Duration(days: 7)) return _err('They said no for now. You can ask again in a week.');
       await IslandFriend.db.updateRow(session, mine.copyWith(status: 'pending', note: n.isEmpty ? null : n, createdAt: DateTime.now().toUtc(), decidedAt: null));
     }
-    _ping(p.authUserId);
+    _ping(p.authUserId, session);
     return jsonEncode({'rel': mine?.status == 'accepted' ? 'friends' : 'sent'});
   }
 
@@ -2296,7 +2341,7 @@ class IslandMeEndpoint extends Endpoint {
     final r = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u) & t.status.equals('pending'));
     if (r == null) return _err('No request from them.');
     await IslandFriend.db.updateRow(session, r.copyWith(status: accept ? 'accepted' : 'declined', decidedAt: DateTime.now().toUtc()));
-    if (accept) _ping(p.authUserId);
+    if (accept) _ping(p.authUserId, session);
     return jsonEncode({'rel': accept ? 'friends' : 'none'});
   }
 
