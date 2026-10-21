@@ -7177,7 +7177,7 @@
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
   async function my(method, args = {}) {
     if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) { MY_CACHE.clear(); const pr = myNet(method, args); pr.finally(() => { if (signedIn()) { my('me').catch(() => {}); my('receipts').catch(() => {}); } }); return pr; } return myNet(method, args); }
-    const key = method + JSON.stringify(args), hit = MY_CACHE.get(key), age = hit ? performance.now() - hit.at : Infinity;
+    const key = (tokGet(RTOK) || '').slice(-16) + method + JSON.stringify(args), hit = MY_CACHE.get(key), age = hit ? performance.now() - hit.at : Infinity;
     if (hit && age < 60000) return hit.p;
     const fetchIt = () => { const pr = myNet(method, args), e = { at: performance.now(), p: pr }; pr.then(() => (e.ok = true), () => { if (MY_CACHE.get(key) === e) MY_CACHE.delete(key); }); return { e, pr }; };
     if (hit && hit.ok && age < 15 * 60000) { if (!hit.busy) { hit.busy = true; const { e, pr } = fetchIt(); pr.then(() => MY_CACHE.set(key, e), () => (hit.busy = false)); } return hit.p; } // shown now, fresh behind
@@ -9073,7 +9073,8 @@
       }
       if (app === 'gov' && !(arg && arg.old)) {
         const tab = (arg && arg.tab) || 'overview', A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, bar = (p, col) => `<div class="gbar"><i style="width:${p}%;background:${col}"></i></div>`;
-        const L = govLive(), CV = signedIn() ? await my('civic').catch(() => null) : null, ADMIN = !!(CV && CV.admin), GB = ADMIN ? await my('govBoard').catch(() => null) : null;
+        const L = govLive(), maybeAdmin = signedIn() && me$ && GOV_ADMINS.some((a) => a.toLowerCase() === String(me$.handle || '').toLowerCase());
+        const [CV, GB] = await Promise.all([signedIn() ? my('civic').catch(() => null) : null, maybeAdmin ? my('govBoard').catch(() => null) : null]), ADMIN = !!(CV && CV.admin && GB);
         const TABS = ADMIN ? [['overview', 'Overview'], ['console', 'Treasury'], ['live', 'Live'], ['vote', 'Vote'], ['account', 'My account'], ['amenities', 'Amenities'], ['housing', 'Housing'], ['budget', 'Budget'], ['laws', 'Laws'], ['notices', 'Notices'], ['depts', 'Departments']]
           : [['overview', 'Overview'], ['account', 'My account'], ['amenities', 'Amenities'], ['vote', 'Vote'], ['housing', 'Housing'], ['laws', 'Laws'], ['notices', 'Notices']];
         if (!TABS.some(([k]) => k === tab)) return render('gov', { tab: 'overview' });

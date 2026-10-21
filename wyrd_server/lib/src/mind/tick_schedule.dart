@@ -4,13 +4,13 @@ class TickSchedule {
   static const growthSnapshot = Duration(minutes: 30);
   static const rewards = Duration(minutes: 5);
   static const diaryCheck = Duration(minutes: 10);
-  static const reasoning = Duration(seconds: 30);
-  static const selfQuestion = Duration(seconds: 30);
+  static const reasoning = Duration(minutes: 2); // was 30 s: every tick holds the database for seconds, which slowed the game
+  static const selfQuestion = Duration(minutes: 2);
   // every synthesis tick is an LLM call; hourly keeps it inside the daily budget (was 90s)
   static const synthesis = Duration(hours: 1);
-  static const feed = Duration(seconds: 60);
+  static const feed = Duration(minutes: 3);
   static const selfConfig = Duration(hours: 4);
-  static const lexicon = Duration(seconds: 30);
+  static const lexicon = Duration(minutes: 3);
   static const dreamIdleCheck = Duration(minutes: 15);
   static const sleepCheck = Duration(
     minutes: 10,
