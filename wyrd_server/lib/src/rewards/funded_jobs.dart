@@ -315,6 +315,7 @@ abstract final class FundedJobs {
   static Future<void> decideReview(Session s, UuidValue operator, int acceptanceId, {required bool confirm, required String note}) async {
     final a = await JobAcceptance.db.findById(s, acceptanceId);
     if (a == null || a.status != 'review') throw JobRefused('Nothing to decide.');
+    if (a.authUserId == operator) throw JobRefused('Someone else must check your own gig.');
     final offer = (await JobOffer.db.findById(s, a.offerId))!;
     if (confirm) {
       await _settle(s, a, offer, actor: operator.uuid);

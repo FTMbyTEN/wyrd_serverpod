@@ -133,7 +133,7 @@ abstract final class Payout {
     if (a.emailVerified) return {'account': view(a)};
     if (a.codeExpires != null && a.codeExpires!.difference(DateTime.now().toUtc()) > const Duration(minutes: 19)) throw PayoutRefused('A code was just sent. Give it a minute.');
     final code = _code();
-    await IslandPayoutAccount.db.updateRow(s, a.copyWith(emailCode: code, codeExpires: DateTime.now().toUtc().add(const Duration(minutes: 20)), codeTries: 0));
+    await IslandPayoutAccount.db.updateRow(s, a.copyWith(emailCode: code, codeExpires: DateTime.now().toUtc().add(const Duration(minutes: 20))));
     await _sendCode(s, a.email, code);
     return {'account': view(a)};
   }

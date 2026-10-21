@@ -66,6 +66,8 @@ class RewardConfig {
   int get dailyLimitKobo => int.tryParse(_env['PAYOUT_DAILY_LIMIT_KOBO'] ?? '') ?? (sandbox ? 5000000 : 0);
 
   /// hours a withdrawal waits (for review: an operator may stop it) before the money is sent
+  /// the most paid out across the whole island in 24 hours; past it, payouts wait (and an operator is told) — 0: no limit
+  int get globalDailyKobo => int.tryParse(_env['PAYOUT_GLOBAL_DAILY_KOBO'] ?? '') ?? 0;
   int get reviewHours => int.tryParse(_env['PAYOUT_REVIEW_HOURS'] ?? '') ?? 0;
 
   /// the youngest a player may be to withdraw

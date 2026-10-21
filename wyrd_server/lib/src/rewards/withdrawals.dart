@@ -101,6 +101,8 @@ abstract final class Withdrawals {
       if (used + amountKobo > cfg.dailyLimitKobo) throw JobRefused('That would pass the daily limit of ₦${cfg.dailyLimitKobo ~/ 100}. You can withdraw ₦${((cfg.dailyLimitKobo - used).clamp(0, cfg.dailyLimitKobo)) ~/ 100} more today.');
     }
     if (beneficiary.trim().isEmpty) throw JobRefused('Add a verified account to withdraw to.');
+    // live money needs a live provider: without one a withdrawal would only sit in flight
+    if (cfg.livePayoutsEnabled && provider.name == 'mock') throw JobRefused('Withdrawals are briefly unavailable. Your earnings are safe.');
     final again = await RewardWithdrawal.db.findFirstRow(s, where: (t) => t.idemKey.equals(idemKey));
     if (again != null) return again.authUserId == u ? again : (throw JobRefused('Bad request key.'));
     await FundedJobs.matureDue(s, only: u);
@@ -158,13 +160,40 @@ abstract final class Withdrawals {
     if (!cfg.livePayoutsEnabled && !cfg.sandbox) return 0;
     if ((await RewardSwitch.db.findFirstRow(s, where: (t) => t.key.equals('payouts_paused')))?.enabled ?? false) return 0;
     final due = DateTime.now().toUtc().subtract(Duration(hours: cfg.reviewHours));
+    if (cfg.livePayoutsEnabled && provider.name == 'mock') return 0;
+    // the island-wide ceiling: what went out in the last 24 hours, plus what's on its way
+    var sent = 0;
+    if (cfg.globalDailyKobo > 0) {
+      final r = await s.db.unsafeQuery(r'''SELECT COALESCE(SUM("amountKobo"), 0) FROM "reward_withdrawal" WHERE "status" IN ('submitted', 'pending', 'unknown', 'paid') AND "updatedAt" > @d''', parameters: QueryParameters.named({'d': DateTime.now().toUtc().subtract(const Duration(hours: 24))}));
+      sent = (r.first[0] as num).toInt();
+    }
     var n = 0;
-    for (final w in await RewardWithdrawal.db.find(s, where: (t) => t.status.equals(PayoutState.requested) & (t.createdAt < due), limit: 20)) {
-      await _submit(s, w);
+    for (final w in await RewardWithdrawal.db.find(s, where: (t) => t.status.equals(PayoutState.requested) & (t.createdAt < due), orderBy: (t) => t.createdAt, limit: 20)) {
+      if (cfg.globalDailyKobo > 0 && sent + w.amountKobo > cfg.globalDailyKobo) {
+        s.log('[payout] island-wide daily ceiling reached (${sent ~/ 100} of ${cfg.globalDailyKobo ~/ 100} naira): ${w.ref} waits', level: LogLevel.warning);
+        break;
+      }
+      // still going to a verified account of theirs? (blocked or changed during the review: back to their earnings)
+      if (!await stillPayable(s, w)) {
+        await _move(s, w, PayoutState.failed, actor: 'system:recheck');
+        s.log('[payout] ${w.ref} stopped at sending: the account is no longer verified for this player', level: LogLevel.warning);
+        continue;
+      }
+      // claim it: only one server sends it, even if two run the tick at once
+      final claimed = await s.db.unsafeExecute(r'''UPDATE "reward_withdrawal" SET "updatedAt" = @t WHERE "id" = @i AND "status" = 'requested' AND "updatedAt" < @recent''',
+          parameters: QueryParameters.named({'t': DateTime.now().toUtc(), 'i': w.id, 'recent': DateTime.now().toUtc().subtract(const Duration(minutes: 1))}));
+      if (claimed != 1) continue;
+      await _submit(s, (await RewardWithdrawal.db.findById(s, w.id!))!);
+      sent += w.amountKobo;
       n++;
     }
     return n;
   }
+
+  /// Checked again just before a withdrawal is sent (set by the game: its bank account still verified, for this player,
+  /// to the same account). Null: no check.
+  static Future<bool> Function(Session s, RewardWithdrawal w)? payable;
+  static Future<bool> stillPayable(Session s, RewardWithdrawal w) async => payable == null || await payable!(s, w);
 
   /// Payouts sent but not settled: ask the provider (its answer, not a callback's word, moves money). Run by the tick
   /// and whenever the provider reports something.

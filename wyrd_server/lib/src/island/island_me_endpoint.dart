@@ -2671,6 +2671,15 @@ class IslandMeEndpoint extends Endpoint {
     }
   }
 
+  /// The payout's last check before it's sent: the player's bank account is still verified, still the one it was
+  /// requested to, not on hold after a change, and its owner still old enough.
+  static Future<bool> payableNow(Session s, RewardWithdrawal w) async {
+    final a = await IslandPayoutAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(w.authUserId));
+    if (a == null || a.status != 'verified' || w.beneficiary != 'flw:${a.bankCode}:${a.accountNumber}') return false;
+    if (a.dateOfBirth == null || Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge) return false;
+    return true;
+  }
+
   /// Operators: withdrawals waiting in their review window (who, how much, when they go), to stop any that look wrong.
   Future<String> payoutQueue(Session session) async {
     final u = _user(session);

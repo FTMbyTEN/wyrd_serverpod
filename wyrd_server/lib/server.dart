@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'src/island/flutterwave_v4.dart';
+import 'src/island/island_me_endpoint.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 
@@ -210,6 +211,7 @@ void run(List<String> args) async {
   if (RewardConfig.current.payoutProvider == 'flutterwave') {
     final flw = Flw4.from(pod.getPassword);
     if (flw != null) Withdrawals.provider = FlutterwavePayoutProvider(flw);
+    Withdrawals.payable = IslandMeEndpoint.payableNow; // the last check before money leaves
   }
 
   await pod.start();
