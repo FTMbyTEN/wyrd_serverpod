@@ -31,7 +31,19 @@ class IslandAuthEndpoint extends Endpoint {
     final name = username.trim();
     if (!_ok.hasMatch(name)) return false;
     final taken = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.ilike(_lit(name)));
-    return taken == null && await AuthServices.instance.emailIdp.admin.findAccount(session, email: emailOf(name)) == null;
+    return taken == null && !await lookalike(session, name) && await AuthServices.instance.emailIdp.admin.findAccount(session, email: emailOf(name)) == null;
+  }
+
+  /// names no new player may take, or look like
+  static const _reserved = ['wyrd', 'admin', 'government', 'governor', 'lagosisland', 'support', 'treasury'];
+
+  /// Is [name] too close to a name already on the island (or a reserved one)? Case, 0/o, 1/i/l, 3/e, 4/a, 5/s and the
+  /// separators _ . - are ignored, so nobody can pass themselves off as someone else.
+  static Future<bool> lookalike(Session s, String name) async {
+    String skel(String v) => v.toLowerCase().replaceAll(RegExp(r'[_.\-]'), '').replaceAll('0', 'o').replaceAll(RegExp('[i1]'), 'l').replaceAll('3', 'e').replaceAll('4', 'a').replaceAll('5', 's');
+    if (_reserved.contains(skel(name))) return true;
+    final r = await s.db.unsafeQuery('SELECT 1 FROM "island_profile" WHERE translate(lower("handle"), \'0i1345_.-\', \'olleas\') = @n LIMIT 1', parameters: QueryParameters.named({'n': skel(name)}));
+    return r.isNotEmpty;
   }
 
   /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
@@ -60,6 +72,7 @@ class IslandAuthEndpoint extends Endpoint {
     if (taken != null || await emailIdp.admin.findAccount(session, email: emailOf(name)) != null) {
       throw Exception('That username is taken.');
     }
+    if (await lookalike(session, name)) throw Exception('That username is too close to someone else\'s. Pick one that\'s clearly yours.');
     if (given.isNotEmpty && await emailIdp.admin.findAccount(session, email: mail) != null) throw Exception('That email already has an account.');
     await session.db.transaction((tx) async {
       final user = await AuthServices.instance.authUsers.create(session, transaction: tx);

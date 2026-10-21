@@ -3264,6 +3264,26 @@ class Endpoints extends _is.EndpointDispatch {
                     params['ref'],
                   ),
         ),
+        'civic': _is.MethodConnector(
+          name: 'civic',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .civic(session),
+        ),
+        'govBoard': _is.MethodConnector(
+          name: 'govBoard',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .govBoard(session),
+        ),
         'treasury2': _is.MethodConnector(
           name: 'treasury2',
           params: {},

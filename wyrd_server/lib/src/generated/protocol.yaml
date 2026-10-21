@@ -146,6 +146,8 @@ islandMe:
   - withdrawToBank:
   - payoutQueue:
   - payoutStop:
+  - civic:
+  - govBoard:
   - treasury2:
   - topUpHistory:
   - topUpCheck:

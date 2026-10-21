@@ -2618,6 +2618,56 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'stopped': await Withdrawals.stop(session, ref, 'operator:${u.uuid}')});
   }
 
+  /// the island's administrators: only they see the Government console (the treasury, the books)
+  static const govAdmins = {'rockerfeller', 'believecaxa'};
+  static Future<bool> _govAdmin(Session s, UuidValue u) async {
+    final p = await IslandProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+    return p != null && govAdmins.contains(p.handle.toLowerCase());
+  }
+
+  static int _i(Object? v) => v is num ? v.toInt() : int.tryParse('$v') ?? 0;
+
+  /// What every citizen sees of the government about themselves: the tax they've paid, rent and fines paid, what they owe.
+  Future<String> civic(Session session) async {
+    final u = _user(session), p = QueryParameters.named({'u': u.uuid});
+    final q = (await session.db.unsafeQuery(
+            'SELECT COALESCE(SUM(-"amount") FILTER (WHERE "kind" = \'tax\'), 0), COALESCE(SUM(-"amount") FILTER (WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'7 days\'), 0), '
+            'COALESCE(SUM(-"amount") FILTER (WHERE "counter" = \'city:courts\' AND "amount" < 0), 0), COALESCE(SUM(-"amount") FILTER (WHERE "counter" = \'city:landlord\' AND "amount" < 0), 0) '
+            'FROM "naira_entry" WHERE "authUserId" = CAST(@u AS uuid)',
+            parameters: p))
+        .first;
+    final c = await session.db.unsafeQuery('SELECT "debt" FROM "world_citizen" WHERE "authUserId" = CAST(@u AS uuid)', parameters: p);
+    final fines = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & (t.counter.equals('city:courts') | t.kind.equals('credit')), orderBy: (t) => t.createdAt.desc(), limit: 8);
+    return jsonEncode({
+      'admin': await _govAdmin(session, u), 'taxRate': Bank.taxRate,
+      'taxPaid': _i(q[0]), 'taxWeek': _i(q[1]), 'finesPaid': _i(q[2]), 'rentPaid': _i(q[3]), 'owed': c.isEmpty ? 0 : _i(c.first[0]),
+      'fines': [for (final e in fines) {'memo': e.memo, 'amount': e.amount, 'at': e.createdAt.toIso8601String()}],
+    });
+  }
+
+  /// The Government console (administrators only): Treasury 1 (the 2% tax on every movement of game naira), what each
+  /// city account has taken in and paid out, the citizens and the naira in circulation, and Treasury 2 (real naira).
+  Future<String> govBoard(Session session) async {
+    final u = _user(session);
+    if (!await _govAdmin(session, u)) return _err('The Government console is for the island\'s administrators.');
+    final t = (await session.db.unsafeQuery(
+            'SELECT COALESCE(SUM(-"amount"), 0), COALESCE(SUM(-"amount") FILTER (WHERE "createdAt" > NOW() - INTERVAL \'1 day\'), 0), COALESCE(SUM(-"amount") FILTER (WHERE "createdAt" > NOW() - INTERVAL \'7 days\'), 0), COUNT(*), COUNT(DISTINCT "authUserId") '
+            'FROM "naira_entry" WHERE "kind" = \'tax\''))
+        .first;
+    final byCounter = await session.db.unsafeQuery(
+        'SELECT "counter", COALESCE(SUM(-"amount") FILTER (WHERE "amount" < 0), 0), COALESCE(SUM("amount") FILTER (WHERE "amount" > 0 AND "kind" <> \'open\'), 0) FROM "naira_entry" WHERE "kind" <> \'tax\' GROUP BY "counter" ORDER BY 1');
+    final cit = (await session.db.unsafeQuery('SELECT COUNT(*), COALESCE(SUM("naira"), 0), COALESCE(SUM("debt"), 0), COUNT(*) FILTER (WHERE "debt" > 0) FROM "world_citizen"')).first;
+    final days = await session.db.unsafeQuery(
+        'SELECT to_char(date_trunc(\'day\', "createdAt" + INTERVAL \'1 hour\'), \'YYYY-MM-DD\'), SUM(-"amount") FROM "naira_entry" WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'14 days\' GROUP BY 1 ORDER BY 1');
+    return jsonEncode({
+      'tax': {'total': _i(t[0]), 'today': _i(t[1]), 'week': _i(t[2]), 'entries': _i(t[3]), 'payers': _i(t[4]), 'rate': Bank.taxRate},
+      'days': [for (final d in days) {'day': d[0], 'tax': _i(d[1])}],
+      'counters': [for (final r in byCounter) {'counter': r[0], 'in': _i(r[1]), 'out': _i(r[2])}],
+      'citizens': {'count': _i(cit[0]), 'naira': _i(cit[1]), 'owed': _i(cit[2]), 'owing': _i(cit[3]), 'players': await IslandProfile.db.count(session)},
+      'treasury2': await TopUp.treasury2(session),
+    });
+  }
+
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
   Future<String> treasury2(Session session) async {
     final u = _user(session);
