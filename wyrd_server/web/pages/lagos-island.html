@@ -1242,6 +1242,11 @@
   .ghostSw.on .gsK { background: #8B5CF6; } .ghostSw.on .gsK i { transform: translateX(18px); }
   .rmRow { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(148,163,184,.2); } .rmRow select { padding: 6px; border-radius: 10px; }
   .rmSw { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; } .rmSw button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(15,23,42,.15); cursor: pointer; } .rmSw button.on { border-color: #0EA5E9; box-shadow: 0 0 0 2px #0EA5E9; }
+  #deco.bm { flex-direction: column; align-items: stretch; gap: 8px; width: min(760px, calc(100vw - 20px)); padding: 10px; border-radius: 24px; background: rgba(255,255,255,.96); backdrop-filter: blur(14px); }
+  #deco.bm .bmCtx { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 34px; } #deco.bm .bmCtx b { font: 800 14px 'Plus Jakarta Sans', sans-serif; margin-right: 4px; } #deco.bm .bmCtx small { color: #64748B; font: 600 12px 'Plus Jakarta Sans', sans-serif; flex: 1 1 160px; }
+  #deco.bm .bmTabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; } #deco.bm .bmTabs button { flex: none; padding: 6px 11px; border: 0; border-radius: 999px; background: #EEF2F6; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: #334155; cursor: pointer; } #deco.bm .bmTabs button.on { background: #0F172A; color: #fff; }
+  #deco.bm .dscroll { max-width: none; padding-bottom: 2px; } #deco.bm .ditem { position: relative; width: 74px; } #deco.bm .ditem img { width: 44px; height: 44px; } #deco.bm .ditem em { position: absolute; top: 3px; right: 5px; font: 800 10px 'Plus Jakarta Sans', sans-serif; font-style: normal; color: #0F766E; }
+  #deco.bm .bmTools { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; } #deco.bm .dbtn[disabled] { opacity: .4; cursor: default; }
 </style>
 </head>
 <body>
@@ -5567,8 +5572,10 @@
     if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     if (R.kind === 'office') drawOffice(R, now);
     if (R.kind === 'arena') drawStage(now);
+    if (deco && R === inside) bmUnder(R);
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
+    if (deco && deco.carry && R === inside) { const g = deco.carry.it; items.push({ d: P(g.x, 0, g.z)[2], f: () => { x.save(); x.globalAlpha = 0.72; furnDraw(g, now); x.restore(); } }); }
     for (const c of R._crowd || []) items.push({ who: 1, d: P(c.x, 0, c.z)[2] + 0.02, f: c.f }); // a club's crowd
     for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
     if (R.kind === 'beach') for (const o of [...others.values(), me]) if (o.z < SHORE) items.push({ d: P(o.x, 0, o.z)[2] + 0.015, f: () => wade(o.x, o.z, now) }); // the sea over whoever's in it
@@ -6672,6 +6679,7 @@
   function leaveRoom() { if (!touring) coachHide(); closeInverter();
     if (!inside) return;
     pose = null;
+    if (deco && deco.dirty) bmSave(inside);
     inside = null; deco = null; setDeco();
     me.x = outside.x; me.z = outside.z; Object.assign(cam, outside.cam, { follow: false }); exitHold = { x: me.x, z: me.z }; // no 'go in' prompt the moment you come out
     others.clear(); updateWhere();
@@ -6690,29 +6698,14 @@
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
     if (!deco) {
+      decoEl.classList.remove('bm');
       decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>' + (isHome() ? `<button class="dbtn" id="dParty">🎉 ${partyAt(inside.key) ? 'Your party' : 'Throw a party'}</button><button class="dbtn" id="dWard">👔 Wardrobe</button>` : '');
-      document.getElementById('dOn').onclick = () => { deco = { sel: isHome() ? null : 'sofa', colour: null, pick: null }; setDeco(); };
+      document.getElementById('dOn').onclick = () => { deco = { pick: null, carry: null, drag: null, undo: [], redo: [], dirty: false, tab: 'All' }; setDeco(); };
       if (isHome()) document.getElementById('dParty').onclick = () => { partyDraft.key = inside.key; openPhone('parties', { key: inside.key }); };
       if (isHome()) document.getElementById('dWard').onclick = () => openPhone('fashion', { tab: 'wardrobe' }); // change into anything you own
       return;
     }
-    if (deco.pick) {
-      decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${STORE[deco.pick.k] ? '' : PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">${isHome() && STORE[deco.pick.k] ? '📦 Put away' : '🗑 Remove'}</button><button class="dbtn" id="dDone">Done</button>`;
-      document.getElementById('dRot').onclick = () => { deco.pick.r = ((deco.pick.r || 0) + 1) % 4; };
-      document.getElementById('dDel').onclick = () => { inside.layout = inside.layout.filter((v) => v !== deco.pick); deco.pick = null; setDeco(); };
-      document.getElementById('dDone').onclick = () => { deco.pick = null; setDeco(); };
-      decoEl.querySelectorAll('[data-c]').forEach((b) => (b.onclick = () => { deco.pick.c = b.dataset.c; }));
-      return;
-    }
-    // in your HQ you place what you've bought (what's left of each); elsewhere the staff have everything
-    const left = isHome() ? spareFurniture() : null;
-    if (left && deco.sel && !left[deco.sel]) deco.sel = Object.keys(left)[0] || null;
-    const pieces = left ? Object.keys(left).map((k) => [k, FURN[k]]) : Object.entries(FURN);
-    decoEl.innerHTML = `<div class="dscroll">${pieces.length ? pieces.map(([k, f]) => `<button class="ditem${deco.sel === k ? ' on' : ''}" data-k="${k}">${STORE[k] ? `<img src="${FURN_BASE}thumbs/${STORE[k].m}.png" alt="">` : `<span>${f[1]}</span>`}${f[0]}${left ? ` ×${left[k]}` : ''}</button>`).join('') : '<span class="dl">Your home is empty. Buy furniture at the Eko Home Store.</span>'}</div>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="dSave">Save</button><button class="dbtn" id="dOff">Close</button>`;
-    decoEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { deco.sel = b.dataset.k; setDeco(); }));
-    if (left) document.getElementById('dShop').onclick = () => openPhone('store');
-    document.getElementById('dSave').onclick = async () => { try { await my('saveRoom', { key: inside.key, layout: JSON.stringify([...inside.layout, ...roomItems(inside.rooms)]) }); bubbles.set('me', { text: 'Saved. Looking good.', until: performance.now() + 3000 }); } catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 4000 }); } };
-    document.getElementById('dOff').onclick = () => { deco = null; setDeco(); };
+    decoEl.classList.add('bm'); decoEl.innerHTML = bmTray(); bmWire();
   }
   const isHome = () => !!inside && (inside.kind === 'hq' || inside.kind === 'home'); // your BQ or a home you bought
   // the pieces you own that aren't out yet: { id: how many }
@@ -6722,6 +6715,130 @@
     for (const it of inside.layout) if (left[it.k]) left[it.k]--;
     for (const k of Object.keys(left)) if (left[k] <= 0 || !STORE[k]) delete left[k];
     return left;
+  }
+  // ---- Build mode, Sims-style: a catalog tray by room; pick a piece and it rides under your pointer on a 1 m grid, its
+  // footprint green where it fits and red where it doesn't (another piece, a wall, a built-in, the doorway); drag pieces
+  // about, turn them (, . or R), copy one, put one away (Del); undo and redo (Ctrl+Z, Ctrl+Y); Done saves
+  const fpOf = (it) => { const f = FURN[it.k]; if (!f) return null; const r = (it.r || 0) % 2, w = r ? f[3] : f[2], d = r ? f[2] : f[3]; return [it.x - w / 2, it.z - d / 2, it.x + w / 2, it.z + d / 2]; };
+  const isRugK = (it) => kindOf(it) === 'rug';
+  const hit2 = (a, b) => a[0] < b[2] - 0.05 && a[2] > b[0] + 0.05 && a[1] < b[3] - 0.05 && a[3] > b[1] + 0.05;
+  function bmBlocks(R) { // the low walls and built-ins nothing stands in (the BQ's; a bought home has its own fit-out)
+    if (R.kind !== 'hq') return [];
+    return [[0, 26, 18, 26.6], [17.4, 26.6, 18, 40], [58, 30, 76, 30.6], [57.4, 30, 58, 40], [19, 0, 40, 3.2], [61.4, 0, 76, 12.6], [0, 33, 2.6, 46], [19.6, R.d - 3.8, 26.4, R.d]];
+  }
+  function bmFits(R, it) {
+    const f = fpOf(it); if (!f) return false;
+    if (f[0] < 0.5 || f[1] < 0.5 || f[2] > R.w - 0.5 || f[3] > R.d - 0.5) return false;
+    if (f[3] > R.d - 3 && f[0] < R.w / 2 + 3 && f[2] > R.w / 2 - 3) return false; // the doorway stays clear
+    if (!isRugK(it)) for (const b of bmBlocks(R)) if (hit2(f, b)) return false;
+    for (const o of R.layout) { if (o === it || isRugK(o) !== isRugK(it)) continue; const g = fpOf(o); if (g && hit2(f, g)) return false; }
+    return true;
+  }
+  function bmSnap(it, fx, fz, fine) {
+    const f = FURN[it.k], r = (it.r || 0) % 2, w = r ? f[3] : f[2], d = r ? f[2] : f[3], s = fine ? 0.25 : 1;
+    it.x = Math.round((fx - w / 2) / s) * s + w / 2; it.z = Math.round((fz - d / 2) / s) * s + d / 2;
+  }
+  function bmHitAt(sx, sy) { // the piece under the pointer: furniture before rugs, the nearest first
+    const [fx, fz] = floorAt(sx, sy); let best = null, bd = -Infinity;
+    for (const it of inside.layout) { const f = fpOf(it); if (!f || fx < f[0] - 0.4 || fx > f[2] + 0.4 || fz < f[1] - 0.4 || fz > f[3] + 0.4) continue; const sc = (isRugK(it) ? -1e6 : 0) + P(it.x, 0, it.z)[2]; if (sc > bd) { bd = sc; best = it; } }
+    return best;
+  }
+  const bmSnapshot = () => JSON.stringify(inside.layout);
+  function bmCommit(before) { deco.undo.push(before); if (deco.undo.length > 80) deco.undo.shift(); deco.redo = []; deco.dirty = true; }
+  function bmUndo() { if (!deco.undo.length) return; deco.redo.push(bmSnapshot()); inside.layout = JSON.parse(deco.undo.pop()); deco.pick = null; deco.dirty = true; setDeco(); }
+  function bmRedo() { if (!deco.redo.length) return; deco.undo.push(bmSnapshot()); inside.layout = JSON.parse(deco.redo.pop()); deco.pick = null; deco.dirty = true; setDeco(); }
+  const bmSay = (t) => bubbles.set('me', { text: t, until: performance.now() + 2600 });
+  function bmRotate(dir) {
+    if (deco.carry) { deco.carry.it.r = ((deco.carry.it.r || 0) + dir + 4) % 4; return; }
+    const it = deco.pick; if (!it) return; const before = bmSnapshot(), r0 = it.r || 0;
+    it.r = (r0 + dir + 4) % 4; if (!bmFits(inside, it)) { it.r = r0; return bmSay('No room to turn it there'); } bmCommit(before);
+  }
+  function bmAway() { const it = deco.pick; if (!it) return; const before = bmSnapshot(); inside.layout = inside.layout.filter((v) => v !== it); deco.pick = null; bmCommit(before); setDeco(); }
+  function bmCopy() { // the eyedropper: carry another of the same
+    const it = deco.pick; if (!it) return;
+    if (isHome() && !spareFurniture()[it.k]) return bmSay('You have no more of these. Get another at the Eko Home Store.');
+    deco.carry = { it: { k: it.k, x: it.x, z: it.z, r: it.r || 0, ...(it.c ? { c: it.c } : {}) } }; deco.pick = null; setDeco();
+  }
+  function bmTake(k) { // a piece from the tray, onto the floor where you're looking
+    const [fx, fz] = floorAt(W / 2, H * 0.55), it = { k, x: fx, z: fz, r: 0 }; bmSnap(it, Math.max(4, Math.min(inside.w - 4, fx)), Math.max(4, Math.min(inside.d - 6, fz)));
+    deco.carry = { it }; deco.pick = null; setDeco();
+  }
+  async function bmSave(R = inside) {
+    if (!R) return;
+    try { await my('saveRoom', { key: R.key, layout: JSON.stringify([...R.layout, ...roomItems(R.rooms)]) }); if (deco) deco.dirty = false; return true; }
+    catch (e) { bmSay(e.message); return false; }
+  }
+  // the pointer: pressing on a piece grabs it, pressing while carrying moves what you carry; anything else pans the view
+  function bmDown(sx, sy) {
+    if (deco.carry) { bmMove(sx, sy); return true; }
+    const it = bmHitAt(sx, sy); if (!it) return false;
+    const [fx, fz] = floorAt(sx, sy);
+    deco.pick = it; deco.drag = { it, before: bmSnapshot(), x0: it.x, z0: it.z, ox: it.x - fx, oz: it.z - fz, moved: false }; setDeco();
+    return true;
+  }
+  function bmMove(sx, sy, fine) {
+    const [fx, fz] = floorAt(sx, sy);
+    if (deco.carry) return bmSnap(deco.carry.it, fx, fz, fine);
+    const d = deco.drag; if (!d) return;
+    const px = d.it.x, pz = d.it.z; bmSnap(d.it, fx + d.ox, fz + d.oz, fine); if (d.it.x !== px || d.it.z !== pz) d.moved = true;
+  }
+  function bmUp(shift) {
+    if (deco.carry) {
+      const it = deco.carry.it;
+      if (!bmFits(inside, it)) return bmSay('It doesn\'t fit there');
+      if (inside.layout.length >= 200) return bmSay('That\'s the most this home can hold');
+      if (isHome() && !spareFurniture()[it.k]) { deco.carry = null; setDeco(); return bmSay('You have none of these left to place'); }
+      const before = bmSnapshot(), placed = { ...it }; inside.layout.push(placed); bmCommit(before);
+      deco.carry = shift && (!isHome() || spareFurniture()[it.k]) ? { it: { ...it } } : null; // hold Shift to keep placing
+      if (!deco.carry) deco.pick = placed; setDeco(); return;
+    }
+    const d = deco.drag; deco.drag = null; if (!d || !d.moved) return;
+    if (!bmFits(inside, d.it)) { d.it.x = d.x0; d.it.z = d.z0; return bmSay('It doesn\'t fit there'); }
+    bmCommit(d.before);
+  }
+  function bmKey(e) { // true when build mode used the key
+    const k = e.key.toLowerCase(), ctl = e.ctrlKey || e.metaKey;
+    if (ctl && k === 'z') { e.shiftKey ? bmRedo() : bmUndo(); return true; }
+    if (ctl && k === 'y') { bmRedo(); return true; }
+    if (k === ',' || k === 'r' && !e.shiftKey) { bmRotate(-1); return true; }
+    if (k === '.' || k === 'r' && e.shiftKey) { bmRotate(1); return true; }
+    if (k === 'delete' || k === 'backspace') { bmAway(); return true; }
+    if (k === 'escape') { if (deco.carry) deco.carry = null; else deco.pick = null; setDeco(); return true; }
+    return false;
+  }
+  // under the furniture: the grid, and the footprint of what you're carrying or dragging, green or red
+  function bmUnder(R) {
+    if (!deco) return;
+    x.save(); x.lineWidth = 1;
+    for (let v = 1; v < R.w; v++) { x.strokeStyle = v % 4 ? 'rgba(148,163,184,0.10)' : 'rgba(148,163,184,0.22)'; const p = P(v, 0.04, 0.5), q = P(v, 0.04, R.d - 0.5); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    for (let v = 1; v < R.d; v++) { x.strokeStyle = v % 4 ? 'rgba(148,163,184,0.10)' : 'rgba(148,163,184,0.22)'; const p = P(0.5, 0.04, v), q = P(R.w - 0.5, 0.04, v); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    x.restore();
+    const t = deco.carry ? deco.carry.it : deco.drag && deco.drag.moved ? deco.drag.it : null;
+    if (t) { const f = fpOf(t), ok = bmFits(R, t); flat(f[0] - 0.15, f[1] - 0.15, f[2] + 0.15, f[3] + 0.15, 0.05, ok ? 'rgba(34,197,94,0.42)' : 'rgba(239,68,68,0.5)', ok ? '#22C55E' : '#EF4444'); }
+  }
+  // the tray: the room tabs, the pieces (what's left of each in a home), and the tools
+  const BM_TABS = ['All', 'Living', 'Bedroom', 'Kitchen', 'Dining', 'Bathroom', 'Office', 'Decor'];
+  function bmTray() {
+    const left = isHome() ? spareFurniture() : null;
+    const all = left ? Object.keys(left).map((k) => [k, FURN[k]]) : Object.entries(FURN).filter(([k]) => !STORE[k]);
+    const tab = deco.tab || 'All', list = all.filter(([k]) => tab === 'All' || (STORE[k] && STORE[k].room === tab)), tabs = BM_TABS.filter((tb) => tb === 'All' || all.some(([k]) => STORE[k] && STORE[k].room === tb));
+    const ctx = deco.carry ? deco.carry.it : deco.pick;
+    const head = ctx ? `<div class="bmCtx"><b>${FURN[ctx.k][1] || ''} ${esc(FURN[ctx.k][0])}</b>${deco.carry ? '<small>Click (or let go) to place it · Shift keeps placing</small>' : ''}
+        <button class="dbtn" id="bmL" title="Turn left (,)">↺</button><button class="dbtn" id="bmR" title="Turn right (.)">↻</button>
+        ${!deco.carry && !STORE[ctx.k] ? PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('') : ''}
+        ${deco.carry ? '<button class="dbtn" id="bmX">✕ Cancel</button>' : `<button class="dbtn" id="bmCopy" title="Copy">⧉ Copy</button><button class="dbtn" id="bmDel" title="Put away (Del)">${isHome() && STORE[ctx.k] ? '📦 Put away' : '🗑 Remove'}</button>`}</div>` : '<div class="bmCtx"><small>Pick a piece below, or drag one in the room to move it.</small></div>';
+    return `${head}<div class="bmTabs">${tabs.map((tb) => `<button data-tab="${tb}" class="${tb === tab ? 'on' : ''}">${tb === 'All' ? '✨' : ROOM_ICON[tb] || ''} ${tb}</button>`).join('')}</div>
+      <div class="dscroll">${list.length ? list.map(([k, f]) => `<button class="ditem${deco.carry && deco.carry.it.k === k ? ' on' : ''}" data-k="${k}">${STORE[k] ? `<img src="${FURN_BASE}thumbs/${STORE[k].m}.png" alt="">` : `<span>${f[1]}</span>`}${esc(f[0])}${left ? `<em>×${left[k]}</em>` : ''}</button>`).join('') : `<span class="dl">${left ? 'Nothing left to place here. Get more at the Eko Home Store.' : 'Nothing here.'}</span>`}</div>
+      <div class="bmTools"><button class="dbtn" id="bmU" ${deco.undo.length ? '' : 'disabled'} title="Undo (Ctrl+Z)">↶ Undo</button><button class="dbtn" id="bmRe" ${deco.redo.length ? '' : 'disabled'} title="Redo (Ctrl+Y)">↷ Redo</button>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="bmDone">${deco.dirty ? '✓ Save and close' : '✓ Done'}</button></div>`;
+  }
+  function bmWire() {
+    const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    on('bmL', () => bmRotate(-1)); on('bmR', () => bmRotate(1)); on('bmX', () => { deco.carry = null; setDeco(); }); on('bmCopy', bmCopy); on('bmDel', bmAway);
+    on('bmU', bmUndo); on('bmRe', bmRedo); on('dShop', () => openPhone('store'));
+    on('bmDone', async () => { if (deco.dirty && !(await bmSave())) return; bmSay('Saved. Looking good.'); deco = null; setDeco(); });
+    decoEl.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { deco.tab = b.dataset.tab; setDeco(); }));
+    decoEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => bmTake(b.dataset.k)));
+    decoEl.querySelectorAll('[data-c]').forEach((b) => (b.onclick = () => { if (!deco.pick) return; const before = bmSnapshot(); deco.pick.c = b.dataset.c; bmCommit(before); setDeco(); }));
   }
   function floorAt(sx, sy) { // the screen point to a spot on the floor
     const rx = (sx - W / 2) / K, rz = (sy - H * 0.55) / (K * sp);
@@ -6746,17 +6863,8 @@
       if (it) openPhone('store', it.k); return;
     }
     if (inside.kind === 'dealer') { const [fx, fz] = floorAt(sx, sy); const c = showroomCars(inside).find((v) => Math.abs(v.x - fx) < 8 && Math.abs(v.z - fz) < 5); if (c) openShowcase(c.id); return; }
-    if (!deco) return;
-    const [fx, fz] = floorAt(sx, sy);
-    const hit = inside.layout.slice().reverse().find((it) => { const f = FURN[it.k]; return f && Math.abs(it.x - fx) < Math.max(f[2], f[3]) / 2 + 0.5 && Math.abs(it.z - fz) < Math.max(f[2], f[3]) / 2 + 0.5; });
-    if (hit) { deco.pick = hit; setDeco(); return; }
-    if (deco.pick) { deco.pick = null; setDeco(); return; }
-    if (fx < 1 || fz < 1 || fx > inside.w - 1 || fz > inside.d - 1) return;
-    if (inside.layout.length >= 200 || !deco.sel) return;
-    if (isHome() && !spareFurniture()[deco.sel]) return;
-    const it = { k: deco.sel, x: Math.round(fx * 2) / 2, z: Math.round(fz * 2) / 2 };
-    inside.layout.push(it);
-    if (isHome()) setDeco(); // the count goes down
+    if (!deco || deco.carry) return;
+    if (deco.pick) { deco.pick = null; setDeco(); }
   }
   document.getElementById('ask').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -6828,7 +6936,7 @@
   let okada = false, stick = { x: 0, z: 0 };
   addEventListener('keydown', (e) => {
     if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
-
+    if (inside && deco && bmKey(e)) { e.preventDefault(); return; }
     keys.add(e.key.toLowerCase());
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) e.preventDefault();
   });
@@ -6852,16 +6960,18 @@
     stick = { x: dx / max, z: dy / max };
   }
   const pts = new Map(); let pinch0 = 0, user0 = 1, dragged = false;
-  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; } });
+  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; } });
   cv.addEventListener('pointermove', (e) => {
+    if (inside && deco && deco.carry && !pts.size) bmMove(e.clientX, e.clientY, e.altKey); // what you carry follows the mouse
     const p = pts.get(e.pointerId); if (!p) return;
+    if (p.furn) { bmMove(e.clientX, e.clientY, e.altKey); dragged = true; return; }
     if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; cam.user = Math.max(0.45, Math.min(2.4, user0 * Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1))); return; }
     const dx = e.clientX - p.x, dy = e.clientY - p.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) dragged = true;
     if (dragged) { cam.follow = false; const [wx, wz] = toWorldDir(dx / K, dy / K); cam.x -= wx; cam.z -= wz; }
     p.x = e.clientX; p.y = e.clientY;
   });
-  cv.addEventListener('pointerup', (e) => { const was = pts.get(e.pointerId); pts.delete(e.pointerId); if (was && !dragged && pts.size === 0) tapAt(e.clientX, e.clientY); });
+  cv.addEventListener('pointerup', (e) => { const was = pts.get(e.pointerId); pts.delete(e.pointerId); if (was && was.furn) { if (deco) { bmUp(e.shiftKey); setDeco(); } return; } if (was && !dragged && pts.size === 0) tapAt(e.clientX, e.clientY); });
   cv.addEventListener('pointercancel', (e) => pts.delete(e.pointerId));
   cv.addEventListener('wheel', (e) => { e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
   const card = document.getElementById('card');
