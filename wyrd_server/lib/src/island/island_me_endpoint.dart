@@ -952,9 +952,13 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Post an encrypted message to a chat I'm in.
+  static final _sent = <String, List<DateTime>>{};
   Future<String> post(Session session, int groupId, String ct) async {
     final u = _user(session);
     if (!_b64(ct, 8000)) return _err('Bad message.');
+    final now0 = DateTime.now(), times = (_sent[u.uuid] ??= [])..removeWhere((t) => now0.difference(t) > const Duration(seconds: 10));
+    if (times.length >= 20) return _err('Slow down a little: too many messages at once.');
+    times.add(now0);
     if (await IslandMember.db.findFirstRow(
           session,
           where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
@@ -974,6 +978,9 @@ class IslandMeEndpoint extends Endpoint {
     final h = (await _profile(session, u)).handle;
     _typing[groupId]?.remove(h);
     _bump(groupId);
+    for (final mb in await IslandMember.db.find(session, where: (t) => t.groupId.equals(groupId))) {
+      if (mb.authUserId != u) _ping(mb.authUserId);
+    }
     return jsonEncode({'id': m.id});
   }
 
@@ -2236,13 +2243,36 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
+  static final _uver = <String, int>{};
+  static final _uwait = <String, List<Completer<void>>>{};
+  static void _ping(UuidValue who) {
+    final k = who.uuid;
+    _uver[k] = (_uver[k] ?? 0) + 1;
+    for (final c in _uwait.remove(k) ?? <Completer<void>>[]) {
+      if (!c.isCompleted) c.complete();
+    }
+  }
+
+  /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
+  Future<String> wake(Session session, int ver) async {
+    final k = _user(session).uuid;
+    final end = DateTime.now().add(const Duration(seconds: 25));
+    while ((_uver[k] ?? 0) == ver && DateTime.now().isBefore(end)) {
+      final c = Completer<void>();
+      (_uwait[k] ??= []).add(c);
+      await c.future.timeout(end.difference(DateTime.now()), onTimeout: () {});
+      _uwait[k]?.remove(c);
+    }
+    return jsonEncode({'ver': _uver[k] ?? 0});
+  }
+
   Future<String> friendRequest(Session session, String handle, String note) async {
     final u = _user(session);
     final p = await _byHandle(session, handle);
     if (p == null) return _err('No Lagosian by that name.');
     if (p.authUserId == u) return _err('That\'s you.');
     final back = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u));
-    if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); return jsonEncode({'rel': 'friends'}); }
+    if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); _ping(p.authUserId); return jsonEncode({'rel': 'friends'}); }
     if (back != null && back.status == 'accepted') return jsonEncode({'rel': 'friends'});
     final day = DateTime.now().toUtc().subtract(const Duration(days: 1));
     if (await IslandFriend.db.count(session, where: (t) => t.fromUser.equals(u) & (t.createdAt > day)) >= 30) return _err('That\'s a lot of requests for one day. Try again tomorrow.');
@@ -2254,6 +2284,7 @@ class IslandMeEndpoint extends Endpoint {
       if (mine.decidedAt != null && DateTime.now().toUtc().difference(mine.decidedAt!) < const Duration(days: 7)) return _err('They said no for now. You can ask again in a week.');
       await IslandFriend.db.updateRow(session, mine.copyWith(status: 'pending', note: n.isEmpty ? null : n, createdAt: DateTime.now().toUtc(), decidedAt: null));
     }
+    _ping(p.authUserId);
     return jsonEncode({'rel': mine?.status == 'accepted' ? 'friends' : 'sent'});
   }
 
@@ -2265,6 +2296,7 @@ class IslandMeEndpoint extends Endpoint {
     final r = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u) & t.status.equals('pending'));
     if (r == null) return _err('No request from them.');
     await IslandFriend.db.updateRow(session, r.copyWith(status: accept ? 'accepted' : 'declined', decidedAt: DateTime.now().toUtc()));
+    if (accept) _ping(p.authUserId);
     return jsonEncode({'rel': accept ? 'friends' : 'none'});
   }
 

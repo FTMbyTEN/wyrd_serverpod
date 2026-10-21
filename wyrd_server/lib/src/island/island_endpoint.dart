@@ -127,10 +127,21 @@ class IslandEndpoint extends Endpoint {
       },
       'parked': parked,
       'online': _players.length,
+      'newcomers': await _fresh(session),
       'players': near.take(60).toList(),
       'chat': heard,
       'seq': _seq,
     });
+  }
+
+  static List<String> _newcomers = const [];
+  static DateTime _newcomersAt = DateTime.fromMillisecondsSinceEpoch(0);
+  static Future<List<String>> _fresh(Session s) async {
+    if (DateTime.now().difference(_newcomersAt) < const Duration(minutes: 1)) return _newcomers;
+    _newcomersAt = DateTime.now();
+    final since = DateTime.now().toUtc().subtract(const Duration(hours: 24));
+    _newcomers = [for (final p in await IslandProfile.db.find(s, where: (t) => t.createdAt > since, limit: 200)) p.handle];
+    return _newcomers;
   }
 
   /// How many are on the island now (for the welcome, before you join).

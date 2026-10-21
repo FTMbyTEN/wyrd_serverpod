@@ -1194,6 +1194,7 @@
   #bnBody .err { margin: 8px 4px 0; color: #DC2626; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; }
   @media (prefers-reduced-motion: reduce) { .wBuyFun::after { animation: none; } }
   #pbody[data-app="wallet"] .wAct { grid-template-columns: 1fr 1fr; }
+  .safeCode { margin: 6px 0 12px; padding: 16px 12px; border-radius: 16px; background: rgba(34,197,94,.1); text-align: center; font: 700 20px/1.6 ui-monospace, Menlo, monospace; letter-spacing: .08em; word-spacing: .3em; color: #15803D; }
 </style>
 </head>
 <body>
@@ -6846,7 +6847,7 @@
       const inp = document.createElement('input'); inp.maxLength = 140; inp.placeholder = `Say hi to @${p.handle} (optional)`; host.append(inp);
       b('add', 'Send friend request', async () => { const r = await my('friendRequest', { handle: p.handle, note: inp.value }); p.rel = r.rel; MY_CACHE.clear(); done(p); });
     } else if (p.rel === 'sent') b('clock', 'Request sent · cancel', async () => { await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
-    else if (p.rel === 'received') { const r2 = document.createElement('div'); r2.className = 'row2'; host.append(r2); b('check', 'Accept', async () => { await my('friendRespond', { handle: p.handle, accept: true }); p.rel = 'friends'; done(p); }, '', r2); b('x', 'Decline', async () => { await my('friendRespond', { handle: p.handle, accept: false }); p.rel = 'none'; done(p); }, 'alt', r2); }
+    else if (p.rel === 'received') { const r2 = document.createElement('div'); r2.className = 'row2'; host.append(r2); b('check', 'Accept', async () => { FR.mine.add(p.handle.toLowerCase()); await my('friendRespond', { handle: p.handle, accept: true }); p.rel = 'friends'; done(p); }, '', r2); b('x', 'Decline', async () => { await my('friendRespond', { handle: p.handle, accept: false }); p.rel = 'none'; done(p); }, 'alt', r2); }
     else if (p.rel === 'friends') b('check', 'Friends · remove', async () => { if (!confirm(`Remove ${p.handle} from your friends?`)) return; await my('unfriend', { handle: p.handle }); p.rel = 'none'; done(p); }, 'alt');
     b('chat', 'Message', async () => { card.style.display = 'none'; openPhone('newchat', { dm: true, who: p.handle }); }, 'alt');
   }
@@ -6861,17 +6862,18 @@
     catch (e) { s.innerHTML = `<div class="dim">${esc(e.message === 'signin' ? 'Sign in to see their profile.' : 'Their profile is not available right now.')}</div>`; }
   }
   // new requests and new friends turn into notifications (checked a minute at a time while you're signed in)
-  const FR = { seen: (() => { try { return new Set(JSON.parse(store.get('li.frSeen') || '[]')); } catch { return new Set(); } })(), list: null };
+  const FR = { mine: new Set(), seen: (() => { try { return new Set(JSON.parse(store.get('li.frSeen') || '[]')); } catch { return new Set(); } })(), list: null };
   async function friendsPoll() {
     if (!signedIn()) return;
-    try { const f = await my('friends'); FR.list = f; let changed = false;
-      for (const r of f.incoming) { const k = 'in:' + r.handle; if (!FR.seen.has(k)) { FR.seen.add(k); changed = true; notify(`${r.handle} sent you a friend request${r.note ? `: "${r.note}"` : ''}`, 'link', ['people'], ''); } }
-      for (const r of f.friends) { const k = 'fr:' + r.handle; if (!FR.seen.has(k)) { FR.seen.add(k); changed = true; if (FR.seen.has('out:' + r.handle)) notify(`${r.handle} accepted your friend request`, 'link', ['people']); } }
+    try { const f = await myNet('friends', {}); FR.list = f; let changed = false; const quiet = !store.get('li.frSeen');
+      for (const r of f.incoming) { const k = 'in:' + r.handle; if (!FR.seen.has(k)) { FR.seen.add(k); changed = true; if (!quiet) notify(`${r.handle} sent you a friend request${r.note ? `: "${r.note}"` : ''}`, 'link', ['people'], ''); } }
+      for (const r of f.friends) { const k = 'fr:' + r.handle; if (!FR.seen.has(k)) { FR.seen.add(k); changed = true; if (!quiet && !FR.mine.has(r.handle.toLowerCase())) notify(`${r.handle} accepted your friend request`, 'link', ['people']); } }
+      if (quiet) { changed = true; store.set('li.frSeen', '[]'); }
       for (const r of f.sent) FR.seen.add('out:' + r.handle);
       if (changed) store.set('li.frSeen', JSON.stringify([...FR.seen].slice(-400)));
     } catch {}
   }
-  setTimeout(friendsPoll, 6000); setInterval(() => { if (!document.hidden) friendsPoll(); }, 20000);
+  setTimeout(friendsPoll, 4000); setInterval(() => { if (!document.hidden) friendsPoll(); }, 45000); // the wake-up line does the fast part
   const PEOPLE_TAB = { tab: 'requests' };
   // a home in an estate
   function homeCard(pl, i, j) {
@@ -6958,7 +6960,7 @@
   }
 
   // who just arrived: their name drops in under the phone and floats up as it fades
-  const everSeen = new Set(), joinsEl = document.getElementById('joins');
+  const everSeen = new Set(), joinsEl = document.getElementById('joins'), NEWCOMERS = { set: new Set() }; // island names registered in the last day
   const joinedAt = new Map((() => { try { return JSON.parse(localStorage.getItem('li.joined.seen') || '[]'); } catch { return []; } })()); // every arrival announced on this device
   let ticked = false;
   function showJoin(name, color) {
@@ -6978,6 +6980,7 @@
       const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar });
       document.getElementById('count').textContent = r.online;
       if (r.decks) cityDecks(r.decks); // what each club DJ is playing
+      if (r.newcomers) NEWCOMERS.set = new Set(r.newcomers.map((v) => String(v).toLowerCase()));
       const now = performance.now(), seen = new Set();
       for (const p of r.players) {
         seen.add(p.id);
@@ -6985,7 +6988,7 @@
         if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color, look: p.look });
         else {
           others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z, look: p.look });
-          const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && !joinedAt.has(nm.toLowerCase())) { joinedAt.set(nm.toLowerCase(), Date.now()); try { store.set('li.joined.seen', JSON.stringify([...joinedAt].slice(-500))); } catch {} showJoin(nm, p.color); }
+          const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && NEWCOMERS.set.has(nm.toLowerCase()) && !joinedAt.has(nm.toLowerCase())) { joinedAt.set(nm.toLowerCase(), Date.now()); try { store.set('li.joined.seen', JSON.stringify([...joinedAt].slice(-500))); } catch {} showJoin(nm, p.color); }
         }
         everSeen.add(p.id);
       }
@@ -7100,7 +7103,7 @@
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
   const MY_READS = new Set(['room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
-  const MY_QUIET = new Set(['live', 'typing', 'read', 'messages']); // chat traffic that changes nothing the cache holds
+  const MY_QUIET = new Set(['live', 'typing', 'read', 'messages', 'wake']); // chat traffic that changes nothing the cache holds
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
   async function my(method, args = {}) {
     if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) MY_CACHE.clear(); return myNet(method, args); }
@@ -7110,7 +7113,7 @@
     return pr;
   }
   async function myNet(method, args = {}) {
-    const wait = method === 'live' ? 30000 : 15000;
+    const wait = method === 'live' || method === 'wake' ? 30000 : 15000;
     const go = async () => { for (let k = 0; ; k++) { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), wait);
       try { const r = await fetch(`${API}/islandMe/${method}`, { method: 'POST', signal: ac.signal, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokGet(TOK) }, body: JSON.stringify(args) }); if (r.status >= 502 && r.status <= 504 && k < 2 && MY_AGAIN.has(method)) throw new Error('busy'); return r; }
       catch (e) { if (k >= 2 || !MY_AGAIN.has(method)) throw new Error(navigator.onLine === false ? 'You\'re offline. Check your connection.' : 'Can\'t reach the island right now. Try again.'); await new Promise((ok) => setTimeout(ok, 600 * (k + 1))); }
@@ -7163,6 +7166,8 @@
     const pub = await crypto.subtle.importKey('jwk', JSON.parse(theirPubJwk), { name: 'ECDH', namedCurve: 'P-256' }, false, []);
     return crypto.subtle.deriveKey({ name: 'ECDH', public: pub }, k.priv, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
   }
+  // a message's plaintext padded to the next 256 bytes before it's sealed, so its length says little about what it says
+  const padMsg = (t) => { const raw = JSON.stringify({ t }), n = Math.ceil((raw.length + 8) / 256) * 256; return enc.encode(JSON.stringify({ t, p: '.'.repeat(Math.max(0, n - raw.length - 8)) })); };
   async function seal(key, bytes) { const iv = crypto.getRandomValues(new Uint8Array(12)); return b64(iv) + '.' + b64(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes)); }
   async function open(key, s) { const [iv, ct] = s.split('.'); return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(iv) }, key, unb64(ct))); }
   const groupKeys = new Map(); // group id -> CryptoKey
@@ -7948,7 +7953,7 @@
     if (!HUP.on || n.kind === 'chat' || n.kind === 'join') return;
     const tile = NOTE_TILE[n.kind] || '', title = n.from || (n.kind === 'link' ? 'Link' : 'WYRD OS');
     if (document.hidden) {
-      if ('Notification' in window && Notification.permission === 'granted') { const o = { body: n.text, icon: 'icon-192.png', badge: 'icon-192.png', tag: n.kind + ':' + (n.from || ''), renotify: true };
+      if ('Notification' in window && Notification.permission === 'granted') { const o = { body: n.kind === 'link' && n.from ? 'New message 🔒' : n.text, icon: 'icon-192.png', badge: 'icon-192.png', tag: n.kind + ':' + (n.from || ''), renotify: true };
         (navigator.serviceWorker && navigator.serviceWorker.ready ? navigator.serviceWorker.ready.then((r) => r.showNotification(title, o)) : Promise.reject()).catch(() => { try { new Notification(title, o); } catch {} }); }
       return;
     }
@@ -8026,9 +8031,22 @@
   setInterval(() => { if (!document.hidden || Date.now() - (LINK.at || 0) > 30000) { LINK.at = Date.now(); linkPoll(); } }, 6000);
   addEventListener('visibilitychange', () => { if (!document.hidden) { linkPoll(); friendsPoll(); } });
   // your profile and keys, loaded in the background as soon as you're signed in, so the phone opens without waiting
+  // one request waits at the server for anything that happens to me (a message, a friend request, an answer) and returns
+  // the moment it does: friends and messages are read at once, so a notification lands in about a second
+  let waking = false;
+  async function wakeLoop() {
+    if (waking) return; waking = true; let ver = -1, fails = 0;
+    while (signedIn()) {
+      if (document.hidden) { await new Promise((ok) => setTimeout(ok, 4000)); continue; }
+      try { const r = await myNet('wake', { ver }); if (ver !== -1 && r.ver !== ver) { linkPoll(); friendsPoll(); } ver = r.ver; fails = 0; }
+      catch { await new Promise((ok) => setTimeout(ok, Math.min(30000, 2000 * 2 ** Math.min(4, fails++)))); }
+    }
+    waking = false;
+  }
+  addEventListener('visibilitychange', () => { if (!document.hidden && signedIn()) wakeLoop(); });
   async function warmUp() {
     if (!signedIn() || (me$ && keyed)) return;
-    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); for (const [m, a] of [['receipts', {}], ['friends', {}], ['homes', {}], ['inbox', { seenJson: JSON.stringify(linkSeen()) }]]) my(m, a).catch(() => {}); } catch {}
+    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); wakeLoop(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); for (const [m, a] of [['receipts', {}], ['friends', {}], ['homes', {}], ['inbox', { seenJson: JSON.stringify(linkSeen()) }]]) my(m, a).catch(() => {}); } catch {}
   }
   setTimeout(warmUp, 1200);
   // ================= WYRD OS 2 =================
@@ -8512,7 +8530,7 @@
         if (tab === 'requests') {
           body.innerHTML = (f.incoming.length ? `<div class="ppSec">Waiting for you</div><div class="ppList">${f.incoming.map((r) => `<div class="ppRow">${avatar(r.handle)}<span class="t" data-pf="${esc(r.handle)}"><b>@${esc(r.handle)}</b><small>${r.note ? '“' + esc(r.note) + '”' : 'wants to be friends'}</small></span><span class="ppAct"><button class="ppIc no" data-dec="${esc(r.handle)}" aria-label="Decline">${pi('x')}</button><button class="ppIc yes" data-acc="${esc(r.handle)}" aria-label="Accept">${pi('check')}</button></span></div>`).join('')}</div>` : empty('inbox', 'No requests waiting.<br>Find someone and say hello.'))
             + (f.sent.length ? `<div class="ppSec">You asked</div><div class="ppList">${f.sent.map((r) => row(r, `<span class="ppTag">${pi('clock')}Pending</span>`)).join('')}</div>` : '');
-          body.querySelectorAll('[data-acc],[data-dec]').forEach((b) => (b.onclick = async (e) => { e.stopPropagation(); b.disabled = true; try { await my('friendRespond', { handle: b.dataset.acc || b.dataset.dec, accept: !!b.dataset.acc }); MY_CACHE.clear(); render('people', { tab: 'requests' }); } catch (er) { b.disabled = false; fail(er); } }));
+          body.querySelectorAll('[data-acc],[data-dec]').forEach((b) => (b.onclick = async (e) => { e.stopPropagation(); b.disabled = true; try { if (b.dataset.acc) FR.mine.add(b.dataset.acc.toLowerCase()); await my('friendRespond', { handle: b.dataset.acc || b.dataset.dec, accept: !!b.dataset.acc }); MY_CACHE.clear(); render('people', { tab: 'requests' }); } catch (er) { b.disabled = false; fail(er); } }));
           wire();
         } else if (tab === 'friends') {
           body.innerHTML = f.friends.length ? `<div class="ppList">${f.friends.map((r) => row(r, `<button class="ppIc" data-msg="${esc(r.handle)}" aria-label="Message">${pi('chat')}</button>`)).join('')}</div>` : empty('users', 'No friends yet.<br>Tap a neighbour\'s home, or look in New.');
@@ -8552,7 +8570,7 @@
       }
       if (app === 'thread') {
         const g = arg; let key; try { key = await groupKey(g); } catch { return show(`<div class="lkHead">${avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div class="t"><b>${esc(g.name)}</b><small>🔒 Encrypted</small></div></div><div class="lkList" style="margin-top:14px"><div class="lkEmpty"><b>🔐</b>This chat's key is on another device (or another web address of the game). Open Lagos Island where you started it to read it. Your keys never leave your device, so nobody else can open it either.</div></div>`); }
-        show(`<div class="lkHead">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#6366F1,#0EA5E9)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div class="t"><b>${esc(g.name)}</b><small id="tSub">${g.members.length > 2 ? g.members.map(esc).join(', ') : (others && [...others.values()].some((o) => o.name === g.members.find((m) => m !== me$.handle)) ? '● On the island now' : '🔒 Encrypted')}</small></div><button id="tAdd" aria-label="Add someone" title="Add someone">➕</button><button id="tLeave" aria-label="Leave" title="Leave">🚪</button></div>
+        show(`<div class="lkHead">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#6366F1,#0EA5E9)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div class="t"><b>${esc(g.name)}</b><small id="tSub">${g.members.length > 2 ? g.members.map(esc).join(', ') : (others && [...others.values()].some((o) => o.name === g.members.find((m) => m !== me$.handle)) ? '● On the island now' : '🔒 Encrypted')}</small></div>${g.members.length === 2 ? '<button id="tSafe" aria-label="Safety code" title="Safety code">🔐</button>' : ''}<button id="tAdd" aria-label="Add someone" title="Add someone">➕</button><button id="tLeave" aria-label="Leave" title="Leave">🚪</button></div>
           <div class="msgs" id="tMsgs"><div class="lock">🔒 Messages here are locked on your devices. Not even the server or WYRD can read them.</div></div>
           <div class="typing" id="tTyping"></div>
           <div class="qrep">${['👍', '😂', '🙏', '🔥', 'On my way 🛵', 'Where you dey?'].map((v) => `<button data-q="${esc(v)}">${esc(v)}</button>`).join('')}</div>
@@ -8594,7 +8612,7 @@
         $('tText').addEventListener('input', () => { if (Date.now() - lastTyping > 3000) { lastTyping = Date.now(); my('typing', { groupId: g.id }).catch(() => {}); } });
         const post = async (d) => {
           d.classList.remove('fail'); d.classList.add('pend');
-          try { if (!d.ct) d.ct = await seal(key, enc.encode(JSON.stringify({ t: d.txt })));
+          try { if (!d.ct) d.ct = await seal(key, padMsg(d.txt));
             const r = await my('postOnce', { groupId: g.id, ct: d.ct, cid: d.cid });
             d.classList.remove('pend'); d.dataset.id = r.id; d.onclick = null;
             if ($('tMsgs').querySelectorAll(`.msg[data-id="${r.id}"]`).length > 1) d.remove(); // the live chat drew it first
@@ -8606,6 +8624,15 @@
           d.cid = rkey(); d.txt = t; d.innerHTML = `${esc(t)}<time>${new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} <span class="tk">✓</span></time>`;
           $('tMsgs').append(d); pbody.scrollTop = pbody.scrollHeight; post(d); };
         $('tGo').onclick = send; $('tText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+        if ($('tSafe')) $('tSafe').onclick = async () => {
+          const other = g.members.find((m) => m !== me$.handle); let code = '…';
+          try { const [mine, theirs] = await Promise.all([keyPair(), my('keyOf', { handle: other })]); const keys = [mine.pubJwk, typeof theirs.pubKey === 'string' ? theirs.pubKey : JSON.stringify(theirs.pubKey)].map((k) => { const j = JSON.parse(k); return j.x + '.' + j.y; }).sort();
+            const d = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(keys.join('|')))); code = [0, 1, 2, 3, 4, 5].map((i) => String(((d[i * 3] << 16) | (d[i * 3 + 1] << 8) | d[i * 3 + 2]) % 100000).padStart(5, '0')).join(' '); } catch { code = 'Not available right now'; }
+          const old = document.getElementById('w4sheet'); if (old) old.remove();
+          const el = document.createElement('div'); el.id = 'w4sheet';
+          el.innerHTML = `<button class="x" aria-label="Close">✕</button><h4><span style="font-size:22px">🔐</span>Safety code with @${esc(other)}</h4><div class="safeCode">${esc(code)}</div>
+            <div class="ans" style="display:block">Compare this code with @${esc(other)}'s screen, in person or over a call. If both phones show the same numbers, your messages are locked to your two phones and nobody, not even the server, can read them.</div>`;
+          document.getElementById('screen').append(el); el.querySelector('.x').onclick = () => el.remove(); };
         $('tAdd').onclick = async () => { const h = prompt('Their island name'); if (!h) return; try { const p = await my('keyOf', { handle: h.trim() }); const raw = await open(await shared(g.wrapperPub), g.wrappedKey); const k = await keyPair(); await my('addMember', { groupId: g.id, handle: p.handle, wrappedKey: await seal(await shared(p.pubKey), raw), wrapperPub: k.pubJwk }); g.members.push(p.handle); render('thread', g); } catch (e) { fail(e); } };
         $('tLeave').onclick = async () => { if (!confirm('Leave this chat?')) return; await my('leaveGroup', { groupId: g.id }).catch(fail); back(); };
         return;

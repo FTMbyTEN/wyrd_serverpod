@@ -126,6 +126,7 @@ islandMe:
   - flyJet:
   - publicProfile:
   - people:
+  - wake:
   - friendRequest:
   - friendRespond:
   - unfriend:

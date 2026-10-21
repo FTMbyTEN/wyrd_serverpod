@@ -2875,6 +2875,25 @@ class Endpoints extends _is.EndpointDispatch {
                     params['query'],
                   ),
         ),
+        'wake': _is.MethodConnector(
+          name: 'wake',
+          params: {
+            'ver': _is.ParameterDescription(
+              name: 'ver',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint).wake(
+                    session,
+                    params['ver'],
+                  ),
+        ),
         'friendRequest': _is.MethodConnector(
           name: 'friendRequest',
           params: {

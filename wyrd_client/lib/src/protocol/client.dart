@@ -1168,7 +1168,6 @@ class EndpointIslandMe extends _isc.EndpointRef {
         {'seenJson': seenJson},
       );
 
-  /// Post an encrypted message to a chat I'm in.
   _ida.Future<String> post(
     int groupId,
     String ct,
@@ -1516,7 +1515,13 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {'query': query},
   );
 
-  /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
+  /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
+  _ida.Future<String> wake(int ver) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'wake',
+    {'ver': ver},
+  );
+
   _ida.Future<String> friendRequest(
     String handle,
     String note,
