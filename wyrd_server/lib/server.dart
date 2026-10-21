@@ -15,6 +15,7 @@ import 'src/mind/document_service.dart';
 import 'src/mind/memory_recall_service.dart';
 import 'src/mind/wordnet_service.dart';
 import 'src/island/island_weather_route.dart';
+import 'src/island/island_topup.dart';
 import 'src/rewards/provider_route.dart';
 import 'src/rewards/reward_seed.dart';
 
@@ -93,6 +94,8 @@ void run(List<String> args) async {
   );
   // Lagos Island's weather: the airport's observation, the model between reports; one reading for every player
   pod.webServer.addRoute(IslandWeatherRoute(), '/lagos-island/weather');
+  // Flutterwave's payment webhook for buying naira (it only prompts a check with Flutterwave; see TopUp.settle).
+  pod.webServer.addRoute(FlutterwaveWebhookRoute(), '/lagos-island/flutterwave');
   // Lagos Island's 3D models: every car (CC BY, credited in the game) and every piece of furniture in the Eko
   // Home Store (Kenney, CC0) with its store thumbnail, the accessories (Sketchfab, CC BY) and the private jet. Whatever is in these folders is served.
   for (final dir in ['cars', 'furniture', 'furniture/thumbs', 'people', 'people/acc', 'people/wear', 'jets']) {

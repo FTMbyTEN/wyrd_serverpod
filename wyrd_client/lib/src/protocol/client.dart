@@ -1569,6 +1569,51 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Have bought furniture delivered into one of my homes (or my HQ): [layout] is that room with the new pieces in it,
+  /// checked like any arrangement (only pieces I own). [mode] courier: Eko Swift Couriers bring it for N1,500;
+  /// car: I take it home in my own car, free (I need a car).
+  _ida.Future<String> deliverFurniture(
+    String key,
+    String layout,
+    String mode,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'deliverFurniture',
+    {
+      'key': key,
+      'layout': layout,
+      'mode': mode,
+    },
+  );
+
+  /// Whether buying naira is open (off, test or live) and the packs.
+  _ida.Future<String> topUpInfo() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'topUpInfo',
+    {},
+  );
+
+  /// Start checkout for a pack; [returnTo] is the game's address to come back to.
+  _ida.Future<String> topUpStart(
+    String pack,
+    String returnTo,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'topUpStart',
+    {
+      'pack': pack,
+      'returnTo': returnTo,
+    },
+  );
+
+  /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
+  _ida.Future<String> topUpCheck(String ref) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'topUpCheck',
+        {'ref': ref},
+      );
+
   /// Shows on sale and coming up (and my own, whatever their status).
   _ida.Future<String> shows() => caller.callServerEndpoint<String>(
     'islandMe',

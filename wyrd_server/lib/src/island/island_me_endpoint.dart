@@ -10,6 +10,7 @@ import '../world/bank.dart';
 import '../world/world_authority.dart';
 import 'grid_career.dart';
 import 'island_auth_endpoint.dart';
+import 'island_topup.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
 ///
@@ -2385,6 +2386,51 @@ class IslandMeEndpoint extends Endpoint {
       );
     }
     return jsonEncode({'saved': list.length});
+  }
+
+  // ---------------- delivery from the Home Store ----------------
+  static const courierFee = 1500;
+
+  /// Have bought furniture delivered into one of my homes (or my HQ): [layout] is that room with the new pieces in it,
+  /// checked like any arrangement (only pieces I own). [mode] courier: Eko Swift Couriers bring it for N1,500;
+  /// car: I take it home in my own car, free (I need a car).
+  Future<String> deliverFurniture(Session session, String key, String layout, String mode) async {
+    final u = _user(session);
+    if (mode != 'courier' && mode != 'car') return _err('Choose a courier or your car.');
+    if (mode == 'car' && await IslandCar.db.count(session, where: (t) => t.authUserId.equals(u)) == 0) return _err('You need a car for that. Buy one at a dealer, or use Eko Swift Couriers.');
+    if (mode == 'courier' && (await WorldAuthority.citizen(session, u)).naira < courierFee) return _err('Delivery is N${_n(courierFee)}. Top up your wallet first.');
+    final saved = await saveRoom(session, key, layout);
+    if ((jsonDecode(saved) as Map)['error'] != null) return saved;
+    if (mode == 'courier') {
+      await Bank.post(session, u, key: 'island:courier:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -courierFee, kind: 'fee', counter: 'city:services', memo: 'Eko Swift Couriers: delivery');
+    }
+    final c = await WorldAuthority.citizen(session, u);
+    return jsonEncode({'ok': true, 'naira': c.naira});
+  }
+
+  // ---------------- buying naira (Flutterwave) ----------------
+  /// Whether buying naira is open (off, test or live) and the packs.
+  Future<String> topUpInfo(Session session) async {
+    _user(session);
+    return jsonEncode(TopUp.info(session));
+  }
+
+  /// Start checkout for a pack; [returnTo] is the game's address to come back to.
+  Future<String> topUpStart(Session session, String pack, String returnTo) async {
+    final u = _user(session);
+    try {
+      return jsonEncode(await TopUp.start(session, u, pack, returnTo));
+    } on TopUpRefused catch (e) {
+      return _err(e.message);
+    }
+  }
+
+  /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
+  Future<String> topUpCheck(Session session, String ref) async {
+    final u = _user(session);
+    final r = await TopUp.settle(session, ref, onlyFor: u);
+    if (r['status'] == 'paid') r['balance'] = (await WorldAuthority.citizen(session, u)).naira;
+    return jsonEncode(r);
   }
 
   // ---------------- the arena ----------------

@@ -2988,6 +2988,91 @@ class Endpoints extends _is.EndpointDispatch {
                     params['layout'],
                   ),
         ),
+        'deliverFurniture': _is.MethodConnector(
+          name: 'deliverFurniture',
+          params: {
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'layout': _is.ParameterDescription(
+              name: 'layout',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'mode': _is.ParameterDescription(
+              name: 'mode',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .deliverFurniture(
+                    session,
+                    params['key'],
+                    params['layout'],
+                    params['mode'],
+                  ),
+        ),
+        'topUpInfo': _is.MethodConnector(
+          name: 'topUpInfo',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .topUpInfo(session),
+        ),
+        'topUpStart': _is.MethodConnector(
+          name: 'topUpStart',
+          params: {
+            'pack': _is.ParameterDescription(
+              name: 'pack',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'returnTo': _is.ParameterDescription(
+              name: 'returnTo',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .topUpStart(
+                    session,
+                    params['pack'],
+                    params['returnTo'],
+                  ),
+        ),
+        'topUpCheck': _is.MethodConnector(
+          name: 'topUpCheck',
+          params: {
+            'ref': _is.ParameterDescription(
+              name: 'ref',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .topUpCheck(
+                    session,
+                    params['ref'],
+                  ),
+        ),
         'shows': _is.MethodConnector(
           name: 'shows',
           params: {},

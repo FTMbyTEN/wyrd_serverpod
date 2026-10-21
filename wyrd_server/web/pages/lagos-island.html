@@ -1124,6 +1124,16 @@
   body.ovl #tApp, body.ovl #tFs, body.ovl #tAppTip { display: none !important; }
   #tAppTip, .touch #tAppTip { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(156px + env(safe-area-inset-top)) !important; }
   #tAppTip::after { left: auto !important; right: 12px; bottom: auto !important; top: -8px; border: 8px solid transparent !important; border-top: 0 !important; border-bottom-color: #0F172A !important; }
+  #dlv { position: fixed; inset: 0; z-index: 72; display: grid; place-items: end center; background: rgba(2,6,23,.4); padding: 0 8px calc(8px + env(safe-area-inset-bottom)); font-family: 'Plus Jakarta Sans', sans-serif; }
+  #dlv .dlvBox { position: relative; width: min(420px, 100%); box-sizing: border-box; padding: 18px 16px 14px; border-radius: 26px; background: #F8FAFC; color: #0F172A; box-shadow: 0 -10px 40px rgba(2,6,23,.3); animation: lkIn .25s ease-out; }
+  #dlv h3 { margin: 0 30px 12px 2px; font: 800 18px 'Plus Jakarta Sans', sans-serif; } #dlv label { display: block; margin: 10px 2px 6px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #64748B; }
+  #dlv .x { position: absolute; right: 12px; top: 12px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: #E2E8F0; cursor: pointer; }
+  #dlv .dlvPl { display: flex; flex-wrap: wrap; gap: 6px; } #dlv .dlvPl button { padding: 8px 12px; border-radius: 999px; border: 0; cursor: pointer; background: #fff; box-shadow: inset 0 0 0 1px rgba(15,23,42,.1); font: 700 13px 'Plus Jakarta Sans', sans-serif; color: #0F172A; }
+  #dlv .dlvPl button.on, #dlv .dlvM button.on { background: linear-gradient(135deg, #0EA5E9, #6366F1); color: #fff; box-shadow: none; }
+  #dlv .dlvM { display: grid; gap: 8px; } #dlv .dlvM button { text-align: left; padding: 12px 14px; border-radius: 16px; border: 0; cursor: pointer; background: #fff; box-shadow: inset 0 0 0 1px rgba(15,23,42,.1); color: #0F172A; }
+  #dlv .dlvM button:disabled { opacity: .5; cursor: default; } #dlv .dlvM b { display: block; font: 800 14px 'Plus Jakarta Sans', sans-serif; } #dlv .dlvM span { font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .75; }
+  #dlv .err { min-height: 16px; margin: 8px 2px 0; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #DC2626; } #dlv .pbtn { width: 100%; margin: 8px 0 0 !important; border-radius: 14px !important; }
+  #dlv .pbtn:not(.alt) { background: linear-gradient(135deg, #0EA5E9, #6366F1) !important; color: #fff !important; } #dlv p { font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; color: #475569; }
 </style>
 </head>
 <body>
@@ -1598,7 +1608,7 @@
         draw(pf, extra); }));
     };
     const extra = { homes: '…', cars: '…' }; draw(null, extra);
-    const [pf, homes, cars] = await Promise.all([my('publicProfile', { handle: me$.handle }).catch(() => null), my('myHomes').catch(() => []), my('myCars').catch(() => []), FR.list ? null : my('friends').then((f) => (FR.list = f)).catch(() => null)]);
+    const [pf, homes, cars] = await Promise.all([my('publicProfile', { handle: me$.handle }).catch(() => null), Promise.resolve(Object.values(homesLive || {}).filter((v) => v.mine)), my('myCars').catch(() => []), FR.list ? null : my('friends').then((f) => (FR.list = f)).catch(() => null)]);
     extra.homes = Array.isArray(homes) ? homes.length : 0; extra.cars = Array.isArray(cars) ? cars.length : 0; if (el.classList.contains('on')) draw(pf, extra);
   }
   function closePass() { const v = document.getElementById('passportVeil'), el = document.getElementById('passport'); if (!el) return; v.classList.remove('on'); el.classList.remove('on'); setTimeout(() => { if (!el.classList.contains('on')) v.style.display = el.style.display = 'none'; }, 260); }
@@ -1611,6 +1621,10 @@
     b.innerHTML = '<i>✨</i><span><b>A new version of Lagos Island is ready</b>Update to keep everything running smoothly.</span><button>Update</button>'; document.body.append(b);
     requestAnimationFrame(() => b.classList.add('on')); b.querySelector('button').onclick = async () => { b.querySelector('button').textContent = 'Updating…'; try { const r = await navigator.serviceWorker?.getRegistration(); if (r) await r.update(); } catch {} location.reload(); }; }
   if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', (m) => { if (m.data && m.data.type === 'fresh-ready') showUpdate(); }); // opened from the device on a slow line: the newer copy is ready
+  setTimeout(() => { const q = new URLSearchParams(location.search), ref = q.get('topup') || store.get('li.topup'); // once the game has started
+    if (ref) { const tries = [0, 4000, 10000, 25000]; let done = false;
+      const tidy = () => { store.set('li.topup', ''); if (q.get('topup')) { q.delete('topup'); q.delete('status'); q.delete('transaction_id'); q.delete('tx_ref'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '')); } };
+      tries.forEach((t) => setTimeout(async () => { if (done || !signedIn()) return; try { const r = await myNet('topUpCheck', { ref }); if (r.status === 'paid') { done = true; tidy(); if (me$) me$.naira = r.balance; pnaira.textContent = naira(r.balance || 0); notify(`${naira(r.naira)} added to your wallet`, 'money', ['wallet']); } else if (r.status === 'failed' || r.status === 'unknown') { done = true; tidy(); if (r.status === 'failed') notify('That payment didn\'t go through. Nothing was taken from your game wallet.', 'money', ['wallet']); } } catch {} }, 3000 + t)); } }, 0);
   checkVersion(); setInterval(checkVersion, 5 * 60000); addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
   // ---- the app: install Lagos Island like an app, with all of it downloaded onto the device (the service worker keeps
   // the page, every model and texture, and three.js, so it opens at once and loads nothing again). Chrome, Edge and
@@ -4450,6 +4464,7 @@
   }
   // ---- homes you can buy: six estates of plots, each plot one home in its estate's style (the server has the same lists)
   // style: [name, price, room width, room depth]
+  const HOME_ROOMY = 1.35, HOME_ROOMY_D = 1.3; // inside, homes are this much wider and deeper than their style's footprint
   const HOME_STYLES = { flat: ['Mini flat', 800000, 40, 28], bungalow: ['Bungalow', 2500000, 52, 36], terrace: ['Terrace house', 6000000, 56, 38], duplex: ['Duplex', 15000000, 70, 46], townhouse: ['Townhouse', 18000000, 64, 44], loft: ['Loft', 25000000, 84, 56], mansion: ['Mansion with BQ', 40000000, 96, 64], villa: ['Waterfront villa', 120000000, 110, 72] };
   const ESTATES = {
     vgc: ['bungalow', 'flat', 'duplex', 'flat', 'bungalow', 'flat', 'bungalow', 'duplex', 'flat'],
@@ -5227,7 +5242,7 @@
   const kindOf = (it) => (STORE[it.k] ? STORE[it.k].kind : it.k); // how a piece behaves: store pieces act like the drawn kinds
   const PALETTE = ['#3B82F6', '#EF4444', '#22B573', '#F59E0B', '#A855F7', '#EC4899', '#111827', '#F8FAFC', '#8B5E3C'];
   const ROOMS = {
-    hq: { w: 56, d: 40, floor: '#C9A27A', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } },
+    hq: { w: 76, d: 52, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.78, zoom: 1.5 } },
     club: { w: 140, d: 92, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.95 } },
     casino: { w: 96, d: 66, floor: '#4A1212', wall: '#2A0C0C', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
@@ -5236,7 +5251,7 @@
     yacht: { w: 96, d: 34, floor: '#B7895C', wall: '#B7895C', trim: '#B7895C', cam: { yaw: -0.45, pitch: 0.82, zoom: 1.25 } }, // a deck at sea: no walls
     jetcabin: { w: 60, d: 18, floor: '#CFC2A8', wall: '#F5F1E8', trim: '#B08A43', cam: { yaw: -0.5, pitch: 0.84, zoom: 1.7 } }, // a private jet in flight: windows down the wall
     beach: { w: 110, d: 72, floor: '#F3DE9C', wall: '#F3DE9C', trim: '#F3DE9C', cam: { yaw: -0.4, pitch: 0.85, zoom: 1.0 } }, // no walls: the sea at the back
-    home: { w: 56, d: 40, floor: '#D6C3A5', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } }, // sized by its style on the way in
+    home: { w: 56, d: 40, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.78, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
     boutique: { w: 84, d: 56, floor: '#F5F5F4', wall: '#FAFAF9', trim: '#111827', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } }, // its stock and colours on the way in
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
@@ -5380,7 +5395,7 @@
     else {
       // floor, tiles, walls
       flat(0, 0, R.w, R.d, 0, R.floor);
-      x.strokeStyle = 'rgba(0,0,0,0.08)'; x.lineWidth = 1;
+      x.strokeStyle = R.floor === '#161618' ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.08)'; x.lineWidth = 1;
       for (let i = 5; i < R.w; i += 5) { const p = P(i, 0.01, 0), q = P(i, 0.01, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       for (let j = 5; j < R.d; j += 5) { const p = P(0, 0.01, j), q = P(R.w, 0.01, j); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
@@ -6314,7 +6329,7 @@
         x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke();
       }
     };
-    zone(0, 0, R.w, R.d, '#B7895C', 'rgba(70,40,15,0.18)', 2.2, true); // oak, laid on the diagonal
+    zone(0, 0, R.w, R.d, '#161618', 'rgba(255,255,255,0.035)', 2.2, true); // black matte boards, laid on the diagonal
     // the sitting-room rug: a border, a field, a band of pattern
     flat(22, 18, 40, 32, 0.025, '#7C2D12'); flat(23, 19, 39, 31, 0.03, '#B45309'); flat(24.5, 20.5, 37.5, 29.5, 0.035, '#F5E6C8');
     for (let k = 0; k < 6; k++) { const px = 25.5 + k * 2.2; flat(px, 24.4, px + 1.2, 25.6, 0.04, k % 2 ? '#B45309' : '#15803D'); }
@@ -6422,8 +6437,8 @@
     }
     if (kind === 'home') { // each style its own size and finish
       const st = HOME_STYLES[extra.style] || HOME_STYLES.bungalow, fin = HOME_FINISH[extra.style] || HOME_FINISH.bungalow;
-      R.w = st[2]; R.d = st[3]; R.floor = fin[0]; R.wall = fin[1]; R.trim = fin[2];
-      R.cam = { ...R.cam, zoom: Math.min(2.2, 1.85 * 56 / R.w) };
+      R.w = Math.round(st[2] * HOME_ROOMY); R.d = Math.round(st[3] * HOME_ROOMY_D); R.floor = '#161618'; R.wall = fin[1]; R.trim = fin[2]; // more room in every home, a black matte floor
+      R.cam = { ...R.cam, pitch: 0.78, zoom: Math.min(2.2, 1.85 * 56 / R.w) };
     }
     if (kind === 'dealer') { // keep the furniture off the turntables: the lounge in each showroom's free corner
       const moves = extra.dealer === 'polanco' ? { couch2: [72, 64], coffee: [80, 64], plant: [94, 62] } : { plant: [94, 46] };
@@ -8124,6 +8139,7 @@
         show(`<div class="ppTop"><div><h2>Wallet</h2><small>@${esc(me$.handle)} · game naira</small></div></div>
           <div class="wCard"><div class="k"><span>Balance</span><span class="chip"></span></div><div class="v">${naira(me$.naira)}</div><div class="s">Game currency · can't be withdrawn</div>
             <div class="bar"><i style="width:${pct}%"></i></div><div class="s" style="display:flex;justify-content:space-between"><span>Earned today ${naira(me$.earnedToday || 0)}</span><span>of ${naira(cap)}</span></div></div>
+          <button class="wReal" id="wBuy" style="margin-top:12px"><span class="ic2" style="background:rgba(14,165,233,.15);color:#0EA5E9">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Buy naira</b><small>Card, bank transfer or USSD · Flutterwave</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button><button id="wShop"><span>${pi('bag')}</span>Store</button><button id="wCars"><span>${pi('car')}</span>Cars</button></div>
           <div id="realBox"></div>
           <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
@@ -8131,6 +8147,7 @@
           <div class="wSec"><span>Activity</span>${spent ? `<span>Spent today ${naira(spent)}</span>` : ''}</div>
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
         pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
+        $('wBuy').onclick = () => go('buynaira');
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
         $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => toggle('earnBox', 'wEarn'); $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
         pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
@@ -8139,6 +8156,21 @@
           $('wReal').onclick = () => go('earn'); }).catch(() => {});
         rwa('dashboard').then((d) => { if (!d || !d.can || !$('realBox')) return; const b = document.createElement('button'); b.className = 'pbtn alt'; b.style.margin = '6px 0'; b.textContent = '🏦 Treasury (admin)'; b.onclick = () => go('treasury'); $('realBox').after(b); }).catch(() => {});
         $('sGo').onclick = async () => { const sb = $('sGo'); if (sb.disabled) return; sb.disabled = true; try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); tickerSay(`Sent ${naira(Number($('sAmt').value))} to ${$('sTo').value}`); render('wallet'); } catch (e) { sb.disabled = false; fail(e); } };
+        return;
+      }
+      if (app === 'buynaira') {
+        show(`<div class="ppTop"><div><h2>Buy naira</h2><small>Paid securely with Flutterwave</small></div></div><div id="bnBody"><div class="ppList"><div class="ppEmpty">Loading…</div></div></div>`);
+        pbody.dataset.app = 'wallet';
+        let info; try { info = await my('topUpInfo'); } catch (e) { return fail(e); }
+        const body = $('bnBody');
+        if (info.mode === 'off') { body.innerHTML = `<div class="ppList"><div class="ppEmpty">${pi('bank')}Buying naira opens soon.</div></div>`; return; }
+        body.innerHTML = `${info.mode === 'test' ? '<div class="jbDone" style="background:rgba(250,204,21,.18);color:#854D0E;margin:0 0 10px">Test mode: use Flutterwave test cards, no real money moves.</div>' : ''}
+          <div class="ppList">${info.packs.map((pk) => `<button class="wRow" data-pk="${pk.id}"><span class="ic2 in">💰</span><span class="t"><b>${naira(pk.naira)} game naira</b><small>Pay ₦${pk.ngn.toLocaleString('en-NG')}</small></span><span class="amt pos">₦${pk.ngn.toLocaleString('en-NG')}</span></button>`).join('')}</div>
+          <div class="err" id="bnErr" style="margin:10px 4px;color:#DC2626;font:600 13px 'Plus Jakarta Sans',sans-serif"></div>
+          <div class="ppEmpty" style="padding:12px 8px;font-size:12px">Game naira stay in the game: they can't be withdrawn. Your card details go to Flutterwave, never to Lagos Island.</div>`;
+        body.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = async () => { if (b.disabled) return; b.disabled = true; $('bnErr').textContent = '';
+          try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; }
+          catch (e) { b.disabled = false; $('bnErr').textContent = e.message; } }));
         return;
       }
       if (app === 'treasury') {
@@ -8819,7 +8851,7 @@
           $('fAll').onclick = () => go('store'); $('fHome').onclick = () => go('hq'); wire();
           $('fBuy').onclick = async () => {
             $('fBuy').disabled = true;
-            try { let v; for (let k = 0; k < qty; k++) v = await my('buyFurniture', { item: s.id }); pnaira.textContent = naira(v.naira); notify(`Bought: ${qty > 1 ? qty + ' × ' : ''}${s.name}`, 'store'); render('store', s.id); }
+            try { let v; for (let k = 0; k < qty; k++) v = await my('buyFurniture', { item: s.id }); pnaira.textContent = naira(v.naira); MY_CACHE.clear(); render('store', s.id); deliverSheet(s, qty); }
             catch (e) { $('fBuy').disabled = false; fail(/\((404|500)\)/.test(e.message) ? new Error('The Home Store opens when the server update goes live.') : e); }
           };
           return;
@@ -9220,6 +9252,38 @@
   const partyAt = (key) => { const p = partiesLive[key]; return p && p.until > Date.now() ? p : null; };
   // a passing line in the ticker (bottom left): for confirmations of what you just did, which aren't news
   function tickerSay(text) { const d = document.createElement('div'), dot = document.createElement('i'); d.className = 'j'; dot.style.background = '#38BDF8'; d.append(dot, document.createTextNode(text)); joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 5000); }
+  // ---- delivery from the Home Store: pick the home, then Eko Swift Couriers (N1,500) or your own car (free); it's
+  // set up in that home (the layout saved with the new pieces in free spots). "Later" keeps it to place yourself.
+  async function deliverSheet(s, qty) {
+    const old = document.getElementById('dlv'); if (old) old.remove();
+    const places = []; const hqm = hqSlots.find((v) => v && v.mine); if (hqm) places.push({ key: 'hq:' + hqm.slot, name: hqm.name || 'My HQ', kind: 'hq', w: ROOMS.hq.w, d: ROOMS.hq.d });
+    for (const hm of Object.values(homesLive || {}).filter((v) => v.mine)) { const st = HOME_STYLES[hm.style] || HOME_STYLES.bungalow; places.push({ key: 'home:' + hm.plot, name: st[0], kind: 'home', w: Math.round(st[2] * HOME_ROOMY), d: Math.round(st[3] * HOME_ROOMY_D) }); }
+    let cars = []; try { cars = await my('myCars'); } catch {}
+    const el = document.createElement('div'); el.id = 'dlv'; let pick = 0, mode = 'courier';
+    const draw = () => { el.innerHTML = `<div class="dlvBox"><button class="x" aria-label="Close">✕</button><h3>Deliver your ${qty > 1 ? qty + ' × ' : ''}${esc(s.name)}</h3>
+      ${places.length ? `<label>To</label><div class="dlvPl">${places.map((pl, i) => `<button data-pl="${i}" class="${i === pick ? 'on' : ''}">${pl.kind === 'hq' ? '🏠' : '🏡'} ${esc(pl.name)}</button>`).join('')}</div>
+      <label>How</label><div class="dlvM"><button data-m="courier" class="${mode === 'courier' ? 'on' : ''}"><b>🚚 Eko Swift Couriers</b><span>${naira(1500)} · set up for you in about a minute</span></button>
+        <button data-m="car" class="${mode === 'car' ? 'on' : ''}" ${cars.length ? '' : 'disabled'}><b>🚗 Your own car</b><span>${cars.length ? 'Free · it goes home in your boot' : 'You need a car (any dealer)'}</span></button></div>
+      <div class="err" id="dlvErr"></div><button class="pbtn" id="dlvGo">${mode === 'courier' ? 'Send it · ' + naira(1500) : 'Take it home'}</button>` : '<p>You need a home first: your HQ, or one from the Homes app.</p>'}
+      <button class="pbtn alt" id="dlvLater">Later · keep it to place myself</button></div>`;
+      el.querySelector('.x').onclick = el.querySelector('#dlvLater').onclick = () => el.remove();
+      el.querySelectorAll('[data-pl]').forEach((b) => (b.onclick = () => { pick = +b.dataset.pl; draw(); }));
+      el.querySelectorAll('[data-m]').forEach((b) => (b.onclick = () => { mode = b.dataset.m; draw(); }));
+      const go = el.querySelector('#dlvGo'); if (go) go.onclick = async () => { if (go.disabled) return; go.disabled = true; go.textContent = 'Arranging…'; const pl = places[pick];
+        try {
+          const v = await my('room', { key: pl.key }), lay = (v.layout || DEFAULTS[pl.kind] || []).map((it) => ({ ...it }));
+          // free spots: rings round the middle of the room, clear of what's there
+          let added = 0; for (let r = 0; r < 40 && added < qty; r++) for (let a = 0; a < 8 && added < qty; a++) {
+            const px = Math.round(pl.w / 2 + Math.cos(a * Math.PI / 4) * r * 2.5), pz = Math.round(pl.d / 2 + Math.sin(a * Math.PI / 4) * r * 2);
+            if (px < 4 || pz < 4 || px > pl.w - 4 || pz > pl.d - 6 || lay.some((it) => Math.hypot(it.x - px, it.z - pz) < 4.5)) continue;
+            lay.push({ k: s.id, x: px, z: pz, r: 0 }); added++; }
+          const r = await my('deliverFurniture', { key: pl.key, layout: JSON.stringify(lay), mode }); if (r.naira != null) pnaira.textContent = naira(r.naira); MY_CACHE.clear(); el.remove();
+          if (mode === 'courier') { tickerSay('Eko Swift Couriers are on the way'); setTimeout(() => notify(`Eko Swift Couriers delivered your ${s.name} to ${pl.name}`, 'store', [pl.kind === 'hq' ? 'hq' : 'homes']), 45000); }
+          else notify(`Your ${s.name} rode home in your car: it's set up in ${pl.name}`, 'store', [pl.kind === 'hq' ? 'hq' : 'homes']);
+        } catch (e) { go.disabled = false; go.textContent = mode === 'courier' ? 'Send it · ' + naira(1500) : 'Take it home'; el.querySelector('#dlvErr').textContent = e.message; } };
+    };
+    draw(); document.body.append(el);
+  }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');
     d.className = 'j'; dot.style.background = '#F472B6'; d.append(dot, document.createTextNode(text));

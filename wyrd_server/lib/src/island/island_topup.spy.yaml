@@ -1,0 +1,25 @@
+### Naira bought with real money through Flutterwave. Created pending when checkout starts; credited exactly once, after
+### the server itself has asked Flutterwave that the payment succeeded for the right amount.
+class: IslandTopUp
+table: island_topup
+fields:
+  authUserId: UuidValue
+  ### our reference for the payment (Flutterwave's tx_ref)
+  txRef: String
+  pack: String
+  ### what the player pays, in real naira
+  amountNgn: int
+  ### what lands in their game wallet
+  naira: int
+  ### pending, paid or failed
+  status: String
+  ### Flutterwave's own id for the transaction, once it reports one
+  flwId: String?
+  createdAt: DateTime
+  paidAt: DateTime?
+indexes:
+  island_topup_ref_idx:
+    fields: txRef
+    unique: true
+  island_topup_user_idx:
+    fields: authUserId

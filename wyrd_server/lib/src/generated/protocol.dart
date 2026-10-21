@@ -74,6 +74,7 @@ import 'island/island_profile.dart' as _ii1l0ai6;
 import 'island/island_room.dart' as _i4c46r6a;
 import 'island/island_show.dart' as _ivo4faiv;
 import 'island/island_ticket.dart' as _il1ztsg5;
+import 'island/island_topup.dart' as _iflxo1ii;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/belief.dart' as _ijbewlez;
@@ -201,6 +202,7 @@ export 'island/island_profile.dart';
 export 'island/island_room.dart';
 export 'island/island_show.dart';
 export 'island/island_ticket.dart';
+export 'island/island_topup.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/belief.dart';
@@ -3571,6 +3573,105 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_topup',
+      dartName: 'IslandTopUp',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'txRef',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'pack',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'amountNgn',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'naira',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'flwId',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'paidAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_topup_ref_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'txRef',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'island_topup_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -7785,6 +7886,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _il1ztsg5.IslandTicket) {
       return _il1ztsg5.IslandTicket.fromJson(data) as T;
     }
+    if (t == _iflxo1ii.IslandTopUp) {
+      return _iflxo1ii.IslandTopUp.fromJson(data) as T;
+    }
     if (t == _ij1ha6k5.AccountExport) {
       return _ij1ha6k5.AccountExport.fromJson(data) as T;
     }
@@ -8172,6 +8276,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_il1ztsg5.IslandTicket?>()) {
       return (data != null ? _il1ztsg5.IslandTicket.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_iflxo1ii.IslandTopUp?>()) {
+      return (data != null ? _iflxo1ii.IslandTopUp.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ij1ha6k5.AccountExport?>()) {
       return (data != null ? _ij1ha6k5.AccountExport.fromJson(data) : null)
@@ -8871,6 +8978,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i4c46r6a.IslandRoom => 'IslandRoom',
       _ivo4faiv.IslandShow => 'IslandShow',
       _il1ztsg5.IslandTicket => 'IslandTicket',
+      _iflxo1ii.IslandTopUp => 'IslandTopUp',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
       _ijbewlez.Belief => 'Belief',
@@ -9039,6 +9147,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'IslandShow';
       case _il1ztsg5.IslandTicket():
         return 'IslandTicket';
+      case _iflxo1ii.IslandTopUp():
+        return 'IslandTopUp';
       case _ij1ha6k5.AccountExport():
         return 'AccountExport';
       case _itui3kw8.AlertNote():
@@ -9345,6 +9455,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'IslandTicket') {
       return deserialize<_il1ztsg5.IslandTicket>(data['data']);
+    }
+    if (dataClassName == 'IslandTopUp') {
+      return deserialize<_iflxo1ii.IslandTopUp>(data['data']);
     }
     if (dataClassName == 'AccountExport') {
       return deserialize<_ij1ha6k5.AccountExport>(data['data']);
@@ -9737,6 +9850,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _ivo4faiv.IslandShow.t;
       case _il1ztsg5.IslandTicket:
         return _il1ztsg5.IslandTicket.t;
+      case _iflxo1ii.IslandTopUp:
+        return _iflxo1ii.IslandTopUp.t;
       case _ijbewlez.Belief:
         return _ijbewlez.Belief.t;
       case _ibisfjf2.Chat:

@@ -131,6 +131,10 @@ islandMe:
   - friends:
   - room:
   - saveRoom:
+  - deliverFurniture:
+  - topUpInfo:
+  - topUpStart:
+  - topUpCheck:
   - shows:
   - hostShow:
   - pendingShows:
