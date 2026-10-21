@@ -7101,7 +7101,7 @@
   }
   // reads the phone makes over and over: kept 20 s and shared while in flight, so opening an app again (or two parts of
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
-  const MY_READS = new Set(['topUpInfo', 'payoutAccount', 'room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
+  const MY_READS = new Set(['me', 'stage', 'hqRequests', 'pendingShows', 'pendingJobs', 'payoutBanks', 'treasury2', 'topUpInfo', 'payoutAccount', 'room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
   const MY_QUIET = new Set(['live', 'typing', 'read', 'messages', 'wake']); // chat traffic that changes nothing the cache holds
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
