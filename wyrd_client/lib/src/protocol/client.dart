@@ -1267,6 +1267,21 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {},
   );
 
+  /// Put my announcement on the HQ Row board (an empty [text] takes it down).
+  _ida.Future<String> boardPost(String text) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'boardPost',
+        {'text': text},
+      );
+
+  /// What's on the HQ Row board now: residents' announcements from the last day, newest first.
+  _ida.Future<String> board() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'board',
+    {},
+  );
+
   /// Ask to enter the HQ in [slot] (from hqRow). The owner gets the request on their phone.
   _ida.Future<String> askHq(int slot) => caller.callServerEndpoint<String>(
     'islandMe',

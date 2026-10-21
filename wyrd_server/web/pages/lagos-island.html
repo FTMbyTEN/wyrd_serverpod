@@ -3601,8 +3601,11 @@
         const p0 = P(x0, y0, zf), p1 = P(x1, y0, zf), p2 = P(x1, y1, zf), p3 = P(x0, y1, zf), g = x.createLinearGradient(p3[0], p3[1], p1[0], p1[1]);
         if (m.shout) { const hu = (t * 120) % 360; g.addColorStop(0, `hsl(${hu},85%,32%)`); g.addColorStop(0.5, `hsl(${(hu + 90) % 360},85%,28%)`); g.addColorStop(1, `hsl(${(hu + 180) % 360},85%,32%)`); } else { g.addColorStop(0, m.bg[0]); g.addColorStop(1, m.bg[1]); } quad([p0, p1, p2, p3], g);
         x.save(); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.lineTo(p2[0], p2[1]); x.lineTo(p3[0], p3[1]); x.closePath(); x.clip(); x.globalAlpha = wipe;
-        if (m.shout) faceText('🎉 MASSIVE SHOUTOUT 🎉', mid, 10.3, zf + 0.02, '#FDE68A', 0.75, 6, 900);
-        faceText(m.head, mid, m.shout ? 7.9 : 8.6, zf + 0.02, '#FFFFFF', (m.shout ? 1.25 : 1) * Math.min(1.5, 14 / Math.max(8, m.head.length) * 1.6) * (m.shout ? 1 + Math.sin(t * 8) * 0.06 : 1), m.shout ? 12 : 6, 900);
+        if (m.shout) faceText(m.banner || '🎉 MASSIVE SHOUTOUT 🎉', mid, 10.3, zf + 0.02, '#FDE68A', 0.75, 6, 900);
+        if (m.head.length > 24) { // a long announcement: two lines, broken at the space nearest the middle
+          const sp = [...m.head.matchAll(/ /g)].map((q) => q.index), cut = sp.length ? sp.reduce((a2, b2) => Math.abs(b2 - m.head.length / 2) < Math.abs(a2 - m.head.length / 2) ? b2 : a2) : Math.ceil(m.head.length / 2), l1 = m.head.slice(0, cut).trim(), l2 = m.head.slice(cut).trim(), sz = Math.min(0.95, 14 / Math.max(10, Math.max(l1.length, l2.length)) * 1.5);
+          faceText(l1, mid, 8.7, zf + 0.02, '#FFFFFF', sz, 6, 900); faceText(l2, mid, 7.2, zf + 0.02, '#FFFFFF', sz, 6, 900);
+        } else faceText(m.head, mid, m.shout ? 7.9 : 8.6, zf + 0.02, '#FFFFFF', (m.shout ? 1.25 : 1) * Math.min(1.5, 14 / Math.max(8, m.head.length) * 1.6) * (m.shout ? 1 + Math.sin(t * 8) * 0.06 : 1), m.shout ? 12 : 6, 900);
         faceText(m.sub, mid, 5.6, zf + 0.02, m.col, Math.min(0.95, 14 / Math.max(10, m.sub.length) * 1.7), 4, 700);
         x.globalAlpha = 0.18; x.strokeStyle = '#000'; x.lineWidth = 1; x.beginPath(); for (let k = 1; k < 20; k++) { const u = k / 20, q0 = P(x0, y0 + (y1 - y0) * u, zf + 0.03), q1 = P(x1, y0 + (y1 - y0) * u, zf + 0.03); x.moveTo(q0[0], q0[1]); x.lineTo(q1[0], q1[1]); } x.stroke(); x.restore(); // LED rows
         const dots = msgs.length; for (let k = 0; k < dots; k++) { const p = P(mid + (k - (dots - 1) / 2) * 0.9, y0 + 0.5, zf + 0.04); x.fillStyle = k === Math.floor(t / 5) % dots ? '#FFFFFF' : 'rgba(255,255,255,0.3)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.14), 0, Math.PI * 2); x.fill(); }
@@ -4551,7 +4554,7 @@
     if (on) { const halo = () => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * (night > 0.35 ? 1.6 : 0.8)); g.addColorStop(0, 'rgba(22,101,52,0.55)'); g.addColorStop(1, 'rgba(22,101,52,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2), 0, Math.PI * 2); x.fill(); x.restore(); }; halo(); glow.push(halo); }
   }
   const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 3.2); g.addColorStop(0, 'rgba(255,214,150,0.26)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 3.2, 0, Math.PI * 2); x.fill(); x.restore(); }); };
-  const hqBoard = { seen: null, arrivals: [] }; // new arrivals noticed this session: [{ k, owner, at }]
+  const hqBoard = { seen: null, arrivals: [], posts: [] }; // new arrivals noticed this session: [{ k, owner, at }]
   function hqBoardMsgs() {
     const out = [], now = Date.now(), n = Math.max(hqSlots.length, housingBqs ?? 0), who = (k) => { const sl = hqSlots[k]; return sl ? (sl.resident || sl.owner || '') : ''; };
     if (hqBoard.seen != null && n > hqBoard.seen) for (let k = hqBoard.seen; k < n; k++) hqBoard.arrivals.push({ k, at: now });
@@ -4559,16 +4562,19 @@
     const GREEN = ['#052E16', '#14532D'], GOLD = ['#422006', '#713F12'], PINK = ['#4A044E', '#831843'], NIGHT = ['#0C0A2E', '#1E1B4B'];
     // whoever just moved in: a massive shoutout, back every other message
     const fresh = hqBoard.arrivals.slice(-2).map((v) => ({ shout: true, head: `@${(who(v.k) || 'new Lagosian').toUpperCase()}`, sub: `just moved into BQ #${v.k + 1} · welcome home!`, col: '#FFFFFF', bg: GOLD, glow: 'rgba(250,204,21,0.55)' }));
+    // residents' own announcements (the newest first), up front
+    for (const a of hqBoard.posts.slice(0, 6)) fresh.push({ shout: true, banner: '📣 ANNOUNCEMENT', head: a.text, sub: `from @${a.by} · HQ Row`, col: '#FFFFFF', bg: ['#0C4A6E', '#1D4ED8'], glow: 'rgba(56,189,248,0.5)' });
     // the hype, and a shoutout to each resident in turn (the newest first)
     const HYPE = [['HQ ROW NO DEY CARRY LAST 🔥', 'only correct people live here'], ['ODOGWU ROW', 'big energy · big dreams · no dulling'], ['WHO GET EAR, MAKE E HEAR', 'HQ Row dey on top, as always'], ['EKO O NI BAJE', 'HQ Row na family, we move together'], ['NO SLEEP TILL BANANA ISLAND', 'today BQ, tomorrow mansion. Make we hustle!']];
     const hype = HYPE.map(([h, sb]) => ({ head: h, sub: sb, col: '#FDE68A', bg: NIGHT, glow: 'rgba(99,102,241,0.35)' }));
     const shouts = []; for (let k = n - 1; k >= Math.max(0, n - 6); k--) { const nm = who(k); shouts.push({ head: `SHOUTOUT @${(nm || 'BQ #' + (k + 1)).toUpperCase()}`, sub: k === n - 1 ? `the newest on the Row · BQ #${k + 1} 🎉` : `BQ #${k + 1} · HQ Row legend`, col: '#86EFAC', bg: GREEN, glow: 'rgba(34,197,94,0.35)' }); }
     const parties = []; for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) { if (!p.key || !p.key.startsWith('hq:') || !(p.until > now)) continue; const k = hqSlots.findIndex((s2) => String(s2.slot) === p.key.split(':')[1]), th = PARTY_THEMES[p.theme] || ['Party']; parties.push({ head: `PARTY @${(p.host || 'A NEIGHBOUR').toUpperCase()}`, sub: `${th[0]} · ${k >= 0 ? 'BQ #' + (k + 1) : 'on the Row'} · ${p.open ? 'everyone come!' : 'guest list'}`, col: '#FDE68A', bg: PINK, glow: 'rgba(236,72,153,0.4)' }); }
     // weave them: hype, a shoutout, any party, and the newcomer between every one of them
-    const base = []; for (let k = 0; k < Math.max(hype.length, shouts.length); k++) { if (hype[k]) base.push(hype[k]); if (shouts[k]) base.push(shouts[k]); if (parties[k]) base.push(parties[k]); }
+    fresh.push(...parties.map((v) => ({ ...v, shout: true, banner: '🎉 PARTY ON THE ROW 🎉' })));
+    const base = []; for (let k = 0; k < Math.max(hype.length, shouts.length); k++) { if (hype[k]) base.push(hype[k]); if (shouts[k]) base.push(shouts[k]);  }
     base.push({ head: 'HQ ROW', sub: `${n} Lagosian${n === 1 ? '' : 's'} live here · host a party to go on this board`, col: '#A5F3FC', bg: NIGHT, glow: 'rgba(99,102,241,0.35)' });
     if (!fresh.length) return base;
-    for (const m of base) { out.push(fresh[out.length % fresh.length]); out.push(m); } return out;
+    for (const m of base) { out.push(fresh[(out.length / 2) % fresh.length]); out.push(m); } return out;
   }
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
@@ -7184,7 +7190,7 @@
   }
   // reads the phone makes over and over: kept 20 s and shared while in flight, so opening an app again (or two parts of
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
-  const MY_READS = new Set(['civic', 'govBoard', 'me', 'stage', 'hqRequests', 'pendingShows', 'pendingJobs', 'payoutBanks', 'treasury2', 'topUpInfo', 'payoutAccount', 'room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
+  const MY_READS = new Set(['board', 'civic', 'govBoard', 'me', 'stage', 'hqRequests', 'pendingShows', 'pendingJobs', 'payoutBanks', 'treasury2', 'topUpInfo', 'payoutAccount', 'room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
   const MY_QUIET = new Set(['live', 'typing', 'read', 'messages', 'wake']); // chat traffic that changes nothing the cache holds
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
@@ -8809,13 +8815,14 @@
         show(`${ahead('hq', 'My HQ', 'Your BQ on HQ Row · and every home you buy')}
           <div class="hero" style="--ac:${esc(h.color)}"><div class="hl">${h.locked ? '🔒 Invite only' : '🔓 Open door'}</div><div class="hv" style="font-size:20px">🏠 ${esc(h.name)}</div><small>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</small></div>
           <div class="qa" style="--ac:#FF4FD8"><button id="hGo"><i>🚪</i>Go home</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hShop"><i>🛋️</i>Furnish</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
-          <button class="pbtn" id="hBoard">📣 Put it on the HQ Row board: host a party</button>
+          <div class="pcard"><h3>📣 HQ Row board</h3><small class="dim">Your announcement on the big screen for 24 hours (one every 2 hours).</small><input id="hAnn" maxlength="80" placeholder="e.g. Owambe at mine tonight, everybody come!"><div class="row4"><button class="pbtn" id="hAnnGo">Announce it</button><button class="pbtn alt" id="hBoard">🎉 Host a party</button></div><div class="err" id="hAnnErr"></div></div>
           ${reqs.length ? `<div class="rsec">🔔 AT YOUR DOOR</div><div class="lst">${reqs.map((r) => `<div class="li">${avatar(r.handle)}<span class="lt"><b>${esc(r.handle)}</b><small>wants to come in</small></span><button class="pbtn" data-allow="${r.id}" style="margin:0 4px 0 0">Let in</button><button class="pbtn alt" data-deny="${r.id}" style="margin:0">No</button></div>`).join('')}</div>` : ''}
           <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your flag and your door)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
         $('hHomes').onclick = () => go('homes'); $('hShop').onclick = () => go('store'); $('hEdit').onclick = () => { const s = $('hSet'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; };
         pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
         $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
         if ($('hBoard')) $('hBoard').onclick = () => go('parties');
+        $('hAnnGo').onclick = async () => { const t = $('hAnn').value.trim(); if (!t) return; $('hAnnErr').textContent = ''; try { await my('boardPost', { text: t }); hqBoard.posts = await myNet('board', {}); $('hAnn').value = ''; tickerSay('📣 On the HQ Row board now'); } catch (e) { $('hAnnErr').textContent = e.message; } };
         $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
         return;
       }
@@ -9636,6 +9643,7 @@
   async function loadHqRow() {
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
+    try { hqBoard.posts = await my('board'); } catch {}
     try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (!housingTaken && loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
       const list = await my('parties'), seen = new Set(Object.keys(partiesLive));

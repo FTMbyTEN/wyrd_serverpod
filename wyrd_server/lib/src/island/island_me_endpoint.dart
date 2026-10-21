@@ -1196,6 +1196,31 @@ class IslandMeEndpoint extends Endpoint {
     ]);
   }
 
+  // ---- the HQ Row board: a resident's own announcement, shown to everyone for a day (one at a time each, a new one at
+  // most every 2 hours); kept in memory, so a restart clears the board
+  static final _board = <String, ({String by, String text, DateTime at})>{};
+
+  /// Put my announcement on the HQ Row board (an empty [text] takes it down).
+  Future<String> boardPost(Session session, String text) async {
+    final u = _user(session), p = await _profile(session, u), t = _clean(text, 80), now = DateTime.now();
+    if (t.isEmpty) {
+      _board.remove(u.uuid);
+      return jsonEncode({'ok': true});
+    }
+    final had = _board[u.uuid];
+    if (had != null && now.difference(had.at) < const Duration(hours: 2)) return _err('One announcement every 2 hours. Yours is still up.');
+    _board[u.uuid] = (by: p.ghost ? 'A neighbour' : p.handle, text: t, at: now);
+    return jsonEncode({'ok': true});
+  }
+
+  /// What's on the HQ Row board now: residents' announcements from the last day, newest first.
+  Future<String> board(Session session) async {
+    final u = _user(session), now = DateTime.now();
+    _board.removeWhere((_, v) => now.difference(v.at) > const Duration(hours: 24));
+    final list = _board.entries.toList()..sort((a, b) => b.value.at.compareTo(a.value.at));
+    return jsonEncode([for (final e in list.take(12)) {'by': e.value.by, 'text': e.value.text, 'mine': e.key == u.uuid, 'at': e.value.at.toUtc().toIso8601String()}]);
+  }
+
   /// Ask to enter the HQ in [slot] (from hqRow). The owner gets the request on their phone.
   Future<String> askHq(Session session, int slot) async {
     final u = _user(session);

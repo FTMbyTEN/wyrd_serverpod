@@ -2353,6 +2353,35 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
                   .hqRow(session),
         ),
+        'boardPost': _is.MethodConnector(
+          name: 'boardPost',
+          params: {
+            'text': _is.ParameterDescription(
+              name: 'text',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .boardPost(
+                    session,
+                    params['text'],
+                  ),
+        ),
+        'board': _is.MethodConnector(
+          name: 'board',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .board(session),
+        ),
         'askHq': _is.MethodConnector(
           name: 'askHq',
           params: {

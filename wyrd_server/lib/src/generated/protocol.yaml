@@ -99,6 +99,8 @@ islandMe:
   - read:
   - setHq:
   - hqRow:
+  - boardPost:
+  - board:
   - askHq:
   - hqRequests:
   - answerHq:
