@@ -1174,6 +1174,26 @@
   .poL { display: block; margin: 10px 4px 5px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
   #pbody[data-app="wallet"] #poBody input { width: 100%; box-sizing: border-box; margin: 0 !important; padding: 12px 14px !important; border-radius: 14px !important; border: 0 !important; background: var(--ppCard) !important; box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk) !important; font: 500 14.5px 'Plus Jakarta Sans', sans-serif !important; }
   #poBody .pbtn { width: 100%; margin: 8px 0 0 !important; border-radius: 14px !important; } #poBody .pbtn:not(.alt) { background: linear-gradient(135deg, var(--pp1), var(--pp2)) !important; color: #fff !important; } #poBody .err { margin: 8px 4px 0; color: #DC2626; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; }
+  .wBuyFun { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 14px 16px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; color: #fff; background: linear-gradient(135deg, #22C55E, #0EA5E9 55%, #8B5CF6); box-shadow: 0 10px 24px rgba(14,165,233,.3); font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; position: relative; }
+  .wBuyFun::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.25) 45%, transparent 60%); transform: translateX(-100%); animation: bfShine 3.2s ease-in-out infinite; }
+  @keyframes bfShine { 60%, 100% { transform: translateX(100%); } }
+  .wBuyFun .bfIc { width: 44px; height: 44px; flex: none; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: rgba(255,255,255,.2); }
+  .wBuyFun .bfTx { flex: 1; min-width: 0; } .wBuyFun b { display: block; font: 800 17px 'Plus Jakarta Sans', sans-serif; transition: opacity .45s ease, transform .45s ease; } .wBuyFun b.out { opacity: 0; transform: translateY(-6px); }
+  .wBuyFun small { display: block; margin-top: 2px; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .9; } .wBuyFun .bfGo .pi { width: 22px; height: 22px; }
+  .bnTest { margin-bottom: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(250,204,21,.18); color: #854D0E; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; }
+  .bnBal { padding: 14px 16px; border-radius: 20px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk); } .bnBal small { display: block; font: 700 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ppDim); } .bnBal b { font: 800 26px 'Plus Jakarta Sans', sans-serif; } .bnBal span { margin-left: 6px; font: 600 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .bnPacks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bnPack { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; background: var(--ppCard); color: var(--ppInk); box-shadow: inset 0 0 0 1px var(--ppLine), 0 6px 16px rgba(15,23,42,.05); font-family: 'Plus Jakarta Sans', sans-serif; transition: transform .12s; }
+  .bnPack:active { transform: scale(.97); } .bnPack.pop { box-shadow: inset 0 0 0 2px #F97316, 0 10px 24px rgba(249,115,22,.22); }
+  .bnPack em { position: absolute; top: -9px; right: 10px; padding: 3px 8px; border-radius: 999px; background: #F97316; color: #fff; font: 800 10.5px 'Plus Jakarta Sans', sans-serif; font-style: normal; }
+  .bnPack b { font: 800 20px 'Plus Jakarta Sans', sans-serif; } .bnPack > span { font: 600 11.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .bnPack i { margin: 6px 0 8px; padding: 3px 8px; border-radius: 999px; background: rgba(34,197,94,.15); color: #15803D; font: 800 11px 'Plus Jakarta Sans', sans-serif; font-style: normal; } .bnPack i.nb { background: rgba(148,163,184,.16); color: var(--ppDim); }
+  .bnPack strong { font: 800 14px 'Plus Jakarta Sans', sans-serif; } .bnPack small { font: 600 11px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .bnSafe { display: grid; gap: 6px; margin: 12px 0 4px; padding: 12px 14px; border-radius: 16px; background: rgba(148,163,184,.1); font: 600 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  .bnSt { flex: none; padding: 4px 9px; border-radius: 999px; background: rgba(148,163,184,.16); color: var(--ppDim); font: 800 11px 'Plus Jakarta Sans', sans-serif; } .bnSt.pos { background: rgba(34,197,94,.15); color: #15803D; } .bnSt.neg { background: rgba(239,68,68,.12); color: #B91C1C; }
+  #bnBody .err { margin: 8px 4px 0; color: #DC2626; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; }
+  @media (prefers-reduced-motion: reduce) { .wBuyFun::after { animation: none; } }
+  #pbody[data-app="wallet"] .wAct { grid-template-columns: 1fr 1fr; }
 </style>
 </head>
 <body>
@@ -8217,9 +8237,9 @@
           ${bankCard()}
           <div class="ccMeta"><span>Earned today <b>${naira(me$.earnedToday || 0)}</b></span><button id="wDesign">🎨 Card design</button></div>
           <div class="ccPick" id="wPick" style="display:none">${CARD_DESIGNS.map((d, i) => `<button data-cd="${i}" class="${i === cardDesign() ? 'on' : ''}" style="background:${d.bg}" aria-label="${esc(d.name)}"><span>${esc(d.name)}</span></button>`).join('')}</div>
-          <button class="wReal" id="wBuy" style="margin-top:12px"><span class="ic2" style="background:rgba(14,165,233,.15);color:#0EA5E9">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Buy naira</b><small>Card, bank transfer or USSD · Flutterwave</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
+          <button class="wBuyFun" id="wBuy"><span class="bfIc">💸</span><span class="bfTx"><b id="bfLine">${parseLook(myLook, me$.handle).g === 'f' ? 'Fine girl 💅' : 'Fine boy 😎'}</b><small>Buy naira · card, transfer or USSD</small></span><span class="bfGo">${pi('go')}</span></button>
           <button class="wReal" id="wBank" style="margin-top:8px"><span class="ic2">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Bank account</b><small id="wBankSub">Where your real earnings are paid</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
-          <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button><button id="wShop"><span>${pi('bag')}</span>Store</button><button id="wCars"><span>${pi('car')}</span>Cars</button></div>
+          <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button></div>
           <div id="realBox"></div>
           <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
           <div id="earnBox" style="display:none"><div class="wSec"><span>Where to earn</span></div><div class="ppList">${EARN.map(([k, ic, n, pay]) => `<button class="wRow" data-earn="${k}"><span class="ic2">${ic}</span><span class="t"><b>${n}</b><small>${pay} a shift · ride there</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`).join('')}</div></div>
@@ -8227,6 +8247,8 @@
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
         pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
         $('wBuy').onclick = () => go('buynaira'); $('wBank').onclick = () => go('payout');
+        { const lines = [parseLook(myLook, me$.handle).g === 'f' ? 'Fine girl 💅' : 'Fine boy 😎', 'Need more Naira? 👀', 'Click here, I got you 🤫'], el = $('bfLine'); let k = 0;
+          const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); el.classList.add('out'); setTimeout(() => { k = (k + 1) % lines.length; el.textContent = lines[k]; el.classList.remove('out'); }, 450); }, 2600); }
         my('payoutAccount').then((v) => { const a = v.account, el = $('wBankSub'); if (!el || !a) return; el.textContent = `${a.bankName} ••${a.last4} · ${a.status === 'verified' ? 'verified ✓' : a.status === 'review' ? 'being checked' : 'confirm your email'}`; }).catch(() => {});
         // a receipt: what it was, how much, when, the balance after it, its reference
         pbody.querySelectorAll('[data-rc]').forEach((b) => (b.onclick = () => { const e = r[+b.dataset.rc]; if (!e) return;
@@ -8244,7 +8266,7 @@
         $('wDesign').onclick = () => { const k = $('wPick'); k.style.display = k.style.display === 'none' ? 'grid' : 'none'; };
         pbody.querySelectorAll('[data-cd]').forEach((b) => (b.onclick = () => { store.set('li.card.' + me$.handle, b.dataset.cd); render('wallet'); }));
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
-        $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => { toggle('earnBox', 'wEarn'); if ($('earnBox').style.display !== 'none') earnPanel($('earnBox')); }; $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
+        $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => { toggle('earnBox', 'wEarn'); if ($('earnBox').style.display !== 'none') earnPanel($('earnBox')); }; 
         pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
         rw('earnings').then((e) => { if (!e || e.mode === 'off' || !$('realBox')) return;
           $('realBox').innerHTML = `<button class="wReal" id="wReal"><span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Real earnings${e.mode === 'sandbox' ? ' · sandbox, no real money' : ''}</small><b>${kobo(e.availableKobo)}</b><small>${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`;
@@ -8254,20 +8276,32 @@
         return;
       }
       if (app === 'buynaira') {
-        show(`<div class="ppTop"><div><h2>Buy naira</h2><small>Paid securely with Flutterwave</small></div></div><div id="bnBody"><div class="ppList"><div class="ppEmpty">Loading…</div></div></div>`);
+        show(`<div class="ppTop"><div><h2>Buy naira</h2><small>Paid securely with Flutterwave</small></div></div><div id="bnBody"><div class="skel"><i></i><i></i><i></i></div></div>`);
         pbody.dataset.app = 'wallet';
-        let info; try { info = await my('topUpInfo'); } catch (e) { return fail(e); }
-        const body = $('bnBody');
+        let info, hist = []; try { [info, hist] = await Promise.all([my('topUpInfo'), myNet('topUpHistory', {}).catch(() => [])]); } catch (e) { return fail(e); }
+        const body = $('bnBody'); if (!body) return;
         if (info.mode === 'off') { body.innerHTML = `<div class="ppList"><div class="ppEmpty">${pi('bank')}Buying naira opens soon.</div></div>`; return; }
-        body.innerHTML = `${info.mode === 'test' ? '<div class="jbDone" style="background:rgba(250,204,21,.18);color:#854D0E;margin:0 0 10px">Test mode: use Flutterwave test cards, no real money moves.</div>' : ''}
-          <div class="ppList">${info.packs.map((pk) => `<button class="wRow" data-pk="${pk.id}"><span class="ic2 in">💰</span><span class="t"><b>${naira(pk.naira)} game naira</b><small>Pay ₦${pk.ngn.toLocaleString('en-NG')}</small></span><span class="amt pos">₦${pk.ngn.toLocaleString('en-NG')}</span></button>`).join('')}</div>
-          <div class="err" id="bnErr" style="margin:10px 4px;color:#DC2626;font:600 13px 'Plus Jakarta Sans',sans-serif"></div>
-          <div class="ppEmpty" style="padding:12px 8px;font-size:12px">Game naira stay in the game: they can't be withdrawn. Your card details go to Flutterwave, never to Lagos Island.</div>`;
-        if (me$ && me$.operator) my('treasury2').then((t) => { if (!$('bnBody')) return; const d = document.createElement('div'); d.className = 'wReal'; d.style.marginTop = '12px'; d.innerHTML = `<span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Treasury 2 · paycheck reserve (${Math.round(t.share * 100)}%)${t.mode === 'test' ? ' · test mode' : ''}</small><b>₦${t.reserveNgn.toLocaleString('en-NG')}</b><small>of ₦${t.paidNgn.toLocaleString('en-NG')} paid in · ${t.payments} payment${t.payments === 1 ? '' : 's'}</small></span>`; $('bnBody').prepend(d); }).catch(() => {});
-        body.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = async () => { if (b.disabled) return; b.disabled = true; $('bnErr').textContent = '';
+        const base = 10, bal = (me$ && me$.naira) || 0, popular = 'p2500';
+        const ST = { paid: ['✓ Added', 'pos'], pending: ['Checking…', ''], failed: ['Not completed', 'neg'] };
+        const histRow = (t) => `<div class="wRow"><span class="ic2${t.status === 'paid' ? ' in' : ''}">💰</span><span class="t"><b>${naira(t.naira)} game naira</b><small>₦${t.ngn.toLocaleString('en-NG')} · ${new Date(t.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><span class="bnSt ${(ST[t.status] || ST.pending)[1]}">${(ST[t.status] || ST.pending)[0]}</span></div>`;
+        body.innerHTML = `${info.mode === 'test' ? '<div class="bnTest">🧪 Test mode: Flutterwave test payments, no real money moves.</div>' : ''}
+          <div class="bnBal"><small>You have</small><b>${naira(bal)}</b><span>game naira</span></div>
+          <div class="wSec"><span>Pick a pack</span><span>bigger packs, bigger bonus</span></div>
+          <div class="bnPacks">${info.packs.map((pk) => { const bonus = Math.round((pk.naira / (pk.ngn * base) - 1) * 100);
+            return `<button class="bnPack${pk.id === popular ? ' pop' : ''}" data-pk="${pk.id}">${pk.id === popular ? '<em>🔥 Most popular</em>' : ''}<b>${naira(pk.naira)}</b><span>game naira</span>
+              ${bonus > 0 ? `<i>+${bonus}% bonus</i>` : '<i class="nb">standard</i>'}<strong>Pay ₦${pk.ngn.toLocaleString('en-NG')}</strong><small>You'll have ${naira(bal + pk.naira)}</small></button>`; }).join('')}</div>
+          <div class="err" id="bnErr"></div>
+          <div class="bnSafe"><span>🔒 Card details go to Flutterwave, never to the game</span><span>✅ Naira land only after Flutterwave confirms the payment</span><span>🧾 Each payment is credited once, never twice</span><span>🎮 Game naira stay in the game and can't be withdrawn</span></div>
+          ${hist.length ? `<div class="wSec"><span>Your purchases</span></div><div class="ppList" id="bnHist">${hist.map(histRow).join('')}</div>` : ''}`;
+        if (me$ && me$.operator) my('treasury2').then((t) => { if (!$('bnBody')) return; const d = document.createElement('div'); d.className = 'wReal'; d.style.marginBottom = '10px'; d.innerHTML = `<span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Treasury 2 · paycheck reserve (${Math.round(t.share * 100)}%)${t.mode === 'test' ? ' · test mode' : ''}</small><b>₦${t.reserveNgn.toLocaleString('en-NG')}</b><small>of ₦${t.paidNgn.toLocaleString('en-NG')} paid in · ${t.payments} payment${t.payments === 1 ? '' : 's'}</small></span>`; $('bnBody').prepend(d); }).catch(() => {});
+        // a purchase still pending from the last two hours: ask Flutterwave again (the server credits it once if it completed)
+        for (const t of hist.filter((v) => v.status === 'pending' && Date.now() - new Date(v.at) < 2 * 3600e3).slice(0, 3)) {
+          myNet('topUpCheck', { ref: t.ref }).then((r) => { if (r.status === 'paid') { if (r.balance != null) { me$.naira = r.balance; pnaira.textContent = naira(r.balance); } notify(`${naira(r.naira)} added to your wallet`, 'money', ['wallet']); if (pbody.dataset.app === 'wallet' && $('bnBody')) render('buynaira'); } }).catch(() => {});
+        }
+        body.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = async () => { if (body.dataset.busy) return; body.dataset.busy = '1'; $('bnErr').textContent = '';
           const ov = document.createElement('div'); ov.id = 'flwGo'; ov.innerHTML = '<div><i></i><b>Opening secure checkout</b><small>Flutterwave · your card details never touch the game</small></div>'; document.body.append(ov);
           try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; setTimeout(() => ov.remove(), 15000); }
-          catch (e) { ov.remove(); b.disabled = false; $('bnErr').textContent = e.message; } }));
+          catch (e) { ov.remove(); delete body.dataset.busy; $('bnErr').textContent = e.message; } }));
         return;
       }
       if (app === 'payout') {

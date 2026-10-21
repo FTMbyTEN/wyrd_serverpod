@@ -1669,6 +1669,13 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {},
   );
 
+  /// My naira purchases, newest first: each one's pack, price, naira and state (paid only once Flutterwave confirmed it).
+  _ida.Future<String> topUpHistory() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'topUpHistory',
+    {},
+  );
+
   /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
   _ida.Future<String> topUpCheck(String ref) =>
       caller.callServerEndpoint<String>(

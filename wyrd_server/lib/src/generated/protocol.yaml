@@ -141,6 +141,7 @@ islandMe:
   - payoutAccountVerify:
   - payoutAccountResend:
   - treasury2:
+  - topUpHistory:
   - topUpCheck:
   - shows:
   - hostShow:

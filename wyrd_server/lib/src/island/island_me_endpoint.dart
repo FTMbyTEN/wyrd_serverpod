@@ -2502,6 +2502,15 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode(await TopUp.treasury2(session));
   }
 
+  /// My naira purchases, newest first: each one's pack, price, naira and state (paid only once Flutterwave confirmed it).
+  Future<String> topUpHistory(Session session) async {
+    final u = _user(session);
+    final rows = await IslandTopUp.db.find(session, where: (t) => t.authUserId.equals(u), orderBy: (t) => t.createdAt.desc(), limit: 15);
+    return jsonEncode([
+      for (final r in rows) {'ref': r.txRef, 'ngn': r.amountNgn, 'naira': r.naira, 'status': r.status, 'at': r.createdAt.toIso8601String(), if (r.paidAt != null) 'paidAt': r.paidAt!.toIso8601String()},
+    ]);
+  }
+
   /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
   Future<String> topUpCheck(Session session, String ref) async {
     final u = _user(session);

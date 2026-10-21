@@ -3160,6 +3160,16 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
                   .treasury2(session),
         ),
+        'topUpHistory': _is.MethodConnector(
+          name: 'topUpHistory',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .topUpHistory(session),
+        ),
         'topUpCheck': _is.MethodConnector(
           name: 'topUpCheck',
           params: {

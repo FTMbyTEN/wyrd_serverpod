@@ -118,6 +118,12 @@ abstract final class TopUp {
       if (failed) await IslandTopUp.db.updateRow(s, row.copyWith(status: 'failed', flwId: '${d['id'] ?? ''}'));
       return {'status': failed ? 'failed' : 'pending'};
     }
+    // one Flutterwave transaction pays for one purchase: if its id already paid another reference, nothing is credited
+    final flwId = '${d['id'] ?? ''}';
+    if (flwId.isNotEmpty && await IslandTopUp.db.findFirstRow(s, where: (t) => t.flwId.equals(flwId) & t.status.equals('paid') & t.txRef.notEquals(ref)) != null) {
+      s.log('[topup] $ref: Flutterwave transaction $flwId already credited to another purchase', level: LogLevel.warning);
+      return {'status': 'failed'};
+    }
     s.log('[topup] $ref confirmed by Flutterwave: ${d['payment_type']} ${d['amount']} ${d['currency']} id=${d['id']} mode=${mode(s)}', level: LogLevel.info);
     final res = await Bank.post(s, row.authUserId, key: 'topup:$ref', amount: row.naira, kind: 'topup', counter: 'city:treasury', memo: 'Bought ${_n(row.naira)} naira (Flutterwave)');
     if (res.short != null) return {'status': 'pending'};
