@@ -6,6 +6,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import '../generated/protocol.dart';
+import '../rewards/reward_config.dart';
 
 /// A player's payout bank account: the bank list and account lookup come from Flutterwave (with the server's own key);
 /// the account counts as verified only when the bank's name for it matches the legal name the player gives, and the
@@ -37,14 +38,20 @@ abstract final class Payout {
       : {
           'bankName': a.bankName, 'last4': a.accountNumber.substring(a.accountNumber.length - 4), 'accountName': a.accountName,
           'legalName': a.legalName, 'nameMatch': a.nameMatch, 'email': _maskEmail(a.email), 'emailVerified': a.emailVerified, 'status': a.status,
+          'adult': a.dateOfBirth != null && ageOf(a.dateOfBirth!) >= RewardConfig.current.minAge, 'terms': a.termsAcceptedAt != null,
         };
 
   /// Add (or replace) my payout account: look the account up at the bank, compare names, email a code.
-  static Future<Map<String, dynamic>> set(Session s, UuidValue u, String bankCode, String accountNumber, String legalName, String email) async {
+  static int ageOf(DateTime dob) { final n = DateTime.now().toUtc(); var a = n.year - dob.year; if (n.month < dob.month || (n.month == dob.month && n.day < dob.day)) a--; return a; }
+
+  static Future<Map<String, dynamic>> set(Session s, UuidValue u, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth) async {
     final num = accountNumber.replaceAll(RegExp(r'\s'), ''), name = legalName.trim().replaceAll(RegExp(r'\s+'), ' '), mail = email.trim().toLowerCase();
     if (!RegExp(r'^\d{10}$').hasMatch(num)) throw PayoutRefused('Account numbers are 10 digits.');
     if (name.split(' ').length < 2 || name.length > 80) throw PayoutRefused('Your full name, as your bank has it (first and last name).');
     if (!RegExp(r'^[^@\s]{1,64}@[^@\s]+\.[a-z]{2,}$').hasMatch(mail)) throw PayoutRefused('Enter a real email address.');
+    final dob = DateTime.tryParse(dateOfBirth.trim());
+    if (dob == null || dob.year < 1900 || dob.isAfter(DateTime.now())) throw PayoutRefused('Enter your date of birth.');
+    if (ageOf(dob) < RewardConfig.current.minAge) throw PayoutRefused('You need to be ${RewardConfig.current.minAge} or older to be paid real money.');
     final bank = (await banks(s)).where((b) => b['code'] == bankCode).firstOrNull;
     if (bank == null) throw PayoutRefused('Choose your bank from the list.');
     final r = await _http.post(Uri.parse('https://api.flutterwave.com/v3/accounts/resolve'), headers: _auth(s), body: jsonEncode({'account_number': num, 'account_bank': bankCode})).timeout(const Duration(seconds: 20));
@@ -56,7 +63,7 @@ abstract final class Payout {
     final had = await IslandPayoutAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
     final row = IslandPayoutAccount(
       id: had?.id, authUserId: u, bankCode: bankCode, bankName: bank['name']!, accountNumber: num, accountName: acctName, legalName: name, nameMatch: match,
-      email: mail, emailVerified: false, emailCode: code, codeExpires: now.add(const Duration(minutes: 20)), codeTries: 0, status: 'unverified',
+      email: mail, emailVerified: false, emailCode: code, codeExpires: now.add(const Duration(minutes: 20)), codeTries: 0, status: 'unverified', dateOfBirth: DateTime.utc(dob.year, dob.month, dob.day), termsAcceptedAt: had?.termsAcceptedAt,
       createdAt: had?.createdAt ?? now, updatedAt: now,
     );
     final saved = had == null ? await IslandPayoutAccount.db.insertRow(s, row) : await IslandPayoutAccount.db.updateRow(s, row);

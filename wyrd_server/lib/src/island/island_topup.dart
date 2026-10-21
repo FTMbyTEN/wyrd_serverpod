@@ -8,6 +8,7 @@ import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import '../generated/protocol.dart';
 import '../world/bank.dart';
+import '../rewards/withdrawals.dart';
 
 /// Buying game naira with real money, through Flutterwave's hosted checkout.
 ///
@@ -174,6 +175,15 @@ class FlutterwaveWebhookRoute extends Route {
       return _json(413, {'error': 'too large'});
     }
     final j = TopUp._json(body), d = j['data'] is Map ? j['data'] as Map : j;
+    final tref = d['reference'];
+    if (tref is String && tref.startsWith('FJW-')) {
+      try {
+        return _json(200, {'outcome': 'checked', 'moved': await Withdrawals.reconcile(session, onlyRef: tref)});
+      } catch (e) {
+        session.log('[payout] webhook check failed: $e', level: LogLevel.error);
+        return _json(500, {'error': 'retry later'});
+      }
+    }
     final ref = d['tx_ref'] ?? d['txRef'];
     if (ref is! String || !ref.startsWith('LI-')) return _json(200, {'outcome': 'ignored'});
     try {

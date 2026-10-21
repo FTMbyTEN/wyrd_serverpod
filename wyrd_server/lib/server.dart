@@ -16,6 +16,9 @@ import 'src/mind/memory_recall_service.dart';
 import 'src/mind/wordnet_service.dart';
 import 'src/island/island_weather_route.dart';
 import 'src/island/island_topup.dart';
+import 'src/rewards/flutterwave_payouts.dart';
+import 'src/rewards/reward_config.dart';
+import 'src/rewards/withdrawals.dart';
 import 'src/rewards/provider_route.dart';
 import 'src/rewards/reward_seed.dart';
 
@@ -202,6 +205,12 @@ void run(List<String> args) async {
   );
 
   // Start the server.
+  // real payouts go through Flutterwave when that is the configured provider and the server holds its key
+  if (RewardConfig.current.payoutProvider == 'flutterwave') {
+    final k = (pod.getPassword('flutterwaveSecretKey') ?? '').trim();
+    if (k.isNotEmpty) Withdrawals.provider = FlutterwavePayoutProvider(k);
+  }
+
   await pod.start();
 
   // Recurring background ticks (mirrors server.js's setInterval calls). Scheduling by identifier

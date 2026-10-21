@@ -20,6 +20,10 @@ fields:
   codeTries: int, default=0
   ### unverified (waiting for the email code) | verified | review (the names don't match: a person checks)
   status: String
+  ### for the age check (18 or older to withdraw)
+  dateOfBirth: DateTime?
+  ### when the player accepted the payout terms
+  termsAcceptedAt: DateTime?
   createdAt: DateTime
   updatedAt: DateTime
 indexes:

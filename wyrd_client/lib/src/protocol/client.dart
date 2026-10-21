@@ -1648,6 +1648,7 @@ class EndpointIslandMe extends _isc.EndpointRef {
     String accountNumber,
     String legalName,
     String email,
+    String dateOfBirth,
   ) => caller.callServerEndpoint<String>(
     'islandMe',
     'payoutAccountSet',
@@ -1656,6 +1657,7 @@ class EndpointIslandMe extends _isc.EndpointRef {
       'accountNumber': accountNumber,
       'legalName': legalName,
       'email': email,
+      'dateOfBirth': dateOfBirth,
     },
   );
 
@@ -1673,6 +1675,42 @@ class EndpointIslandMe extends _isc.EndpointRef {
         'islandMe',
         'payoutAccountResend',
         {},
+      );
+
+  /// I accept the payout terms (needed once before the first withdrawal).
+  _ida.Future<String> payoutAcceptTerms() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutAcceptTerms',
+    {},
+  );
+
+  /// Withdraw real earnings to my verified bank account: verified (name and email), 18 or older, terms accepted;
+  /// the limits, the fee and the review window are the payout system's (Withdrawals.request).
+  _ida.Future<String> withdrawToBank(
+    int amountKobo,
+    String requestKey,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'withdrawToBank',
+    {
+      'amountKobo': amountKobo,
+      'requestKey': requestKey,
+    },
+  );
+
+  /// Operators: withdrawals waiting in their review window (who, how much, when they go), to stop any that look wrong.
+  _ida.Future<String> payoutQueue() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutQueue',
+    {},
+  );
+
+  /// Operators: stop a withdrawal in review (the money goes back to the player's available earnings).
+  _ida.Future<String> payoutStop(String ref) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'payoutStop',
+        {'ref': ref},
       );
 
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.

@@ -12,6 +12,10 @@ import '../world/world_authority.dart';
 import 'grid_career.dart';
 import 'island_auth_endpoint.dart';
 import 'island_payout.dart';
+import '../rewards/funded_jobs.dart';
+import '../rewards/reward_config.dart';
+import '../rewards/reward_math.dart';
+import '../rewards/withdrawals.dart';
 import 'island_topup.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
@@ -2555,9 +2559,9 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Add or replace my payout account: looked up at the bank, names compared, a code emailed.
-  Future<String> payoutAccountSet(Session session, String bankCode, String accountNumber, String legalName, String email) {
+  Future<String> payoutAccountSet(Session session, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth) {
     final u = _user(session);
-    return _payout(() => Payout.set(session, u, bankCode, accountNumber, legalName, email));
+    return _payout(() => Payout.set(session, u, bankCode, accountNumber, legalName, email, dateOfBirth));
   }
 
   /// The code from the email.
@@ -2570,6 +2574,49 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> payoutAccountResend(Session session) {
     final u = _user(session);
     return _payout(() => Payout.resend(session, u));
+  }
+
+  /// I accept the payout terms (needed once before the first withdrawal).
+  Future<String> payoutAcceptTerms(Session session) async {
+    final u = _user(session);
+    final a = await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
+    if (a == null) return _err('Add your bank account first.');
+    final done = await IslandPayoutAccount.db.updateRow(session, a.copyWith(termsAcceptedAt: DateTime.now().toUtc()));
+    return jsonEncode({'account': Payout.view(done)});
+  }
+
+  /// Withdraw real earnings to my verified bank account: verified (name and email), 18 or older, terms accepted;
+  /// the limits, the fee and the review window are the payout system's (Withdrawals.request).
+  Future<String> withdrawToBank(Session session, int amountKobo, String requestKey) async {
+    final u = _user(session);
+    final a = await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
+    if (a == null || a.status != 'verified') return _err('Verify your bank account first (Wallet, then Bank account).');
+    if (a.dateOfBirth == null || Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge) return _err('You need to be ${RewardConfig.current.minAge} or older to be paid real money.');
+    if (a.termsAcceptedAt == null) return _err('Accept the payout terms first.');
+    try {
+      final w = await Withdrawals.request(session, u, amountKobo, 'flw:${a.bankCode}:${a.accountNumber}', requestKey);
+      return jsonEncode({'ref': w.ref, 'status': w.status, 'amountKobo': w.amountKobo, 'feeKobo': w.feeKobo, 'feePayer': w.feePayer, 'reviewHours': RewardConfig.current.reviewHours, 'to': '${a.bankName} ••${a.accountNumber.substring(6)}'});
+    } on JobRefused catch (e) {
+      return _err(e.message);
+    }
+  }
+
+  /// Operators: withdrawals waiting in their review window (who, how much, when they go), to stop any that look wrong.
+  Future<String> payoutQueue(Session session) async {
+    final u = _user(session);
+    if (!await DroneService.isOperator(session, u)) return _err('Operators only.');
+    final rows = await RewardWithdrawal.db.find(session, where: (t) => t.status.equals(PayoutState.requested), orderBy: (t) => t.createdAt, limit: 50);
+    final hrs = RewardConfig.current.reviewHours;
+    return jsonEncode([
+      for (final w in rows) {'ref': w.ref, 'handle': (await _profile(session, w.authUserId)).handle, 'amountKobo': w.amountKobo, 'at': w.createdAt.toIso8601String(), 'goesAt': w.createdAt.add(Duration(hours: hrs)).toIso8601String()},
+    ]);
+  }
+
+  /// Operators: stop a withdrawal in review (the money goes back to the player's available earnings).
+  Future<String> payoutStop(Session session, String ref) async {
+    final u = _user(session);
+    if (!await DroneService.isOperator(session, u)) return _err('Operators only.');
+    return jsonEncode({'stopped': await Withdrawals.stop(session, ref, 'operator:${u.uuid}')});
   }
 
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.

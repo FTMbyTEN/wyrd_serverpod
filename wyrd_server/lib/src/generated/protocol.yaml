@@ -142,6 +142,10 @@ islandMe:
   - payoutAccountSet:
   - payoutAccountVerify:
   - payoutAccountResend:
+  - payoutAcceptTerms:
+  - withdrawToBank:
+  - payoutQueue:
+  - payoutStop:
   - treasury2:
   - topUpHistory:
   - topUpCheck:

@@ -19,6 +19,9 @@ abstract class PayoutProvider {
 
   /// Submit a payout, idempotently by [ref]: the provider must treat a repeat of the same ref as the same payout.
   Future<(SubmitOutcome, String? providerRef)> submit({required String ref, required int amountKobo, required String beneficiary});
+
+  /// Ask the provider how payout [ref] went: a PayoutState (paid, failed, pending), or null if it can't say.
+  Future<String?> status({required String ref, String? providerRef}) async => null;
 }
 
 /// The sandbox provider: pays nobody. The test can choose what it answers (accept, reject, or time out).
@@ -33,6 +36,9 @@ class MockPayoutProvider implements PayoutProvider {
     submitted[ref] = amountKobo; // the same ref twice is the same payout
     return (answer, answer == SubmitOutcome.rejected ? null : 'MOCK-$ref');
   }
+
+  @override
+  Future<String?> status({required String ref, String? providerRef}) async => null; // the sandbox settles by its signed callbacks
 
   /// A callback the mock provider would send, signed with [secret].
   static Map<String, String> callback(String secret, {required String eventId, required String ref, required String status}) {
@@ -87,6 +93,13 @@ abstract final class Withdrawals {
       throw JobRefused('Withdrawals are paused for a short while. Your earnings are safe.');
     }
     if (amountKobo < cfg.minWithdrawalKobo) throw JobRefused('The least you can withdraw is ₦${cfg.minWithdrawalKobo ~/ 100}.');
+    if (cfg.maxWithdrawalKobo > 0 && amountKobo > cfg.maxWithdrawalKobo) throw JobRefused('The most you can withdraw at once is ₦${cfg.maxWithdrawalKobo ~/ 100}.');
+    if (cfg.dailyLimitKobo > 0) {
+      final day = DateTime.now().toUtc().subtract(const Duration(hours: 24));
+      final rows = await RewardWithdrawal.db.find(s, where: (t) => t.authUserId.equals(u) & (t.createdAt > day) & t.status.notEquals(PayoutState.failed));
+      final used = rows.fold<int>(0, (n, w) => n + w.amountKobo);
+      if (used + amountKobo > cfg.dailyLimitKobo) throw JobRefused('That would pass the daily limit of ₦${cfg.dailyLimitKobo ~/ 100}. You can withdraw ₦${((cfg.dailyLimitKobo - used).clamp(0, cfg.dailyLimitKobo)) ~/ 100} more today.');
+    }
     if (beneficiary.trim().isEmpty) throw JobRefused('Add a verified account to withdraw to.');
     final again = await RewardWithdrawal.db.findFirstRow(s, where: (t) => t.idemKey.equals(idemKey));
     if (again != null) return again.authUserId == u ? again : (throw JobRefused('Bad request key.'));
@@ -118,7 +131,15 @@ abstract final class Withdrawals {
       if (raced != null && raced.authUserId == u) return raced;
       rethrow;
     }
-    // submit (idempotent by ref); a timeout leaves it unknown and in flight, to be settled by the provider's report
+    // with a review window, it waits (an operator may stop it) and [submitDue] sends it later
+    if (cfg.reviewHours > 0) return w;
+    return _submit(s, w);
+  }
+
+  /// Send one requested withdrawal to the provider (idempotent by ref); a timeout leaves it unknown and in flight,
+  /// to be settled by asking the provider later.
+  static Future<RewardWithdrawal> _submit(Session s, RewardWithdrawal w) async {
+    final ref = w.ref, amountKobo = w.amountKobo, fee = w.feeKobo, payer = w.feePayer, beneficiary = w.beneficiary;
     SubmitOutcome out;
     String? pref;
     try {
@@ -129,6 +150,45 @@ abstract final class Withdrawals {
     final to = switch (out) { SubmitOutcome.accepted => PayoutState.submitted, SubmitOutcome.rejected => PayoutState.failed, SubmitOutcome.unknown => PayoutState.unknown };
     await _move(s, w, to, providerRef: pref, actor: 'system');
     return (await RewardWithdrawal.db.findById(s, w.id!))!;
+  }
+
+  /// Withdrawals past their review window go to the provider (unless payouts are paused); the scheduled tick runs this.
+  static Future<int> submitDue(Session s) async {
+    final cfg = RewardConfig.current;
+    if (!cfg.livePayoutsEnabled && !cfg.sandbox) return 0;
+    if ((await RewardSwitch.db.findFirstRow(s, where: (t) => t.key.equals('payouts_paused')))?.enabled ?? false) return 0;
+    final due = DateTime.now().toUtc().subtract(Duration(hours: cfg.reviewHours));
+    var n = 0;
+    for (final w in await RewardWithdrawal.db.find(s, where: (t) => t.status.equals(PayoutState.requested) & (t.createdAt < due), limit: 20)) {
+      await _submit(s, w);
+      n++;
+    }
+    return n;
+  }
+
+  /// Payouts sent but not settled: ask the provider (its answer, not a callback's word, moves money). Run by the tick
+  /// and whenever the provider reports something.
+  static Future<int> reconcile(Session s, {String? onlyRef}) async {
+    final rows = onlyRef != null
+        ? await RewardWithdrawal.db.find(s, where: (t) => t.ref.equals(onlyRef))
+        : await RewardWithdrawal.db.find(s, where: (t) => t.status.inSet({PayoutState.submitted, PayoutState.pending, PayoutState.unknown}) & (t.updatedAt < DateTime.now().toUtc().subtract(const Duration(minutes: 5))), limit: 30);
+    var n = 0;
+    for (final w in rows) {
+      if (!PayoutState.isInFlight(w.status) && w.status != PayoutState.paid) continue;
+      final st = await provider.status(ref: w.ref, providerRef: w.providerRef);
+      if (st == null || st == w.status || !PayoutState.canMove(w.status, st)) continue;
+      await _move(s, w, st, actor: 'provider:${provider.name}');
+      n++;
+    }
+    return n;
+  }
+
+  /// An operator stops a withdrawal still in its review window: the money goes back to the player's available earnings.
+  static Future<bool> stop(Session s, String ref, String actor) async {
+    final w = await RewardWithdrawal.db.findFirstRow(s, where: (t) => t.ref.equals(ref));
+    if (w == null || w.status != PayoutState.requested) return false;
+    await _move(s, w, PayoutState.failed, actor: actor);
+    return true;
   }
 
   /// A provider callback: verified, recorded once, applied only if the move is allowed (a late or out-of-order event

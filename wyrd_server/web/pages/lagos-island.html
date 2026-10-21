@@ -1204,6 +1204,8 @@
   #bankSheet .bsList { flex: 1; overflow-y: auto; padding: 0 8px 12px; -webkit-overflow-scrolling: touch; }
   #bankSheet .bsList button { display: flex; justify-content: space-between; width: 100%; padding: 13px 10px; border: 0; border-bottom: 1px solid rgba(148,163,184,.15); background: none; color: inherit; cursor: pointer; text-align: left; font: 600 14.5px 'Plus Jakarta Sans', sans-serif; } #bankSheet .bsList button.on { color: #0EA5E9; } #bankSheet .bsList i { font-style: normal; }
   #bankSheet .bsL { padding: 12px 10px 4px; font: 800 12px 'Plus Jakarta Sans', sans-serif; color: #94A3B8; } #bankSheet .bsNone { padding: 24px; text-align: center; color: #94A3B8; font: 600 14px 'Plus Jakarta Sans', sans-serif; }
+  .poTerms { display: grid; gap: 8px; margin: 10px 0; padding: 14px; border-radius: 18px; background: rgba(14,165,233,.08); box-shadow: inset 0 0 0 1px rgba(14,165,233,.25); color: var(--ppInk); font: 500 13px/1.45 'Plus Jakarta Sans', sans-serif; }
+  .poTerms b { font: 800 14px 'Plus Jakarta Sans', sans-serif; } .poTerms a { color: #0EA5E9; font-weight: 700; } .poTerms label { display: flex; gap: 8px; align-items: center; font-weight: 700; } .poTerms input { width: 18px !important; height: 18px; padding: 0 !important; box-shadow: none !important; }
 </style>
 </head>
 <body>
@@ -8365,18 +8367,26 @@
         const drawAcc = (a) => { body.innerHTML = `${steps(a)}<div class="poCard ${a.status}"><small>${esc(a.bankName)}</small><b>•••••• ${esc(a.last4)}</b><span>${esc(a.accountName)}</span>
             <em>${a.status === 'verified' ? '✓ Verified: payouts go here' : a.status === 'review' ? 'The name you gave doesn\'t match your bank\'s. A person will check it.' : 'Confirm your email to finish'}</em></div>
           ${!a.emailVerified ? `<label class="poL">Code sent to ${esc(a.email)}</label><input id="poCode" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code"><div class="err" id="poErr"></div><button class="pbtn" id="poVer">Confirm</button><button class="pbtn alt" id="poRe">Send a new code</button>` : ''}
+          ${a.status === 'verified' && !a.terms ? '<div class="poTerms"><b>One last step</b><span>Read the payout terms: how real earnings, limits, fees and the 12-hour check work.</span><a href="terms.html" target="_blank" rel="noopener">Read the payout terms ↗</a><label><input type="checkbox" id="poAgree"> I have read and accept the payout terms</label><button class="pbtn" id="poTermsGo" disabled>Accept</button></div>' : ''}
           <button class="pbtn alt" id="poNew">Use a different account</button>
+          <div id="poOps"></div>
           <div class="ppEmpty" style="padding:12px 6px;font-size:12px">Real payouts aren't switched on yet. When they are, your earnings are paid to this account.</div>`;
           if ($('poVer')) { const ver = async () => { const b = $('poVer'); if (b.disabled) return; b.disabled = true; $('poErr').textContent = ''; try { drawAcc((await my('payoutAccountVerify', { code: $('poCode').value })).account); } catch (e) { b.disabled = false; $('poErr').textContent = e.message; } };
             $('poVer').onclick = ver; $('poCode').onkeydown = (e) => { if (e.key === 'Enter') ver(); };
             $('poRe').onclick = async () => { const b = $('poRe'); b.disabled = true; try { await my('payoutAccountResend'); b.textContent = 'Sent'; } catch (e) { b.disabled = false; $('poErr').textContent = e.message; } }; }
-          $('poNew').onclick = () => drawForm(); };
+          $('poNew').onclick = () => drawForm();
+          if ($('poAgree')) { $('poAgree').onchange = () => ($('poTermsGo').disabled = !$('poAgree').checked); $('poTermsGo').onclick = async () => { const b = $('poTermsGo'); b.disabled = true; try { drawAcc((await my('payoutAcceptTerms')).account); } catch (e) { b.disabled = false; fail(e); } }; }
+          if (me$ && me$.operator) myNet('payoutQueue', {}).then((q) => { const box = $('poOps'); if (!box || !Array.isArray(q)) return;
+            const left = (iso) => { const m = Math.max(0, Math.round((new Date(iso) - Date.now()) / 60000)); return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m + 'm'; };
+            box.innerHTML = `<div class="wSec"><span>In review (operator)</span><span>${q.length}</span></div><div class="ppList">${q.map((w) => `<div class="wRow"><span class="ic2">🏦</span><span class="t"><b>@${esc(w.handle)} · ${kobo(w.amountKobo)}</b><small>${esc(w.ref)} · sends in ${left(w.goesAt)}</small></span><button class="pbtn alt" data-stop="${esc(w.ref)}">Stop</button></div>`).join('') || '<div class="ppEmpty">Nothing waiting.</div>'}</div>`;
+            box.querySelectorAll('[data-stop]').forEach((b) => (b.onclick = async () => { if (!confirm('Stop this withdrawal? The money goes back to the player.')) return; b.disabled = true; try { await my('payoutStop', { ref: b.dataset.stop }); b.closest('.wRow').remove(); } catch (e) { b.disabled = false; fail(e); } })); }).catch(() => {}); };
         const drawForm = async () => {
           body.innerHTML = '<div class="skel"><i></i><i></i></div>';
           let banks = []; try { banks = (await my('payoutBanks')).banks; } catch (e) { body.innerHTML = `<div class="ppList"><div class="ppEmpty">${esc(e.message)}</div></div>`; return; }
           body.innerHTML = `${steps(null)}<label class="poL">Bank</label><button type="button" class="poPick" id="poBankBtn"><span id="poBankName">Choose your bank</span><em>▾</em></button>
             <label class="poL">Account number</label><input id="poNum" inputmode="numeric" maxlength="10" placeholder="10 digits" autocomplete="off">
             <label class="poL">Your full name, as your bank has it</label><input id="poName" maxlength="80" placeholder="First and last name" autocomplete="name">
+            <label class="poL">Date of birth (you must be 18 or older)</label><input id="poDob" type="date" max="${new Date(Date.now() - 18 * 365.25 * 864e5).toISOString().slice(0, 10)}" autocomplete="bday">
             <label class="poL">Email (for the confirmation code)</label><input id="poMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email">
             <div class="err" id="poErr"></div><button class="pbtn" id="poGo">Check and send the code</button>
             <div class="ppEmpty" style="padding:12px 6px;font-size:12px">Your bank tells us the name on the account; it has to match yours. Your details stay private.</div>`;
@@ -8394,7 +8404,7 @@
           $('poGo').onclick = async () => { const b = $('poGo'); if (b.disabled) return; $('poErr').textContent = '';
             if (!bank) { $('poErr').textContent = 'Choose your bank first.'; return; }
             b.disabled = true; b.textContent = 'Checking with your bank…';
-            try { drawAcc((await my('payoutAccountSet', { bankCode: bank.code, accountNumber: $('poNum').value, legalName: $('poName').value, email: $('poMail').value })).account); }
+            try { drawAcc((await my('payoutAccountSet', { bankCode: bank.code, accountNumber: $('poNum').value, legalName: $('poName').value, email: $('poMail').value, dateOfBirth: $('poDob').value })).account); }
             catch (e) { b.disabled = false; b.textContent = 'Check and send the code'; $('poErr').textContent = e.message; } }; };
         if (acc) drawAcc(acc); else drawForm();
         return;
@@ -8452,14 +8462,25 @@
               : j.mine ? `<div class="dim" style="margin-top:8px">${MINE[j.mine] || esc(j.mine)}</div>`
               : j.funding === 'available' ? `<button class="pbtn" data-take="${j.id}" style="margin-top:8px">Take this gig</button>` : ''}</div>`).join('') || '<div class="pcard dim">No paid gigs right now.</div>'}
           <div class="rsec">WITHDRAW</div>
-          <div class="pcard">${e.canWithdraw ? `<input id="wdAmt" type="number" min="${e.minWithdrawalKobo / 100}" placeholder="Amount in naira (at least ${kobo(e.minWithdrawalKobo)})"><input id="wdTo" maxlength="80" placeholder="${sb ? 'Any test account name' : 'Your verified account'}"><div class="dim">Bank fee ${kobo(e.feeKobo)}, ${e.feePayer === 'house' ? 'paid by the game' : 'taken from the amount'}.</div><button class="pbtn" id="wdGo">Withdraw</button>`
+          <div class="pcard" id="wdBox">${e.canWithdraw ? `<div class="dim" id="wdTo">Checking your bank account…</div><input id="wdAmt" type="number" inputmode="numeric" min="${e.minWithdrawalKobo / 100}" placeholder="Amount in naira (${kobo(e.minWithdrawalKobo)} to ₦25,000)"><div class="dim" id="wdNet">Bank fee ${kobo(e.feeKobo)}, ${e.feePayer === 'house' ? 'paid by the game' : 'taken from the amount'}. Up to ₦50,000 a day.</div><button class="pbtn" id="wdGo" disabled>Withdraw</button><div class="dim">Every withdrawal is checked for 12 hours before it's sent to your bank.</div>`
             : `<div class="dim">${e.minWithdrawalKobo ? 'You can withdraw once ' + kobo(e.minWithdrawalKobo) + ' is available.' : 'Withdrawals are not open yet.'}</div>`}</div>
           <div class="rsec">WITHDRAWALS</div><div class="lst">${e.withdrawals.map((w) => `<div class="li"><span class="ic">🏦</span><span class="lt"><b>${ST[w.status] || esc(w.status)}</b><small>${esc(w.ref)} · ${when(w.at)}</small></span><span class="lr">${kobo(w.amountKobo)}</span></div>`).join('') || '<div class="li"><span class="lt"><small>No withdrawals yet.</small></span></div>'}</div>`);
         const note = (t) => { const n = document.createElement('div'); n.className = 'pcard'; n.textContent = t; pbody.prepend(n); setTimeout(() => n.remove(), 6000); };
         pbody.querySelectorAll('[data-take]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { await rw('accept', { offerId: Number(b.dataset.take), requestKey: rkey() }); render('earn'); } catch (er) { b.disabled = false; fail(er); } }));
         pbody.querySelectorAll('[data-done]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { const r = await rw('complete', { acceptanceId: Number(b.dataset.done), delivered: true }); await render('earn'); if (r.note) note(r.note); } catch (er) { b.disabled = false; fail(er); } }));
         pbody.querySelectorAll('[data-drop]').forEach((b) => (b.onclick = async () => { try { await rw('cancel', { acceptanceId: Number(b.dataset.drop) }); render('earn'); } catch (er) { fail(er); } }));
-        if ($('wdGo')) { const key = rkey(); $('wdGo').onclick = async () => { $('wdGo').disabled = true; try { await rw('withdraw', { amountKobo: Math.round(Number($('wdAmt').value) * 100), beneficiary: $('wdTo').value, requestKey: key }); render('earn'); } catch (er) { $('wdGo').disabled = false; fail(er); } }; }
+        if ($('wdGo')) {
+          const key = rkey();
+          my('payoutAccount').then((v) => { const a = v.account, to = $('wdTo'); if (!to) return;
+            if (!a || a.status !== 'verified') { to.innerHTML = 'Add and verify your bank account first. <button class="pbtn alt" id="wdBank">Bank account</button>'; $('wdBank').onclick = () => go('payout'); return; }
+            if (!a.adult) { to.textContent = 'You need to be 18 or older to be paid real money.'; return; }
+            if (!a.terms) { to.innerHTML = 'Accept the payout terms first. <button class="pbtn alt" id="wdBank">Read and accept</button>'; $('wdBank').onclick = () => go('payout'); return; }
+            to.innerHTML = `Paid to <b>${esc(a.bankName)} ••${esc(a.last4)}</b> · ${esc(a.accountName)}`; $('wdGo').disabled = false; }).catch(() => {});
+          $('wdAmt').oninput = () => { const k = Math.round(Number($('wdAmt').value) * 100), net = e.feePayer === 'house' ? k : k - e.feeKobo; $('wdNet').textContent = k > 0 ? `You'll receive ${kobo(Math.max(0, net))} (bank fee ${kobo(e.feeKobo)}${e.feePayer === 'house' ? ', paid by the game' : ''}).` : ''; };
+          $('wdGo').onclick = async () => { const b = $('wdGo'); if (b.disabled) return; const k = Math.round(Number($('wdAmt').value) * 100); if (!(k > 0)) return fail(new Error('Enter an amount.'));
+            if (!confirm(`Withdraw ${kobo(k)} to your bank? You'll receive ${kobo(e.feePayer === 'house' ? k : k - e.feeKobo)} after the bank fee, sent after a 12-hour check.`)) return;
+            b.disabled = true; try { const r = await my('withdrawToBank', { amountKobo: k, requestKey: key }); notify(`Withdrawal ${r.ref} requested: ${kobo(r.amountKobo)} to ${r.to}. It's sent after a 12-hour check.`, 'money', ['earn']); render('earn'); } catch (er) { b.disabled = false; fail(er); } };
+        }
         return;
       }
       if (app === 'jobs') {

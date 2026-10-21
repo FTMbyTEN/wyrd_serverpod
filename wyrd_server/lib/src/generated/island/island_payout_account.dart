@@ -32,6 +32,8 @@ abstract class IslandPayoutAccount
     this.codeExpires,
     int? codeTries,
     required this.status,
+    this.dateOfBirth,
+    this.termsAcceptedAt,
     required this.createdAt,
     required this.updatedAt,
   }) : emailVerified = emailVerified ?? false,
@@ -52,6 +54,8 @@ abstract class IslandPayoutAccount
     DateTime? codeExpires,
     int? codeTries,
     required String status,
+    DateTime? dateOfBirth,
+    DateTime? termsAcceptedAt,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _IslandPayoutAccountImpl;
@@ -80,6 +84,16 @@ abstract class IslandPayoutAccount
             ),
       codeTries: jsonSerialization['codeTries'] as int?,
       status: jsonSerialization['status'] as String,
+      dateOfBirth: jsonSerialization['dateOfBirth'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(
+              jsonSerialization['dateOfBirth'],
+            ),
+      termsAcceptedAt: jsonSerialization['termsAcceptedAt'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(
+              jsonSerialization['termsAcceptedAt'],
+            ),
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -125,6 +139,12 @@ abstract class IslandPayoutAccount
   /// unverified (waiting for the email code) | verified | review (the names don't match: a person checks)
   String status;
 
+  /// for the age check (18 or older to withdraw)
+  DateTime? dateOfBirth;
+
+  /// when the player accepted the payout terms
+  DateTime? termsAcceptedAt;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -150,6 +170,8 @@ abstract class IslandPayoutAccount
     DateTime? codeExpires,
     int? codeTries,
     String? status,
+    DateTime? dateOfBirth,
+    DateTime? termsAcceptedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -171,6 +193,8 @@ abstract class IslandPayoutAccount
       if (codeExpires != null) 'codeExpires': codeExpires?.toJson(),
       'codeTries': codeTries,
       'status': status,
+      if (dateOfBirth != null) 'dateOfBirth': dateOfBirth?.toJson(),
+      if (termsAcceptedAt != null) 'termsAcceptedAt': termsAcceptedAt?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -194,6 +218,8 @@ abstract class IslandPayoutAccount
       if (codeExpires != null) 'codeExpires': codeExpires?.toJson(),
       'codeTries': codeTries,
       'status': status,
+      if (dateOfBirth != null) 'dateOfBirth': dateOfBirth?.toJson(),
+      if (termsAcceptedAt != null) 'termsAcceptedAt': termsAcceptedAt?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -245,6 +271,8 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
     DateTime? codeExpires,
     int? codeTries,
     required String status,
+    DateTime? dateOfBirth,
+    DateTime? termsAcceptedAt,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -262,6 +290,8 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
          codeExpires: codeExpires,
          codeTries: codeTries,
          status: status,
+         dateOfBirth: dateOfBirth,
+         termsAcceptedAt: termsAcceptedAt,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -285,6 +315,8 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
     Object? codeExpires = _Undefined,
     int? codeTries,
     String? status,
+    Object? dateOfBirth = _Undefined,
+    Object? termsAcceptedAt = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -303,6 +335,10 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
       codeExpires: codeExpires is DateTime? ? codeExpires : this.codeExpires,
       codeTries: codeTries ?? this.codeTries,
       status: status ?? this.status,
+      dateOfBirth: dateOfBirth is DateTime? ? dateOfBirth : this.dateOfBirth,
+      termsAcceptedAt: termsAcceptedAt is DateTime?
+          ? termsAcceptedAt
+          : this.termsAcceptedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -382,6 +418,18 @@ class IslandPayoutAccountUpdateTable
     value,
   );
 
+  _is.ColumnValue<DateTime, DateTime> dateOfBirth(DateTime? value) =>
+      _is.ColumnValue(
+        table.dateOfBirth,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> termsAcceptedAt(DateTime? value) =>
+      _is.ColumnValue(
+        table.termsAcceptedAt,
+        value,
+      );
+
   _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _is.ColumnValue(
         table.createdAt,
@@ -453,6 +501,14 @@ class IslandPayoutAccountTable extends _is.Table<int?> {
       'status',
       this,
     );
+    dateOfBirth = _is.ColumnDateTime(
+      'dateOfBirth',
+      this,
+    );
+    termsAcceptedAt = _is.ColumnDateTime(
+      'termsAcceptedAt',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -494,6 +550,12 @@ class IslandPayoutAccountTable extends _is.Table<int?> {
   /// unverified (waiting for the email code) | verified | review (the names don't match: a person checks)
   late final _is.ColumnString status;
 
+  /// for the age check (18 or older to withdraw)
+  late final _is.ColumnDateTime dateOfBirth;
+
+  /// when the player accepted the payout terms
+  late final _is.ColumnDateTime termsAcceptedAt;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime updatedAt;
@@ -514,6 +576,8 @@ class IslandPayoutAccountTable extends _is.Table<int?> {
     codeExpires,
     codeTries,
     status,
+    dateOfBirth,
+    termsAcceptedAt,
     createdAt,
     updatedAt,
   ];

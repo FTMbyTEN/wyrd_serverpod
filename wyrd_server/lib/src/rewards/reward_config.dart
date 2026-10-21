@@ -61,6 +61,20 @@ class RewardConfig {
   int get minWithdrawalKobo => int.tryParse(_env['PAYOUT_MIN_WITHDRAWAL_KOBO'] ?? '') ?? (sandbox ? 50000 : 1 << 62);
   int get payoutFeeKobo => int.tryParse(_env['PAYOUT_FEE_KOBO'] ?? '') ?? (sandbox ? 5000 : 0);
 
+  /// the most one withdrawal may be, and the most a player may withdraw in 24 hours (kobo)
+  int get maxWithdrawalKobo => int.tryParse(_env['PAYOUT_MAX_WITHDRAWAL_KOBO'] ?? '') ?? (sandbox ? 2500000 : 0);
+  int get dailyLimitKobo => int.tryParse(_env['PAYOUT_DAILY_LIMIT_KOBO'] ?? '') ?? (sandbox ? 5000000 : 0);
+
+  /// hours a withdrawal waits (for review: an operator may stop it) before the money is sent
+  int get reviewHours => int.tryParse(_env['PAYOUT_REVIEW_HOURS'] ?? '') ?? 0;
+
+  /// the youngest a player may be to withdraw
+  int get minAge => int.tryParse(_env['PAYOUT_MIN_AGE'] ?? '') ?? 18;
+
+  /// the provider to pay through (flutterwave), and the terms players accept before withdrawing
+  String get payoutProvider => (_env['PAYOUT_PROVIDER'] ?? '').trim();
+  String get termsUrl => (_env['PAYOUT_TERMS_URL'] ?? '').trim();
+
   /// who bears the payout fee: house (paid from the reserved fee allowance) or player (deducted from the payout)
   String get feePayer => _env['PAYOUT_FEE_PAYER'] ?? 'house';
 

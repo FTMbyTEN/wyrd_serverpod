@@ -3145,6 +3145,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'dateOfBirth': _is.ParameterDescription(
+              name: 'dateOfBirth',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -3157,6 +3162,7 @@ class Endpoints extends _is.EndpointDispatch {
                     params['accountNumber'],
                     params['legalName'],
                     params['email'],
+                    params['dateOfBirth'],
                   ),
         ),
         'payoutAccountVerify': _is.MethodConnector(
@@ -3187,6 +3193,70 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
                   .payoutAccountResend(session),
+        ),
+        'payoutAcceptTerms': _is.MethodConnector(
+          name: 'payoutAcceptTerms',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutAcceptTerms(session),
+        ),
+        'withdrawToBank': _is.MethodConnector(
+          name: 'withdrawToBank',
+          params: {
+            'amountKobo': _is.ParameterDescription(
+              name: 'amountKobo',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'requestKey': _is.ParameterDescription(
+              name: 'requestKey',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .withdrawToBank(
+                    session,
+                    params['amountKobo'],
+                    params['requestKey'],
+                  ),
+        ),
+        'payoutQueue': _is.MethodConnector(
+          name: 'payoutQueue',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutQueue(session),
+        ),
+        'payoutStop': _is.MethodConnector(
+          name: 'payoutStop',
+          params: {
+            'ref': _is.ParameterDescription(
+              name: 'ref',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutStop(
+                    session,
+                    params['ref'],
+                  ),
         ),
         'treasury2': _is.MethodConnector(
           name: 'treasury2',

@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 
 import '../mind/tick_schedule.dart';
 import 'funded_jobs.dart';
+import 'withdrawals.dart';
 
 /// The rewards housekeeping, every few minutes: cash past its hold becomes available, taken gigs past their deadline
 /// give their reservation back, and any completed gig whose game pay didn't land is paid. Each step is idempotent
@@ -9,7 +10,7 @@ import 'funded_jobs.dart';
 class RewardsFutureCall extends FutureCall {
   Future<void> tick(Session session) async {
     if (!TickSchedule.claim('rewards', TickSchedule.rewards)) return;
-    for (final (name, step) in [('mature', () => FundedJobs.matureDue(session)), ('expire', () => FundedJobs.expireDue(session)), ('repair', () => FundedJobs.repairGameRewards(session))]) {
+    for (final (name, step) in [('mature', () => FundedJobs.matureDue(session)), ('expire', () => FundedJobs.expireDue(session)), ('repair', () => FundedJobs.repairGameRewards(session)), ('submit', () => Withdrawals.submitDue(session)), ('reconcile', () => Withdrawals.reconcile(session))]) {
       try {
         final n = await step();
         if (n > 0) session.log('[rewards] $name: $n');
