@@ -760,6 +760,7 @@ class EndpointIsland extends _isc.EndpointRef {
     String room,
     String look,
     String car,
+    String key,
   ) => caller.callServerEndpoint<String>(
     'island',
     'tick',
@@ -773,6 +774,7 @@ class EndpointIsland extends _isc.EndpointRef {
       'room': room,
       'look': look,
       'car': car,
+      'key': key,
     },
   );
 
@@ -792,6 +794,7 @@ class EndpointIsland extends _isc.EndpointRef {
     String title,
     String artist,
     String art,
+    String key,
   ) => caller.callServerEndpoint<bool>(
     'island',
     'spin',
@@ -802,6 +805,7 @@ class EndpointIsland extends _isc.EndpointRef {
       'title': title,
       'artist': artist,
       'art': art,
+      'key': key,
     },
   );
 
@@ -809,12 +813,14 @@ class EndpointIsland extends _isc.EndpointRef {
   _ida.Future<void> say(
     String id,
     String text,
+    String key,
   ) => caller.callServerEndpoint<void>(
     'island',
     'say',
     {
       'id': id,
       'text': text,
+      'key': key,
     },
   );
 }

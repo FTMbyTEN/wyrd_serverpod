@@ -171,11 +171,21 @@ abstract final class Withdrawals {
   static Future<int> reconcile(Session s, {String? onlyRef}) async {
     final rows = onlyRef != null
         ? await RewardWithdrawal.db.find(s, where: (t) => t.ref.equals(onlyRef))
-        : await RewardWithdrawal.db.find(s, where: (t) => t.status.inSet({PayoutState.submitted, PayoutState.pending, PayoutState.unknown}) & (t.updatedAt < DateTime.now().toUtc().subtract(const Duration(minutes: 5))), limit: 30);
+        : [
+            ...await RewardWithdrawal.db.find(s, where: (t) => t.status.inSet({PayoutState.submitted, PayoutState.pending, PayoutState.unknown}) & (t.updatedAt < DateTime.now().toUtc().subtract(const Duration(minutes: 5))), limit: 30),
+            // paid in the last two weeks: a bank can still send one back, so look again now and then (the oldest-checked first)
+            ...await RewardWithdrawal.db.find(s, where: (t) => t.status.equals(PayoutState.paid) & (t.updatedAt > DateTime.now().toUtc().subtract(const Duration(days: 14))) & (t.updatedAt < DateTime.now().toUtc().subtract(const Duration(hours: 6))), orderBy: (t) => t.updatedAt, limit: 10),
+          ];
     var n = 0;
     for (final w in rows) {
       if (!PayoutState.isInFlight(w.status) && w.status != PayoutState.paid) continue;
-      final st = await provider.status(ref: w.ref, providerRef: w.providerRef);
+      var st = await provider.status(ref: w.ref, providerRef: w.providerRef);
+      // a paid transfer the provider now calls failed has come back from the bank
+      if (w.status == PayoutState.paid && st == PayoutState.failed) st = PayoutState.returned;
+      if (w.status == PayoutState.paid && st == PayoutState.paid) {
+        await RewardWithdrawal.db.updateRow(s, w.copyWith(updatedAt: DateTime.now().toUtc())); // checked: back of the queue
+        continue;
+      }
       if (st == null || st == w.status || !PayoutState.canMove(w.status, st)) continue;
       await _move(s, w, st, actor: 'provider:${provider.name}');
       n++;

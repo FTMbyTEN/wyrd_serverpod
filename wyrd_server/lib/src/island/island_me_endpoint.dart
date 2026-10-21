@@ -11,6 +11,7 @@ import '../world/bank.dart';
 import '../world/world_authority.dart';
 import 'grid_career.dart';
 import 'island_auth_endpoint.dart';
+import 'island_endpoint.dart';
 import 'island_payout.dart';
 import '../rewards/funded_jobs.dart';
 import '../rewards/reward_config.dart';
@@ -221,6 +222,8 @@ class IslandMeEndpoint extends Endpoint {
     'okada': (pay: 1800, minutes: 4, memo: 'Okada rides'),
   };
   static const dailyCap = 35000;
+  /// the most one player can send to others in 24 hours
+  static const sendDaily = 20000;
 
   static Future<int> _earnedToday(Session s, UuidValue u) async {
     final day = DateTime.now().toUtc().add(const Duration(hours: 1));
@@ -256,6 +259,11 @@ class IslandMeEndpoint extends Endpoint {
       return _err(
         'You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.',
       );
+    // the work is being here: on the island, moving about, for the shift's length (a tap alone pays nothing)
+    final me = await _profile(session, u);
+    final (mins, moved) = IslandEndpoint.activity(me.handle);
+    if (mins < sh.minutes) return _err('Stay on the island and keep working: a shift here is ${sh.minutes} minutes (you\'ve been here ${mins.floor()}).');
+    if (moved < 150) return _err('Get moving: walk or ride around the area to work your shift.');
     final pay = min(sh.pay, dailyCap - earned);
     final bucket =
         DateTime.now().millisecondsSinceEpoch ~/ (sh.minutes * 60000);
@@ -272,6 +280,7 @@ class IslandMeEndpoint extends Endpoint {
       return _err(
         'Your shift here is done. The next one starts in a few minutes.',
       );
+    IslandEndpoint.paidShift(me.handle);
     final c = await Bank.fresh(session, u);
     return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
   });
@@ -410,6 +419,11 @@ class IslandMeEndpoint extends Endpoint {
     if (to == null) return _err('Nobody on the island by that name.');
     if (to.authUserId == u) return _err('That\'s you.');
     final me = await _profile(session, u);
+    // new accounts can't send, and each sender has a daily limit, so a crowd of new accounts can't funnel naira to one
+    if (DateTime.now().toUtc().difference(me.createdAt) < const Duration(days: 3)) return _err('Sending naira opens after your first 3 days on the island.');
+    final dayAgo = DateTime.now().toUtc().subtract(const Duration(hours: 24));
+    final sent = (await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.key.like('island:send:%:out') & (t.createdAt > dayAgo))).fold<int>(0, (a, e) => a - e.amount);
+    if (sent + amount > sendDaily) return _err('You can send up to ₦${_n(sendDaily)} a day (₦${_n(max(0, sendDaily - sent))} left today).');
     await WorldAuthority.citizen(session, to.authUserId);
     final id =
         '${DateTime.now().microsecondsSinceEpoch}${_rnd.nextInt(1 << 16)}';

@@ -1384,6 +1384,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -1400,6 +1405,7 @@ class Endpoints extends _is.EndpointDispatch {
                 params['room'],
                 params['look'],
                 params['car'],
+                params['key'],
               ),
         ),
         'online': _is.MethodConnector(
@@ -1445,6 +1451,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -1458,6 +1469,7 @@ class Endpoints extends _is.EndpointDispatch {
                 params['title'],
                 params['artist'],
                 params['art'],
+                params['key'],
               ),
         ),
         'say': _is.MethodConnector(
@@ -1473,6 +1485,11 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<String>(),
               nullable: false,
             ),
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -1482,6 +1499,7 @@ class Endpoints extends _is.EndpointDispatch {
                 session,
                 params['id'],
                 params['text'],
+                params['key'],
               ),
         ),
       },

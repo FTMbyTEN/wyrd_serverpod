@@ -37,6 +37,50 @@ class IslandEndpoint extends Endpoint {
   }
 
   static bool _okId(String id) => RegExp(r'^[a-zA-Z0-9_-]{8,40}$').hasMatch(id);
+  static bool _okKey(String k) => RegExp(r'^[a-zA-Z0-9]{24,64}$').hasMatch(k);
+
+  /// The player [id] belongs to the browser holding its [key] (set on its first tick): a tick, a line of chat or a song
+  /// with someone else's id is ignored, so nobody can move, speak or DJ as another player.
+  static _Player? _owned(String id, String key) {
+    final p = _players[id];
+    return p != null && p.key == key ? p : null;
+  }
+
+  /// the island names of signed-in players, by account (looked up once, kept 10 minutes)
+  static final _handles = <String, (String, DateTime)>{};
+  /// signed-in players on the island now, by island name (lower case): on since, last seen, and metres moved since their
+  /// last paid shift. Shifts pay only someone actually here, moving about, for the length of the shift.
+  static final _presence = <String, ({DateTime since, DateTime last, double moved, double x, double z})>{};
+  static void _seen(String handle, double x, double z) {
+    final k = handle.toLowerCase(), now = DateTime.now(), p = _presence[k];
+    final cont = p != null && now.difference(p.last) < const Duration(seconds: 30);
+    final step = cont ? sqrt(pow(x - p.x, 2) + pow(z - p.z, 2)) : 0.0;
+    _presence[k] = (since: cont ? p.since : now, last: now, moved: (cont ? p.moved : 0) + (step < 80 ? step : 0), x: x, z: z);
+  }
+
+  /// (minutes on the island without a break, metres moved since the last paid shift) for [handle]
+  static (double, double) activity(String handle) {
+    final p = _presence[handle.toLowerCase()];
+    if (p == null || DateTime.now().difference(p.last) > const Duration(seconds: 30)) return (0, 0);
+    return (DateTime.now().difference(p.since).inSeconds / 60, p.moved);
+  }
+
+  /// a shift was paid: the walking starts again from nothing
+  static void paidShift(String handle) {
+    final k = handle.toLowerCase(), p = _presence[k];
+    if (p != null) _presence[k] = (since: p.since, last: p.last, moved: 0, x: p.x, z: p.z);
+  }
+
+  static Future<String?> _handleOf(Session s) async {
+    final a = s.authenticated;
+    if (a == null) return null;
+    final u = a.userIdentifier, hit = _handles[u];
+    if (hit != null && DateTime.now().difference(hit.$2) < const Duration(minutes: 10)) return hit.$1;
+    final p = await IslandProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(UuidValue.fromString(u)));
+    if (p == null) return null;
+    _handles[u] = (p.handle, DateTime.now());
+    return p.handle;
+  }
 
   /// The housing register, public: which homes in the island's estates are lived in. Only the plots, never who owns them,
   /// so anyone (a guest too) sees the same real count. Read fresh from the homes table, cached for 10 seconds.
@@ -86,15 +130,23 @@ class IslandEndpoint extends Endpoint {
     String room,
     String look,
     String car,
+    String key,
   ) async {
     final now = DateTime.now();
     _players.removeWhere((_, p) => now.difference(p.seen) > _fade);
-    if (!_okId(id) || !x.isFinite || !z.isFinite) {
+    final taken = _players[id];
+    if (!_okId(id) || !_okKey(key) || (taken != null && taken.key != key) || !x.isFinite || !z.isFinite) {
       return jsonEncode({'online': _players.length, 'players': [], 'chat': [], 'seq': _seq});
     }
-    final me = _players.putIfAbsent(id, () => _Player(id));
+    // the name others see is the account's own island name; a guest is "Guest" and four characters of their id, so no
+    // one can wear someone else's name
+    final handle = await _handleOf(session);
+    final me = _players.putIfAbsent(id, () => _Player(id, key));
     me
-      ..name = _clean(name, 24).isEmpty ? 'Lagosian' : _clean(name, 24)
+      ..name = handle ?? 'Guest ${id.substring(id.length - 4).toUpperCase()}'
+      ..verified = handle != null;
+    if (handle != null && me.room.isEmpty) _seen(handle, me.x, me.z);
+    me
       ..color = RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(color) ? color : '#C4572E'
       ..x = x.clamp(-60000, 60000).toDouble()
       ..z = z.clamp(-60000, 60000).toDouble()
@@ -106,12 +158,12 @@ class IslandEndpoint extends Endpoint {
     final near = [
       for (final p in _players.values)
         if (p.id != id && p.room == me.room && (me.room.isNotEmpty || dist(p.x, p.z) < _near))
-          {'id': p.id, 'name': p.name, 'color': p.color, 'x': p.room.isEmpty ? p.x.round() : (p.x * 10).round() / 10, 'z': p.room.isEmpty ? p.z.round() : (p.z * 10).round() / 10, 'look': p.look},
+          {'id': p.id, 'name': p.name, 'v': p.verified, 'color': p.color, 'x': p.room.isEmpty ? p.x.round() : (p.x * 10).round() / 10, 'z': p.room.isEmpty ? p.z.round() : (p.z * 10).round() / 10, 'look': p.look},
     ];
     final heard = [
       for (final l in _chat)
         if (l.seq > since && (l.id == id || (l.room == me.room && (me.room.isNotEmpty || dist(l.x, l.z) < _hear))))
-          {'seq': l.seq, 'id': l.id, 'name': l.name, 'color': l.color, 'text': l.text},
+          {'seq': l.seq, 'id': l.id, 'name': l.name, 'v': l.verified, 'color': l.color, 'text': l.text},
     ];
     // the cars parked outside each building: one per person inside who drove there
     final parked = <String, List<String>>{};
@@ -153,8 +205,8 @@ class IslandEndpoint extends Endpoint {
 
   /// Take the decks: the DJ, standing in a club, plays a song on its speakers for everyone. [url] must be a stream from
   /// the two catalogues Island Music uses (Audius, Deezer previews). An empty [url] hands the decks back.
-  Future<bool> spin(Session session, String id, String club, String url, String title, String artist, String art) async {
-    final p = _players[id];
+  Future<bool> spin(Session session, String id, String club, String url, String title, String artist, String art, String key) async {
+    final p = _owned(id, key);
     if (p == null || !club.startsWith('place:club:') || p.room != club) return false;
     final held = _decks[club];
     if (held != null && held.by != id && _players[held.by]?.room == club) return false; // someone else is on the decks
@@ -170,20 +222,24 @@ class IslandEndpoint extends Endpoint {
   }
 
   /// A line of chat, heard by the people near the speaker.
-  Future<void> say(Session session, String id, String text) async {
-    final p = _players[id];
+  Future<void> say(Session session, String id, String text, String key) async {
+    final p = _owned(id, key);
     final t = _clean(text, 140);
     if (p == null || t.isEmpty) return;
     final now = DateTime.now();
     if (now.difference(p.lastSaid) < const Duration(milliseconds: 800)) return; // no flooding
     p.lastSaid = now;
-    _chat.add(_Line(++_seq, p.id, p.name, p.color, t, p.x, p.z, p.room));
+    _chat.add(_Line(++_seq, p.id, p.name, p.color, t, p.x, p.z, p.room, p.verified));
     if (_chat.length > _keepChat) _chat.removeRange(0, _chat.length - _keepChat);
   }
 }
 
 class _Player {
   final String id;
+  /// the private key of the browser this player belongs to
+  final String key;
+  /// signed in: [name] is their account's island name
+  bool verified = false;
   String name = 'Lagosian';
   String color = '#C4572E';
   double x = 0, z = 0;
@@ -195,14 +251,15 @@ class _Player {
   String car = '';
   DateTime seen = DateTime.now();
   DateTime lastSaid = DateTime.fromMillisecondsSinceEpoch(0);
-  _Player(this.id);
+  _Player(this.id, this.key);
 }
 
 class _Line {
   final int seq;
   final String id, name, color, text, room;
   final double x, z;
-  _Line(this.seq, this.id, this.name, this.color, this.text, this.x, this.z, this.room);
+  final bool verified;
+  _Line(this.seq, this.id, this.name, this.color, this.text, this.x, this.z, this.room, this.verified);
 }
 
 class _Deck {

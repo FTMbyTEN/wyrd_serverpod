@@ -6723,6 +6723,7 @@
   // ---- you
   const COLORS = ['#22B573', '#FF7A45', '#3B82F6', '#A855F7', '#F59E0B', '#EC4899'];
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+  const ikey = store.get('li.key') || (() => { const a = new Uint8Array(24); crypto.getRandomValues(a); const v = [...a].map((b) => (b % 36).toString(36)).join('') + Date.now().toString(36); store.set('li.key', v); return v; })(); // proves this browser owns its id
   const id = store.get('li.id') || (() => { const v = 'p' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); store.set('li.id', v); return v; })();
   let myLook = store.get('li.look') || [Math.random() < 0.5 ? 'm' : 'f', Math.floor(Math.random() * 6), Math.floor(Math.random() * 4), Math.floor(Math.random() * 4), Math.floor(Math.random() * 5)].join(',');
   let pose = null; // { kind: 'sit' | 'sleep', x, z } inside a building
@@ -6973,8 +6974,12 @@
     while (logEl.children.length > 4) logEl.firstChild.remove();
     setTimeout(() => d.remove(), 20000);
   }
+  // the island's shared calls: signed in, the account goes with them (so your name above you is your own); a stale
+  // sign-in is tried once more as a guest
   async function call(method, args) {
-    const r = await fetch(`${API}/island/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+    let tk = null; try { tk = localStorage.getItem('wyrd_sp_access_token'); } catch { }
+    const send = (auth) => fetch(`${API}/island/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(auth ? { Authorization: 'Bearer ' + auth } : {}) }, body: JSON.stringify(args) });
+    let r = await send(tk); if (tk && (r.status === 401 || r.status === 403)) r = await send(null);
     if (!r.ok) throw new Error(r.status);
     const t = await r.text(); if (!t) return null;
     const v = JSON.parse(t); return typeof v === 'string' ? JSON.parse(v) : v;
@@ -7050,7 +7055,7 @@
     if (still && alone && performance.now() - (tick.at || 0) < 3000) return;
     tick.busy = true; tick.at = performance.now(); tick.x = me.x; tick.z = me.z;
     try {
-      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar });
+      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar, key: ikey });
       document.getElementById('count').textContent = r.online;
       if (r.decks) cityDecks(r.decks); // what each club DJ is playing
       if (r.newcomers) NEWCOMERS.set = new Set(r.newcomers.map((v) => String(v).toLowerCase()));
@@ -7086,7 +7091,7 @@
     const t = sayText.value.trim(); sayText.value = ''; sayForm.style.display = 'none'; sayText.blur();
     if (!t) return;
     bubbles.set('me', { text: t, until: performance.now() + 7000 });
-    try { await call('say', { id, text: t }); } catch {}
+    try { await call('say', { id, text: t, key: ikey }); } catch {}
   });
   sayText.addEventListener('keydown', (e) => { if (e.key === 'Escape') { sayForm.style.display = 'none'; sayText.blur(); } });
 
@@ -7649,11 +7654,11 @@
     const room = CITY.dj, s = clubSrc(room); if (!room || !s || !song) return;
     deckPlay(s, { ...song, dj: myName || 'You', local: true }, 0);
     MP.a.pause();
-    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) tickerSay('Someone else is on the decks here right now'); }
+    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '', key: ikey }); if (ok === false) tickerSay('Someone else is on the decks here right now'); }
     catch { tickerSay('Couldn\'t start your set here. Try again.'); }
   }
   function djNext() { if (!MP.q.length) return; MP.i = (MP.i + 1) % MP.q.length; djSpin(MP.q[MP.i]); }
-  function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '' }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
+  function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '', key: ikey }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
   setInterval(() => {
     if (CITY.dj && (!inside || inside.key !== CITY.dj)) djLeave(); // you walked out: the resident takes over
     const inClub = inside && inside.kind === 'club';

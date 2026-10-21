@@ -60,6 +60,7 @@ class FlutterwavePayoutProvider implements PayoutProvider {
     return switch ('${d['status']}'.toUpperCase()) {
       'SUCCESSFUL' => PayoutState.paid,
       'FAILED' || 'CANCELLED' => PayoutState.failed,
+      'REVERSED' || 'RETURNED' || 'REFUNDED' => PayoutState.returned,
       'NEW' || 'PENDING' || 'INITIATED' => PayoutState.pending,
       _ => null,
     };
