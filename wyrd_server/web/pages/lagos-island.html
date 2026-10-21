@@ -7101,16 +7101,17 @@
   }
   // reads the phone makes over and over: kept 20 s and shared while in flight, so opening an app again (or two parts of
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
-  const MY_READS = new Set(['room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
+  const MY_READS = new Set(['topUpInfo', 'payoutAccount', 'room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
   const MY_QUIET = new Set(['live', 'typing', 'read', 'messages', 'wake']); // chat traffic that changes nothing the cache holds
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
   async function my(method, args = {}) {
-    if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) MY_CACHE.clear(); return myNet(method, args); }
-    const key = method + JSON.stringify(args), hit = MY_CACHE.get(key);
-    if (hit && performance.now() - hit.at < 60000) return hit.p;
-    const pr = myNet(method, args); MY_CACHE.set(key, { at: performance.now(), p: pr }); pr.catch(() => MY_CACHE.delete(key));
-    return pr;
+    if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) { MY_CACHE.clear(); const pr = myNet(method, args); pr.finally(() => { if (signedIn()) { my('me').catch(() => {}); my('receipts').catch(() => {}); } }); return pr; } return myNet(method, args); }
+    const key = method + JSON.stringify(args), hit = MY_CACHE.get(key), age = hit ? performance.now() - hit.at : Infinity;
+    if (hit && age < 60000) return hit.p;
+    const fetchIt = () => { const pr = myNet(method, args), e = { at: performance.now(), p: pr }; pr.then(() => (e.ok = true), () => { if (MY_CACHE.get(key) === e) MY_CACHE.delete(key); }); return { e, pr }; };
+    if (hit && hit.ok && age < 15 * 60000) { if (!hit.busy) { hit.busy = true; const { e, pr } = fetchIt(); pr.then(() => MY_CACHE.set(key, e), () => (hit.busy = false)); } return hit.p; } // shown now, fresh behind
+    const { e, pr } = fetchIt(); MY_CACHE.set(key, e); return pr;
   }
   async function myNet(method, args = {}) {
     const wait = method === 'live' || method === 'wake' ? 30000 : 15000;
@@ -8057,9 +8058,18 @@
     } catch {}
   }
   if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', (m) => { if (m.data && m.data.type === 'open-phone' && signedIn()) openPhone('chats'); });
+  // the data every app opens with: fetched once you're in, then every 50 s while the game is in front, so opening an app
+  // (Wallet, Link, People, Jobs, Homes, Garage, the Grid, the Arena, Buy naira, Bank account) needs no wait
+  const PRELOAD = [['me', {}], ['receipts', {}], ['friends', {}], ['homes', {}], ['jobs', {}], ['myCars', {}], ['gridCareer', {}], ['shows', {}], ['topUpInfo', {}], ['payoutAccount', {}], ['people', { query: '' }], ['hqRow', {}]];
+  function preloadApps() {
+    if (!signedIn()) return;
+    for (const [m, a] of PRELOAD) my(m, a).catch(() => {});
+    my('inbox', { seenJson: JSON.stringify(linkSeen()) }).catch(() => {});
+  }
+  setInterval(() => { if (signedIn() && !document.hidden && me$) preloadApps(); }, 50000);
   async function warmUp() {
     if (!signedIn() || (me$ && keyed)) return;
-    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); wakeLoop(); pushSetup(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); for (const [m, a] of [['receipts', {}], ['friends', {}], ['homes', {}], ['inbox', { seenJson: JSON.stringify(linkSeen()) }]]) my(m, a).catch(() => {}); } catch {}
+    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); wakeLoop(); pushSetup(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); preloadApps(); } catch {}
   }
   setTimeout(warmUp, 1200);
   // ================= WYRD OS 2 =================
@@ -8254,7 +8264,7 @@
         return;
       }
       if (app === 'wallet') {
-        await loadMe(); const r = await my('receipts');
+        const [, r] = await Promise.all([loadMe(), my('receipts')]);
         // the balance up top, quick actions, a send panel that opens when you want it, where to earn, then receipts with icons
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap));
         const icon = (m, a) => /ride|okada/i.test(m) ? '🛵' : /casino/i.test(m) ? '🎰' : /home store/i.test(m) ? '🛋️' : /bought a/i.test(m) ? '🔑' : /ticket/i.test(m) ? '🎟️' : /^to |^from /i.test(m) ? '↔️' : a > 0 ? '💼' : '🧾';
