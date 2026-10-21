@@ -1672,8 +1672,17 @@
   let zoomCap = 1.5; // a phone's drawing resolution: 1.5x, 2x zoomed in, 2.5x up close (never past the screen's own)
   const cvMain = cv.getContext('2d');
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
-  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? zoomCap : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
+  // laptops and desktops: Performance (quick settings) is Auto, Smooth (lighter, a steady 30 fps) or Sharp (full detail).
+  // Auto draws a weaker machine (8 threads or fewer, 8 GB or less) at 1.5x at most, drops to 30 fps on battery or when
+  // frames keep running slow, and lowers the resolution further (to 0.6x) before it lets the island stutter
+  const PERF = { mode: (() => { try { return localStorage.getItem('li.perf') || 'auto'; } catch { return 'auto'; } })(), battery: false, cap30: false };
+  const WEAK = (navigator.hardwareConcurrency || 8) <= 8 || (navigator.deviceMemory || 8) <= 8;
+  if (navigator.getBattery) navigator.getBattery().then((b) => { const upd = () => { PERF.battery = !b.charging; }; upd(); b.addEventListener('chargingchange', upd); }).catch(() => {});
+  const deskCap = () => PERF.mode === 'smooth' ? 1 : PERF.mode === 'sharp' ? 2 : WEAK ? 1.5 : 2;
+  const thirty = () => MOBILE || PERF.mode === 'smooth' || (PERF.mode === 'auto' && (PERF.battery || PERF.cap30));
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 0.6, Math.min(MOBILE ? zoomCap : deskCap(), devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
+  if (!MOBILE) setTimeout(() => { try { if (localStorage.getItem('li.laptopNote') === '1') return; localStorage.setItem('li.laptopNote', '1'); } catch { return; } notify('💻 Laptop update: Lagos Island now runs smoother on laptops. It adjusts itself, and saves battery when you are unplugged. Change it any time: your passport → Performance (Auto, Smooth or Sharp).', 'link'); }, 9000);
   { let seaCol = ''; const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
     const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; seaCol = col; document.documentElement.style.background = document.body.style.background = col; if (meta && meta.content !== '#3A86C8') meta.content = '#3A86C8'; }; // the bar behind the clock: one solid sea blue
     setTimeout(seaBg, 0); setInterval(seaBg, 20000);
@@ -1709,7 +1718,7 @@
       const A = [['wallet', 'Wallet', 'bank', 'linear-gradient(135deg,#0EA5E9,#6366F1)', 0], ['chats', 'Link', 'chat', 'linear-gradient(135deg,#34D399,#0EA5E9)', unread], ['people', 'People', 'users', 'linear-gradient(135deg,#38BDF8,#818CF8)', fr.incoming.length], ['homes', 'Homes', 'home', 'linear-gradient(135deg,#FB923C,#EF4444)', 0],
         ['garage', 'Garage', 'car', 'linear-gradient(135deg,#64748B,#0F172A)', 0], ['airport', 'Airport', 'plane', 'linear-gradient(135deg,#22D3EE,#3B82F6)', 0], ['jobs', 'Jobs', 'work', 'linear-gradient(135deg,#FBBF24,#F97316)', 0], ['fashion', 'Wardrobe', 'bag', 'linear-gradient(135deg,#F472B6,#A855F7)', 0],
         ['ride', 'Ride', 'go', 'linear-gradient(135deg,#2DD4BF,#0891B2)', 0], ['grid', 'The Grid', 'spark', 'linear-gradient(135deg,#FACC15,#EAB308)', 0], ['music', 'Music', 'trend', 'linear-gradient(135deg,#EC4899,#8B5CF6)', 0], ['wyrd', 'WYRD', 'shield', 'linear-gradient(135deg,#6366F1,#0EA5E9)', 0]];
-      const T2 = [['mode', osMode === 'light' ? 'Light' : 'Dark', 'Appearance', osMode === 'light'], ['alerts', 'Alerts', HUP.on ? 'On' : 'Silent', HUP.on], ['sound', 'City sound', CITY.on ? 'On' : 'Off', CITY.on], ['3d', '3D models', G3.on ? 'On' : 'Off', G3.on]];
+      const T2 = [['mode', osMode === 'light' ? 'Light' : 'Dark', 'Appearance', osMode === 'light'], ['alerts', 'Alerts', HUP.on ? 'On' : 'Silent', HUP.on], ['sound', 'City sound', CITY.on ? 'On' : 'Off', CITY.on], ['3d', '3D models', G3.on ? 'On' : 'Off', G3.on], ...(MOBILE ? [] : [['perf', 'Performance', { auto: 'Auto', smooth: 'Smooth · 30 fps', sharp: 'Sharp' }[PERF.mode], PERF.mode !== 'sharp']])];
       el.innerHTML = `<div class="phd"><button class="px" aria-label="Close">✕</button><div class="pme">${avatar(me$.handle)}<div><b>@${esc(me$.handle)}</b><small>${pf && pf.since ? 'Lagosian since ' + sinceStr(pf.since) : 'Lagosian'} · now in ${esc(sector.name)}</small></div></div>
           <div class="ptags">${careers.slice(0, 2).map((c) => `<span>${pi('work')}${esc(c)}</span>`).join('')}${pf && pf.jet ? `<span>${pi('plane')}${esc(pf.jet)}</span>` : ''}<span>${pi('users')}${fr.friends.length} friend${fr.friends.length === 1 ? '' : 's'}</span><span>${wx.icon} ${wx.temp}° Lagos</span></div></div>
         <div class="pbody">
@@ -1730,6 +1739,7 @@
         else if (k === 'alerts') { HUP.on = !HUP.on; store.set('li.alerts', HUP.on ? 'on' : 'off'); }
         else if (k === 'sound') { const tc = document.querySelector('#topR [data-city], #tCity'); if (tc) tc.click(); else { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); } }
         else if (k === '3d') G3.on = !G3.on;
+        else if (k === 'perf') { PERF.mode = { auto: 'smooth', smooth: 'sharp', sharp: 'auto' }[PERF.mode]; try { localStorage.setItem('li.perf', PERF.mode); } catch {} quality = 1; PERF.cap30 = false; resize(); }
         else if (k === 'hqset') { closePass(); return openPhone('hq'); }
         else if (k === 'share') { const url = location.origin + location.pathname, t = `Find me on Lagos Island: @${me$.handle}`; try { if (navigator.share) await navigator.share({ title: 'Lagos Island', text: t, url }); else { await navigator.clipboard.writeText(t + ' ' + url); tickerSay('Invite copied'); } } catch {} return; }
         draw(pf, extra); }));
@@ -7283,14 +7293,18 @@
   const phoneEl0 = document.getElementById('phone');
   function frame(t) {
     // on a phone: a steady 30 frames a second (half the work, and smoother than a stuttering 60)
-    if (MOBILE && t - (frame.drawn || 0) < 31) { requestAnimationFrame(frame); return; }
+    if (thirty() && t - (frame.drawn || 0) < 31) { requestAnimationFrame(frame); return; }
     frame.drawn = t;
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
     if (document.hidden) { requestAnimationFrame(frame); return; }
     // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
-    if (dt > (MOBILE ? 0.048 : 0.045)) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
-    if (slow > (MOBILE ? 30 : 90) && quality > (MOBILE ? 0.6 : 0.85)) { quality = Math.max(MOBILE ? 0.6 : 0.85, quality - 0.075); slow = 0; resize(); }
+    const at30 = thirty(), late = at30 ? 0.048 : 0.024; // a frame that missed its slot (60 fps: 17 ms; 30 fps: 33 ms)
+    if (dt > late) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    const floor = MOBILE ? 0.6 : PERF.mode === 'sharp' ? 0.85 : 0.6;
+    if (slow > (MOBILE ? 30 : 40) && quality > floor) { quality = Math.max(floor, quality - 0.1); slow = 0; resize(); }
+    else if (!MOBILE && PERF.mode === 'auto' && !PERF.cap30 && slow > 40 && quality <= floor) { PERF.cap30 = true; slow = 0; } // still slow at the lowest resolution: 30 fps
     if (fast > 300 && quality < 1) { quality = Math.min(1, quality + 0.075); fast = 0; resize(); }
+    if (!MOBILE && PERF.cap30 && quality >= 1 && fast > 280) PERF.cap30 = false;
     if (MOBILE) { const z = cam.zoom * cam.user, want = z > 2.2 ? 2.5 : z > 1.5 ? 2 : 1.5; if (want !== zoomCap) { zoomCap = want; resize(); } }
     if (playing) {
       let ix = stick.x, iz = stick.z;
