@@ -3054,6 +3054,16 @@ class Endpoints extends _is.EndpointDispatch {
                     params['returnTo'],
                   ),
         ),
+        'treasury2': _is.MethodConnector(
+          name: 'treasury2',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .treasury2(session),
+        ),
         'topUpCheck': _is.MethodConnector(
           name: 'topUpCheck',
           params: {

@@ -2425,6 +2425,13 @@ class IslandMeEndpoint extends Endpoint {
     }
   }
 
+  /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
+  Future<String> treasury2(Session session) async {
+    final u = _user(session);
+    if (!await DroneService.isOperator(session, u)) return _err('Operators only.');
+    return jsonEncode(await TopUp.treasury2(session));
+  }
+
   /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
   Future<String> topUpCheck(Session session, String ref) async {
     final u = _user(session);

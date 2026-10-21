@@ -123,6 +123,15 @@ abstract final class TopUp {
     return {'status': 'paid', 'naira': row.naira};
   }
 
+  static const reserveShare = 0.5;
+
+  /// Treasury 2: what players have paid in real naira, and the half of it kept for paychecks.
+  static Future<Map<String, dynamic>> treasury2(Session s) async {
+    final rows = await s.db.unsafeQuery('SELECT COALESCE(SUM("amountNgn"), 0), COUNT(*) FROM "island_topup" WHERE "status" = \'paid\'');
+    final paid = (rows.first[0] as num).toInt(), n = (rows.first[1] as num).toInt();
+    return {'mode': mode(s), 'payments': n, 'paidNgn': paid, 'reserveNgn': (paid * reserveShare).floor(), 'share': reserveShare};
+  }
+
   static Map<String, dynamic> _json(String b) {
     try {
       final v = jsonDecode(b);

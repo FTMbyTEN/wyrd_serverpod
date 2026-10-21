@@ -51,6 +51,13 @@ class Bank {
   };
   static const debtCap = 10000;
 
+  /// Every movement of game naira pays [taxRate] to the city treasury (Treasury 1): money in arrives that much lighter,
+  /// money out costs that much more. Not taxed: opening balances, refunds, payment plans, the tax itself, naira bought
+  /// with real money (a pack gives exactly what was paid for), and the treasury's own forgiveness/credit entries.
+  static const taxRate = 0.02;
+  static const _untaxed = {'open', 'refund', 'plan', 'tax', 'topup', 'credit', 'forgiven'};
+  static int taxOn(int amount, String kind) => amount == 0 || _untaxed.contains(kind) ? 0 : ((amount.abs() * taxRate).ceil()).clamp(1, 1 << 30);
+
   /// the kinds of entry that are payouts a plan takes its fifth from
   static const _earned = {'job', 'mission', 'guide', 'place', 'story'};
 
@@ -82,8 +89,9 @@ class Bank {
           transaction: tx,
         );
         if (done != null) return BankResult.ok(done, repeat: true);
-        if (before + amount < 0)
-          return BankResult.short(-(before + amount), before);
+        final tax = taxOn(amount, kind);
+        if (before + amount - tax < 0)
+          return BankResult.short(-(before + amount - tax), before);
         final now = DateTime.now().toUtc();
         // the first movement: what they had before the ledger, on the books
         final any = await NairaEntry.db.findFirstRow(
@@ -107,7 +115,7 @@ class Bank {
             transaction: tx,
           );
         }
-        final after = before + amount;
+        final gross = before + amount, after = gross - tax;
         await session.db.unsafeExecute(
           'UPDATE "world_citizen" SET "naira" = @n, "updatedAt" = @t WHERE "authUserId" = CAST(@u AS uuid)',
           parameters: QueryParameters.named({
@@ -123,7 +131,7 @@ class Bank {
             key: key,
             authUserId: user,
             amount: amount,
-            balanceAfter: after,
+            balanceAfter: gross,
             kind: kind,
             counter: counter,
             memo: memo,
@@ -131,6 +139,22 @@ class Bank {
           ),
           transaction: tx,
         );
+        if (tax > 0) {
+          await NairaEntry.db.insertRow(
+            session,
+            NairaEntry(
+              key: '$key:tax',
+              authUserId: user,
+              amount: -tax,
+              balanceAfter: after,
+              kind: 'tax',
+              counter: 'city:treasury',
+              memo: 'Tax (2%) to the treasury',
+              createdAt: now,
+            ),
+            transaction: tx,
+          );
+        }
         // a payout while something's owed: a fifth of it to the plan
         if (amount > 0 && debt > 0 && _earned.contains(kind)) {
           final repay = [

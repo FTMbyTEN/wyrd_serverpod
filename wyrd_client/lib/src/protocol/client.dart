@@ -1606,6 +1606,13 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
+  _ida.Future<String> treasury2() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'treasury2',
+    {},
+  );
+
   /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
   _ida.Future<String> topUpCheck(String ref) =>
       caller.callServerEndpoint<String>(

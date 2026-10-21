@@ -1158,6 +1158,10 @@
   #flwGo { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(248,250,252,.96); font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; text-align: center; }
   #flwGo i { display: block; width: 46px; height: 46px; margin: 0 auto 14px; border-radius: 50%; border: 4px solid #E2E8F0; border-top-color: #F5A623; animation: flwSpin .8s linear infinite; } #flwGo b { display: block; font: 800 17px 'Plus Jakarta Sans', sans-serif; } #flwGo small { display: block; margin-top: 4px; font: 600 13px 'Plus Jakarta Sans', sans-serif; color: #64748B; }
   @keyframes flwSpin { to { transform: rotate(360deg); } }
+  #w4sheet .rcpt { text-align: center; padding-top: 6px; } #w4sheet .rcpt .ic2 { width: 52px; height: 52px; margin: 0 auto 8px; border-radius: 16px; display: grid; place-items: center; font-size: 24px; background: rgba(148,163,184,.14); } #w4sheet .rcpt .ic2.in { background: rgba(34,197,94,.14); }
+  #w4sheet .rcpt .ra { display: block; font: 800 28px 'Plus Jakarta Sans', sans-serif; } #w4sheet .rcpt .ra.pos { color: #16A34A; } #w4sheet .rcpt .rm { margin: 4px 0 12px; font: 600 14px 'Plus Jakarta Sans', sans-serif; opacity: .8; } #w4sheet .rrev { display: inline-block; margin-bottom: 10px; padding: 3px 10px; border-radius: 999px; background: #FEE2E2; color: #991B1B; font: 700 12px sans-serif; }
+  #w4sheet .rcpt dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0 0 12px; padding: 12px 14px; border-radius: 16px; background: rgba(148,163,184,.1); text-align: left; font: 600 13px 'Plus Jakarta Sans', sans-serif; } #w4sheet .rcpt dt { opacity: .6; } #w4sheet .rcpt dd { margin: 0; text-align: right; } #w4sheet .rref { font-family: ui-monospace, Menlo, monospace; }
+  #w4sheet .rcpt .pbtn { width: 100%; }
 </style>
 </head>
 <body>
@@ -8204,7 +8208,7 @@
         const when = (at) => new Date(at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
         const dayOf = (at) => { const d = new Date(at), t = new Date(); if (d.toDateString() === t.toDateString()) return 'Today'; t.setDate(t.getDate() - 1); return d.toDateString() === t.toDateString() ? 'Yesterday' : d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' }); };
         let lastDay = ''; const rows = r.map((e) => { const d = e.at ? dayOf(e.at) : ''; const head = d && d !== lastDay ? `<div class="wDay">${d}</div>` : ''; if (d) lastDay = d;
-          return head + `<div class="wRow"><span class="ic2${e.amount > 0 ? ' in' : ''}">${icon(e.memo, e.amount)}</span><span class="t"><b>${esc(e.memo)}</b>${e.at ? `<small>${when(e.at)}</small>` : ''}</span><span class="amt ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</span></div>`; }).join('');
+          return head + `<button class="wRow" data-rc="${r.indexOf(e)}"><span class="ic2${e.amount > 0 ? ' in' : ''}">${icon(e.memo, e.amount)}</span><span class="t"><b>${esc(e.memo)}</b>${e.at ? `<small>${when(e.at)}</small>` : ''}</span><span class="amt ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</span></button>`; }).join('');
         const spent = r.filter((e) => e.amount < 0 && e.at && dayOf(e.at) === 'Today').reduce((n, e) => n - e.amount, 0);
         show(`<div class="ppTop"><div><h2>Wallet</h2><small>@${esc(me$.handle)} · game naira</small></div></div>
           ${bankCard()}
@@ -8219,6 +8223,19 @@
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
         pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
         $('wBuy').onclick = () => go('buynaira');
+        // a receipt: what it was, how much, when, the balance after it, its reference
+        pbody.querySelectorAll('[data-rc]').forEach((b) => (b.onclick = () => { const e = r[+b.dataset.rc]; if (!e) return;
+          const old = document.getElementById('w4sheet'); if (old) old.remove();
+          const KIND = { fee: 'Payment', job: 'Pay', mission: 'Reward', topup: 'Bought with Flutterwave', transfer: 'Transfer', refund: 'Refund', open: 'Opening balance', plan: 'Payment plan', credit: 'Credit', forgiven: 'Forgiven' };
+          const el = document.createElement('div'); el.id = 'w4sheet';
+          el.innerHTML = `<button class="x" aria-label="Close">✕</button><div class="rcpt"><span class="ic2${e.amount > 0 ? ' in' : ''}">${icon(e.memo, e.amount)}</span>
+            <b class="ra ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</b><div class="rm">${esc(e.memo)}</div>${e.reversed ? '<div class="rrev">Reversed</div>' : ''}
+            <dl><dt>Type</dt><dd>${esc(KIND[e.kind] || e.kind || '—')}</dd><dt>When</dt><dd>${e.at ? new Date(e.at).toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</dd>
+            ${e.balance != null ? `<dt>Balance after</dt><dd>${naira(e.balance)}</dd>` : ''}<dt>Reference</dt><dd class="rref">${esc(e.ref || '—')}</dd></dl>
+            <button class="pbtn alt" id="rcCopy">Copy reference</button></div>`;
+          document.getElementById('screen').append(el);
+          el.querySelector('.x').onclick = () => el.remove();
+          el.querySelector('#rcCopy').onclick = async () => { try { await navigator.clipboard.writeText(e.ref || ''); el.querySelector('#rcCopy').textContent = 'Copied'; } catch {} }; }));
         $('wDesign').onclick = () => { const k = $('wPick'); k.style.display = k.style.display === 'none' ? 'grid' : 'none'; };
         pbody.querySelectorAll('[data-cd]').forEach((b) => (b.onclick = () => { store.set('li.card.' + me$.handle, b.dataset.cd); render('wallet'); }));
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
@@ -8241,6 +8258,7 @@
           <div class="ppList">${info.packs.map((pk) => `<button class="wRow" data-pk="${pk.id}"><span class="ic2 in">💰</span><span class="t"><b>${naira(pk.naira)} game naira</b><small>Pay ₦${pk.ngn.toLocaleString('en-NG')}</small></span><span class="amt pos">₦${pk.ngn.toLocaleString('en-NG')}</span></button>`).join('')}</div>
           <div class="err" id="bnErr" style="margin:10px 4px;color:#DC2626;font:600 13px 'Plus Jakarta Sans',sans-serif"></div>
           <div class="ppEmpty" style="padding:12px 8px;font-size:12px">Game naira stay in the game: they can't be withdrawn. Your card details go to Flutterwave, never to Lagos Island.</div>`;
+        if (me$ && me$.operator) my('treasury2').then((t) => { if (!$('bnBody')) return; const d = document.createElement('div'); d.className = 'wReal'; d.style.marginTop = '12px'; d.innerHTML = `<span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Treasury 2 · paycheck reserve (${Math.round(t.share * 100)}%)${t.mode === 'test' ? ' · test mode' : ''}</small><b>₦${t.reserveNgn.toLocaleString('en-NG')}</b><small>of ₦${t.paidNgn.toLocaleString('en-NG')} paid in · ${t.payments} payment${t.payments === 1 ? '' : 's'}</small></span>`; $('bnBody').prepend(d); }).catch(() => {});
         body.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = async () => { if (b.disabled) return; b.disabled = true; $('bnErr').textContent = '';
           const ov = document.createElement('div'); ov.id = 'flwGo'; ov.innerHTML = '<div><i></i><b>Opening secure checkout</b><small>Flutterwave · your card details never touch the game</small></div>'; document.body.append(ov);
           try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; setTimeout(() => ov.remove(), 15000); }
