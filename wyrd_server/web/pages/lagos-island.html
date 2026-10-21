@@ -9604,6 +9604,7 @@
   tabNew.onclick = () => { isNew = true; tabNew.className = 'on'; tabOld.className = ''; passIn.autocomplete = 'new-password'; showFor(true); };
   tabOld.onclick = () => { isNew = false; tabOld.className = 'on'; tabNew.className = ''; passIn.autocomplete = 'current-password'; showFor(false); };
   function start() {
+    if (start.done) { hello.style.display = 'none'; if (signedIn()) poll(); return; } start.done = true;
     store.set('li.color', myColor);
     hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true; setTimeout(() => wyrdIntro(), 1500);
     tick(); setInterval(() => { if (!document.hidden) tick(); }, 1000);
@@ -9615,6 +9616,7 @@
     const who = document.getElementById('who'); who.style.display = 'block'; who.textContent = 'Welcome back.';
     my('me').then((v) => { myName = v.handle; who.textContent = `Welcome back, ${v.handle}.`; if (!playing) setTimeout(() => { if (!playing && signedIn()) start(); }, 400); if (v.look) { myLook = v.look; store.set('li.look', myLook); } }).catch(() => { who.style.display = 'none'; document.getElementById('auth').style.display = 'block'; });
   }
+  { let woke = false; const wake = () => { if (woke) return; woke = true; fetch(`${API}/islandAuth/available`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'x' }) }).catch(() => {}); }; nameIn.addEventListener('focus', wake); nameIn.addEventListener('input', wake); }
   document.getElementById('go').onclick = async () => {
     if (signedIn() && document.getElementById('auth').style.display === 'none') return start();
     const u = nameIn.value.trim(), p = passIn.value, mail = emailIn.value.trim().toLowerCase();
@@ -9625,11 +9627,8 @@
       if (p !== pass2In.value) { errEl.textContent = 'Your two passwords no match o 🤨'; pass2In.focus(); return; }
     } else if (!u || !p) { errEl.textContent = 'Enter your username and password.'; return; }
     const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = isNew ? 'Making your account…' : 'Signing in…';
+    if (!u.includes('@')) myName = u; start(); tickerSay(isNew ? 'Making your WYRD ID…' : 'Signing you in…');
     try {
-      if (isNew) {
-        const ask = (m, b) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then((r) => r.ok ? r.text() : 'true');
-        if ((await ask('available', { username: u })).trim() === 'false') throw new Error('That username is taken. Try another, or sign in.');
-      }
       const r = await fetch(`${API}/islandAuth/${isNew ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isNew ? { username: u, email: '', password: p } : { username: u, password: p }) });
       const t = await r.text();
       if (!r.ok) {
@@ -9641,7 +9640,8 @@
       myName = u.includes('@') ? '' : u; me$ = null; keyed = false; start(); setTimeout(warmUp, 300);
       if (isNew) { newLagosian(); my('setLook', { look: myLook }).catch(() => {}); cyberWelcome(u); } // a new Lagosian: the welcome, then WYRD's onboarding
       my('me').then((v) => { myName = v.handle; if (v.look) { myLook = v.look; store.set('li.look', myLook); } else my('setLook', { look: myLook }).catch(() => {}); }).catch(() => {});
-    } catch (e) { errEl.textContent = e.message; }
+      tickerSay(isNew ? `Welcome to Lagos Island, ${u}` : 'Signed in');
+    } catch (e) { errEl.textContent = e.message; hello.style.display = 'grid'; }
     finally { btn.disabled = false; btn.textContent = 'Enter Lagos Island'; }
   };
   // a new Lagosian's welcome: the screen glitches in, cyberpunk, their name in lights, the island's systems coming online for
