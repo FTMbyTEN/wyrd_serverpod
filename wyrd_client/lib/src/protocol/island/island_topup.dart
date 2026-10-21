@@ -25,6 +25,8 @@ abstract class IslandTopUp
     required this.naira,
     required this.status,
     this.flwId,
+    this.flwAccount,
+    this.payTo,
     required this.createdAt,
     this.paidAt,
   });
@@ -38,6 +40,8 @@ abstract class IslandTopUp
     required int naira,
     required String status,
     String? flwId,
+    String? flwAccount,
+    String? payTo,
     required DateTime createdAt,
     DateTime? paidAt,
   }) = _IslandTopUpImpl;
@@ -54,6 +58,8 @@ abstract class IslandTopUp
       naira: jsonSerialization['naira'] as int,
       status: jsonSerialization['status'] as String,
       flwId: jsonSerialization['flwId'] as String?,
+      flwAccount: jsonSerialization['flwAccount'] as String?,
+      payTo: jsonSerialization['payTo'] as String?,
       createdAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -87,6 +93,12 @@ abstract class IslandTopUp
   /// Flutterwave's own id for the transaction, once it reports one
   String? flwId;
 
+  /// Flutterwave v4: the one-time virtual account this purchase is paid into (van_...)
+  String? flwAccount;
+
+  /// where to pay it, as shown to the player (JSON: account, bank, amount, expires)
+  String? payTo;
+
   DateTime createdAt;
 
   DateTime? paidAt;
@@ -103,6 +115,8 @@ abstract class IslandTopUp
     int? naira,
     String? status,
     String? flwId,
+    String? flwAccount,
+    String? payTo,
     DateTime? createdAt,
     DateTime? paidAt,
   });
@@ -118,6 +132,8 @@ abstract class IslandTopUp
       'naira': naira,
       'status': status,
       if (flwId != null) 'flwId': flwId,
+      if (flwAccount != null) 'flwAccount': flwAccount,
+      if (payTo != null) 'payTo': payTo,
       'createdAt': createdAt.toJson(),
       if (paidAt != null) 'paidAt': paidAt?.toJson(),
     };
@@ -135,6 +151,8 @@ abstract class IslandTopUp
       'naira': naira,
       'status': status,
       if (flwId != null) 'flwId': flwId,
+      if (flwAccount != null) 'flwAccount': flwAccount,
+      if (payTo != null) 'payTo': payTo,
       'createdAt': createdAt.toJson(),
       if (paidAt != null) 'paidAt': paidAt?.toJson(),
     };
@@ -158,6 +176,8 @@ class _IslandTopUpImpl extends IslandTopUp {
     required int naira,
     required String status,
     String? flwId,
+    String? flwAccount,
+    String? payTo,
     required DateTime createdAt,
     DateTime? paidAt,
   }) : super._(
@@ -169,6 +189,8 @@ class _IslandTopUpImpl extends IslandTopUp {
          naira: naira,
          status: status,
          flwId: flwId,
+         flwAccount: flwAccount,
+         payTo: payTo,
          createdAt: createdAt,
          paidAt: paidAt,
        );
@@ -186,6 +208,8 @@ class _IslandTopUpImpl extends IslandTopUp {
     int? naira,
     String? status,
     Object? flwId = _Undefined,
+    Object? flwAccount = _Undefined,
+    Object? payTo = _Undefined,
     DateTime? createdAt,
     Object? paidAt = _Undefined,
   }) {
@@ -198,6 +222,8 @@ class _IslandTopUpImpl extends IslandTopUp {
       naira: naira ?? this.naira,
       status: status ?? this.status,
       flwId: flwId is String? ? flwId : this.flwId,
+      flwAccount: flwAccount is String? ? flwAccount : this.flwAccount,
+      payTo: payTo is String? ? payTo : this.payTo,
       createdAt: createdAt ?? this.createdAt,
       paidAt: paidAt is DateTime? ? paidAt : this.paidAt,
     );

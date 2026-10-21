@@ -2680,7 +2680,7 @@ class IslandMeEndpoint extends Endpoint {
     final u = _user(session);
     final rows = await IslandTopUp.db.find(session, where: (t) => t.authUserId.equals(u), orderBy: (t) => t.createdAt.desc(), limit: 15);
     return jsonEncode([
-      for (final r in rows) {'ref': r.txRef, 'ngn': r.amountNgn, 'naira': r.naira, 'status': r.status, 'at': r.createdAt.toIso8601String(), if (r.paidAt != null) 'paidAt': r.paidAt!.toIso8601String()},
+      for (final r in rows) {'ref': r.txRef, 'ngn': r.amountNgn, 'naira': r.naira, 'status': r.status, 'at': r.createdAt.toIso8601String(), if (r.status == 'pending' && r.payTo != null) 'pay': jsonDecode(r.payTo!), if (r.paidAt != null) 'paidAt': r.paidAt!.toIso8601String()},
     ]);
   }
 

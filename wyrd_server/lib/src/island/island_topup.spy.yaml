@@ -15,6 +15,10 @@ fields:
   status: String
   ### Flutterwave's own id for the transaction, once it reports one
   flwId: String?
+  ### Flutterwave v4: the one-time virtual account this purchase is paid into (van_...)
+  flwAccount: String?
+  ### where to pay it, as shown to the player (JSON: account, bank, amount, expires)
+  payTo: String?
   createdAt: DateTime
   paidAt: DateTime?
 indexes:

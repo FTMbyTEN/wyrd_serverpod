@@ -1234,6 +1234,9 @@
   @keyframes hSpin { to { transform: rotate(360deg); } } @keyframes hFloat { 50% { transform: translateY(-6px); } } @keyframes hTw { from { opacity: .5; } to { opacity: 1; } } @keyframes hFl { from { transform: scaleY(.8); } to { transform: scaleY(1.2); } }
   @keyframes hShine { 0%, 80% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
   @media (prefers-reduced-motion: reduce) { .hsky::after, .hsun, .hstars, .hfl, #pbody[data-app="home"] .app > i::after { animation: none !important; } }
+  .bnPay { text-align: center; padding: 18px 14px; border-radius: 20px; background: var(--ppCard, #fff); box-shadow: inset 0 0 0 1px rgba(15,23,42,.08); } .bnPay > small { display: block; font-weight: 700; opacity: .65; } .bnPay > b { display: block; font: 800 34px 'Plus Jakarta Sans', sans-serif; margin: 2px 0 12px; }
+  .bnAcct { display: grid; gap: 4px; justify-items: center; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, rgba(14,165,233,.12), rgba(99,102,241,.12)); margin-bottom: 8px; } .bnAcct span { font-weight: 700; } .bnAcct strong { font: 800 28px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; }
+  .bnWait { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 14px 0; font-size: 13px; } .bnWait i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #0EA5E9; border-top-color: transparent; animation: hSpin 1s linear infinite; flex: none; }
 </style>
 </head>
 <body>
@@ -8353,7 +8356,7 @@
           ${bankCard()}
           <div class="ccMeta"><span>Earned today <b>${naira(me$.earnedToday || 0)}</b></span><button id="wDesign">🎨 Card design</button></div>
           <div class="ccPick" id="wPick" style="display:none">${CARD_DESIGNS.map((d, i) => `<button data-cd="${i}" class="${i === cardDesign() ? 'on' : ''}" style="background:${d.bg}" aria-label="${esc(d.name)}"><span>${esc(d.name)}</span></button>`).join('')}</div>
-          <button class="wBuyFun" id="wBuy"><span class="bfIc">💸</span><span class="bfTx"><b id="bfLine">${parseLook(myLook, me$.handle).g === 'f' ? 'Fine girl 💅' : 'Fine boy 😎'}</b><small>Buy naira · card, transfer or USSD</small></span><span class="bfGo">${pi('go')}</span></button>
+          <button class="wBuyFun" id="wBuy"><span class="bfIc">💸</span><span class="bfTx"><b id="bfLine">${parseLook(myLook, me$.handle).g === 'f' ? 'Fine girl 💅' : 'Fine boy 😎'}</b><small>Buy naira · bank transfer</small></span><span class="bfGo">${pi('go')}</span></button>
           <div id="wBankHold" style="display:none"><button class="wReal" id="wBank" style="margin-top:8px"><span class="ic2">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Bank account</b><small id="wBankSub">Where your real earnings are paid</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button></div>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button></div>
           <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
@@ -8399,7 +8402,7 @@
         if (info.mode === 'off') { body.innerHTML = `<div class="ppList"><div class="ppEmpty">${pi('bank')}Buying naira opens soon.</div></div>`; return; }
         const base = 10, bal = (me$ && me$.naira) || 0, popular = 'p2500';
         const ST = { paid: ['✓ Added', 'pos'], pending: ['Checking…', ''], failed: ['Not completed', 'neg'] };
-        const histRow = (t) => `<div class="wRow"><span class="ic2${t.status === 'paid' ? ' in' : ''}">💰</span><span class="t"><b>${naira(t.naira)} game naira</b><small>₦${t.ngn.toLocaleString('en-NG')} · ${new Date(t.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><span class="bnSt ${(ST[t.status] || ST.pending)[1]}">${(ST[t.status] || ST.pending)[0]}</span></div>`;
+        const histRow = (t) => `<div class="wRow"${t.status === 'pending' && t.pay ? ` data-pay="${esc(t.ref)}" style="cursor:pointer"` : ''}><span class="ic2${t.status === 'paid' ? ' in' : ''}">💰</span><span class="t"><b>${naira(t.naira)} game naira</b><small>₦${t.ngn.toLocaleString('en-NG')} · ${new Date(t.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><span class="bnSt ${(ST[t.status] || ST.pending)[1]}">${(ST[t.status] || ST.pending)[0]}</span></div>`;
         body.innerHTML = `${info.mode === 'test' ? '<div class="bnTest">🧪 Test mode: Flutterwave test payments, no real money moves.</div>' : ''}
           <div class="bnBal"><small>You have</small><b>${naira(bal)}</b><span>game naira</span></div>
           <div class="wSec"><span>Pick a pack</span><span>bigger packs, bigger bonus</span></div>
@@ -8414,9 +8417,29 @@
         for (const t of hist.filter((v) => v.status === 'pending' && Date.now() - new Date(v.at) < 2 * 3600e3).slice(0, 3)) {
           myNet('topUpCheck', { ref: t.ref }).then((r) => { if (r.status === 'paid') { if (r.balance != null) { me$.naira = r.balance; pnaira.textContent = naira(r.balance); } notify(`${naira(r.naira)} added to your wallet`, 'money', ['wallet']); if (pbody.dataset.app === 'wallet' && $('bnBody')) render('buynaira'); } }).catch(() => {});
         }
+        // pay by bank transfer (Flutterwave v4): a one-time account for exactly this pack; the server checks with
+        // Flutterwave and credits it once the money arrives
+        const showPay = (ref, pay) => {
+          const exp = new Date(pay.expires), amt = Number(pay.amount) || 0;
+          body.innerHTML = `<div class="bnPay" id="bnPay"><small>Transfer exactly</small><b>₦${amt.toLocaleString('en-NG')}</b>
+            <div class="bnAcct"><span>${esc(pay.bank)}</span><strong>${esc(pay.account)}</strong><button class="pbtn alt" id="bnCopy">Copy number</button></div>
+            <span class="dim">This account is for this purchase only · open for <b id="bnExp">…</b></span>
+            <div class="bnWait"><i></i><span id="bnWaitT">Waiting for your transfer. It's added about a minute after it arrives.</span></div>
+            <button class="pbtn" id="bnSent">I've sent it</button><button class="pbtn alt" id="bnBack">Choose another pack</button>
+            <div class="bnSafe"><span>🏦 Send from your own bank app, once, the exact amount</span><span>🧾 Credited once, never twice</span></div></div>`;
+          $('bnCopy').onclick = () => { try { navigator.clipboard.writeText(pay.account); $('bnCopy').textContent = 'Copied ✓'; } catch { } };
+          $('bnBack').onclick = () => render('buynaira');
+          const tick = () => { const el = $('bnExp'); if (!el) return false; const ms = exp - Date.now(); el.textContent = ms > 0 ? `${Math.floor(ms / 60000)} min` : 'closed'; return true; };
+          let busy = false; const check = async (loud) => { if (busy) return; busy = true;
+            try { const r = await myNet('topUpCheck', { ref }); if (r.status === 'paid') { if (r.balance != null) { me$.naira = r.balance; pnaira.textContent = naira(r.balance); } notify(`${naira(r.naira)} added to your wallet`, 'money', ['wallet']); clearInterval(t); render('buynaira'); }
+              else if (loud && $('bnWaitT')) $('bnWaitT').textContent = r.status === 'failed' ? 'This account closed without a payment. Choose a pack again.' : 'Not arrived yet. Bank transfers can take a minute or two; this keeps checking.'; } catch { } busy = false; };
+          tick(); const t = setInterval(() => { if (!tick()) return clearInterval(t); if (Date.now() < exp.getTime() + 30 * 60000) check(false); }, 10000);
+          $('bnSent').onclick = () => check(true);
+        };
+        body.querySelectorAll('[data-pay]').forEach((b) => (b.onclick = () => { const t = hist.find((v) => v.ref === b.dataset.pay); if (t && t.pay) showPay(t.ref, t.pay); }));
         body.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = async () => { if (body.dataset.busy) return; body.dataset.busy = '1'; $('bnErr').textContent = '';
-          const ov = document.createElement('div'); ov.id = 'flwGo'; ov.innerHTML = '<div><i></i><b>Opening secure checkout</b><small>Flutterwave · your card details never touch the game</small></div>'; document.body.append(ov);
-          try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; setTimeout(() => ov.remove(), 15000); }
+          const ov = document.createElement('div'); ov.id = 'flwGo'; ov.innerHTML = '<div><i></i><b>Getting your account number</b><small>Flutterwave · pay by bank transfer</small></div>'; document.body.append(ov);
+          try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); ov.remove(); delete body.dataset.busy; showPay(r.ref, r.pay); }
           catch (e) { ov.remove(); delete body.dataset.busy; $('bnErr').textContent = e.message; } }));
         return;
       }

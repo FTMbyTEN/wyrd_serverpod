@@ -1,33 +1,31 @@
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import '../generated/protocol.dart';
+import 'flutterwave_v4.dart';
 import '../rewards/reward_config.dart';
 
 /// A player's payout bank account: the bank list and account lookup come from Flutterwave (with the server's own key);
 /// the account counts as verified only when the bank's name for it matches the legal name the player gives, and the
 /// player's email has answered a code. Nothing here moves money.
 abstract final class Payout {
-  static final _http = http.Client();
   static List<Map<String, String>>? _banks;
   static DateTime _banksAt = DateTime.fromMillisecondsSinceEpoch(0);
 
-  static String _key(Session s) => (s.passwords['flutterwaveSecretKey'] ?? '').trim();
-  static Map<String, String> _auth(Session s) => {'Authorization': 'Bearer ${_key(s)}', 'Content-Type': 'application/json'};
+  /// Flutterwave v4 (the server's client credentials), or null while they aren't set
+  static Flw4? _flw(Session s) => Flw4.from((k) => s.passwords[k]);
 
   /// Nigerian banks (code and name), from Flutterwave, kept a day.
   static Future<List<Map<String, String>>> banks(Session s) async {
     if (_banks != null && DateTime.now().difference(_banksAt) < const Duration(hours: 24)) return _banks!;
-    if (_key(s).isEmpty) throw PayoutRefused('Bank accounts open soon.');
-    final r = await _http.get(Uri.parse('https://api.flutterwave.com/v3/banks/NG'), headers: _auth(s)).timeout(const Duration(seconds: 20));
-    final j = _json(r.body);
-    if (r.statusCode != 200 || j['data'] is! List) {
-      s.log('[payout] bank list from Flutterwave failed: ${r.statusCode} ${r.body.length > 200 ? r.body.substring(0, 200) : r.body}', level: LogLevel.warning);
+    final f = _flw(s);
+    if (f == null) throw PayoutRefused('Bank accounts open soon.');
+    final (st, j) = await f.call('GET', '/banks?country=NG');
+    if (st != 200 || j['data'] is! List) {
+      s.log('[payout] bank list from Flutterwave failed: $st ${j['_raw']}', level: LogLevel.warning);
       return _fallbackBanks;
     }
     _banks = [for (final b in j['data'] as List) if (b is Map && b['code'] != null && b['name'] != null) {'code': '${b['code']}', 'name': '${b['name']}'}]
@@ -88,10 +86,16 @@ abstract final class Payout {
       throw PayoutRefused('This bank account is already linked to another player. Each bank account can belong to one player only.');
     }
     if (bank == null) throw PayoutRefused('Choose your bank from the list.');
-    final r = await _http.post(Uri.parse('https://api.flutterwave.com/v3/accounts/resolve'), headers: _auth(s), body: jsonEncode({'account_number': num, 'account_bank': bankCode})).timeout(const Duration(seconds: 20));
-    final j = _json(r.body), d = j['data'] is Map ? j['data'] as Map : const {};
+    final f = _flw(s);
+    if (f == null) throw PayoutRefused('Bank accounts open soon.');
+    final (st, j) = await f.call('POST', '/banks/account-resolve', body: {'currency': 'NGN', 'account': {'code': bankCode, 'number': num}});
+    final d = j['data'] is Map ? j['data'] as Map : const {};
     final acctName = '${d['account_name'] ?? ''}'.trim();
-    if (r.statusCode != 200 || acctName.isEmpty) throw PayoutRefused('That account number wasn\'t found at ${bank['name']}. Check it and try again.');
+    if (st >= 300 && st != 400 && st != 404) {
+      s.log('[payout] account lookup failed $st: ${j['_raw']}', level: LogLevel.warning);
+      throw PayoutRefused('The bank lookup is not answering right now. Try again in a moment.');
+    }
+    if (st != 200 || acctName.isEmpty) throw PayoutRefused('That account number wasn\'t found at ${bank['name']}. Check it and try again.');
     final match = namesMatch(name, acctName);
     final code = _code(), now = DateTime.now().toUtc();
     final had = await IslandPayoutAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
@@ -159,7 +163,6 @@ abstract final class Payout {
 
   static String _maskEmail(String e) { final at = e.indexOf('@'); return at < 2 ? e : '${e.substring(0, 2)}${'•' * (at - 2).clamp(1, 6)}${e.substring(at)}'; }
 
-  static Map<String, dynamic> _json(String b) { try { final v = jsonDecode(b); return v is Map<String, dynamic> ? v : const {}; } catch (_) { return const {}; } }
 }
 
 class PayoutRefused implements Exception {

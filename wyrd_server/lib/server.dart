@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:serverpod_auth_idp_server/core.dart';
+import 'src/island/flutterwave_v4.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 import 'package:serverpod_cloud_storage/serverpod_cloud_storage.dart';
 
@@ -207,8 +208,8 @@ void run(List<String> args) async {
   // Start the server.
   // real payouts go through Flutterwave when that is the configured provider and the server holds its key
   if (RewardConfig.current.payoutProvider == 'flutterwave') {
-    final k = (pod.getPassword('flutterwaveSecretKey') ?? '').trim();
-    if (k.isNotEmpty) Withdrawals.provider = FlutterwavePayoutProvider(k);
+    final flw = Flw4.from(pod.getPassword);
+    if (flw != null) Withdrawals.provider = FlutterwavePayoutProvider(flw);
   }
 
   await pod.start();
