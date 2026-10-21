@@ -68,6 +68,7 @@ islandMe:
   - setLook:
   - keyOf:
   - work:
+  - earnBoard:
   - gridCareer:
   - gridStart:
   - gridFinish:

@@ -1162,6 +1162,10 @@
   #w4sheet .rcpt .ra { display: block; font: 800 28px 'Plus Jakarta Sans', sans-serif; } #w4sheet .rcpt .ra.pos { color: #16A34A; } #w4sheet .rcpt .rm { margin: 4px 0 12px; font: 600 14px 'Plus Jakarta Sans', sans-serif; opacity: .8; } #w4sheet .rrev { display: inline-block; margin-bottom: 10px; padding: 3px 10px; border-radius: 999px; background: #FEE2E2; color: #991B1B; font: 700 12px sans-serif; }
   #w4sheet .rcpt dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0 0 12px; padding: 12px 14px; border-radius: 16px; background: rgba(148,163,184,.1); text-align: left; font: 600 13px 'Plus Jakarta Sans', sans-serif; } #w4sheet .rcpt dt { opacity: .6; } #w4sheet .rcpt dd { margin: 0; text-align: right; } #w4sheet .rref { font-family: ui-monospace, Menlo, monospace; }
   #w4sheet .rcpt .pbtn { width: 100%; }
+  .eSum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 4px; } .eSum > div { padding: 10px 12px; border-radius: 16px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); }
+  .eSum small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--ppDim); } .eSum b { display: block; margin-top: 3px; font: 800 16px 'Plus Jakarta Sans', sans-serif; color: var(--ppInk); }
+  .eDone { margin: 8px 0; padding: 10px 12px; border-radius: 14px; background: rgba(34,197,94,.12); color: #15803D; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; }
+  .eSt { flex: none; padding: 5px 10px; border-radius: 999px; background: rgba(148,163,184,.16); color: var(--ppDim); font: 800 11.5px 'Plus Jakarta Sans', sans-serif; font-variant-numeric: tabular-nums; } .eSt.on { background: rgba(34,197,94,.15); color: #15803D; }
 </style>
 </head>
 <body>
@@ -7809,15 +7813,15 @@
   }
   // the island's paid work, as the server pays it (see IslandMeEndpoint.shifts and the Grid's levels)
   const EARN_SHIFTS = [
-    { place: 'refinery', i: '🛢️', name: 'Refinery shift', pay: 6500, min: 10, how: 'Walk up to the refinery gate and tap “Work a refinery shift”. Ten minutes on the job, then the pay lands.' },
-    { place: 'club', i: '🎶', name: 'Night shift at a club', pay: 4000, min: 10, night: true, how: 'Any club, after dark: tap “Work a night shift” at the door. Ten minutes behind the bar, then the pay lands.' },
-    { place: 'market', i: '🧺', name: 'Market stall', pay: 2500, min: 6, how: 'At the market, tap “Help at a market stall”. Six minutes selling, then the pay lands.' },
-    { place: 'motorpark', i: '🛵', name: 'Okada rides', pay: 1800, min: 4, how: 'At the motor park, tap “Do okada rides”. Four minutes carrying passengers, then the pay lands.' },
+    { place: 'refinery', i: '🛢️', name: 'Refinery shift', pay: 6500, min: 10, how: 'At the refinery gate, tap “Work a refinery shift”.' },
+    { place: 'club', i: '🎶', name: 'Night shift at a club', pay: 4000, min: 10, night: true, how: 'At any club door between 6 pm and 6 am, tap “Work a night shift”.' },
+    { place: 'market', i: '🧺', name: 'Market stall', pay: 2500, min: 6, how: 'At the market, tap “Help at a market stall”.' },
+    { place: 'motorpark', i: '🛵', name: 'Okada rides', pay: 1800, min: 4, how: 'At the motor park, tap “Do okada rides”.' },
   ];
   const EARN_JOBS = { list: null };
   function earnNow(hr) {
     const out = [], night = hr >= 19 || hr < 5;
-    for (const s of EARN_SHIFTS) { if (s.night && !night) continue; out.push({ i: s.i, t: `${s.name}: ${naira(s.pay)}`, s: `Lands in your wallet after a ${s.min}-minute shift`, run: () => earnSheet({ ...s, kind: 'shift' }), w: 5 + s.pay / 10000 }); }
+    for (const s of EARN_SHIFTS) { if (s.night && !night) continue; out.push({ i: s.i, t: `${s.name}: ${naira(s.pay)}`, s: `Paid when you work it · every ${s.min} min`, run: () => earnSheet({ ...s, kind: 'shift' }), w: 5 + s.pay / 10000 }); }
     if (typeof GJ !== 'undefined' && !GJ.shift) { const lv = GJ.career && GJ.career.level ? GJ.career.level : 1, pay = (typeof GRID_PAY !== 'undefined' ? GRID_PAY : [12000])[Math.max(0, lv - 1)] || 12000;
       out.push({ i: '⚡', t: `National Grid: ${naira(pay)} a shift`, s: GJ.career ? `At your level (${GRID_LEVELS[lv - 1]})` : 'Start as a trainee, earn more each promotion', run: () => earnSheet({ kind: 'grid', i: '⚡', name: 'National Grid shift', pay, how: 'Open The Grid on your phone, start a shift and do its tasks round the island. Hand it in and the pay lands; every promotion pays more.' }), w: 5.9 }); }
     for (const j of (EARN_JOBS.list || []).filter((v) => !v.applied).slice(0, 2)) out.push({ i: '💼', t: `${j.title} · ${j.pay}`, s: `${j.company}, ${j.location}`, run: () => earnSheet({ kind: 'job', i: '💼', name: j.title, payText: j.pay, how: `${j.company} is hiring in ${j.location}. Apply on the Jobs board with a short note; if they take you on, they pay ${j.pay}.` }), w: 5.5 });
@@ -7828,7 +7832,7 @@
     const old = document.getElementById('earnSh'); if (old) old.remove();
     const el = document.createElement('div'); el.id = 'w4sheet'; el.setAttribute('data-earn', '1');
     el.innerHTML = `<button class="x" aria-label="Close">✕</button><h4><span style="font-size:22px">${e.i}</span>${esc(e.name)}</h4>
-      <div class="ans" style="display:block"><b style="display:block;font-size:20px;margin-bottom:4px">${e.payText ? esc(e.payText) : naira(e.pay) + (e.kind === 'grid' ? ' a shift' : '')}</b>${esc(e.how)}${e.kind === 'shift' ? `<br><br>When the shift ends, ${naira(e.pay)} lands in your wallet straight away, and you can work it again after ${e.min} minutes.` : ''}</div>
+      <div class="ans" style="display:block"><b style="display:block;font-size:20px;margin-bottom:4px">${e.payText ? esc(e.payText) : naira(e.pay) + (e.kind === 'grid' ? ' a shift' : '')}</b>${esc(e.how)}${e.kind === 'shift' ? `<br><br>The moment you tap it, ${naira(e.pay - Math.ceil(e.pay * 0.02))} lands in your wallet (${naira(e.pay)}, less the treasury's 2%). You can work there again ${e.min} minutes later.` : ''}</div>
       <div class="row4" style="margin-top:10px">${e.kind === 'shift' ? '<button class="pbtn" id="esGo">🛵 Ride there</button>' : e.kind === 'grid' ? '<button class="pbtn" id="esGo">⚡ Open The Grid</button>' : '<button class="pbtn" id="esGo">💼 See the job</button>'}</div>`;
     document.getElementById('screen').append(el);
     el.querySelector('.x').onclick = () => el.remove();
@@ -8239,7 +8243,7 @@
         $('wDesign').onclick = () => { const k = $('wPick'); k.style.display = k.style.display === 'none' ? 'grid' : 'none'; };
         pbody.querySelectorAll('[data-cd]').forEach((b) => (b.onclick = () => { store.set('li.card.' + me$.handle, b.dataset.cd); render('wallet'); }));
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
-        $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => toggle('earnBox', 'wEarn'); $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
+        $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => { toggle('earnBox', 'wEarn'); if ($('earnBox').style.display !== 'none') earnPanel($('earnBox')); }; $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
         pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
         rw('earnings').then((e) => { if (!e || e.mode === 'off' || !$('realBox')) return;
           $('realBox').innerHTML = `<button class="wReal" id="wReal"><span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Real earnings${e.mode === 'sandbox' ? ' · sandbox, no real money' : ''}</small><b>${kobo(e.availableKobo)}</b><small>${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`;
@@ -9405,6 +9409,35 @@
       <div class="cc2"><span class="chip"></span><span class="ccBal"><small>Balance</small>${naira(me$.naira)}</span></div>
       <div class="ccNo">•••• •••• •••• ${last4}</div>
       <div class="cc3"><span><small>Cardholder</small>${esc(me$.handle)}</span><span><small>Valid thru</small>${mm}/${yy}</span><span class="ccBrand">Lagos<br>Island</span></div></div>`;
+  }
+  // ---- the Earn panel (in the wallet): every way to earn, as the server has it for you now. Each workplace says whether
+  // it's open now or counts down to its next shift, and what lands after the 2%; the Grid at your level; the job board;
+  // what you've earned today and your last paydays. Tap one to go there.
+  const EARN_PLACE = { refinery: ['🛢️', 'Refinery', 'refinery'], club: ['🎶', 'Club night shift', 'club'], market: ['🧺', 'Market stall', 'market'], okada: ['🛵', 'Okada rides', 'motorpark'] };
+  async function earnPanel(box) {
+    box.innerHTML = '<div class="skel"><i></i><i></i><i class="s"></i></div>';
+    let b; try { b = await myNet('earnBoard', {}); } catch (e) { box.innerHTML = `<div class="ppList"><div class="ppEmpty">${esc(e.message)}</div></div>`; return; }
+    const lv = Math.max(1, ...Object.values(b.grid || {}).map((t) => t.level || 1)), gpay = GRID_PAY[lv - 1] || GRID_PAY[0];
+    const left = (iso) => { const s = Math.max(0, Math.round((new Date(iso) - Date.now()) / 1000)); return s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : s + 's'; };
+    const draw = () => { if (!box.isConnected || box.style.display === 'none') return false;
+      box.innerHTML = `<div class="eSum"><div><small>Earned today</small><b>${naira(b.earnedToday)}</b></div><div><small>Treasury tax</small><b>${Math.round(b.taxRate * 100)}%</b></div><div><small>Open jobs</small><b>${b.jobsOpen}</b></div></div>
+        ${b.doneForToday ? '<div class="eDone">You\'ve done a full day\'s work. The shifts open again tomorrow.</div>' : ''}
+        <div class="wSec"><span>Shifts</span><span>paid when you work them</span></div>
+        <div class="ppList">${b.shifts.map((s) => { const pl = EARN_PLACE[s.place] || ['💼', s.memo, s.place], ready = s.ready && !b.doneForToday;
+          return `<button class="wRow eRow" data-ep="${pl[2]}"><span class="ic2">${pl[0]}</span><span class="t"><b>${pl[1]}</b><small>${naira(s.net)} lands · every ${s.minutes} min${s.hours ? ' · ' + s.hours : ''}</small></span>
+            <span class="eSt ${ready ? 'on' : ''}">${ready ? 'Open now' : s.opensAt ? 'Opens ' + s.opensAt : s.nextAt ? 'Next in ' + left(s.nextAt) : 'Done today'}</span></button>`; }).join('')}</div>
+        <div class="wSec"><span>Careers</span></div>
+        <div class="ppList"><button class="wRow" data-eg="1"><span class="ic2">⚡</span><span class="t"><b>National Grid · ${GRID_LEVELS[lv - 1]}</b><small>${naira(gpay)} a shift at your level · more with each promotion</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
+          <button class="wRow" data-ej="1"><span class="ic2">💼</span><span class="t"><b>Job board</b><small>${b.jobsOpen ? b.jobsOpen + ' open job' + (b.jobsOpen === 1 ? '' : 's') + ' from real employers' : 'No open jobs right now'}</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button></div>
+        ${b.recent.length ? `<div class="wSec"><span>Your last paydays</span></div><div class="ppList">${b.recent.map((r) => `<div class="wRow"><span class="ic2 in">💼</span><span class="t"><b>${esc(r.memo)}</b><small>${new Date(r.at).toLocaleString('en-NG', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><span class="amt pos">+${naira(r.amount)}</span></div>`).join('')}</div>` : ''}`;
+      box.querySelectorAll('[data-ep]').forEach((x) => (x.onclick = () => { const pl = PLACES.find((v) => v[0] === x.dataset.ep); if (!pl) return; const t = nearestRoad(pl[1] + pl[3] / 2, pl[2] + pl[4] / 2); go('rideq', { i: t[0], j: t[1], name: pl[5], emoji: pl[6], peek: 'p' + PLACES.indexOf(pl) }); }));
+      box.querySelector('[data-eg]').onclick = () => go('grid'); box.querySelector('[data-ej]').onclick = () => go('jobs');
+      return true; };
+    draw();
+    // the countdowns tick; when one reaches zero the board is asked again
+    const t = setInterval(() => { if (!box.isConnected || box.style.display === 'none') return clearInterval(t);
+      if (b.shifts.some((s) => s.nextAt && new Date(s.nextAt) <= Date.now())) { clearInterval(t); earnPanel(box); return; }
+      box.querySelectorAll('.eRow').forEach((row, i) => { const s = b.shifts[i]; if (s && s.nextAt && !s.ready) row.querySelector('.eSt').textContent = 'Next in ' + left(s.nextAt); }); }, 1000);
   }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');

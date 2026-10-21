@@ -271,6 +271,36 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
   });
 
+  /// The Earn board, from what the server knows for me right now: each workplace's pay (and what lands after the
+  /// treasury's tax), whether a shift is open now or when the next one opens, the clubs' hours, what I've earned today
+  /// (and whether today's work is done), my National Grid levels, the job board, and my last paydays.
+  Future<String> earnBoard(Session session) async {
+    final u = _user(session);
+    await WorldAuthority.citizen(session, u);
+    final now = DateTime.now(), ms = now.millisecondsSinceEpoch, lagosHour = now.toUtc().add(const Duration(hours: 1)).hour;
+    final earned = await _earnedToday(session, u);
+    final out = <Map<String, dynamic>>[];
+    for (final e in shifts.entries) {
+      final win = e.value.minutes * 60000, bucket = ms ~/ win;
+      final done = await NairaEntry.db.findFirstRow(session, where: (t) => t.key.equals('island:shift:${u.uuid}:${e.key}:$bucket')) != null;
+      final closed = e.key == 'club' && lagosHour >= 6 && lagosHour < 18;
+      out.add({
+        'place': e.key, 'pay': e.value.pay, 'net': e.value.pay - Bank.taxOn(e.value.pay, 'job'), 'minutes': e.value.minutes, 'memo': e.value.memo,
+        'ready': !done && !closed, 'nextAt': done ? DateTime.fromMillisecondsSinceEpoch((bucket + 1) * win).toUtc().toIso8601String() : null,
+        if (e.key == 'club') 'hours': '6 pm to 6 am', if (closed) 'opensAt': '6 pm',
+      });
+    }
+    final recent = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.kind.equals('job'), orderBy: (t) => t.id.desc(), limit: 6);
+    final jobs = await IslandJob.db.count(session, where: (t) => t.status.equals('open'));
+    Map<String, dynamic> grid = const {};
+    try { grid = await GridCareer.all(session, u); } catch (_) {}
+    return jsonEncode({
+      'shifts': out, 'earnedToday': earned, 'doneForToday': earned >= dailyCap, 'taxRate': Bank.taxRate,
+      'grid': grid['tracks'] ?? {}, 'jobsOpen': jobs,
+      'recent': [for (final r in recent) {'memo': r.memo, 'amount': r.amount, 'at': r.createdAt.toIso8601String()}],
+    });
+  }
+
   /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
   Future<String> gridCareer(Session session) async {
     try {

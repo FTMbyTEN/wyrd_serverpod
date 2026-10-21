@@ -906,6 +906,15 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {'place': place},
   );
 
+  /// The Earn board, from what the server knows for me right now: each workplace's pay (and what lands after the
+  /// treasury's tax), whether a shift is open now or when the next one opens, the clubs' hours, what I've earned today
+  /// (and whether today's work is done), my National Grid levels, the job board, and my last paydays.
+  _ida.Future<String> earnBoard() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'earnBoard',
+    {},
+  );
+
   /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
   _ida.Future<String> gridCareer() => caller.callServerEndpoint<String>(
     'islandMe',
