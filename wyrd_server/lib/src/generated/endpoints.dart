@@ -1599,6 +1599,25 @@ class Endpoints extends _is.EndpointDispatch {
                     params['pubKey'],
                   ),
         ),
+        'setGhost': _is.MethodConnector(
+          name: 'setGhost',
+          params: {
+            'on': _is.ParameterDescription(
+              name: 'on',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .setGhost(
+                    session,
+                    params['on'],
+                  ),
+        ),
         'setLook': _is.MethodConnector(
           name: 'setLook',
           params: {

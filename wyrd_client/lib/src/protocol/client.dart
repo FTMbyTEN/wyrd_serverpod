@@ -890,6 +890,14 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Ghost mode on or off: anonymous on the island (no name on the map or in chat, hidden from search and profiles, HQ
+  /// and homes closed to visitors and knocks), still on the map as a light, homes still counted as lived in.
+  _ida.Future<String> setGhost(bool on) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setGhost',
+    {'on': on},
+  );
+
   /// Save how I look on the island (chosen when I joined; changeable in Profile).
   _ida.Future<String> setLook(String look) => caller.callServerEndpoint<String>(
     'islandMe',

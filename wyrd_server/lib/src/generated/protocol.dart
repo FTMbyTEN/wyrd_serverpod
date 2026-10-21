@@ -3477,6 +3477,13 @@ class Protocol extends _is.DatabaseSerializationManager {
           columnDefault: 'true',
         ),
         _isp.ColumnDefinition(
+          name: 'ghost',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
           name: 'hqInvites',
           columnType: _isp.ColumnType.text,
           isNullable: false,

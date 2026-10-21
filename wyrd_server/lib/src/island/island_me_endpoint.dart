@@ -116,6 +116,7 @@ class IslandMeEndpoint extends Endpoint {
     final c = await WorldAuthority.citizen(session, u);
     return jsonEncode({
       ..._profileJson(p),
+      'ghost': p.ghost,
       'naira': c.naira,
       'earnedToday': await _earnedToday(session, u),
       'dailyCap': dailyCap,
@@ -142,11 +143,13 @@ class IslandMeEndpoint extends Endpoint {
     if (h.isNotEmpty && h != p.handle) {
       if (!RegExp(r'^[a-zA-Z0-9_.-]{3,20}$').hasMatch(h))
         return _err('A name of 3 to 20 letters, digits, _ . or -.');
+      // taken in any case, or too like someone else's (or a reserved name): nobody renames into another player
       final taken = await IslandProfile.db.findFirstRow(
         session,
-        where: (t) => t.handle.equals(h),
+        where: (t) => t.handle.ilike(h.replaceAll('_', r'\_')) & t.authUserId.notEquals(u),
       );
       if (taken != null) return _err('That name is taken.');
+      if (h.toLowerCase() != p.handle.toLowerCase() && await IslandAuthEndpoint.lookalike(session, h)) return _err('That name is too close to someone else\'s. Pick one that\'s clearly yours.');
       p = p.copyWith(handle: h);
     }
     p = p.copyWith(skills: _clean(skills, 300), openToWork: openToWork);
@@ -163,6 +166,15 @@ class IslandMeEndpoint extends Endpoint {
     }
     p = await IslandProfile.db.updateRow(session, p);
     return jsonEncode(_profileJson(p));
+  }
+
+  /// Ghost mode on or off: anonymous on the island (no name on the map or in chat, hidden from search and profiles, HQ
+  /// and homes closed to visitors and knocks), still on the map as a light, homes still counted as lived in.
+  Future<String> setGhost(Session session, bool on) async {
+    final u = _user(session);
+    final p = await IslandProfile.db.updateRow(session, (await _profile(session, u)).copyWith(ghost: on));
+    IslandEndpoint.forget(u.uuid);
+    return jsonEncode({'ghost': p.ghost});
   }
 
   /// Save how I look on the island (chosen when I joined; changeable in Profile).
@@ -1163,6 +1175,8 @@ class IslandMeEndpoint extends Endpoint {
       for (final p in all)
         () {
           final mine = p.authUserId == u;
+          // a ghost's BQ: lived in, but nameless and closed to everyone
+          if (p.ghost && !mine) return {'slot': p.id, 'resident': 'Private resident', 'color': p.hqColor, 'mine': false, 'may': false, 'ghost': true};
           final may =
               mine ||
               !p.hqLocked ||
@@ -1188,6 +1202,7 @@ class IslandMeEndpoint extends Endpoint {
     final owner = await IslandProfile.db.findById(session, slot);
     if (owner == null) return _err('No HQ there.');
     if (owner.authUserId == u) return jsonEncode({'status': 'granted'});
+    if (owner.ghost) return _err('This resident isn\'t taking visitors.');
     final had = await IslandAccess.db.findFirstRow(
       session,
       where: (t) =>
@@ -1909,6 +1924,11 @@ class IslandMeEndpoint extends Endpoint {
       );
       if (owner == null) continue;
       final mine = h.authUserId == u;
+      // a ghost's home: still lived in (and not for sale), but nameless and closed
+      if (owner.ghost && !mine) {
+        out.add({'plot': h.plot, 'style': h.style, 'mine': false, 'may': false, 'ghost': true, 'color': owner.hqColor});
+        continue;
+      }
       final may =
           mine ||
           !owner.hqLocked ||
@@ -2221,6 +2241,8 @@ class IslandMeEndpoint extends Endpoint {
     final u = _user(session);
     final p = await _byHandle(session, handle);
     if (p == null) return _err('No Lagosian by that name.');
+    // a ghost shows their profile only to themselves and their friends
+    if (p.ghost && p.authUserId != u && await _rel(session, u, p.authUserId) != 'friends') return _err('No Lagosian by that name.');
     final careers = await IslandGridCareer.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.xp > 0));
     final friends = await IslandFriend.db.count(session, where: (t) => (t.fromUser.equals(p.authUserId) | t.toUser.equals(p.authUserId)) & t.status.equals('accepted'));
     final jet = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(p.authUserId));
@@ -2256,7 +2278,7 @@ class IslandMeEndpoint extends Endpoint {
     final rows = q.isEmpty
         ? await IslandProfile.db.find(session, orderBy: (t) => t.createdAt.desc(), limit: 15)
         : await IslandProfile.db.find(session, where: (t) => t.handle.ilike('%${q.replaceAll(RegExp(r'[%_\\]'), '')}%'), orderBy: (t) => t.handle, limit: 15);
-    return jsonEncode([for (final p in rows) if (p.authUserId != u) _card(p)]);
+    return jsonEncode([for (final p in rows) if (p.authUserId != u && !p.ghost) _card(p)]);
   }
 
   /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
@@ -2333,6 +2355,7 @@ class IslandMeEndpoint extends Endpoint {
     if (p == null) return _err('No Lagosian by that name.');
     if (p.authUserId == u) return _err('That\'s you.');
     final back = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u));
+    if (p.ghost && back == null) return _err('No Lagosian by that name.'); // a ghost can't be found to be asked (they can still ask you)
     if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); _ping(p.authUserId, session); return jsonEncode({'rel': 'friends'}); }
     if (back != null && back.status == 'accepted') return jsonEncode({'rel': 'friends'});
     final day = DateTime.now().toUtc().subtract(const Duration(days: 1));

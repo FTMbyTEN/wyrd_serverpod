@@ -47,7 +47,11 @@ class IslandEndpoint extends Endpoint {
   }
 
   /// the island names of signed-in players, by account (looked up once, kept 10 minutes)
+  static final _ghosts = <String>{}; // accounts in ghost mode (by account id)
   static final _handles = <String, (String, DateTime)>{};
+
+  /// a player changed something the island shows (ghost mode): look them up afresh
+  static void forget(String userId) => _handles.remove(userId);
   /// signed-in players on the island now, by island name (lower case): on since, last seen, and metres moved since their
   /// last paid shift. Shifts pay only someone actually here, moving about, for the length of the shift.
   static final _presence = <String, ({DateTime since, DateTime last, double moved, double x, double z})>{};
@@ -78,6 +82,11 @@ class IslandEndpoint extends Endpoint {
     if (hit != null && DateTime.now().difference(hit.$2) < const Duration(minutes: 10)) return hit.$1;
     final p = await IslandProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(UuidValue.fromString(u)));
     if (p == null) return null;
+    if (p.ghost) {
+      _ghosts.add(u);
+    } else {
+      _ghosts.remove(u);
+    }
     _handles[u] = (p.handle, DateTime.now());
     return p.handle;
   }
@@ -143,8 +152,8 @@ class IslandEndpoint extends Endpoint {
     final handle = await _handleOf(session);
     final me = _players.putIfAbsent(id, () => _Player(id, key));
     me
-      ..name = handle ?? 'Guest ${id.substring(id.length - 4).toUpperCase()}'
-      ..verified = handle != null;
+      ..name = handle == null ? 'Guest ${id.substring(id.length - 4).toUpperCase()}' : _ghosts.contains(session.authenticated!.userIdentifier) ? 'Anonymous' : handle
+      ..verified = handle != null && !_ghosts.contains(session.authenticated!.userIdentifier);
     if (handle != null && me.room.isEmpty) _seen(handle, me.x, me.z);
     me
       ..color = RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(color) ? color : '#C4572E'
@@ -192,7 +201,7 @@ class IslandEndpoint extends Endpoint {
     if (DateTime.now().difference(_newcomersAt) < const Duration(minutes: 1)) return _newcomers;
     _newcomersAt = DateTime.now();
     final since = DateTime.now().toUtc().subtract(const Duration(hours: 24));
-    _newcomers = [for (final p in await IslandProfile.db.find(s, where: (t) => t.createdAt > since, limit: 200)) p.handle];
+    _newcomers = [for (final p in await IslandProfile.db.find(s, where: (t) => (t.createdAt > since) & t.ghost.equals(false), limit: 200)) p.handle];
     return _newcomers;
   }
 

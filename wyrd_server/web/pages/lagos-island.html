@@ -1237,6 +1237,9 @@
   .bnPay { text-align: center; padding: 18px 14px; border-radius: 20px; background: var(--ppCard, #fff); box-shadow: inset 0 0 0 1px rgba(15,23,42,.08); } .bnPay > small { display: block; font-weight: 700; opacity: .65; } .bnPay > b { display: block; font: 800 34px 'Plus Jakarta Sans', sans-serif; margin: 2px 0 12px; }
   .bnAcct { display: grid; gap: 4px; justify-items: center; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, rgba(14,165,233,.12), rgba(99,102,241,.12)); margin-bottom: 8px; } .bnAcct span { font-weight: 700; } .bnAcct strong { font: 800 28px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; }
   .bnWait { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 14px 0; font-size: 13px; } .bnWait i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #0EA5E9; border-top-color: transparent; animation: hSpin 1s linear infinite; flex: none; }
+  .ghostSw { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; cursor: pointer; color: inherit; font: inherit; } .ghostSw .gsI { font-size: 26px; } .ghostSw .gsT { flex: 1; } .ghostSw .gsT small { display: block; opacity: .7; margin-top: 2px; }
+  .ghostSw .gsK { width: 46px; height: 28px; border-radius: 999px; background: rgba(100,116,139,.35); position: relative; flex: none; transition: background .2s; } .ghostSw .gsK i { position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .ghostSw.on .gsK { background: #8B5CF6; } .ghostSw.on .gsK i { transform: translateX(18px); }
 </style>
 </head>
 <body>
@@ -6951,6 +6954,7 @@
     const h = homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? {} : null), st = HOME_STYLES[pl.style];
     const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'home:' + pl.plot, 'Your ' + st[0].toLowerCase(), { style: pl.style }); };
     if (!h) return houseCard({ title: '🪧 ' + st[0], sub: pl.name + ' · for sale', head: naira(st[1]), note: 'Empty, and locked until someone buys it.', buy: pl.plot });
+    if (h.ghost) return houseCard({ title: '👻 ' + st[0], sub: pl.name, head: 'Occupied', note: 'The resident keeps to themselves: no visits, no knocking.' });
     residentCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Their home stays private; here is who they are.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
   }
   // a BQ on HQ Row
@@ -6959,6 +6963,7 @@
     const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
     if (!taken) return houseCard({ title: '🏚️ BQ #' + (k + 1) + ' · HQ Row', sub: 'Vacant', head: 'Not assigned yet', note: 'Locked: it goes to the next new Lagosian, free for their first week.' });
     if (!hq) return houseCard({ title: '🏠 BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'A Lagosian lives here', note: signedIn() ? 'They keep their home private.' : 'Sign in to see who lives here.' });
+    if (hq.ghost) return houseCard({ title: '👻 ' + 'BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'Occupied', note: 'The resident keeps to themselves: no visits, no knocking.' });
     residentCard({ title: (hq.mine ? '🏡 ' : '🏠 ') + (hq.name || 'BQ #' + (k + 1)), sub: 'BQ #' + (k + 1) + ' · HQ Row', head: hq.mine ? 'Your apartment' : (hq.owner || hq.resident) ? `${hq.owner || hq.resident} lives here` : 'A Lagosian lives here', note: hq.mine ? 'Furnish it, invite people round.' : hq.owner ? 'They let visitors in. Knock, or say hello.' : 'Their BQ stays private; here is who they are.', mine: hq.mine, owner: hq.mine ? null : (hq.owner || hq.resident), go });
   }
 
@@ -9484,7 +9489,10 @@
       }
       if (app === 'privacy') {
         const P2 = [['🔐', 'Chats and groups', 'Encrypted on your device'], ['🏷️', 'Chat names', 'Encrypted too'], ['🏠', 'Your homes', 'Invite-only by default'], ['🧰', 'Your skills', 'Only to employers you apply to'], ['🎯', 'Job matches', 'Only you see them'], ['✨', 'WYRD', 'Sees only what you ask it'], ['👛', 'Your wallet', 'Only you, and WYRD as a number when you ask']];
+        const gh = !!(me$ && me$.ghost);
+        setTimeout(() => { const b = $('ghostSw'); if (b) b.onclick = async () => { b.disabled = true; try { const v = await my('setGhost', { on: !gh }); me$.ghost = v.ghost; notify(v.ghost ? 'Ghost mode on: you are anonymous on the island' : 'Ghost mode off: your name shows again', 'link'); render('privacy'); } catch (e) { b.disabled = false; fail(e); } }; }, 0);
         return show(`${ahead('privacy', 'Privacy', 'What stays yours')}
+          ${signedIn() ? `<button class="pcard ghostSw${gh ? ' on' : ''}" id="ghostSw"><span class="gsI">👻</span><span class="gsT"><b>Ghost mode</b><small>${gh ? 'On: no name on the map or in chat, hidden from search, nobody can visit or knock. Your homes still show as lived in, and you still show as a light on the map.' : 'Stay anonymous: hide your name everywhere and close your homes to visitors.'}</small></span><span class="gsK"><i></i></span></button>` : ''}
           <div class="hero" style="--ac:#00FFA3"><div class="hl">End to end</div><div class="hv" style="font-size:20px">🛡️ Locked on this device</div><small>The server only ever holds scrambled text.</small></div>
           <div class="lst">${P2.map(([ic, a, b]) => `<div class="li"><span class="ic">${ic}</span><span class="lt"><b>${a}</b><small>${b}</small></span><span class="lr pos">✓</span></div>`).join('')}</div>
           <div class="lock">Your chat key lives in this browser. Clear the site's data or use another device and older messages can't be opened there. That's the price of nobody else being able to read them.</div>`);
@@ -9762,7 +9770,7 @@
       if (k != null) {
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
-        else if (!hq) next = null; // vacant: locked
+        else if (!hq || hq.ghost) next = null; // vacant, or a resident in ghost mode: locked
         else if (hq.mine) { warmDoor('hq:' + hq.slot); next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) }; }
         else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }

@@ -15,6 +15,9 @@ fields:
   hqName: String?
   hqColor: String, default='#A855F7'
   hqLocked: bool, default=true
+  ### ghost mode: their name is hidden everywhere (map, chat, HQ Row, homes, search) and nobody may visit or knock;
+  ### their homes still count as lived in and they still show on the map
+  ghost: bool, default=false
   hqInvites: String, default='[]'
   ### how they look on the island: "g,skin,hair,style,bottom" (g: m or f), chosen when they joined
   look: String?

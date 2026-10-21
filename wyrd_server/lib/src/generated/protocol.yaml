@@ -65,6 +65,7 @@ islandMe:
   - confirmPhone:
   - me:
   - setProfile:
+  - setGhost:
   - setLook:
   - keyOf:
   - work:

@@ -26,6 +26,7 @@ abstract class IslandProfile
     this.hqName,
     String? hqColor,
     bool? hqLocked,
+    bool? ghost,
     String? hqInvites,
     this.look,
     required this.createdAt,
@@ -33,6 +34,7 @@ abstract class IslandProfile
        openToWork = openToWork ?? false,
        hqColor = hqColor ?? '#A855F7',
        hqLocked = hqLocked ?? true,
+       ghost = ghost ?? false,
        hqInvites = hqInvites ?? '[]';
 
   factory IslandProfile({
@@ -45,6 +47,7 @@ abstract class IslandProfile
     String? hqName,
     String? hqColor,
     bool? hqLocked,
+    bool? ghost,
     String? hqInvites,
     String? look,
     required DateTime createdAt,
@@ -67,6 +70,9 @@ abstract class IslandProfile
       hqLocked: jsonSerialization['hqLocked'] == null
           ? null
           : _is.BoolJsonExtension.fromJson(jsonSerialization['hqLocked']),
+      ghost: jsonSerialization['ghost'] == null
+          ? null
+          : _is.BoolJsonExtension.fromJson(jsonSerialization['ghost']),
       hqInvites: jsonSerialization['hqInvites'] as String?,
       look: jsonSerialization['look'] as String?,
       createdAt: _is.DateTimeJsonExtension.fromJson(
@@ -102,6 +108,10 @@ abstract class IslandProfile
 
   bool hqLocked;
 
+  /// ghost mode: their name is hidden everywhere (map, chat, HQ Row, homes, search) and nobody may visit or knock;
+  /// their homes still count as lived in and they still show on the map
+  bool ghost;
+
   String hqInvites;
 
   /// how they look on the island: "g,skin,hair,style,bottom" (g: m or f), chosen when they joined
@@ -125,6 +135,7 @@ abstract class IslandProfile
     String? hqName,
     String? hqColor,
     bool? hqLocked,
+    bool? ghost,
     String? hqInvites,
     String? look,
     DateTime? createdAt,
@@ -142,6 +153,7 @@ abstract class IslandProfile
       if (hqName != null) 'hqName': hqName,
       'hqColor': hqColor,
       'hqLocked': hqLocked,
+      'ghost': ghost,
       'hqInvites': hqInvites,
       if (look != null) 'look': look,
       'createdAt': createdAt.toJson(),
@@ -161,6 +173,7 @@ abstract class IslandProfile
       if (hqName != null) 'hqName': hqName,
       'hqColor': hqColor,
       'hqLocked': hqLocked,
+      'ghost': ghost,
       'hqInvites': hqInvites,
       if (look != null) 'look': look,
       'createdAt': createdAt.toJson(),
@@ -208,6 +221,7 @@ class _IslandProfileImpl extends IslandProfile {
     String? hqName,
     String? hqColor,
     bool? hqLocked,
+    bool? ghost,
     String? hqInvites,
     String? look,
     required DateTime createdAt,
@@ -221,6 +235,7 @@ class _IslandProfileImpl extends IslandProfile {
          hqName: hqName,
          hqColor: hqColor,
          hqLocked: hqLocked,
+         ghost: ghost,
          hqInvites: hqInvites,
          look: look,
          createdAt: createdAt,
@@ -240,6 +255,7 @@ class _IslandProfileImpl extends IslandProfile {
     Object? hqName = _Undefined,
     String? hqColor,
     bool? hqLocked,
+    bool? ghost,
     String? hqInvites,
     Object? look = _Undefined,
     DateTime? createdAt,
@@ -254,6 +270,7 @@ class _IslandProfileImpl extends IslandProfile {
       hqName: hqName is String? ? hqName : this.hqName,
       hqColor: hqColor ?? this.hqColor,
       hqLocked: hqLocked ?? this.hqLocked,
+      ghost: ghost ?? this.ghost,
       hqInvites: hqInvites ?? this.hqInvites,
       look: look is String? ? look : this.look,
       createdAt: createdAt ?? this.createdAt,
@@ -303,6 +320,11 @@ class IslandProfileUpdateTable extends _is.UpdateTable<IslandProfileTable> {
 
   _is.ColumnValue<bool, bool> hqLocked(bool value) => _is.ColumnValue(
     table.hqLocked,
+    value,
+  );
+
+  _is.ColumnValue<bool, bool> ghost(bool value) => _is.ColumnValue(
+    table.ghost,
     value,
   );
 
@@ -363,6 +385,11 @@ class IslandProfileTable extends _is.Table<int?> {
       this,
       hasDefault: true,
     );
+    ghost = _is.ColumnBool(
+      'ghost',
+      this,
+      hasDefault: true,
+    );
     hqInvites = _is.ColumnString(
       'hqInvites',
       this,
@@ -400,6 +427,10 @@ class IslandProfileTable extends _is.Table<int?> {
 
   late final _is.ColumnBool hqLocked;
 
+  /// ghost mode: their name is hidden everywhere (map, chat, HQ Row, homes, search) and nobody may visit or knock;
+  /// their homes still count as lived in and they still show on the map
+  late final _is.ColumnBool ghost;
+
   late final _is.ColumnString hqInvites;
 
   /// how they look on the island: "g,skin,hair,style,bottom" (g: m or f), chosen when they joined
@@ -418,6 +449,7 @@ class IslandProfileTable extends _is.Table<int?> {
     hqName,
     hqColor,
     hqLocked,
+    ghost,
     hqInvites,
     look,
     createdAt,
