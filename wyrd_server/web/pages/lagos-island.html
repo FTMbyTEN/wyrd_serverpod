@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lagos Island">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1556,8 +1556,8 @@
   const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
   function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? zoomCap : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
-  { const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
-    const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
+  { let seaCol = ''; const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; seaCol = col; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
     setTimeout(seaBg, 0); setInterval(seaBg, 20000);
     // anything the device leaves outside the page (an iPhone app's strip under the home bar) shows the page background:
     // keep it the colour of what's at the bottom edge: the phone's screen when it's open, otherwise the island's bottom row
@@ -1565,7 +1565,9 @@
       const ph = document.getElementById('phone');
       if (ph && ph.style.display === 'block') col = ph.classList.contains('os-light') ? '#EEF2F8' : '#0B0B14';
       else { try { const cvs = document.getElementById('c'), g = cvs.getContext('2d'), y = cvs.height - 2, px = g.getImageData(0, y, cvs.width, 1).data; let r = 0, gg = 0, bb = 0, n = 0; for (let k = 0; k < px.length; k += 4 * 24) { if (px[k + 3] < 200) continue; r += px[k]; gg += px[k + 1]; bb += px[k + 2]; n++; } if (n) col = `rgb(${Math.round(r / n)},${Math.round(gg / n)},${Math.round(bb / n)})`; } catch {} }
-      if (col && document.documentElement.style.background !== col) document.documentElement.style.background = document.body.style.background = col; };
+      if (col && document.documentElement.style.background !== col) document.documentElement.style.background = document.body.style.background = col;
+      // the bar behind the clock takes the colour of what's at the top: the phone's screen when it's open, the island's sea otherwise
+      if (meta) { const top = ph && ph.style.display === 'block' ? (ph.classList.contains('os-light') ? '#F3F6FB' : '#0B0B14') : (seaCol || meta.content); if (meta.content !== top) meta.content = top; } };
     setInterval(edge, 700); }
   if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (W !== innerWidth || H !== innerHeight) resize(); });
   addEventListener('orientationchange', () => setTimeout(resize, 250));
