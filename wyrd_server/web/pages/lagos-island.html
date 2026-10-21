@@ -1240,6 +1240,8 @@
   .ghostSw { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; cursor: pointer; color: inherit; font: inherit; } .ghostSw .gsI { font-size: 26px; } .ghostSw .gsT { flex: 1; } .ghostSw .gsT small { display: block; opacity: .7; margin-top: 2px; }
   .ghostSw .gsK { width: 46px; height: 28px; border-radius: 999px; background: rgba(100,116,139,.35); position: relative; flex: none; transition: background .2s; } .ghostSw .gsK i { position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
   .ghostSw.on .gsK { background: #8B5CF6; } .ghostSw.on .gsK i { transform: translateX(18px); }
+  .rmRow { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(148,163,184,.2); } .rmRow select { padding: 6px; border-radius: 10px; }
+  .rmSw { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; } .rmSw button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(15,23,42,.15); cursor: pointer; } .rmSw button.on { border-color: #0EA5E9; box-shadow: 0 0 0 2px #0EA5E9; }
 </style>
 </head>
 <body>
@@ -4579,11 +4581,21 @@
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
     compound(a, b, c, d, hq && hq.mine, () => {
-      box(a + 1.8, 0, b + 2, c - 1.8, 4, d - 3.6, '#F1E9DA', '#475569', 1);
-      gable(a + 1.4, b + 1.6, c - 1.4, d - 3.2, 4, 1.4, '#9CA3AF'); // a corrugated roof
-      box(a + 3.4, 0, d - 3.6, a + 5, 2.9, d - 3.4, hq && !hq.may ? '#475569' : col); // the door
-      box(a + 1.6, 2.9, d - 3.6, c - 1.6, 3.15, d - 2.4, '#78716C'); // the little porch roof
-      // the parking bay in the front yard beside the door: paved, lined, your favourite car on it
+      // a modern BQ: white render, a timber-clad wing in the owner's colour, floor-to-ceiling glass, a flat slab roof
+      // with solar panels, a cantilevered canopy over the door, wall lights after dark
+      const fz = d - 3.6, mid = a + (c - a) * 0.42, H = 4.8, dark = night > 0.35;
+      box(a + 1.8, 0, b + 2, c - 1.8, H, fz, '#F8FAFC', '#475569', 1);
+      box(a + 1.8, 0, fz - 0.05, mid, H, fz + 0.15, shadeHex(col, 0.55)); // the clad wing
+      for (let px = a + 2.2; px < mid; px += 0.55) box(px, 0.2, fz + 0.15, px + 0.12, H - 0.2, fz + 0.22, shadeHex(col, 0.42)); // its battens
+      box(mid + 0.6, 0.5, fz - 0.02, c - 2.4, H - 0.6, fz + 0.12, dark ? '#FDE68A' : '#1E3A5F'); // the glass, lit warm at night
+      for (let px = mid + 0.6 + 1.6; px < c - 2.4; px += 1.6) box(px - 0.05, 0.5, fz + 0.12, px + 0.05, H - 0.6, fz + 0.16, '#0F172A'); // its mullions
+      box(a + 1.4, H, b + 1.6, c - 1.4, H + 0.45, fz + 0.5, '#E2E8F0'); box(a + 1.4, H + 0.45, b + 1.6, c - 1.4, H + 0.75, b + 1.9, '#94A3B8'); box(a + 1.4, H + 0.45, b + 1.6, a + 1.7, H + 0.75, fz + 0.5, '#94A3B8'); // the slab roof and its parapet
+      for (let k2 = 0; k2 < 2; k2++) { const sx = c - 4.6 - k2 * 2.6; box(sx, H + 0.5, b + 3, sx + 2.2, H + 0.85, b + 5.2, '#1E3A8A'); box(sx + 0.1, H + 0.85, b + 3.1, sx + 2.1, H + 0.9, b + 5.1, '#3B82F6'); } // the solar panels
+      box(a + 2.6, 0, fz, a + 4.4, 3.1, fz + 0.2, hq && !hq.may ? '#475569' : col); // the door
+      box(a + 1.8, 3.3, fz, mid + 0.4, 3.55, fz + 1.6, '#0F172A'); // the canopy over it
+      for (const lx of [a + 2.3, a + 4.7]) { box(lx - 0.12, 2.3, fz + 0.15, lx + 0.12, 2.7, fz + 0.3, '#111827'); if (dark) { const p = P(lx, 2.5, fz + 0.3); glow.push(() => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 1.4); g.addColorStop(0, 'rgba(253,230,138,0.7)'); g.addColorStop(1, 'rgba(253,230,138,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 1.4, 0, Math.PI * 2); x.fill(); x.restore(); }); } } // wall lights
+      box(mid + 0.6, 0, fz + 0.3, c - 2.4, 0.6, fz + 1, '#57534E'); for (let px = mid + 1.2; px < c - 2.8; px += 1.1) disk(px, fz + 0.65, 0.62, 0.42, '#15803D'); // a planter under the glass
+      // the parking bay in the front yard: paved, lined, your favourite car on it
       flat(a + 5.4, d - 3.3, c - 0.9, d - 0.7, 0.06, '#9CA3AF', '#D1D5DB'); groundText('P', c - 1.6, d - 1.2, 0.9, 'rgba(255,255,255,0.8)');
       if (hq && hq.mine) { const c2 = parkOrder(myCarsL)[0]; if (c2) drawCar((a + 5.4 + c - 0.9) / 2, d - 2, c2.model, c2.color, 0, 0.6); }
     });
@@ -5383,7 +5395,7 @@
   const kindOf = (it) => (STORE[it.k] ? STORE[it.k].kind : it.k); // how a piece behaves: store pieces act like the drawn kinds
   const PALETTE = ['#3B82F6', '#EF4444', '#22B573', '#F59E0B', '#A855F7', '#EC4899', '#111827', '#F8FAFC', '#8B5E3C'];
   const ROOMS = {
-    hq: { w: 76, d: 52, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.78, zoom: 1.5 } },
+    hq: { w: 76, d: 52, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.64, zoom: 1.5 } },
     club: { w: 140, d: 92, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.95 } },
     casino: { w: 96, d: 66, floor: '#4A1212', wall: '#2A0C0C', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
@@ -6235,7 +6247,7 @@
     const W = R.w, D = R.d, t = performance.now() / 1000, dark = night > 0.5;
     // ---- the bedroom corner (front left): carpet, a built-in wardrobe on the left wall, a reading light
     const [bw, bd] = F.bed, bz0 = D - bd - 6;
-    flat(0.2, bz0, bw, D - 6, 0.025, shadeHex(R.floor, 0.82)); flat(0.2, bz0, bw, bz0 + 0.3, 0.03, F.acc);
+    flat(0.2, bz0, bw, D - 6, 0.025, R.bedFloor || shadeHex(R.floor, 0.82)); flat(0.2, bz0, bw, bz0 + 0.3, 0.03, F.acc);
     box(0, 0, bz0 + 1, 2.2, 11, bz0 + bd - 1, F.cab); for (let k = 1; k < 3; k++) box(2.2, 1, bz0 + 1 + k * (bd - 2) / 3 - 0.05, 2.25, 10.5, bz0 + 1 + k * (bd - 2) / 3 + 0.05, '#A8A29E'); // the wardrobe's doors
     box(0, 0, bz0 + 1, 2.25, 0.6, bz0 + bd - 1, F.top);
     // ---- the kitchen along the back wall: base units, worktop, hob, sink, wall cupboards, a tiled splashback, the fridge
@@ -6461,6 +6473,43 @@
   // tiles in the bathroom; low cut-away walls between the rooms; tall windows with the day coming in
   // your BQ: oak on the diagonal, a rug for the sitting room, windows down the back and the side, and the same fitted
   // kitchen, bathroom and bedroom corner as a bought home (see FITOUT.bq), sized for a BQ; the middle is yours to furnish
+  // ---- the BQ's rooms: each one's place on the floor, its default finish, and the finishes an owner can choose
+  const roomItems = (rooms) => Object.entries(rooms || {}).map(([k, v]) => ({ k: 'room:' + k, x: 0, z: 0, ...(v.f ? { f: v.f } : {}), ...(v.w ? { w: v.w } : {}) }));
+  const BQ_ROOMS = {
+    living: { name: 'Living room', r: [18, 8, 57.4, 52], f: 'matte', w: '#F7F3EC' },
+    kitchen: { name: 'Kitchen', r: [14, 0, 42, 8], f: 'tiles', w: '#F7F3EC' },
+    bedroom: { name: 'Bedroom', r: [0, 26.6, 18, 46], f: 'carpet', w: '#E0F2FE' },
+    study: { name: 'Study', r: [58, 30.6, 76, 46], f: 'oak', w: '#DCFCE7' },
+    bath: { name: 'Bathroom', r: [62, 0, 76, 12], f: 'tiles', w: '#E0F2FE' },
+  };
+  const FLOORS = { matte: ['Black matte', '#161618', 'rgba(255,255,255,0.035)'], oak: ['Oak', '#8B5A2B', 'rgba(0,0,0,0.18)'], marble: ['Marble', '#E7E5E4', 'rgba(120,113,108,0.25)'], carpet: ['Carpet', '#475569', null], tiles: ['Tiles', '#CBD5E1', 'rgba(100,116,139,0.35)'], terrazzo: ['Terrazzo', '#D6CFC4', 'rgba(87,83,78,0.25)'], walnut: ['Walnut', '#4A2C17', 'rgba(0,0,0,0.25)'] };
+  const WALLS = ['#F7F3EC', '#E0F2FE', '#DCFCE7', '#FCE7F3', '#FEF3C7', '#E9D5FF', '#1E293B', '#7C2D12', '#0F766E'];
+  const roomFin = (R, k) => ({ f: ((R.rooms || {})[k] || {}).f || BQ_ROOMS[k].f, w: ((R.rooms || {})[k] || {}).w || BQ_ROOMS[k].w });
+  // each room's floor in its finish, its name faint on the floor, the low walls between rooms in their colour, and the study
+  function drawBqRooms(R) {
+    for (const [k, rm] of Object.entries(BQ_ROOMS)) {
+      if (k === 'kitchen' || k === 'bath') continue; // tiled by the fit-out
+      const [x0, z0, x1, z1] = rm.r, fl = FLOORS[roomFin(R, k).f] || FLOORS.matte;
+      flat(x0, z0, x1, z1, 0.022, fl[1]);
+      if (fl[2]) { x.strokeStyle = fl[2]; x.lineWidth = 1; x.beginPath(); for (let px = x0 + 2.2; px < x1; px += 2.2) { const p = P(px, 0.03, z0), q = P(px, 0.03, z1); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); }
+      groundText(rm.name.toUpperCase(), (x0 + x1) / 2, z1 - 2.4, 0.9, 'rgba(255,255,255,0.16)');
+    }
+    R.bedFloor = (FLOORS[roomFin(R, 'bedroom').f] || FLOORS.carpet)[1];
+    const wall = (x0, z0, x1, z1, col) => { box(x0, 0, z0, x1, 3.6, z1, col); box(x0, 3.6, z0, x1, 3.8, z1, shadeHex(col, 0.8)); }; // cut away low, so you see in
+    const bw = roomFin(R, 'bedroom').w, sw = roomFin(R, 'study').w;
+    wall(0, 26, 18, 26.6, bw); wall(17.4, 26.6, 18, 40, bw); // the bedroom: its door at the front, by the living room
+    wall(58, 30, 76, 30.6, sw); wall(57.4, 30, 58, 40, sw); // the study, the same on the other side
+    // a band of each room's colour on the back and side walls it touches
+    const band = (pts, col) => quad(pts.map(([px, py, pz]) => P(px, py, pz)), col);
+    band([[0.06, 0.7, 26.6], [0.06, 0.7, 46], [0.06, 13, 46], [0.06, 13, 26.6]], bw);
+    band([[18, 0.7, 0.06], [57, 0.7, 0.06], [57, 3.2, 0.06], [18, 3.2, 0.06]], roomFin(R, 'living').w);
+    // the study: a desk with a laptop and a lamp, a chair, a bookcase against its wall
+    box(62, 0, 31.2, 72, 2.6, 34.4, '#78350F'); box(61.8, 2.6, 31, 72.2, 2.85, 34.6, '#A16207');
+    box(65.5, 2.85, 31.8, 68.5, 3, 33.6, '#1F2937'); quad([P(65.6, 3, 31.8), P(68.4, 3, 31.8), P(68.4, 4.9, 31.6), P(65.6, 4.9, 31.6)], night > 0.5 ? '#38BDF8' : '#334155', '#111827'); // the laptop
+    box(70, 2.85, 31.6, 70.4, 5.2, 32, '#1F2937'); { const l = P(70.2, 5.4, 32); x.fillStyle = night > 0.4 ? '#FDE68A' : '#F5F5F4'; x.beginPath(); x.arc(l[0], l[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill(); } // the lamp
+    box(65.5, 0, 36, 68.5, 2, 38.6, '#111827'); box(65.5, 2, 38.2, 68.5, 4.6, 38.6, '#111827'); // the chair
+    box(74.6, 0, 33, 76, 11, 44, '#3F2A1D'); for (let y = 2.4; y < 11; y += 2.6) { box(74.4, y, 33.2, 74.6, y + 0.2, 43.8, '#A16207'); for (let z = 33.6; z < 43.4; z += 0.8) box(74.1, y + 0.2, z, 74.5, y + 1.8 + ((z * 7) % 3) * 0.2, z + 0.5, ['#B91C1C', '#1D4ED8', '#15803D', '#CA8A04', '#7C3AED'][Math.floor(z * 3) % 5]); } // the bookcase
+  }
   function drawApartment(R) {
     const zone = (x0, z0, x1, z1, base, line, step, diag) => {
       flat(x0, z0, x1, z1, 0.02, base);
@@ -6471,6 +6520,7 @@
       }
     };
     zone(0, 0, R.w, R.d, '#161618', 'rgba(255,255,255,0.035)', 2.2, true); // black matte boards, laid on the diagonal
+    drawBqRooms(R);
     // the sitting-room rug: a border, a field, a band of pattern
     flat(22, 18, 40, 32, 0.025, '#7C2D12'); flat(23, 19, 39, 31, 0.03, '#B45309'); flat(24.5, 20.5, 37.5, 29.5, 0.035, '#F5E6C8');
     for (let k = 0; k < 6; k++) { const px = 25.5 + k * 2.2; flat(px, 24.4, px + 1.2, 25.6, 0.04, k % 2 ? '#B45309' : '#15803D'); }
@@ -6579,7 +6629,7 @@
     if (kind === 'home') { // each style its own size and finish
       const st = HOME_STYLES[extra.style] || HOME_STYLES.bungalow, fin = HOME_FINISH[extra.style] || HOME_FINISH.bungalow;
       R.w = Math.round(st[2] * HOME_ROOMY); R.d = Math.round(st[3] * HOME_ROOMY_D); R.floor = '#161618'; R.wall = fin[1]; R.trim = fin[2]; // more room in every home, a black matte floor
-      R.cam = { ...R.cam, pitch: 0.78, zoom: Math.min(2.2, 1.85 * 56 / R.w) };
+      R.cam = { ...R.cam, pitch: 0.64, zoom: Math.min(2.2, 1.85 * 56 / R.w) };
     }
     if (kind === 'dealer') { // keep the furniture off the turntables: the lounge in each showroom's free corner
       const moves = extra.dealer === 'polanco' ? { couch2: [72, 64], coffee: [80, 64], plant: [94, 62] } : { plant: [94, 46] };
@@ -6607,6 +6657,7 @@
       try {
         const [v, f, cars] = await Promise.all([my('room', { key }), my('myFurniture', { room: key }).catch(() => ({})), my('myCars').catch(() => myCarsL)]);
         if (v.layout) R.layout = v.layout; R.mine = v.mine;
+        R.rooms = Object.fromEntries(R.layout.filter((it) => String(it.k).startsWith('room:')).map((it) => [it.k.slice(5), { f: it.f, w: it.w }])); R.layout = R.layout.filter((it) => !String(it.k).startsWith('room:'));
         if (R.mine) { R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; R.cars = myCarsL = cars; } // a loft keeps your cars inside // what you can place: what you've bought, less what stands in your other homes
       }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
@@ -6660,7 +6711,7 @@
     decoEl.innerHTML = `<div class="dscroll">${pieces.length ? pieces.map(([k, f]) => `<button class="ditem${deco.sel === k ? ' on' : ''}" data-k="${k}">${STORE[k] ? `<img src="${FURN_BASE}thumbs/${STORE[k].m}.png" alt="">` : `<span>${f[1]}</span>`}${f[0]}${left ? ` ×${left[k]}` : ''}</button>`).join('') : '<span class="dl">Your home is empty. Buy furniture at the Eko Home Store.</span>'}</div>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="dSave">Save</button><button class="dbtn" id="dOff">Close</button>`;
     decoEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { deco.sel = b.dataset.k; setDeco(); }));
     if (left) document.getElementById('dShop').onclick = () => openPhone('store');
-    document.getElementById('dSave').onclick = async () => { try { await my('saveRoom', { key: inside.key, layout: JSON.stringify(inside.layout) }); bubbles.set('me', { text: 'Saved. Looking good.', until: performance.now() + 3000 }); } catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 4000 }); } };
+    document.getElementById('dSave').onclick = async () => { try { await my('saveRoom', { key: inside.key, layout: JSON.stringify([...inside.layout, ...roomItems(inside.rooms)]) }); bubbles.set('me', { text: 'Saved. Looking good.', until: performance.now() + 3000 }); } catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 4000 }); } };
     document.getElementById('dOff').onclick = () => { deco = null; setDeco(); };
   }
   const isHome = () => !!inside && (inside.kind === 'hq' || inside.kind === 'home'); // your BQ or a home you bought
@@ -8815,6 +8866,7 @@
         show(`${ahead('hq', 'My HQ', 'Your BQ on HQ Row · and every home you buy')}
           <div class="hero" style="--ac:${esc(h.color)}"><div class="hl">${h.locked ? '🔒 Invite only' : '🔓 Open door'}</div><div class="hv" style="font-size:20px">🏠 ${esc(h.name)}</div><small>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</small></div>
           <div class="qa" style="--ac:#FF4FD8"><button id="hGo"><i>🚪</i>Go home</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hShop"><i>🛋️</i>Furnish</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
+          <div class="pcard" id="hRooms"><h3>🛋️ Your rooms</h3><small class="dim">Loading…</small></div>
           <div class="pcard"><h3>📣 HQ Row board</h3><small class="dim">Your announcement on the big screen for 24 hours (one every 2 hours).</small><input id="hAnn" maxlength="80" placeholder="e.g. Owambe at mine tonight, everybody come!"><div class="row4"><button class="pbtn" id="hAnnGo">Announce it</button><button class="pbtn alt" id="hBoard">🎉 Host a party</button></div><div class="err" id="hAnnErr"></div></div>
           ${reqs.length ? `<div class="rsec">🔔 AT YOUR DOOR</div><div class="lst">${reqs.map((r) => `<div class="li">${avatar(r.handle)}<span class="lt"><b>${esc(r.handle)}</b><small>wants to come in</small></span><button class="pbtn" data-allow="${r.id}" style="margin:0 4px 0 0">Let in</button><button class="pbtn alt" data-deny="${r.id}" style="margin:0">No</button></div>`).join('')}</div>` : ''}
           <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your flag and your door)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
@@ -8822,6 +8874,16 @@
         pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
         $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
         if ($('hBoard')) $('hBoard').onclick = () => go('parties');
+        // each room's floor and wall colour, saved with the BQ's layout
+        (async () => { const box2 = $('hRooms'); try { await loadHqRow(); const mine = hqSlots.find((s2) => s2.mine); if (!mine) { box2.innerHTML = '<h3>🛋️ Your rooms</h3><small class="dim">Your BQ is being assigned.</small>'; return; }
+          const key = 'hq:' + mine.slot, v = await myNet('room', { key }), all = v.layout || [];
+          const rooms = Object.fromEntries(all.filter((it) => String(it.k).startsWith('room:')).map((it) => [it.k.slice(5), { f: it.f, w: it.w }]));
+          const draw = () => { box2.innerHTML = `<h3>🛋️ Your rooms</h3><small class="dim">Pick each room's floor and wall colour. Furnish them inside: tap ✏️ in your BQ.</small>${Object.entries(BQ_ROOMS).map(([k, rm]) => { const fin = { f: (rooms[k] || {}).f || rm.f, w: (rooms[k] || {}).w || rm.w };
+              return `<div class="rmRow"><b>${rm.name}</b><select data-rf="${k}">${Object.entries(FLOORS).map(([fk, fv]) => `<option value="${fk}" ${fk === fin.f ? 'selected' : ''}>${fv[0]}</option>`).join('')}</select><span class="rmSw">${WALLS.map((c) => `<button data-rw="${k}" data-c="${c}" class="${c === fin.w ? 'on' : ''}" style="background:${c}" aria-label="Wall colour"></button>`).join('')}</span></div>`; }).join('')}<button class="pbtn" id="hRoomsGo">Save the rooms</button><div class="err" id="hRoomsErr"></div>`;
+            box2.querySelectorAll('[data-rf]').forEach((s2) => (s2.onchange = () => { (rooms[s2.dataset.rf] ??= {}).f = s2.value; }));
+            box2.querySelectorAll('[data-rw]').forEach((b2) => (b2.onclick = () => { (rooms[b2.dataset.rw] ??= {}).w = b2.dataset.c; draw(); }));
+            $('hRoomsGo').onclick = async () => { try { await my('saveRoom', { key, layout: JSON.stringify([...all.filter((it) => !String(it.k).startsWith('room:')), ...roomItems(rooms)]) }); if (inside && inside.key === key) inside.rooms = { ...rooms }; tickerSay('🛋️ Rooms saved'); } catch (e) { $('hRoomsErr').textContent = e.message; } }; };
+          draw(); } catch (e) { box2.innerHTML = '<h3>🛋️ Your rooms</h3><small class="dim">' + esc(e.message) + '</small>'; } })();
         $('hAnnGo').onclick = async () => { const t = $('hAnn').value.trim(); if (!t) return; $('hAnnErr').textContent = ''; try { await my('boardPost', { text: t }); hqBoard.posts = await myNet('board', {}); $('hAnn').value = ''; tickerSay('📣 On the HQ Row board now'); } catch (e) { $('hAnnErr').textContent = e.message; } };
         $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
         return;

@@ -2521,6 +2521,14 @@ class IslandMeEndpoint extends Endpoint {
           it['z'] is! num)
         return _err('Bad furniture.');
     }
+    // a room's finish (room:living, room:bedroom, ...): its floor and wall colour, free to choose; not furniture
+    final hex = RegExp(r'^#[0-9a-fA-F]{6}$');
+    for (final it in list.where((it) => (it['k'] as String).startsWith('room:'))) {
+      if (!RegExp(r'^room:[a-z]{2,12}$').hasMatch(it['k'] as String) || (it['f'] != null && !RegExp(r'^[a-z]{2,12}$').hasMatch('${it['f']}')) || (it['w'] != null && !hex.hasMatch('${it['w']}')))
+        return _err('Bad room finish.');
+    }
+    final finishes = list.where((it) => (it['k'] as String).startsWith('room:')).length;
+    if (finishes > 8) return _err('Too many rooms.');
     final had = await IslandRoom.db.findFirstRow(
       session,
       where: (t) => t.key.equals(key),
@@ -2538,6 +2546,7 @@ class IslandMeEndpoint extends Endpoint {
     }
     final owned = await _owned(session, u);
     for (final e in placed.entries) {
+      if (e.key.startsWith('room:')) continue;
       if (e.key.startsWith('k:')) {
         if (e.value + (elsewhere[e.key] ?? 0) > (owned[e.key] ?? 0))
           return _err('Buy that piece at the Eko Home Store first.');
