@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import '../generated/protocol.dart';
@@ -25,12 +26,21 @@ abstract final class Payout {
     if (_key(s).isEmpty) throw PayoutRefused('Bank accounts open soon.');
     final r = await _http.get(Uri.parse('https://api.flutterwave.com/v3/banks/NG'), headers: _auth(s)).timeout(const Duration(seconds: 20));
     final j = _json(r.body);
-    if (r.statusCode != 200 || j['data'] is! List) throw PayoutRefused('The bank list is not available right now. Try again in a moment.');
+    if (r.statusCode != 200 || j['data'] is! List) {
+      s.log('[payout] bank list from Flutterwave failed: ${r.statusCode} ${r.body.length > 200 ? r.body.substring(0, 200) : r.body}', level: LogLevel.warning);
+      return _fallbackBanks;
+    }
     _banks = [for (final b in j['data'] as List) if (b is Map && b['code'] != null && b['name'] != null) {'code': '${b['code']}', 'name': '${b['name']}'}]
       ..sort((a, b) => a['name']!.compareTo(b['name']!));
     _banksAt = DateTime.now();
     return _banks!;
   }
+
+  /// The main Nigerian banks and fintechs (NIBSS/CBN codes Flutterwave uses), for when its list can't be fetched.
+  static final _fallbackBanks = [
+    for (final b in const [['044', 'Access Bank'], ['023', 'Citibank Nigeria'], ['050', 'Ecobank Nigeria'], ['070', 'Fidelity Bank'], ['011', 'First Bank of Nigeria'], ['214', 'First City Monument Bank'], ['00103', 'Globus Bank'], ['058', 'Guaranty Trust Bank'], ['030', 'Heritage Bank'], ['301', 'Jaiz Bank'], ['082', 'Keystone Bank'], ['50211', 'Kuda Bank'], ['50515', 'Moniepoint MFB'], ['999992', 'OPay'], ['999991', 'PalmPay'], ['076', 'Polaris Bank'], ['101', 'Providus Bank'], ['221', 'Stanbic IBTC Bank'], ['068', 'Standard Chartered Bank'], ['232', 'Sterling Bank'], ['100', 'SunTrust Bank'], ['102', 'Titan Trust Bank'], ['032', 'Union Bank of Nigeria'], ['033', 'United Bank for Africa'], ['215', 'Unity Bank'], ['566', 'VFD Microfinance Bank'], ['035', 'Wema Bank'], ['057', 'Zenith Bank']])
+      {'code': b[0], 'name': b[1]},
+  ];
 
   /// The account as the player sees it (the number masked).
   static Map<String, dynamic>? view(IslandPayoutAccount? a) => a == null
@@ -38,13 +48,31 @@ abstract final class Payout {
       : {
           'bankName': a.bankName, 'last4': a.accountNumber.substring(a.accountNumber.length - 4), 'accountName': a.accountName,
           'legalName': a.legalName, 'nameMatch': a.nameMatch, 'email': _maskEmail(a.email), 'emailVerified': a.emailVerified, 'status': a.status,
+          if (a.holdUntil != null && a.holdUntil!.isAfter(DateTime.now().toUtc())) 'holdUntil': a.holdUntil!.toIso8601String(),
           'adult': a.dateOfBirth != null && ageOf(a.dateOfBirth!) >= RewardConfig.current.minAge, 'terms': a.termsAcceptedAt != null,
         };
 
   /// Add (or replace) my payout account: look the account up at the bank, compare names, email a code.
   static int ageOf(DateTime dob) { final n = DateTime.now().toUtc(); var a = n.year - dob.year; if (n.month < dob.month || (n.month == dob.month && n.day < dob.day)) a--; return a; }
 
-  static Future<Map<String, dynamic>> set(Session s, UuidValue u, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth) async {
+  /// The player's own game password, checked against their account (no sign-in is made).
+  static Future<void> checkPassword(Session s, UuidValue u, String password) async {
+    final acct = await EmailAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+    if (acct == null || password.isEmpty) throw PayoutRefused('Enter your game password.');
+    try {
+      final who = await AuthServices.instance.emailIdp.utils.authentication.authenticate(s, email: acct.email, password: password, transaction: null);
+      if (who != u) throw PayoutRefused('That password isn\'t right.');
+    } on PayoutRefused {
+      rethrow;
+    } on EmailAuthenticationTooManyAttemptsException {
+      throw PayoutRefused('Too many tries. Wait a while and try again.');
+    } catch (_) {
+      throw PayoutRefused('That password isn\'t right.');
+    }
+  }
+
+  static Future<Map<String, dynamic>> set(Session s, UuidValue u, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth, String password) async {
+    await checkPassword(s, u, password);
     final num = accountNumber.replaceAll(RegExp(r'\s'), ''), name = legalName.trim().replaceAll(RegExp(r'\s+'), ' '), mail = email.trim().toLowerCase();
     if (!RegExp(r'^\d{10}$').hasMatch(num)) throw PayoutRefused('Account numbers are 10 digits.');
     if (name.split(' ').length < 2 || name.length > 80) throw PayoutRefused('Your full name, as your bank has it (first and last name).');
@@ -53,6 +81,12 @@ abstract final class Payout {
     if (dob == null || dob.year < 1900 || dob.isAfter(DateTime.now())) throw PayoutRefused('Enter your date of birth.');
     if (ageOf(dob) < RewardConfig.current.minAge) throw PayoutRefused('You need to be ${RewardConfig.current.minAge} or older to be paid real money.');
     final bank = (await banks(s)).where((b) => b['code'] == bankCode).firstOrNull;
+    // one bank account, one player
+    final taken = await IslandPayoutAccount.db.findFirstRow(s, where: (t) => t.bankCode.equals(bankCode) & t.accountNumber.equals(num) & t.authUserId.notEquals(u));
+    if (taken != null) {
+      s.log('[payout] bank account ${bankCode}:••${num.substring(6)} already linked to another player; refused for ${u.uuid}', level: LogLevel.warning);
+      throw PayoutRefused('This bank account is already linked to another player. Each bank account can belong to one player only.');
+    }
     if (bank == null) throw PayoutRefused('Choose your bank from the list.');
     final r = await _http.post(Uri.parse('https://api.flutterwave.com/v3/accounts/resolve'), headers: _auth(s), body: jsonEncode({'account_number': num, 'account_bank': bankCode})).timeout(const Duration(seconds: 20));
     final j = _json(r.body), d = j['data'] is Map ? j['data'] as Map : const {};
@@ -64,6 +98,8 @@ abstract final class Payout {
     final row = IslandPayoutAccount(
       id: had?.id, authUserId: u, bankCode: bankCode, bankName: bank['name']!, accountNumber: num, accountName: acctName, legalName: name, nameMatch: match,
       email: mail, emailVerified: false, emailCode: code, codeExpires: now.add(const Duration(minutes: 20)), codeTries: 0, status: 'unverified', dateOfBirth: DateTime.utc(dob.year, dob.month, dob.day), termsAcceptedAt: had?.termsAcceptedAt,
+      // a changed account: no withdrawals for 48 hours (time for the player to notice if it wasn't them)
+      holdUntil: had != null && (had.bankCode != bankCode || had.accountNumber != num) ? now.add(const Duration(hours: 48)) : had?.holdUntil,
       createdAt: had?.createdAt ?? now, updatedAt: now,
     );
     final saved = had == null ? await IslandPayoutAccount.db.insertRow(s, row) : await IslandPayoutAccount.db.updateRow(s, row);

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:serverpod/serverpod.dart';
 
+import '../generated/protocol.dart';
 import 'funded_jobs.dart';
 import 'reward_admin.dart';
 import 'withdrawals.dart';
@@ -26,7 +27,17 @@ class RewardsEndpoint extends Endpoint {
   /// Accept a job; [requestKey] makes a repeat of the same tap harmless.
   Future<String> accept(Session session, int offerId, String requestKey) async {
     try {
-      final a = await FundedJobs.accept(session, _user(session), offerId, requestKey);
+      final u = _user(session);
+      // paid gigs: one real person, one account. Only accounts at least 3 days old, with a verified bank account (and a
+      // bank account can belong to one player only), may take one
+      final offer = await JobOffer.db.findById(session, offerId);
+      if (offer != null && offer.type == FundedJobs.funded && Withdrawals.provider.name != 'mock') {
+        final prof = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
+        if (prof == null || DateTime.now().toUtc().difference(prof.createdAt) < const Duration(days: 3)) throw JobRefused('Paid gigs open to accounts after their first 3 days.');
+        final pa = await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
+        if (pa == null || pa.status != 'verified') throw JobRefused('Verify your bank account first (Wallet, then Bank account) to take paid gigs.');
+      }
+      final a = await FundedJobs.accept(session, u, offerId, requestKey);
       return jsonEncode({'id': a.id, 'status': a.status, 'gameReward': a.gameReward, 'cashKobo': a.cashKobo, 'deadline': a.deadline.toIso8601String(), 'task': jsonDecode(a.taskSpec)});
     } catch (e) {
       return _err(e);
@@ -61,6 +72,8 @@ class RewardsEndpoint extends Endpoint {
   }
 
   Future<String> withdraw(Session session, int amountKobo, String beneficiary, String requestKey) async {
+    // real withdrawals go only to a verified bank account (the game's withdrawToBank); this free-text route is the sandbox's
+    if (Withdrawals.provider.name != 'mock') return _err(JobRefused('Withdraw from your phone\'s Wallet, to your verified bank account.'));
     try {
       final w = await Withdrawals.request(session, _user(session), amountKobo, beneficiary, requestKey);
       return jsonEncode({'ref': w.ref, 'status': w.status, 'amountKobo': w.amountKobo, 'feeKobo': w.feeKobo, 'feePayer': w.feePayer});

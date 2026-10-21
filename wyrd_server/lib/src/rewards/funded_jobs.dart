@@ -191,6 +191,11 @@ abstract final class FundedJobs {
     if (!delivered) throw JobRefused('The delivery was not made.');
     if (now.isAfter(a0.deadline)) throw JobRefused('Too late: the job expired.');
     final tooFast = secs < dist / 45; // faster than anything in the game can go
+    // nothing is paid on the player's word: every completion waits for an operator to confirm it (decideReview)
+    if (!tooFast) {
+      await JobAcceptance.db.updateRow(s, a0.copyWith(status: 'review', note: 'Completed in ${secs.toStringAsFixed(0)} s: waiting for an operator to confirm.'));
+      return {'status': 'review', 'note': 'Done! An operator checks every paid gig before the cash reward is released. You\'ll be told when it\'s confirmed.'};
+    }
     final offer = (await JobOffer.db.findById(s, a0.offerId))!;
     if (tooFast) {
       // not paid, not refused outright: an operator looks at it (the player can appeal)

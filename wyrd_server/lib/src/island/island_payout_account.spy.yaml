@@ -24,6 +24,8 @@ fields:
   dateOfBirth: DateTime?
   ### when the player accepted the payout terms
   termsAcceptedAt: DateTime?
+  ### no withdrawals before this (48 hours after the account was changed)
+  holdUntil: DateTime?
   createdAt: DateTime
   updatedAt: DateTime
 indexes:

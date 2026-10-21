@@ -8365,7 +8365,7 @@
         const body = $('poBody');
         const steps = (a) => `<div class="poSteps"><span class="${a ? 'on' : ''}">1 · Bank account</span><span class="${a && a.nameMatch ? 'on' : ''}">2 · Name check</span><span class="${a && a.emailVerified ? 'on' : ''}">3 · Email</span></div>`;
         const drawAcc = (a) => { body.innerHTML = `${steps(a)}<div class="poCard ${a.status}"><small>${esc(a.bankName)}</small><b>•••••• ${esc(a.last4)}</b><span>${esc(a.accountName)}</span>
-            <em>${a.status === 'verified' ? '✓ Verified: payouts go here' : a.status === 'review' ? 'The name you gave doesn\'t match your bank\'s. A person will check it.' : 'Confirm your email to finish'}</em></div>
+            ${a.holdUntil ? `<em style="color:#B45309">🔒 Changed recently: withdrawals open ${new Date(a.holdUntil).toLocaleString('en-NG', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</em>` : ''}<em>${a.status === 'verified' ? '✓ Verified: payouts go here' : a.status === 'review' ? 'The name you gave doesn\'t match your bank\'s. A person will check it.' : 'Confirm your email to finish'}</em></div>
           ${!a.emailVerified ? `<label class="poL">Code sent to ${esc(a.email)}</label><input id="poCode" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code"><div class="err" id="poErr"></div><button class="pbtn" id="poVer">Confirm</button><button class="pbtn alt" id="poRe">Send a new code</button>` : ''}
           ${a.status === 'verified' && !a.terms ? '<div class="poTerms"><b>One last step</b><span>Read the payout terms: how real earnings, limits, fees and the 12-hour check work.</span><a href="terms.html" target="_blank" rel="noopener">Read the payout terms ↗</a><label><input type="checkbox" id="poAgree"> I have read and accept the payout terms</label><button class="pbtn" id="poTermsGo" disabled>Accept</button></div>' : ''}
           <button class="pbtn alt" id="poNew">Use a different account</button>
@@ -8388,6 +8388,7 @@
             <label class="poL">Your full name, as your bank has it</label><input id="poName" maxlength="80" placeholder="First and last name" autocomplete="name">
             <label class="poL">Date of birth (you must be 18 or older)</label><input id="poDob" type="date" max="${new Date(Date.now() - 18 * 365.25 * 864e5).toISOString().slice(0, 10)}" autocomplete="bday">
             <label class="poL">Email (for the confirmation code)</label><input id="poMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email">
+            <label class="poL">Your game password (to protect your payouts)</label><input id="poPw" type="password" maxlength="128" placeholder="Your password" autocomplete="current-password">
             <div class="err" id="poErr"></div><button class="pbtn" id="poGo">Check and send the code</button>
             <div class="ppEmpty" style="padding:12px 6px;font-size:12px">Your bank tells us the name on the account; it has to match yours. Your details stay private.</div>`;
           let bank = null;
@@ -8404,7 +8405,7 @@
           $('poGo').onclick = async () => { const b = $('poGo'); if (b.disabled) return; $('poErr').textContent = '';
             if (!bank) { $('poErr').textContent = 'Choose your bank first.'; return; }
             b.disabled = true; b.textContent = 'Checking with your bank…';
-            try { drawAcc((await my('payoutAccountSet', { bankCode: bank.code, accountNumber: $('poNum').value, legalName: $('poName').value, email: $('poMail').value, dateOfBirth: $('poDob').value })).account); }
+            try { drawAcc((await my('payoutAccountSet', { bankCode: bank.code, accountNumber: $('poNum').value, legalName: $('poName').value, email: $('poMail').value, dateOfBirth: $('poDob').value, password: $('poPw').value })).account); }
             catch (e) { b.disabled = false; b.textContent = 'Check and send the code'; $('poErr').textContent = e.message; } }; };
         if (acc) drawAcc(acc); else drawForm();
         return;
@@ -9644,7 +9645,7 @@
       }
     }
     if (!inside && exitHold) { if (Math.hypot(me.x - exitHold.x, me.z - exitHold.z) < 14) next = null; else exitHold = null; } // just came out: walk away first
-    act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
+    act = next; actBtn.style.display = next && playing && card.style.display !== 'block' ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
   actBtn.onclick = () => act && act.run();
   // walking up to a home or an HQ door: what's inside starts loading now (once per door)

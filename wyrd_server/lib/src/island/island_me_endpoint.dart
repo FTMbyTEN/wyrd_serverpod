@@ -2559,9 +2559,9 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Add or replace my payout account: looked up at the bank, names compared, a code emailed.
-  Future<String> payoutAccountSet(Session session, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth) {
+  Future<String> payoutAccountSet(Session session, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth, String password) {
     final u = _user(session);
-    return _payout(() => Payout.set(session, u, bankCode, accountNumber, legalName, email, dateOfBirth));
+    return _payout(() => Payout.set(session, u, bankCode, accountNumber, legalName, email, dateOfBirth, password));
   }
 
   /// The code from the email.
@@ -2593,6 +2593,7 @@ class IslandMeEndpoint extends Endpoint {
     if (a == null || a.status != 'verified') return _err('Verify your bank account first (Wallet, then Bank account).');
     if (a.dateOfBirth == null || Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge) return _err('You need to be ${RewardConfig.current.minAge} or older to be paid real money.');
     if (a.termsAcceptedAt == null) return _err('Accept the payout terms first.');
+    if (a.holdUntil != null && a.holdUntil!.isAfter(DateTime.now().toUtc())) return _err('Your bank account was changed recently. For your safety, withdrawals open again 48 hours after a change.');
     try {
       final w = await Withdrawals.request(session, u, amountKobo, 'flw:${a.bankCode}:${a.accountNumber}', requestKey);
       return jsonEncode({'ref': w.ref, 'status': w.status, 'amountKobo': w.amountKobo, 'feeKobo': w.feeKobo, 'feePayer': w.feePayer, 'reviewHours': RewardConfig.current.reviewHours, 'to': '${a.bankName} ••${a.accountNumber.substring(6)}'});

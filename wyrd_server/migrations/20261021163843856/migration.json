@@ -1,0 +1,33 @@
+{
+  "__className__": "serverpod.DatabaseMigration",
+  "actions": [
+    {
+      "__className__": "serverpod.DatabaseMigrationAction",
+      "type": "alterTable",
+      "alterTable": {
+        "__className__": "serverpod.TableMigration",
+        "name": "island_payout_account",
+        "schema": "public",
+        "addColumns": [
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "holdUntil",
+            "fieldName": "holdUntil",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          }
+        ],
+        "deleteColumns": [],
+        "modifyColumns": [],
+        "addIndexes": [],
+        "deleteIndexes": [],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": []
+      }
+    }
+  ],
+  "warnings": [],
+  "migrationApiVersion": 1
+}

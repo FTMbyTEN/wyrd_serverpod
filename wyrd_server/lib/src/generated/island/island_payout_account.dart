@@ -34,6 +34,7 @@ abstract class IslandPayoutAccount
     required this.status,
     this.dateOfBirth,
     this.termsAcceptedAt,
+    this.holdUntil,
     required this.createdAt,
     required this.updatedAt,
   }) : emailVerified = emailVerified ?? false,
@@ -56,6 +57,7 @@ abstract class IslandPayoutAccount
     required String status,
     DateTime? dateOfBirth,
     DateTime? termsAcceptedAt,
+    DateTime? holdUntil,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _IslandPayoutAccountImpl;
@@ -94,6 +96,9 @@ abstract class IslandPayoutAccount
           : _is.DateTimeJsonExtension.fromJson(
               jsonSerialization['termsAcceptedAt'],
             ),
+      holdUntil: jsonSerialization['holdUntil'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(jsonSerialization['holdUntil']),
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -145,6 +150,9 @@ abstract class IslandPayoutAccount
   /// when the player accepted the payout terms
   DateTime? termsAcceptedAt;
 
+  /// no withdrawals before this (48 hours after the account was changed)
+  DateTime? holdUntil;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -172,6 +180,7 @@ abstract class IslandPayoutAccount
     String? status,
     DateTime? dateOfBirth,
     DateTime? termsAcceptedAt,
+    DateTime? holdUntil,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -195,6 +204,7 @@ abstract class IslandPayoutAccount
       'status': status,
       if (dateOfBirth != null) 'dateOfBirth': dateOfBirth?.toJson(),
       if (termsAcceptedAt != null) 'termsAcceptedAt': termsAcceptedAt?.toJson(),
+      if (holdUntil != null) 'holdUntil': holdUntil?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -220,6 +230,7 @@ abstract class IslandPayoutAccount
       'status': status,
       if (dateOfBirth != null) 'dateOfBirth': dateOfBirth?.toJson(),
       if (termsAcceptedAt != null) 'termsAcceptedAt': termsAcceptedAt?.toJson(),
+      if (holdUntil != null) 'holdUntil': holdUntil?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -273,6 +284,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
     required String status,
     DateTime? dateOfBirth,
     DateTime? termsAcceptedAt,
+    DateTime? holdUntil,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -292,6 +304,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
          status: status,
          dateOfBirth: dateOfBirth,
          termsAcceptedAt: termsAcceptedAt,
+         holdUntil: holdUntil,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -317,6 +330,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
     String? status,
     Object? dateOfBirth = _Undefined,
     Object? termsAcceptedAt = _Undefined,
+    Object? holdUntil = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -339,6 +353,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
       termsAcceptedAt: termsAcceptedAt is DateTime?
           ? termsAcceptedAt
           : this.termsAcceptedAt,
+      holdUntil: holdUntil is DateTime? ? holdUntil : this.holdUntil,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -430,6 +445,12 @@ class IslandPayoutAccountUpdateTable
         value,
       );
 
+  _is.ColumnValue<DateTime, DateTime> holdUntil(DateTime? value) =>
+      _is.ColumnValue(
+        table.holdUntil,
+        value,
+      );
+
   _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _is.ColumnValue(
         table.createdAt,
@@ -509,6 +530,10 @@ class IslandPayoutAccountTable extends _is.Table<int?> {
       'termsAcceptedAt',
       this,
     );
+    holdUntil = _is.ColumnDateTime(
+      'holdUntil',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -556,6 +581,9 @@ class IslandPayoutAccountTable extends _is.Table<int?> {
   /// when the player accepted the payout terms
   late final _is.ColumnDateTime termsAcceptedAt;
 
+  /// no withdrawals before this (48 hours after the account was changed)
+  late final _is.ColumnDateTime holdUntil;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime updatedAt;
@@ -578,6 +606,7 @@ class IslandPayoutAccountTable extends _is.Table<int?> {
     status,
     dateOfBirth,
     termsAcceptedAt,
+    holdUntil,
     createdAt,
     updatedAt,
   ];

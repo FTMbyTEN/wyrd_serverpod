@@ -34,6 +34,7 @@ abstract class IslandPayoutAccount
     required this.status,
     this.dateOfBirth,
     this.termsAcceptedAt,
+    this.holdUntil,
     required this.createdAt,
     required this.updatedAt,
   }) : emailVerified = emailVerified ?? false,
@@ -56,6 +57,7 @@ abstract class IslandPayoutAccount
     required String status,
     DateTime? dateOfBirth,
     DateTime? termsAcceptedAt,
+    DateTime? holdUntil,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _IslandPayoutAccountImpl;
@@ -96,6 +98,9 @@ abstract class IslandPayoutAccount
           : _isc.DateTimeJsonExtension.fromJson(
               jsonSerialization['termsAcceptedAt'],
             ),
+      holdUntil: jsonSerialization['holdUntil'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['holdUntil']),
       createdAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -145,6 +150,9 @@ abstract class IslandPayoutAccount
   /// when the player accepted the payout terms
   DateTime? termsAcceptedAt;
 
+  /// no withdrawals before this (48 hours after the account was changed)
+  DateTime? holdUntil;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -169,6 +177,7 @@ abstract class IslandPayoutAccount
     String? status,
     DateTime? dateOfBirth,
     DateTime? termsAcceptedAt,
+    DateTime? holdUntil,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -192,6 +201,7 @@ abstract class IslandPayoutAccount
       'status': status,
       if (dateOfBirth != null) 'dateOfBirth': dateOfBirth?.toJson(),
       if (termsAcceptedAt != null) 'termsAcceptedAt': termsAcceptedAt?.toJson(),
+      if (holdUntil != null) 'holdUntil': holdUntil?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -217,6 +227,7 @@ abstract class IslandPayoutAccount
       'status': status,
       if (dateOfBirth != null) 'dateOfBirth': dateOfBirth?.toJson(),
       if (termsAcceptedAt != null) 'termsAcceptedAt': termsAcceptedAt?.toJson(),
+      if (holdUntil != null) 'holdUntil': holdUntil?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -248,6 +259,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
     required String status,
     DateTime? dateOfBirth,
     DateTime? termsAcceptedAt,
+    DateTime? holdUntil,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
@@ -267,6 +279,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
          status: status,
          dateOfBirth: dateOfBirth,
          termsAcceptedAt: termsAcceptedAt,
+         holdUntil: holdUntil,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -292,6 +305,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
     String? status,
     Object? dateOfBirth = _Undefined,
     Object? termsAcceptedAt = _Undefined,
+    Object? holdUntil = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -314,6 +328,7 @@ class _IslandPayoutAccountImpl extends IslandPayoutAccount {
       termsAcceptedAt: termsAcceptedAt is DateTime?
           ? termsAcceptedAt
           : this.termsAcceptedAt,
+      holdUntil: holdUntil is DateTime? ? holdUntil : this.holdUntil,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

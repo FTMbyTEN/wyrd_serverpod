@@ -35,7 +35,21 @@ class IslandAuthEndpoint extends Endpoint {
   }
 
   /// Make an account: a Lagos Island name and a WYRD account in one. Returns the signed-in session.
+  static final _signups = <String, List<DateTime>>{};
+  /// The network address a request came from (Serverpod Cloud's proxy passes it along).
+  static String clientAddress(Session s) {
+    if (s is! MethodCallSession) return '';
+    final f = s.request.headers['x-forwarded-for']?.join(',') ?? '';
+    return f.split(',').first.trim();
+  }
+
   Future<AuthSuccess> register(Session session, String username, String email, String password) async {
+    final ip = clientAddress(session);
+    if (ip.isNotEmpty) {
+      final now = DateTime.now(), list = (_signups[ip] ??= [])..removeWhere((t) => now.difference(t) > const Duration(hours: 24));
+      if (list.length >= 3) throw Exception('Too many new accounts from this network today. Try again tomorrow.');
+      list.add(now);
+    }
     final name = username.trim(), given = email.trim().toLowerCase(), mail = given.isEmpty ? emailOf(name) : given; // no email yet: the placeholder
     if (!_ok.hasMatch(name)) throw Exception('A username of 3 to 20 letters, digits, _ . or -.');
     if (given.isNotEmpty && (!_mail.hasMatch(given) || given.endsWith('@$domain'))) throw Exception('A real email address.');
