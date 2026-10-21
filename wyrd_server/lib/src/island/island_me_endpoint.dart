@@ -10,6 +10,7 @@ import '../world/bank.dart';
 import '../world/world_authority.dart';
 import 'grid_career.dart';
 import 'island_auth_endpoint.dart';
+import 'island_payout.dart';
 import 'island_topup.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
@@ -290,7 +291,7 @@ class IslandMeEndpoint extends Endpoint {
         if (e.key == 'club') 'hours': '6 pm to 6 am', if (closed) 'opensAt': '6 pm',
       });
     }
-    final recent = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.kind.equals('job'), orderBy: (t) => t.id.desc(), limit: 6);
+    final recent = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.kind.equals('job'), orderBy: (t) => t.id.desc(), limit: 30);
     final jobs = await IslandJob.db.count(session, where: (t) => t.status.equals('open'));
     Map<String, dynamic> grid = const {};
     try { grid = await GridCareer.all(session, u); } catch (_) {}
@@ -2453,6 +2454,45 @@ class IslandMeEndpoint extends Endpoint {
     } on TopUpRefused catch (e) {
       return _err(e.message);
     }
+  }
+
+  // ---------------- my payout bank account ----------------
+  Future<String> _payout(Future<Map<String, dynamic>> Function() f) async {
+    try {
+      return jsonEncode(await f());
+    } on PayoutRefused catch (e) {
+      return _err(e.message);
+    }
+  }
+
+  /// Nigerian banks for the payout account form.
+  Future<String> payoutBanks(Session session) {
+    _user(session);
+    return _payout(() async => {'banks': await Payout.banks(session)});
+  }
+
+  /// My payout account (the number masked), or none.
+  Future<String> payoutAccount(Session session) async {
+    final u = _user(session);
+    return jsonEncode({'account': Payout.view(await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)))});
+  }
+
+  /// Add or replace my payout account: looked up at the bank, names compared, a code emailed.
+  Future<String> payoutAccountSet(Session session, String bankCode, String accountNumber, String legalName, String email) {
+    final u = _user(session);
+    return _payout(() => Payout.set(session, u, bankCode, accountNumber, legalName, email));
+  }
+
+  /// The code from the email.
+  Future<String> payoutAccountVerify(Session session, String code) {
+    final u = _user(session);
+    return _payout(() => Payout.verify(session, u, code));
+  }
+
+  /// Send the email code again.
+  Future<String> payoutAccountResend(Session session) {
+    final u = _user(session);
+    return _payout(() => Payout.resend(session, u));
   }
 
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.

@@ -3064,6 +3064,92 @@ class Endpoints extends _is.EndpointDispatch {
                     params['returnTo'],
                   ),
         ),
+        'payoutBanks': _is.MethodConnector(
+          name: 'payoutBanks',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutBanks(session),
+        ),
+        'payoutAccount': _is.MethodConnector(
+          name: 'payoutAccount',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutAccount(session),
+        ),
+        'payoutAccountSet': _is.MethodConnector(
+          name: 'payoutAccountSet',
+          params: {
+            'bankCode': _is.ParameterDescription(
+              name: 'bankCode',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'accountNumber': _is.ParameterDescription(
+              name: 'accountNumber',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'legalName': _is.ParameterDescription(
+              name: 'legalName',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'email': _is.ParameterDescription(
+              name: 'email',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutAccountSet(
+                    session,
+                    params['bankCode'],
+                    params['accountNumber'],
+                    params['legalName'],
+                    params['email'],
+                  ),
+        ),
+        'payoutAccountVerify': _is.MethodConnector(
+          name: 'payoutAccountVerify',
+          params: {
+            'code': _is.ParameterDescription(
+              name: 'code',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutAccountVerify(
+                    session,
+                    params['code'],
+                  ),
+        ),
+        'payoutAccountResend': _is.MethodConnector(
+          name: 'payoutAccountResend',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .payoutAccountResend(session),
+        ),
         'treasury2': _is.MethodConnector(
           name: 'treasury2',
           params: {},

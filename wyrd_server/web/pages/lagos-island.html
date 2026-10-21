@@ -1166,6 +1166,14 @@
   .eSum small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--ppDim); } .eSum b { display: block; margin-top: 3px; font: 800 16px 'Plus Jakarta Sans', sans-serif; color: var(--ppInk); }
   .eDone { margin: 8px 0; padding: 10px 12px; border-radius: 14px; background: rgba(34,197,94,.12); color: #15803D; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; }
   .eSt { flex: none; padding: 5px 10px; border-radius: 999px; background: rgba(148,163,184,.16); color: var(--ppDim); font: 800 11.5px 'Plus Jakarta Sans', sans-serif; font-variant-numeric: tabular-nums; } .eSt.on { background: rgba(34,197,94,.15); color: #15803D; }
+  .ulk .err:empty, #pbody .err:empty { display: none !important; }
+  .poSteps { display: flex; gap: 6px; margin: 4px 0 12px; } .poSteps span { flex: 1; padding: 7px 6px; border-radius: 10px; text-align: center; background: rgba(148,163,184,.14); color: var(--ppDim); font: 700 11px 'Plus Jakarta Sans', sans-serif; } .poSteps span.on { background: rgba(34,197,94,.15); color: #15803D; }
+  .poCard { padding: 16px; border-radius: 20px; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk); margin-bottom: 10px; } .poCard small { display: block; font: 700 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ppDim); }
+  .poCard b { display: block; margin: 4px 0; font: 700 20px ui-monospace, Menlo, monospace; letter-spacing: .08em; } .poCard span { display: block; font: 700 14px 'Plus Jakarta Sans', sans-serif; } .poCard em { display: block; margin-top: 8px; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; font-style: normal; color: var(--ppDim); }
+  .poCard.verified em { color: #15803D; } .poCard.review em { color: #B45309; }
+  .poL { display: block; margin: 10px 4px 5px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
+  #pbody[data-app="wallet"] #poBody input { width: 100%; box-sizing: border-box; margin: 0 !important; padding: 12px 14px !important; border-radius: 14px !important; border: 0 !important; background: var(--ppCard) !important; box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk) !important; font: 500 14.5px 'Plus Jakarta Sans', sans-serif !important; }
+  #poBody .pbtn { width: 100%; margin: 8px 0 0 !important; border-radius: 14px !important; } #poBody .pbtn:not(.alt) { background: linear-gradient(135deg, var(--pp1), var(--pp2)) !important; color: #fff !important; } #poBody .err { margin: 8px 4px 0; color: #DC2626; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; }
 </style>
 </head>
 <body>
@@ -8140,44 +8148,35 @@
     setTimeout(() => { if (render.tok === rtok && !render.shown) pbody.innerHTML = '<div class="skel"><i></i><i></i><i class="s"></i><i></i><i class="s"></i></div>'; }, 120);
     try {
       if (app === 'signin') {
-        const mode = (arg && arg.mode) || 'new', nm = String(myName || '').trim(), okName = /^[a-zA-Z0-9_.-]{3,20}$/.test(nm) && !/^(guest|lagosian)/i.test(nm);
-        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>${mode === 'new' ? 'Create your WYRD ID' : 'Sign in with WYRD ID'}</h2>
-          <p>${mode === 'new' ? 'One ID for your phone, your wallet, your HQ and WYRD. Your island name stays yours: WYRD ties your ID to it and calls you by it everywhere.' : 'Your WYRD ID is the email (or island name) and password you made it with.'}</p>
-          <div class="ppSeg" style="margin-bottom:14px"><button data-wm="new" class="${mode === 'new' ? 'on' : ''}">New WYRD ID</button><button data-wm="old" class="${mode === 'old' ? 'on' : ''}">I have one</button></div>
-          ${mode === 'new' ? `<label for="wName">Island name (your game ID)</label><div class="fld">${pi('users')}<input id="wName" maxlength="20" autocomplete="username" value="${okName ? esc(nm) : ''}" placeholder="e.g. tunde.lagos"></div>
-          <label for="wMail">Email</label><div class="fld">${pi('mail')}<input id="wMail" type="email" maxlength="120" autocomplete="email" placeholder="you@example.com"></div>
-          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="new-password" placeholder="8+ characters, A–Z, a–z, 0–9"></div>`
-          : `<label for="wMail">Email or island name</label><div class="fld">${pi('mail')}<input id="wMail" maxlength="120" autocomplete="username" value="${okName ? esc(nm) : ''}" placeholder="you@example.com"></div>
-          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="current-password" placeholder="Your password"></div>`}
-          <div class="err" id="wErr"></div><button class="pbtn" id="wGo">${pi('check')}${mode === 'new' ? 'Create WYRD ID' : 'Sign in'}</button>
-          <div class="fine">${mode === 'new' ? 'Your email stays private. It is where a password reset goes.' : ''}</div>
+        const mode = (arg && arg.mode) || 'old', nm = String(myName || '').trim(), okName = /^[a-zA-Z0-9_.-]{3,20}$/.test(nm) && !/^(guest|lagosian)/i.test(nm);
+        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>${mode === 'new' ? 'Make your account' : 'Sign in'}</h2>
+          <p>${mode === 'new' ? 'Pick your island name and a password. That name is yours: WYRD calls you by it everywhere.' : 'Your island name and password, once. This phone remembers you after that.'}</p>
+          <div class="ppSeg" style="margin-bottom:14px"><button data-wm="old" class="${mode === 'old' ? 'on' : ''}">Sign in</button><button data-wm="new" class="${mode === 'new' ? 'on' : ''}">New here</button></div>
+          <label for="wName">Island name</label><div class="fld">${pi('users')}<input id="wName" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" value="${okName ? esc(nm) : ''}" placeholder="e.g. tunde.lagos"></div>
+          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="${mode === 'new' ? 'new-password' : 'current-password'}" placeholder="${mode === 'new' ? '8+ characters, A–Z, a–z, 0–9' : 'Your password'}"></div>
+          ${mode === 'new' ? `<label for="wPass2">Password again</label><div class="fld">${pi('key')}<input id="wPass2" type="password" maxlength="128" autocomplete="new-password" placeholder="The same password"></div>` : ''}
+          <div class="err" id="wErr"></div><button class="pbtn" id="wGo">${pi('check')}${mode === 'new' ? 'Make my account' : 'Sign in'}</button>
           <div style="display:flex;gap:8px;margin-top:14px"><button class="pbtn alt" id="gRide" style="flex:1">🛵 Ride</button></div></div>`);
         pbody.dataset.app = 'unlock'; // its look
         pbody.querySelectorAll('[data-wm]').forEach((b) => (b.onclick = () => render('signin', { ...(arg || {}), mode: b.dataset.wm })));
         $('gRide').onclick = () => go('ride');
         const goOn = async () => { const b = $('wGo'), err = $('wErr'); if (b.disabled) return; err.textContent = '';
-          const mail = $('wMail').value.trim(), pw = $('wPass').value, name = mode === 'new' ? $('wName').value.trim() : '';
-          if (mode === 'new') {
-            if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(name)) { err.textContent = 'Island names are 3 to 20 letters, digits, _ . or -.'; return $('wName').focus(); }
-            if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { err.textContent = 'Enter your email address.'; return $('wMail').focus(); }
-            if (!strong(pw)) { err.textContent = 'Use 8 or more characters with a capital, a small letter and a number.'; return $('wPass').focus(); }
-          } else if (!mail || !pw) { err.textContent = 'Enter your email (or island name) and password.'; return; }
-          b.disabled = true; b.textContent = mode === 'new' ? 'Creating your WYRD ID…' : 'Signing in…';
+          const name = $('wName').value.trim(), pw = $('wPass').value;
+          if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(name)) { err.textContent = 'Island names are 3 to 20 letters, digits, _ . or -.'; return $('wName').focus(); }
+          if (mode === 'new') { if (!strong(pw)) { err.textContent = 'Use 8 or more characters with a capital, a small letter and a number.'; return $('wPass').focus(); } if (pw !== $('wPass2').value) { err.textContent = 'The two passwords don\'t match.'; return $('wPass2').focus(); } }
+          else if (!pw) { err.textContent = 'Enter your password.'; return $('wPass').focus(); }
+          b.disabled = true; b.textContent = mode === 'new' ? 'Making your account…' : 'Signing in…';
           try {
-            const post = (m, body) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-            if (mode === 'new') { const av = await post('available', { username: name }); if (av.ok && (await av.text()).trim() === 'false') throw new Error('That island name is taken. If it is yours, tap "I have one".');
-              const fr = await post('emailFree', { email: mail }); if (fr.ok && (await fr.text()).trim() === 'false') throw new Error('That email already has a WYRD ID. Tap "I have one" to sign in.'); }
-            const r = await post(mode === 'new' ? 'register' : 'login', mode === 'new' ? { username: name, email: mail.toLowerCase(), password: pw } : { username: mail, password: pw });
+            const r = await fetch(`${API}/islandAuth/${mode === 'new' ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mode === 'new' ? { username: name, email: '', password: pw } : { username: name, password: pw }) });
             const t = await r.text();
-            if (!r.ok) throw new Error(/taken/i.test(t) ? 'That island name is taken.' : /invalidCredentials|credential|notFound/i.test(t) ? 'That WYRD ID and password don\'t match.' : /Too many|tooMany/i.test(t) ? 'Too many tries. Wait a while and try again.' : r.status >= 500 ? 'The island\'s server is busy. Try again in a moment.' : 'That didn\'t go through. Check your details and try again.');
+            if (!r.ok) throw new Error(/taken/i.test(t) ? 'That island name is taken. If it\'s yours, tap "Sign in".' : /invalidCredentials|credential|notFound/i.test(t) ? 'That island name and password don\'t match.' : /Too many|tooMany/i.test(t) ? 'Too many tries. Wait a while and try again.' : r.status >= 500 ? 'The island\'s server is busy. Try again in a moment.' : 'That didn\'t go through. Check your details and try again.');
             const a = JSON.parse(t); localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
             me$ = null; keyed = false; MY_CACHE.clear(); await loadMe(); myName = me$.handle; store.set('li.name', myName);
-            store.set('li.phoneOk', JSON.stringify({ h: me$.handle, at: Date.now() })); // you just proved it's you
             if (mode === 'new') { try { newLagosian(); } catch {} my('setLook', { look: myLook }).catch(() => {}); }
             if (typeof poll === 'function') poll(); setTimeout(warmUp, 300);
             tickerSay(`Signed in as @${me$.handle}`); closePhone(); setTimeout(() => openPhone(arg && arg.then, arg && arg.arg), 250);
-          } catch (e) { err.textContent = e.message; b.disabled = false; b.innerHTML = pi('check') + (mode === 'new' ? 'Create WYRD ID' : 'Sign in'); } };
-        $('wGo').onclick = goOn; $('wPass').onkeydown = (e) => { if (e.key === 'Enter') goOn(); };
+          } catch (e) { err.textContent = e.message; b.disabled = false; b.innerHTML = pi('check') + (mode === 'new' ? 'Make my account' : 'Sign in'); } };
+        $('wGo').onclick = goOn; $('wPass').onkeydown = (e) => { if (e.key === 'Enter') { if ($('wPass2')) $('wPass2').focus(); else goOn(); } }; if ($('wPass2')) $('wPass2').onkeydown = (e) => { if (e.key === 'Enter') goOn(); };
         return;
       }
       if (app === 'home') {
@@ -8219,6 +8218,7 @@
           <div class="ccMeta"><span>Earned today <b>${naira(me$.earnedToday || 0)}</b></span><button id="wDesign">🎨 Card design</button></div>
           <div class="ccPick" id="wPick" style="display:none">${CARD_DESIGNS.map((d, i) => `<button data-cd="${i}" class="${i === cardDesign() ? 'on' : ''}" style="background:${d.bg}" aria-label="${esc(d.name)}"><span>${esc(d.name)}</span></button>`).join('')}</div>
           <button class="wReal" id="wBuy" style="margin-top:12px"><span class="ic2" style="background:rgba(14,165,233,.15);color:#0EA5E9">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Buy naira</b><small>Card, bank transfer or USSD · Flutterwave</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
+          <button class="wReal" id="wBank" style="margin-top:8px"><span class="ic2">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Bank account</b><small id="wBankSub">Where your real earnings are paid</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button><button id="wShop"><span>${pi('bag')}</span>Store</button><button id="wCars"><span>${pi('car')}</span>Cars</button></div>
           <div id="realBox"></div>
           <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
@@ -8226,7 +8226,8 @@
           <div class="wSec"><span>Activity</span>${spent ? `<span>Spent today ${naira(spent)}</span>` : ''}</div>
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
         pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
-        $('wBuy').onclick = () => go('buynaira');
+        $('wBuy').onclick = () => go('buynaira'); $('wBank').onclick = () => go('payout');
+        my('payoutAccount').then((v) => { const a = v.account, el = $('wBankSub'); if (!el || !a) return; el.textContent = `${a.bankName} ••${a.last4} · ${a.status === 'verified' ? 'verified ✓' : a.status === 'review' ? 'being checked' : 'confirm your email'}`; }).catch(() => {});
         // a receipt: what it was, how much, when, the balance after it, its reference
         pbody.querySelectorAll('[data-rc]').forEach((b) => (b.onclick = () => { const e = r[+b.dataset.rc]; if (!e) return;
           const old = document.getElementById('w4sheet'); if (old) old.remove();
@@ -8267,6 +8268,41 @@
           const ov = document.createElement('div'); ov.id = 'flwGo'; ov.innerHTML = '<div><i></i><b>Opening secure checkout</b><small>Flutterwave · your card details never touch the game</small></div>'; document.body.append(ov);
           try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; setTimeout(() => ov.remove(), 15000); }
           catch (e) { ov.remove(); b.disabled = false; $('bnErr').textContent = e.message; } }));
+        return;
+      }
+      if (app === 'payout') {
+        // one bank account for real earnings: the bank looks the account up, the names must match (soft ID), the email
+        // answers a code. Shown masked once saved.
+        show(`<div class="ppTop"><div><h2>Bank account</h2><small>Where your real earnings are paid</small></div></div><div id="poBody"><div class="skel"><i></i><i></i></div></div>`);
+        pbody.dataset.app = 'wallet';
+        let acc = null; try { acc = (await my('payoutAccount')).account; } catch (e) { return fail(e); }
+        const body = $('poBody');
+        const steps = (a) => `<div class="poSteps"><span class="${a ? 'on' : ''}">1 · Bank account</span><span class="${a && a.nameMatch ? 'on' : ''}">2 · Name check</span><span class="${a && a.emailVerified ? 'on' : ''}">3 · Email</span></div>`;
+        const drawAcc = (a) => { body.innerHTML = `${steps(a)}<div class="poCard ${a.status}"><small>${esc(a.bankName)}</small><b>•••••• ${esc(a.last4)}</b><span>${esc(a.accountName)}</span>
+            <em>${a.status === 'verified' ? '✓ Verified: payouts go here' : a.status === 'review' ? 'The name you gave doesn\'t match your bank\'s. A person will check it.' : 'Confirm your email to finish'}</em></div>
+          ${!a.emailVerified ? `<label class="poL">Code sent to ${esc(a.email)}</label><input id="poCode" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code"><div class="err" id="poErr"></div><button class="pbtn" id="poVer">Confirm</button><button class="pbtn alt" id="poRe">Send a new code</button>` : ''}
+          <button class="pbtn alt" id="poNew">Use a different account</button>
+          <div class="ppEmpty" style="padding:12px 6px;font-size:12px">Real payouts aren't switched on yet. When they are, your earnings are paid to this account.</div>`;
+          if ($('poVer')) { const ver = async () => { const b = $('poVer'); if (b.disabled) return; b.disabled = true; $('poErr').textContent = ''; try { drawAcc((await my('payoutAccountVerify', { code: $('poCode').value })).account); } catch (e) { b.disabled = false; $('poErr').textContent = e.message; } };
+            $('poVer').onclick = ver; $('poCode').onkeydown = (e) => { if (e.key === 'Enter') ver(); };
+            $('poRe').onclick = async () => { const b = $('poRe'); b.disabled = true; try { await my('payoutAccountResend'); b.textContent = 'Sent'; } catch (e) { b.disabled = false; $('poErr').textContent = e.message; } }; }
+          $('poNew').onclick = () => drawForm(); };
+        const drawForm = async () => {
+          body.innerHTML = '<div class="skel"><i></i><i></i></div>';
+          let banks = []; try { banks = (await my('payoutBanks')).banks; } catch (e) { body.innerHTML = `<div class="ppList"><div class="ppEmpty">${esc(e.message)}</div></div>`; return; }
+          body.innerHTML = `${steps(null)}<label class="poL">Bank</label><input id="poBankQ" list="poBanks" placeholder="Start typing your bank" autocomplete="off"><datalist id="poBanks">${banks.map((b) => `<option value="${esc(b.name)}"></option>`).join('')}</datalist>
+            <label class="poL">Account number</label><input id="poNum" inputmode="numeric" maxlength="10" placeholder="10 digits" autocomplete="off">
+            <label class="poL">Your full name, as your bank has it</label><input id="poName" maxlength="80" placeholder="First and last name" autocomplete="name">
+            <label class="poL">Email (for the confirmation code)</label><input id="poMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email">
+            <div class="err" id="poErr"></div><button class="pbtn" id="poGo">Check and send the code</button>
+            <div class="ppEmpty" style="padding:12px 6px;font-size:12px">Your bank tells us the name on the account; it has to match yours. Your details stay private.</div>`;
+          $('poGo').onclick = async () => { const b = $('poGo'); if (b.disabled) return; $('poErr').textContent = '';
+            const bank = banks.find((x) => x.name.toLowerCase() === $('poBankQ').value.trim().toLowerCase());
+            if (!bank) { $('poErr').textContent = 'Choose your bank from the list.'; return $('poBankQ').focus(); }
+            b.disabled = true; b.textContent = 'Checking with your bank…';
+            try { drawAcc((await my('payoutAccountSet', { bankCode: bank.code, accountNumber: $('poNum').value, legalName: $('poName').value, email: $('poMail').value })).account); }
+            catch (e) { b.disabled = false; b.textContent = 'Check and send the code'; $('poErr').textContent = e.message; } }; };
+        if (acc) drawAcc(acc); else drawForm();
         return;
       }
       if (app === 'treasury') {
@@ -9417,27 +9453,10 @@
   async function earnPanel(box) {
     box.innerHTML = '<div class="skel"><i></i><i></i><i class="s"></i></div>';
     let b; try { b = await myNet('earnBoard', {}); } catch (e) { box.innerHTML = `<div class="ppList"><div class="ppEmpty">${esc(e.message)}</div></div>`; return; }
-    const lv = Math.max(1, ...Object.values(b.grid || {}).map((t) => t.level || 1)), gpay = GRID_PAY[lv - 1] || GRID_PAY[0];
-    const left = (iso) => { const s = Math.max(0, Math.round((new Date(iso) - Date.now()) / 1000)); return s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : s + 's'; };
-    const draw = () => { if (!box.isConnected || box.style.display === 'none') return false;
-      box.innerHTML = `<div class="eSum"><div><small>Earned today</small><b>${naira(b.earnedToday)}</b></div><div><small>Treasury tax</small><b>${Math.round(b.taxRate * 100)}%</b></div><div><small>Open jobs</small><b>${b.jobsOpen}</b></div></div>
-        ${b.doneForToday ? '<div class="eDone">You\'ve done a full day\'s work. The shifts open again tomorrow.</div>' : ''}
-        <div class="wSec"><span>Shifts</span><span>paid when you work them</span></div>
-        <div class="ppList">${b.shifts.map((s) => { const pl = EARN_PLACE[s.place] || ['💼', s.memo, s.place], ready = s.ready && !b.doneForToday;
-          return `<button class="wRow eRow" data-ep="${pl[2]}"><span class="ic2">${pl[0]}</span><span class="t"><b>${pl[1]}</b><small>${naira(s.net)} lands · every ${s.minutes} min${s.hours ? ' · ' + s.hours : ''}</small></span>
-            <span class="eSt ${ready ? 'on' : ''}">${ready ? 'Open now' : s.opensAt ? 'Opens ' + s.opensAt : s.nextAt ? 'Next in ' + left(s.nextAt) : 'Done today'}</span></button>`; }).join('')}</div>
-        <div class="wSec"><span>Careers</span></div>
-        <div class="ppList"><button class="wRow" data-eg="1"><span class="ic2">⚡</span><span class="t"><b>National Grid · ${GRID_LEVELS[lv - 1]}</b><small>${naira(gpay)} a shift at your level · more with each promotion</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
-          <button class="wRow" data-ej="1"><span class="ic2">💼</span><span class="t"><b>Job board</b><small>${b.jobsOpen ? b.jobsOpen + ' open job' + (b.jobsOpen === 1 ? '' : 's') + ' from real employers' : 'No open jobs right now'}</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button></div>
-        ${b.recent.length ? `<div class="wSec"><span>Your last paydays</span></div><div class="ppList">${b.recent.map((r) => `<div class="wRow"><span class="ic2 in">💼</span><span class="t"><b>${esc(r.memo)}</b><small>${new Date(r.at).toLocaleString('en-NG', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><span class="amt pos">+${naira(r.amount)}</span></div>`).join('')}</div>` : ''}`;
-      box.querySelectorAll('[data-ep]').forEach((x) => (x.onclick = () => { const pl = PLACES.find((v) => v[0] === x.dataset.ep); if (!pl) return; const t = nearestRoad(pl[1] + pl[3] / 2, pl[2] + pl[4] / 2); go('rideq', { i: t[0], j: t[1], name: pl[5], emoji: pl[6], peek: 'p' + PLACES.indexOf(pl) }); }));
-      box.querySelector('[data-eg]').onclick = () => go('grid'); box.querySelector('[data-ej]').onclick = () => go('jobs');
-      return true; };
-    draw();
-    // the countdowns tick; when one reaches zero the board is asked again
-    const t = setInterval(() => { if (!box.isConnected || box.style.display === 'none') return clearInterval(t);
-      if (b.shifts.some((s) => s.nextAt && new Date(s.nextAt) <= Date.now())) { clearInterval(t); earnPanel(box); return; }
-      box.querySelectorAll('.eRow').forEach((row, i) => { const s = b.shifts[i]; if (s && s.nextAt && !s.ready) row.querySelector('.eSt').textContent = 'Next in ' + left(s.nextAt); }); }, 1000);
+    if (!box.isConnected) return;
+    const paid = b.recent || [], total = paid.reduce((n, r) => n + r.amount, 0);
+    box.innerHTML = `<div class="wSec"><span>Work done</span>${paid.length ? `<span>${naira(total)} paid</span>` : ''}</div>
+      <div class="ppList">${paid.map((r) => `<div class="wRow"><span class="ic2 in">💼</span><span class="t"><b>${esc(r.memo)}</b><small>${new Date(r.at).toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><span class="amt pos">+${naira(r.amount)}</span></div>`).join('') || '<div class="ppEmpty">No work done yet. Your shifts and jobs show here with what they paid.</div>'}</div>`;
   }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');

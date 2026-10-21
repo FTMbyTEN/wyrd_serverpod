@@ -65,6 +65,7 @@ import 'island/island_job.dart' as _ifd0cm6h;
 import 'island/island_member.dart' as _inkhm4mi;
 import 'island/island_message.dart' as _i4pfszr3;
 import 'island/island_outfit.dart' as _i6w7urys;
+import 'island/island_payout_account.dart' as _ipk2w2az;
 import 'island/island_profile.dart' as _ii1l0ai6;
 import 'island/island_room.dart' as _i4c46r6a;
 import 'island/island_show.dart' as _ivo4faiv;
@@ -193,6 +194,7 @@ export 'island/island_job.dart';
 export 'island/island_member.dart';
 export 'island/island_message.dart';
 export 'island/island_outfit.dart';
+export 'island/island_payout_account.dart';
 export 'island/island_profile.dart';
 export 'island/island_room.dart';
 export 'island/island_show.dart';
@@ -402,6 +404,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i6w7urys.IslandOutfit) {
       return _i6w7urys.IslandOutfit.fromJson(data) as T;
+    }
+    if (t == _ipk2w2az.IslandPayoutAccount) {
+      return _ipk2w2az.IslandPayoutAccount.fromJson(data) as T;
     }
     if (t == _ii1l0ai6.IslandProfile) {
       return _ii1l0ai6.IslandProfile.fromJson(data) as T;
@@ -792,6 +797,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_i6w7urys.IslandOutfit?>()) {
       return (data != null ? _i6w7urys.IslandOutfit.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ipk2w2az.IslandPayoutAccount?>()) {
+      return (data != null
+              ? _ipk2w2az.IslandPayoutAccount.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_ii1l0ai6.IslandProfile?>()) {
       return (data != null ? _ii1l0ai6.IslandProfile.fromJson(data) : null)
@@ -1500,6 +1511,7 @@ class Protocol extends _isc.SerializationManager {
       _inkhm4mi.IslandMember => 'IslandMember',
       _i4pfszr3.IslandMessage => 'IslandMessage',
       _i6w7urys.IslandOutfit => 'IslandOutfit',
+      _ipk2w2az.IslandPayoutAccount => 'IslandPayoutAccount',
       _ii1l0ai6.IslandProfile => 'IslandProfile',
       _i4c46r6a.IslandRoom => 'IslandRoom',
       _ivo4faiv.IslandShow => 'IslandShow',
@@ -1665,6 +1677,8 @@ class Protocol extends _isc.SerializationManager {
         return 'IslandMessage';
       case _i6w7urys.IslandOutfit():
         return 'IslandOutfit';
+      case _ipk2w2az.IslandPayoutAccount():
+        return 'IslandPayoutAccount';
       case _ii1l0ai6.IslandProfile():
         return 'IslandProfile';
       case _i4c46r6a.IslandRoom():
@@ -1965,6 +1979,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'IslandOutfit') {
       return deserialize<_i6w7urys.IslandOutfit>(data['data']);
+    }
+    if (dataClassName == 'IslandPayoutAccount') {
+      return deserialize<_ipk2w2az.IslandPayoutAccount>(data['data']);
     }
     if (dataClassName == 'IslandProfile') {
       return deserialize<_ii1l0ai6.IslandProfile>(data['data']);

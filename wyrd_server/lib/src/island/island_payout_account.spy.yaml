@@ -1,0 +1,28 @@
+### Where a player's real earnings would be paid: one Nigerian bank account, checked two ways before it counts.
+### The bank's own name for the account (Flutterwave's account lookup) must match the legal name the player gives
+### (a soft ID check), and the email they give must answer a code sent to it.
+class: IslandPayoutAccount
+table: island_payout_account
+fields:
+  authUserId: UuidValue
+  bankCode: String
+  bankName: String
+  accountNumber: String
+  ### the bank's name for the account, as Flutterwave reports it
+  accountName: String
+  ### the name the player says is theirs
+  legalName: String
+  nameMatch: bool
+  email: String
+  emailVerified: bool, default=false
+  emailCode: String?
+  codeExpires: DateTime?
+  codeTries: int, default=0
+  ### unverified (waiting for the email code) | verified | review (the names don't match: a person checks)
+  status: String
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  island_payout_account_user_idx:
+    fields: authUserId
+    unique: true

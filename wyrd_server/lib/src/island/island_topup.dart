@@ -67,7 +67,9 @@ abstract final class TopUp {
       // a double tap within 20 s doesn't open a second checkout
       IslandTopUp.db.findFirstRow(s, where: (t) => t.authUserId.equals(u) & t.status.equals('pending'), orderBy: (t) => t.createdAt.desc()),
     ).wait;
-    if (acct == null || acct.email.endsWith('@lagosisland.wyrd')) throw TopUpRefused('Add your email to your WYRD ID first (open your phone).');
+    // Flutterwave wants an email for each payment: the player's own if they gave one, otherwise a private address for
+    // their account (players sign up with just an island name)
+    final email = acct != null && !acct.email.endsWith('@lagosisland.wyrd') ? acct.email : 'player-${u.uuid.substring(0, 8)}@lagos-island.workers.dev';
     final now = DateTime.now().toUtc();
     final rnd = Random.secure();
     final ref = 'LI-${now.millisecondsSinceEpoch}-${List.generate(8, (_) => rnd.nextInt(36).toRadixString(36)).join()}';
@@ -85,7 +87,7 @@ abstract final class TopUp {
         'currency': 'NGN',
         'payment_options': 'card, banktransfer, ussd',
         'redirect_url': '$returnTo${sep}topup=$ref',
-        'customer': {'email': acct.email},
+        'customer': {'email': email},
         'customizations': {'title': 'Lagos Island', 'description': '${_n(p.naira)} game naira'},
         'meta': {'pack': pack},
       }),

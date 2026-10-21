@@ -1615,6 +1615,53 @@ class EndpointIslandMe extends _isc.EndpointRef {
     },
   );
 
+  /// Nigerian banks for the payout account form.
+  _ida.Future<String> payoutBanks() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutBanks',
+    {},
+  );
+
+  /// My payout account (the number masked), or none.
+  _ida.Future<String> payoutAccount() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutAccount',
+    {},
+  );
+
+  /// Add or replace my payout account: looked up at the bank, names compared, a code emailed.
+  _ida.Future<String> payoutAccountSet(
+    String bankCode,
+    String accountNumber,
+    String legalName,
+    String email,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutAccountSet',
+    {
+      'bankCode': bankCode,
+      'accountNumber': accountNumber,
+      'legalName': legalName,
+      'email': email,
+    },
+  );
+
+  /// The code from the email.
+  _ida.Future<String> payoutAccountVerify(String code) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'payoutAccountVerify',
+        {'code': code},
+      );
+
+  /// Send the email code again.
+  _ida.Future<String> payoutAccountResend() =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'payoutAccountResend',
+        {},
+      );
+
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
   _ida.Future<String> treasury2() => caller.callServerEndpoint<String>(
     'islandMe',

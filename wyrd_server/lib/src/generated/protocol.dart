@@ -70,6 +70,7 @@ import 'island/island_job.dart' as _ifd0cm6h;
 import 'island/island_member.dart' as _inkhm4mi;
 import 'island/island_message.dart' as _i4pfszr3;
 import 'island/island_outfit.dart' as _i6w7urys;
+import 'island/island_payout_account.dart' as _ipk2w2az;
 import 'island/island_profile.dart' as _ii1l0ai6;
 import 'island/island_room.dart' as _i4c46r6a;
 import 'island/island_show.dart' as _ivo4faiv;
@@ -198,6 +199,7 @@ export 'island/island_job.dart';
 export 'island/island_member.dart';
 export 'island/island_message.dart';
 export 'island/island_outfit.dart';
+export 'island/island_payout_account.dart';
 export 'island/island_profile.dart';
 export 'island/island_room.dart';
 export 'island/island_show.dart';
@@ -3260,6 +3262,130 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_payout_account',
+      dartName: 'IslandPayoutAccount',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'bankCode',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'bankName',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'accountNumber',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'accountName',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'legalName',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nameMatch',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'email',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'emailVerified',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'emailCode',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'codeExpires',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'codeTries',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_payout_account_user_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -7874,6 +8000,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i6w7urys.IslandOutfit) {
       return _i6w7urys.IslandOutfit.fromJson(data) as T;
     }
+    if (t == _ipk2w2az.IslandPayoutAccount) {
+      return _ipk2w2az.IslandPayoutAccount.fromJson(data) as T;
+    }
     if (t == _ii1l0ai6.IslandProfile) {
       return _ii1l0ai6.IslandProfile.fromJson(data) as T;
     }
@@ -8263,6 +8392,12 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_i6w7urys.IslandOutfit?>()) {
       return (data != null ? _i6w7urys.IslandOutfit.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ipk2w2az.IslandPayoutAccount?>()) {
+      return (data != null
+              ? _ipk2w2az.IslandPayoutAccount.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _is.getType<_ii1l0ai6.IslandProfile?>()) {
       return (data != null ? _ii1l0ai6.IslandProfile.fromJson(data) : null)
@@ -8974,6 +9109,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _inkhm4mi.IslandMember => 'IslandMember',
       _i4pfszr3.IslandMessage => 'IslandMessage',
       _i6w7urys.IslandOutfit => 'IslandOutfit',
+      _ipk2w2az.IslandPayoutAccount => 'IslandPayoutAccount',
       _ii1l0ai6.IslandProfile => 'IslandProfile',
       _i4c46r6a.IslandRoom => 'IslandRoom',
       _ivo4faiv.IslandShow => 'IslandShow',
@@ -9139,6 +9275,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'IslandMessage';
       case _i6w7urys.IslandOutfit():
         return 'IslandOutfit';
+      case _ipk2w2az.IslandPayoutAccount():
+        return 'IslandPayoutAccount';
       case _ii1l0ai6.IslandProfile():
         return 'IslandProfile';
       case _i4c46r6a.IslandRoom():
@@ -9443,6 +9581,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'IslandOutfit') {
       return deserialize<_i6w7urys.IslandOutfit>(data['data']);
+    }
+    if (dataClassName == 'IslandPayoutAccount') {
+      return deserialize<_ipk2w2az.IslandPayoutAccount>(data['data']);
     }
     if (dataClassName == 'IslandProfile') {
       return deserialize<_ii1l0ai6.IslandProfile>(data['data']);
@@ -9842,6 +9983,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i4pfszr3.IslandMessage.t;
       case _i6w7urys.IslandOutfit:
         return _i6w7urys.IslandOutfit.t;
+      case _ipk2w2az.IslandPayoutAccount:
+        return _ipk2w2az.IslandPayoutAccount.t;
       case _ii1l0ai6.IslandProfile:
         return _ii1l0ai6.IslandProfile.t;
       case _i4c46r6a.IslandRoom:

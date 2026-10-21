@@ -135,6 +135,11 @@ islandMe:
   - deliverFurniture:
   - topUpInfo:
   - topUpStart:
+  - payoutBanks:
+  - payoutAccount:
+  - payoutAccountSet:
+  - payoutAccountVerify:
+  - payoutAccountResend:
   - treasury2:
   - topUpCheck:
   - shows:
