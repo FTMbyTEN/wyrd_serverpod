@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
-<meta name="theme-color" content="#4F9FD8">
+<meta name="theme-color" content="#3A86C8">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lagos Island">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1557,18 +1557,9 @@
   function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? zoomCap : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = Math.max(innerHeight, Math.round(cv.getBoundingClientRect().height) || 0); cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   { let seaCol = ''; const meta = document.querySelector('meta[name="theme-color"]'), hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
-    const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; seaCol = col; document.documentElement.style.background = document.body.style.background = col; if (meta) meta.content = col; };
+    const seaBg = () => { const n = typeof nightNow === 'function' ? nightNow() : 0, a = hex('#3A86C8'), b = [12, 20, 58], k = 0.5 * n, c = a.map((v, i) => Math.round(v * (1 - k) + b[i] * k)), col = `rgb(${c.join(',')})`; seaCol = col; document.documentElement.style.background = document.body.style.background = col; if (meta && meta.content !== '#3A86C8') meta.content = '#3A86C8'; }; // the bar behind the clock: one solid sea blue
     setTimeout(seaBg, 0); setInterval(seaBg, 20000);
-    // anything the device leaves outside the page (an iPhone app's strip under the home bar) shows the page background:
-    // keep it the colour of what's at the bottom edge: the phone's screen when it's open, otherwise the island's bottom row
-    const edge = () => { let col;
-      const ph = document.getElementById('phone');
-      if (ph && ph.style.display === 'block') col = ph.classList.contains('os-light') ? '#EEF2F8' : '#0B0B14';
-      else { try { const cvs = document.getElementById('c'), g = cvs.getContext('2d'), y = cvs.height - 2, px = g.getImageData(0, y, cvs.width, 1).data; let r = 0, gg = 0, bb = 0, n = 0; for (let k = 0; k < px.length; k += 4 * 24) { if (px[k + 3] < 200) continue; r += px[k]; gg += px[k + 1]; bb += px[k + 2]; n++; } if (n) col = `rgb(${Math.round(r / n)},${Math.round(gg / n)},${Math.round(bb / n)})`; } catch {} }
-      if (col && document.documentElement.style.background !== col) document.documentElement.style.background = document.body.style.background = col;
-      // the bar behind the clock takes the colour of what's at the top: the phone's screen when it's open, the island's sea otherwise
-      if (meta) { const top = ph && ph.style.display === 'block' ? (ph.classList.contains('os-light') ? '#F3F6FB' : '#0B0B14') : (seaCol || meta.content); if (meta.content !== top) meta.content = top; } };
-    setInterval(edge, 700); }
+  }
   if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (W !== innerWidth || H !== innerHeight) resize(); });
   addEventListener('orientationchange', () => setTimeout(resize, 250));
   // full screen on a phone: the first time you tap into the island, the browser's own bars go away (Android and most
@@ -1676,7 +1667,7 @@
   }
   setTimeout(appBtn, 1500);
   // the corner buttons step aside while something is open over the island (the phone, the welcome, the passport, a card)
-  setInterval(() => { const vis = (id) => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none' && (id !== 'passport' || e.classList.contains('on')); }; document.body.classList.toggle('ovl', vis('phone') || vis('hello') || vis('passport')); }, 400);
+  setInterval(() => { const vis = (id) => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none' && (id !== 'passport' || e.classList.contains('on')); }; document.body.classList.toggle('ovl', vis('phone') || vis('hello') || vis('passport')); }, 1000);
   // the first time: a pointer at the button saying what it is (once per device)
   setTimeout(() => { if (APP.installed || store.get('li.appHint')) return; const b = document.getElementById('tApp'); if (!b) return; store.set('li.appHint', '1');
     const tip = document.createElement('div'); tip.id = 'tAppTip'; tip.innerHTML = '<b>📲 This is the download button</b><span>Tap it to put Lagos Island on your phone: it opens full screen, instantly, like an app.</span><i>✕</i>'; document.body.append(tip);
@@ -6928,6 +6919,9 @@
     setTimeout(() => d.remove(), 6200);
   }
   async function tick() {
+    if (tick.busy) return; const still = Math.hypot(me.x - (tick.x || 0), me.z - (tick.z || 0)) < 0.5, alone = others.size === 0;
+    if (still && alone && performance.now() - (tick.at || 0) < 3000) return;
+    tick.busy = true; tick.at = performance.now(); tick.x = me.x; tick.z = me.z;
     try {
       const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar });
       document.getElementById('count').textContent = r.online;
@@ -6954,6 +6948,7 @@
       parkedNow = r.parked || {};
       ticked = true;
     } catch { /* offline for a moment: keep walking */ }
+    finally { tick.busy = false; }
   }
   const sayForm = document.getElementById('say'), sayText = document.getElementById('sayText');
   function openSay() { sayForm.style.display = 'flex'; sayText.focus(); }
