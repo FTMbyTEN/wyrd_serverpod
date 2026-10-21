@@ -1195,6 +1195,15 @@
   @media (prefers-reduced-motion: reduce) { .wBuyFun::after { animation: none; } }
   #pbody[data-app="wallet"] .wAct { grid-template-columns: 1fr 1fr; }
   .safeCode { margin: 6px 0 12px; padding: 16px 12px; border-radius: 16px; background: rgba(34,197,94,.1); text-align: center; font: 700 20px/1.6 ui-monospace, Menlo, monospace; letter-spacing: .08em; word-spacing: .3em; color: #15803D; }
+  .poPick { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 14px; border: 0; border-radius: 14px; cursor: pointer; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppDim); font: 600 14.5px 'Plus Jakarta Sans', sans-serif; text-align: left; } .poPick.set { color: var(--ppInk); font-weight: 700; } .poPick em { font-style: normal; color: var(--ppDim); }
+  #bankSheet { position: absolute; inset: 0; z-index: 40; display: flex; align-items: flex-end; background: rgba(2,6,23,.35); font-family: 'Plus Jakarta Sans', sans-serif; }
+  #bankSheet .bsBox { width: 100%; height: 78%; display: flex; flex-direction: column; border-radius: 26px 26px 0 0; background: #F8FAFC; color: #0F172A; animation: lkIn .22s ease-out; padding-bottom: env(safe-area-inset-bottom); }
+  #phone.os-dark #bankSheet .bsBox { background: #12121C; color: #F1F5F9; }
+  #bankSheet .bsHd { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 10px; } #bankSheet .bsHd b { font: 800 17px 'Plus Jakarta Sans', sans-serif; } #bankSheet .x { width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(148,163,184,.2); color: inherit; cursor: pointer; }
+  #bankSheet #bsQ { margin: 0 16px 8px; padding: 11px 14px; border: 0; border-radius: 12px; background: rgba(148,163,184,.14); color: inherit; font: 500 14.5px 'Plus Jakarta Sans', sans-serif; outline: none; }
+  #bankSheet .bsList { flex: 1; overflow-y: auto; padding: 0 8px 12px; -webkit-overflow-scrolling: touch; }
+  #bankSheet .bsList button { display: flex; justify-content: space-between; width: 100%; padding: 13px 10px; border: 0; border-bottom: 1px solid rgba(148,163,184,.15); background: none; color: inherit; cursor: pointer; text-align: left; font: 600 14.5px 'Plus Jakarta Sans', sans-serif; } #bankSheet .bsList button.on { color: #0EA5E9; } #bankSheet .bsList i { font-style: normal; }
+  #bankSheet .bsL { padding: 12px 10px 4px; font: 800 12px 'Plus Jakarta Sans', sans-serif; color: #94A3B8; } #bankSheet .bsNone { padding: 24px; text-align: center; color: #94A3B8; font: 600 14px 'Plus Jakarta Sans', sans-serif; }
 </style>
 </head>
 <body>
@@ -8365,15 +8374,25 @@
         const drawForm = async () => {
           body.innerHTML = '<div class="skel"><i></i><i></i></div>';
           let banks = []; try { banks = (await my('payoutBanks')).banks; } catch (e) { body.innerHTML = `<div class="ppList"><div class="ppEmpty">${esc(e.message)}</div></div>`; return; }
-          body.innerHTML = `${steps(null)}<label class="poL">Bank</label><input id="poBankQ" list="poBanks" placeholder="Start typing your bank" autocomplete="off"><datalist id="poBanks">${banks.map((b) => `<option value="${esc(b.name)}"></option>`).join('')}</datalist>
+          body.innerHTML = `${steps(null)}<label class="poL">Bank</label><button type="button" class="poPick" id="poBankBtn"><span id="poBankName">Choose your bank</span><em>▾</em></button>
             <label class="poL">Account number</label><input id="poNum" inputmode="numeric" maxlength="10" placeholder="10 digits" autocomplete="off">
             <label class="poL">Your full name, as your bank has it</label><input id="poName" maxlength="80" placeholder="First and last name" autocomplete="name">
             <label class="poL">Email (for the confirmation code)</label><input id="poMail" type="email" maxlength="120" placeholder="you@example.com" autocomplete="email">
             <div class="err" id="poErr"></div><button class="pbtn" id="poGo">Check and send the code</button>
             <div class="ppEmpty" style="padding:12px 6px;font-size:12px">Your bank tells us the name on the account; it has to match yours. Your details stay private.</div>`;
+          let bank = null;
+          $('poBankBtn').onclick = () => {
+            const old = document.getElementById('bankSheet'); if (old) old.remove();
+            const el = document.createElement('div'); el.id = 'bankSheet';
+            el.innerHTML = `<div class="bsBox"><div class="bsHd"><b>Choose your bank</b><button class="x" aria-label="Close">✕</button></div><input id="bsQ" placeholder="Search ${banks.length} banks" autocomplete="off"><div class="bsList" id="bsList"></div></div>`;
+            document.getElementById('screen').append(el);
+            const list = el.querySelector('#bsList'), draw = (q) => { const t = q.trim().toLowerCase(), shown = t ? banks.filter((x) => x.name.toLowerCase().includes(t)) : banks; let letter = '';
+              list.innerHTML = shown.map((x) => { const L = x.name[0].toUpperCase(), head = !t && L !== letter ? `<div class="bsL">${(letter = L)}</div>` : ''; return head + `<button data-bc="${esc(x.code)}" class="${bank && bank.code === x.code ? 'on' : ''}">${esc(x.name)}${bank && bank.code === x.code ? '<i>✓</i>' : ''}</button>`; }).join('') || '<div class="bsNone">No bank by that name.</div>';
+              list.querySelectorAll('[data-bc]').forEach((b) => (b.onclick = () => { bank = banks.find((x) => x.code === b.dataset.bc); $('poBankName').textContent = bank.name; $('poBankBtn').classList.add('set'); el.remove(); $('poNum').focus(); })); };
+            draw(''); el.querySelector('#bsQ').oninput = (e) => draw(e.target.value); el.querySelector('.x').onclick = () => el.remove(); el.onclick = (e) => { if (e.target === el) el.remove(); };
+          };
           $('poGo').onclick = async () => { const b = $('poGo'); if (b.disabled) return; $('poErr').textContent = '';
-            const bank = banks.find((x) => x.name.toLowerCase() === $('poBankQ').value.trim().toLowerCase());
-            if (!bank) { $('poErr').textContent = 'Choose your bank from the list.'; return $('poBankQ').focus(); }
+            if (!bank) { $('poErr').textContent = 'Choose your bank first.'; return; }
             b.disabled = true; b.textContent = 'Checking with your bank…';
             try { drawAcc((await my('payoutAccountSet', { bankCode: bank.code, accountNumber: $('poNum').value, legalName: $('poName').value, email: $('poMail').value })).account); }
             catch (e) { b.disabled = false; b.textContent = 'Check and send the code'; $('poErr').textContent = e.message; } }; };
