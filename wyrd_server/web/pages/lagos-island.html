@@ -1134,6 +1134,14 @@
   #dlv .dlvM button:disabled { opacity: .5; cursor: default; } #dlv .dlvM b { display: block; font: 800 14px 'Plus Jakarta Sans', sans-serif; } #dlv .dlvM span { font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .75; }
   #dlv .err { min-height: 16px; margin: 8px 2px 0; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #DC2626; } #dlv .pbtn { width: 100%; margin: 8px 0 0 !important; border-radius: 14px !important; }
   #dlv .pbtn:not(.alt) { background: linear-gradient(135deg, #0EA5E9, #6366F1) !important; color: #fff !important; } #dlv p { font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; color: #475569; }
+  #pbody[data-app="home"] .app i { background: linear-gradient(150deg, color-mix(in srgb, var(--ac, #0EA5E9) 78%, #fff 22%), color-mix(in srgb, var(--ac, #0EA5E9) 82%, #000 18%)) !important; border: 0 !important; border-radius: 18px !important; color: #fff !important; box-shadow: 0 8px 18px color-mix(in srgb, var(--ac, #0EA5E9) 30%, transparent), inset 0 1px 0 rgba(255,255,255,.45) !important; }
+  #pbody[data-app="home"] .app i svg, #pbody[data-app="home"] .app i .ic { color: #fff !important; fill: none; stroke: #fff !important; width: 28px; height: 28px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
+  .hWork { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 12px 14px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; color: #fff; background: linear-gradient(135deg, #F59E0B, #F97316 55%, #DB2777); box-shadow: 0 10px 24px rgba(249,115,22,.28); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .hWork > span:first-child { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.22); } .hWork .pi { width: 22px; height: 22px; } .hWork b { display: block; font: 800 16px 'Plus Jakarta Sans', sans-serif; } .hWork small { font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .9; } .hWork em { margin-left: auto; font-style: normal; }
+  .skel { padding: 6px 2px; } .skel i { display: block; height: 64px; margin-bottom: 10px; border-radius: 18px; background: linear-gradient(90deg, rgba(148,163,184,.12), rgba(148,163,184,.24), rgba(148,163,184,.12)); background-size: 200% 100%; animation: skel 1.1s linear infinite; } .skel i.s { height: 22px; width: 55%; }
+  @keyframes skel { to { background-position: -200% 0; } }
+  .mtools { display: flex; gap: 8px; margin: 10px 0 4px; } .mtools button { flex: 1; padding: 11px 10px; border: 0; border-radius: 14px; cursor: pointer; font: 800 13px 'Plus Jakarta Sans', sans-serif; color: #fff; background: linear-gradient(135deg, #EC4899, #8B5CF6); box-shadow: 0 6px 16px rgba(139,92,246,.3); } .mtools button.alt { background: linear-gradient(135deg, #0EA5E9, #6366F1); }
+  .mctl button.mode { font-size: 15px; opacity: .55; } .mctl button.mode.on { opacity: 1; } .mprog { cursor: pointer; padding: 8px 0; background-clip: content-box; }
 </style>
 </head>
 <body>
@@ -1586,7 +1594,7 @@
       el.innerHTML = `<div class="phd"><button class="px" aria-label="Close">✕</button><div class="pme">${avatar(me$.handle)}<div><b>@${esc(me$.handle)}</b><small>${pf && pf.since ? 'Lagosian since ' + sinceStr(pf.since) : 'Lagosian'} · now in ${esc(sector.name)}</small></div></div>
           <div class="ptags">${careers.slice(0, 2).map((c) => `<span>${pi('work')}${esc(c)}</span>`).join('')}${pf && pf.jet ? `<span>${pi('plane')}${esc(pf.jet)}</span>` : ''}<span>${pi('users')}${fr.friends.length} friend${fr.friends.length === 1 ? '' : 's'}</span><span>${wx.icon} ${wx.temp}° Lagos</span></div></div>
         <div class="pbody">
-          <div class="pstats"><button data-pa="wallet"><small>Wallet</small><b>${naira(me$.naira)}</b><div class="bar"><i style="width:${pct}%"></i></div></button><button data-pa="homes"><small>Homes</small><b>${extra.homes}</b></button><button data-pa="garage"><small>Cars</small><b>${extra.cars}</b></button></div>
+          <div class="pstats"><button data-pa="wallet"><small>Wallet</small><b>${naira(me$.naira)}</b></button><button data-pa="homes"><small>Homes</small><b>${extra.homes}</b></button><button data-pa="garage"><small>Cars</small><b>${extra.cars}</b></button></div>
           <div class="psec">Your HQ</div>
           <button class="phq" id="pHq" style="--hq:${esc(hq.color || '#F97316')}"><span class="ic3">${pi('home')}</span><span><b>${esc(hq.name || me$.handle + "'s HQ")}</b><small>${hq.locked ? 'Invite only' : 'Open door'}${me$.requests ? ` · ${me$.requests} at your door` : ''}</small></span><em>Go home</em></button>
           <div class="psec">Everything</div>
@@ -6897,7 +6905,8 @@
   }
 
   // who just arrived: their name drops in under the phone and floats up as it fades
-  const everSeen = new Set(), joinedAt = new Map(), joinsEl = document.getElementById('joins');
+  const everSeen = new Set(), joinsEl = document.getElementById('joins');
+  const joinedAt = new Map((() => { try { return JSON.parse(localStorage.getItem('li.joined.seen') || '[]'); } catch { return []; } })()); // every arrival announced on this device
   let ticked = false;
   function showJoin(name, color) {
     const d = document.createElement('div'), dot = document.createElement('i');
@@ -6920,7 +6929,7 @@
         if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color, look: p.look });
         else {
           others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z, look: p.look });
-          const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && Date.now() - (joinedAt.get(nm) || 0) > 600000) { joinedAt.set(nm, Date.now()); showJoin(nm, p.color); }
+          const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && !joinedAt.has(nm.toLowerCase())) { joinedAt.set(nm.toLowerCase(), Date.now()); try { store.set('li.joined.seen', JSON.stringify([...joinedAt].slice(-500))); } catch {} showJoin(nm, p.color); }
         }
         everSeen.add(p.id);
       }
@@ -7039,7 +7048,7 @@
   async function my(method, args = {}) {
     if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) MY_CACHE.clear(); return myNet(method, args); }
     const key = method + JSON.stringify(args), hit = MY_CACHE.get(key);
-    if (hit && performance.now() - hit.at < 20000) return hit.p;
+    if (hit && performance.now() - hit.at < 60000) return hit.p;
     const pr = myNet(method, args); MY_CACHE.set(key, { at: performance.now(), p: pr }); pr.catch(() => MY_CACHE.delete(key));
     return pr;
   }
@@ -7135,7 +7144,8 @@
   // artists. One player for the whole game (it keeps playing with the phone put away), a queue, likes and recently played
   // kept on this device, and a bar along the bottom of the screen with what's on.
   const MUSIC = { dz: 'https://api.deezer.com', au: 'https://api.audius.co/v1', app: 'LagosIsland' };
-  const MP = { a: new Audio(), q: [], i: -1, liked: [], recent: [] };
+  const MUSIC_HOME = { d: null }; // Island Music's home, kept here and on the device
+  const MP = { a: new Audio(), q: [], i: -1, liked: [], recent: [], shuffle: false, repeat: 'all', radio: false };
   try { MP.liked = JSON.parse(store.get('li.liked') || '[]'); MP.recent = JSON.parse(store.get('li.recent') || '[]'); } catch {}
   MP.a.preload = 'none';
   function dz(path) { // Deezer through JSONP (it sends no CORS headers)
@@ -7148,15 +7158,25 @@
   const fromDz = (t) => t && t.preview ? { id: 'dz' + t.id, title: t.title_short || t.title, artist: t.artist ? t.artist.name : '', art: (t.album && (t.album.cover_medium || t.album.cover)) || '', url: t.preview, full: false, secs: 30 } : null;
   const fromAu = (t) => t && t.id ? { id: 'au' + t.id, title: t.title, artist: t.user ? t.user.name : '', art: (t.artwork && (t.artwork['480x480'] || t.artwork['150x150'])) || '', url: `${MUSIC.au}/tracks/${t.id}/stream?app_name=${MUSIC.app}`, full: true, secs: t.duration || 0 } : null;
   function mpPlay(list, i) {
-    MP.q = list.filter(Boolean); MP.i = i; const s = MP.q[i]; if (!s) return; const c = audioCtx(); if (c && c.state === 'suspended') c.resume();
-    MP.a.src = s.url; MP.a.play().catch(() => {});
+    if (list !== MP.q) MP.radio = false; MP.q = list.filter(Boolean); MP.i = i; const s = MP.q[i]; if (!s) return; const c = audioCtx(); if (c && c.state === 'suspended') c.resume();
+    MP.a.src = s.url; MP.a.play().catch(() => {}); mpSession(s); if (MP.radio && i >= MP.q.length - 3) radioMore();
     MP.recent = [s, ...MP.recent.filter((r) => r.id !== s.id)].slice(0, 30); store.set('li.recent', JSON.stringify(MP.recent));
     mpBar();
   }
-  const mpNext = (d = 1) => { if (!MP.q.length) return; mpPlay(MP.q, (MP.i + d + MP.q.length) % MP.q.length); };
+  const mpNext = (d = 1) => { if (!MP.q.length) return; if (MP.shuffle && d > 0 && MP.q.length > 2) { let j; do j = Math.floor(Math.random() * MP.q.length); while (j === MP.i); return mpPlay(MP.q, j); } mpPlay(MP.q, (MP.i + d + MP.q.length) % MP.q.length); };
+  // Island Radio: nonstop full tracks (Afrobeats, Amapiano, Naija pop from Audius), topped up before it runs out
+  async function radioBatch() { const qs = ['afrobeats', 'amapiano', 'naija', 'afropop', 'afro house']; const q = qs[Math.floor(Math.random() * qs.length)];
+    const [a1, a2] = await Promise.allSettled([au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=30'), au('/tracks/trending?genre=' + encodeURIComponent('Electronic') + '&limit=10')]);
+    const out = [...(a1.status === 'fulfilled' ? a1.value : []), ...(a2.status === 'fulfilled' ? a2.value : [])].map(fromAu).filter((s) => s && s.secs > 90);
+    for (let k = out.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [out[k], out[j]] = [out[j], out[k]]; } return out; }
+  async function mpRadio() { const b = await radioBatch(); if (!b.length) throw new Error('Island Radio is off the air right now. Try again.'); MP.radio = true; mpPlay(b, 0); }
+  async function radioMore() { if (radioMore.busy) return; radioMore.busy = true; try { const b = await radioBatch(); const seen = new Set(MP.q.map((s) => s.id)); MP.q.push(...b.filter((s) => !seen.has(s.id))); } catch {} radioMore.busy = false; }
+  // lock-screen and headphone controls (iPhone, Android, laptops): the song, the art, play, pause, next, previous, seek
+  function mpSession(s) { if (!('mediaSession' in navigator) || !s) return; try { navigator.mediaSession.metadata = new MediaMetadata({ title: s.title, artist: s.artist, album: 'Island Music · Lagos Island', artwork: s.art ? [{ src: s.art, sizes: '480x480', type: 'image/jpeg' }] : [] });
+    if (!mpSession.set) { mpSession.set = true; const ms = navigator.mediaSession; ms.setActionHandler('play', () => MP.a.play().catch(() => {})); ms.setActionHandler('pause', () => MP.a.pause()); ms.setActionHandler('nexttrack', () => mpNext(1)); ms.setActionHandler('previoustrack', () => mpNext(-1)); try { ms.setActionHandler('seekto', (e) => { if (e.seekTime != null) MP.a.currentTime = e.seekTime; }); } catch {} } } catch {} }
   const mpToggle = () => { if (!MP.a.src) return; MP.a.paused ? MP.a.play().catch(() => {}) : MP.a.pause(); };
   const mpLike = (s) => { const has = MP.liked.some((l) => l.id === s.id); MP.liked = has ? MP.liked.filter((l) => l.id !== s.id) : [s, ...MP.liked]; store.set('li.liked', JSON.stringify(MP.liked.slice(0, 200))); return !has; };
-  MP.a.addEventListener('ended', () => mpNext(1));
+  MP.a.addEventListener('ended', () => { if (MP.repeat === 'one') { MP.a.currentTime = 0; MP.a.play().catch(() => {}); return; } mpNext(1); });
   for (const ev of ['play', 'pause', 'timeupdate']) MP.a.addEventListener(ev, () => mpBar(ev === 'timeupdate'));
   // the bar along the bottom of the screen: the cover, the song, a progress line, play/pause and next
   const mbar = document.createElement('div'); mbar.id = 'mbar'; mbar.style.display = 'none';
@@ -7525,7 +7545,7 @@
   const chatTime = (iso) => { const d = new Date(iso), now = new Date(); return d.toDateString() === now.toDateString() ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : now - d < 6 * 864e5 ? d.toLocaleDateString(undefined, { weekday: 'short' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); };
   // a screen's first draw starts at the top and animates in; a refresh of the same screen (new data, a button) keeps your
   // place and doesn't flicker
-  function show(html) { pbody.innerHTML = html; if (pbody.dataset.fresh) { pbody.scrollTop = 0; delete pbody.dataset.fresh; } }
+  function show(html) { render.shown = true; pbody.innerHTML = html; if (pbody.dataset.fresh) { pbody.scrollTop = 0; delete pbody.dataset.fresh; } }
   // the shared app header: the app's icon in its colour, a title, a line under it
   const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || (a ? a[1] : '✨')}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div>${k === 'wyrd' ? '' : `<button class="w4ask" data-w4="${k}" aria-label="Ask WYRD" title="Ask WYRD about this">✨</button>`}</div>`; };
   // a round avatar with someone's initials, in a colour that's always theirs
@@ -7758,20 +7778,48 @@
     if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const tk = GJ.shift.tasks.find((v) => !v.done); out.push({ i: GRID_TRACKS[GJ.shift.track] && GRID_TRACKS[GJ.shift.track].place === 'airport' ? '🦺' : '⚡', t: tk ? `Your shift: ${tk.title}` : 'Hand in your shift', s: tk && tk.spot ? 'At ' + tk.spot.name : 'Finish it for your pay', run: () => closePhone(), w: 7 }); }
     if (WX.kind === 'storm' || WX.kind === 'rain') out.push({ i: WX.kind === 'storm' ? '⛈️' : '🌧️', t: WX.kind === 'storm' ? 'A storm over the island' : 'It\'s raining in Lagos', s: 'Indoors is better: a club, the casino, your HQ', run: null, w: 6 });
     if (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3)) out.push({ i: '🔌', t: 'NEPA took light', s: 'Inverters on. The Grid has work if you want it.', run: () => go('grid'), w: 5 });
-    if (signedIn() && earned < cap && h >= 7 && h < 22) out.push({ i: '💼', t: `You can still earn ${naira(cap - earned)} today`, s: 'A refinery shift pays ₦6,500; the Grid and the airport pay by level', run: () => go('jobs'), w: 4 });
-    if (typeof AIR !== 'undefined') { const s = AIR.slot() + 1, d = AIR.dep(s); out.push({ i: '✈️', t: `Next flight: ${d[1]} at ${AIR.hhmm(s)}`, s: `Gate ${AIR.gate(s)} · a seat from ${naira(d[4])}`, run: () => go('airport'), w: 2 }); }
+    for (const e of earnNow(h)) out.push(e);
     const playing = (typeof CITY !== 'undefined' && CITY.srcs || []).filter((s) => s.room && s.now); if (playing.length) out.push({ i: '🎶', t: `${playing.length} club${playing.length > 1 ? 's' : ''} playing now`, s: playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(' · '), run: () => go('music'), w: 3 });
     return out.sort((a, b) => b.w - a.w);
+  }
+  // the island's paid work, as the server pays it (see IslandMeEndpoint.shifts and the Grid's levels)
+  const EARN_SHIFTS = [
+    { place: 'refinery', i: '🛢️', name: 'Refinery shift', pay: 6500, min: 10, how: 'Walk up to the refinery gate and tap “Work a refinery shift”. Ten minutes on the job, then the pay lands.' },
+    { place: 'club', i: '🎶', name: 'Night shift at a club', pay: 4000, min: 10, night: true, how: 'Any club, after dark: tap “Work a night shift” at the door. Ten minutes behind the bar, then the pay lands.' },
+    { place: 'market', i: '🧺', name: 'Market stall', pay: 2500, min: 6, how: 'At the market, tap “Help at a market stall”. Six minutes selling, then the pay lands.' },
+    { place: 'motorpark', i: '🛵', name: 'Okada rides', pay: 1800, min: 4, how: 'At the motor park, tap “Do okada rides”. Four minutes carrying passengers, then the pay lands.' },
+  ];
+  const EARN_JOBS = { list: null };
+  function earnNow(hr) {
+    const out = [], night = hr >= 19 || hr < 5;
+    for (const s of EARN_SHIFTS) { if (s.night && !night) continue; out.push({ i: s.i, t: `${s.name}: ${naira(s.pay)}`, s: `Lands in your wallet after a ${s.min}-minute shift`, run: () => earnSheet({ ...s, kind: 'shift' }), w: 5 + s.pay / 10000 }); }
+    if (typeof GJ !== 'undefined' && !GJ.shift) { const lv = GJ.career && GJ.career.level ? GJ.career.level : 1, pay = (typeof GRID_PAY !== 'undefined' ? GRID_PAY : [12000])[Math.max(0, lv - 1)] || 12000;
+      out.push({ i: '⚡', t: `National Grid: ${naira(pay)} a shift`, s: GJ.career ? `At your level (${GRID_LEVELS[lv - 1]})` : 'Start as a trainee, earn more each promotion', run: () => earnSheet({ kind: 'grid', i: '⚡', name: 'National Grid shift', pay, how: 'Open The Grid on your phone, start a shift and do its tasks round the island. Hand it in and the pay lands; every promotion pays more.' }), w: 5.9 }); }
+    for (const j of (EARN_JOBS.list || []).filter((v) => !v.applied).slice(0, 2)) out.push({ i: '💼', t: `${j.title} · ${j.pay}`, s: `${j.company}, ${j.location}`, run: () => earnSheet({ kind: 'job', i: '💼', name: j.title, payText: j.pay, how: `${j.company} is hiring in ${j.location}. Apply on the Jobs board with a short note; if they take you on, they pay ${j.pay}.` }), w: 5.5 });
+    return out;
+  }
+  // what you'll get when the pay lands, and the way there
+  function earnSheet(e) {
+    const old = document.getElementById('earnSh'); if (old) old.remove();
+    const el = document.createElement('div'); el.id = 'w4sheet'; el.setAttribute('data-earn', '1');
+    el.innerHTML = `<button class="x" aria-label="Close">✕</button><h4><span style="font-size:22px">${e.i}</span>${esc(e.name)}</h4>
+      <div class="ans" style="display:block"><b style="display:block;font-size:20px;margin-bottom:4px">${e.payText ? esc(e.payText) : naira(e.pay) + (e.kind === 'grid' ? ' a shift' : '')}</b>${esc(e.how)}${e.kind === 'shift' ? `<br><br>When the shift ends, ${naira(e.pay)} lands in your wallet straight away, and you can work it again after ${e.min} minutes.` : ''}</div>
+      <div class="row4" style="margin-top:10px">${e.kind === 'shift' ? '<button class="pbtn" id="esGo">🛵 Ride there</button>' : e.kind === 'grid' ? '<button class="pbtn" id="esGo">⚡ Open The Grid</button>' : '<button class="pbtn" id="esGo">💼 See the job</button>'}</div>`;
+    document.getElementById('screen').append(el);
+    el.querySelector('.x').onclick = () => el.remove();
+    el.querySelector('#esGo').onclick = () => { el.remove();
+      if (e.kind === 'shift') { const pl = PLACES.find((v) => v[0] === e.place); if (pl) { const t = nearestRoad(pl[1] + pl[3] / 2, pl[2] + pl[4] / 2); go('rideq', { i: t[0], j: t[1], name: pl[5], emoji: pl[6], peek: 'p' + PLACES.indexOf(pl) }); } }
+      else go(e.kind === 'grid' ? 'grid' : 'jobs'); };
   }
   const w4Brief = () => { const s = w4Suggest().filter((v) => v.w >= 7).slice(0, 2); return s.map((v) => v.t).join(' · '); }; // the lock screen: only what's waiting for you
   // the smart bar: apps, people and places as you type; Enter with nothing matching asks WYRD
   function w4Home() {
-    const sug = w4Suggest().slice(0, 3);
-    return `<form class="w4bar" id="w4f"><i></i><input id="w4q" placeholder="Search or ask WYRD…" autocomplete="off" enterkeyhint="search"></form><div class="w4res" id="w4r"></div>
-      ${sug.length ? `<div class="w4hd"><span>✨ WYRD suggests</span></div><div class="w4sug">${sug.map((v, k) => `<button data-w4s="${k}"><span class="w4i">${v.i}</span><span><b>${esc(v.t)}</b><span>${esc(v.s)}</span></span></button>`).join('')}</div>` : ''}`;
+    const sug = w4Suggest().slice(0, 4);
+    return `<button class="hWork" data-app="jobs"><span>${pi('work')}</span><span><b>Work</b><small>Jobs, shifts, the Grid</small></span><em>${pi('go')}</em></button>
+      ${sug.length ? `<div class="w4hd"><span>✨ WYRD: ways to earn right now</span></div><div class="w4sug">${sug.map((v, k) => `<button data-w4s="${k}"><span class="w4i">${v.i}</span><span><b>${esc(v.t)}</b><span>${esc(v.s)}</span></span></button>`).join('')}</div>` : ''}`;
   }
   function w4Wire() {
-    const sug = w4Suggest().slice(0, 3);
+    const sug = w4Suggest().slice(0, 4);
     pbody.querySelectorAll('[data-w4s]').forEach((b) => (b.onclick = () => { const v = sug[+b.dataset.w4s]; if (v && v.run) v.run(); }));
     const f = $('w4f'), q = $('w4q'), res = $('w4r'); if (!f) return;
     let tm = 0, seq = 0;
@@ -7923,7 +7971,7 @@
   // your profile and keys, loaded in the background as soon as you're signed in, so the phone opens without waiting
   async function warmUp() {
     if (!signedIn() || (me$ && keyed)) return;
-    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); } catch {}
+    try { await loadMe(); await ensureKey(); keyed = true; linkPoll(); my('jobs').then((l) => (EARN_JOBS.list = l)).catch(() => {}); for (const [m, a] of [['receipts', {}], ['friends', {}], ['homes', {}], ['inbox', { seenJson: JSON.stringify(linkSeen()) }]]) my(m, a).catch(() => {}); } catch {}
   }
   setTimeout(warmUp, 1200);
   // ================= WYRD OS 2 =================
@@ -8057,10 +8105,10 @@
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
     if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin', { then: app, arg }); // a ride, the free harbour tour and the airport's boards need no account
     try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
-    if (me$ && !phoneOk() && app !== 'unlock') return render('unlock', { then: app, arg }); // your email and game password first: it confirms the game ID
     if (app) go(app, arg); else render('home');
   }
-  async function render(app, arg) { pbody.dataset.app = app;
+  async function render(app, arg) { pbody.dataset.app = app; render.shown = false; const rtok = (render.tok = (render.tok || 0) + 1);
+    setTimeout(() => { if (render.tok === rtok && !render.shown) pbody.innerHTML = '<div class="skel"><i></i><i></i><i class="s"></i><i></i><i class="s"></i></div>'; }, 120);
     try {
       if (app === 'signin') {
         const mode = (arg && arg.mode) || 'new', nm = String(myName || '').trim(), okName = /^[a-zA-Z0-9_.-]{3,20}$/.test(nm) && !/^(guest|lagosian)/i.test(nm);
@@ -8074,10 +8122,10 @@
           <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="current-password" placeholder="Your password"></div>`}
           <div class="err" id="wErr"></div><button class="pbtn" id="wGo">${pi('check')}${mode === 'new' ? 'Create WYRD ID' : 'Sign in'}</button>
           <div class="fine">${mode === 'new' ? 'Your email stays private. It is where a password reset goes.' : ''}</div>
-          <div style="display:flex;gap:8px;margin-top:14px"><button class="pbtn alt" id="gRide" style="flex:1">🛵 Ride</button><button class="pbtn alt" id="gFly" style="flex:1">✈️ Flights</button></div></div>`);
+          <div style="display:flex;gap:8px;margin-top:14px"><button class="pbtn alt" id="gRide" style="flex:1">🛵 Ride</button></div></div>`);
         pbody.dataset.app = 'unlock'; // its look
         pbody.querySelectorAll('[data-wm]').forEach((b) => (b.onclick = () => render('signin', { ...(arg || {}), mode: b.dataset.wm })));
-        $('gRide').onclick = () => go('ride'); $('gFly').onclick = () => go('airport');
+        $('gRide').onclick = () => go('ride');
         const goOn = async () => { const b = $('wGo'), err = $('wErr'); if (b.disabled) return; err.textContent = '';
           const mail = $('wMail').value.trim(), pw = $('wPass').value, name = mode === 'new' ? $('wName').value.trim() : '';
           if (mode === 'new') {
@@ -8113,12 +8161,13 @@
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), playing = (CITY.srcs || []).filter((s) => s.room && s.now); return playing.length || live ? `<button class="tw" data-app="${live ? 'arena' : 'music'}"><div><small>Live now</small><b>${playing.length ? `${playing.length} club${playing.length > 1 ? 's' : ''} playing · ${esc(playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(', '))}` : 'The Arena is live'}</b><span>${live && playing.length ? '● The Arena is live too' : 'Tap to listen'}</span></div><i>🎶</i></button>` : ''; })()}
-          <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
+          <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><small>Earned today ${naira(me$.earnedToday || 0)}</small></button>
             <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
+        { const wk = pbody.querySelector('.hWork'); if (wk) wk.onclick = () => go('jobs'); }
         { const av = pbody.querySelector('.hHi .av2'); if (av) av.onclick = () => openPass(); $('hBell').onclick = () => { buildShade(); shadeEl.classList.add('on'); setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); }; }
         if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
         pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
@@ -8138,7 +8187,7 @@
         const spent = r.filter((e) => e.amount < 0 && e.at && dayOf(e.at) === 'Today').reduce((n, e) => n - e.amount, 0);
         show(`<div class="ppTop"><div><h2>Wallet</h2><small>@${esc(me$.handle)} · game naira</small></div></div>
           <div class="wCard"><div class="k"><span>Balance</span><span class="chip"></span></div><div class="v">${naira(me$.naira)}</div><div class="s">Game currency · can't be withdrawn</div>
-            <div class="bar"><i style="width:${pct}%"></i></div><div class="s" style="display:flex;justify-content:space-between"><span>Earned today ${naira(me$.earnedToday || 0)}</span><span>of ${naira(cap)}</span></div></div>
+            <div class="s" style="margin-top:12px">Earned today ${naira(me$.earnedToday || 0)}</div></div>
           <button class="wReal" id="wBuy" style="margin-top:12px"><span class="ic2" style="background:rgba(14,165,233,.15);color:#0EA5E9">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Buy naira</b><small>Card, bank transfer or USSD · Flutterwave</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button><button id="wShop"><span>${pi('bag')}</span>Store</button><button id="wCars"><span>${pi('car')}</span>Cars</button></div>
           <div id="realBox"></div>
@@ -8237,7 +8286,7 @@
         return;
       }
       if (app === 'jobs') {
-        const list = await my('jobs');
+        const list = await my('jobs'); EARN_JOBS.list = list;
         // filters (all, your matches, applied), cards with the company's avatar, a match ring, skill tags; Apply opens a note
         const shown = list.filter((j) => jobsTab === 'applied' ? j.applied : jobsTab === 'match' ? j.match != null && j.match >= 50 : true);
         const matches = list.filter((j) => j.match != null && j.match >= 50).length, applied = list.filter((j) => j.applied).length;
@@ -8905,10 +8954,13 @@
             <canvas id="mViz" width="560" height="90"></canvas>
             <div class="mprog"><i id="mNowB"></i></div><div class="dim" id="mNowT">0:00</div>
             <div class="mctl"><button id="mPrev">⏮</button><button id="mNowP" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button id="mNext">⏭</button><button id="mLike" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</button></div>
+            <div class="mctl" style="margin-top:4px"><button id="mShuf" class="mode${MP.shuffle ? ' on' : ''}" aria-label="Shuffle">🔀</button><button id="mRep" class="mode${MP.repeat === 'one' ? ' on' : ''}" aria-label="Repeat one">🔂</button>${MP.radio ? '<span class="dim" style="align-self:center;font-weight:700">📻 Island Radio</span>' : ''}</div>
             <div class="mbass"><span>🔊 Bass</span>${[[0, 'Off'], [6, 'Boost'], [12, 'Max']].map(([v, n]) => `<button data-bass="${v}" class="${AX.bass === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
             <div class="msec">Up next</div><div class="lst">${MP.q.map((v, i) => i > MP.i && i < MP.i + 12 ? row(v, i, 'q') : '').join('')}</div>`);
           $('mPrev').onclick = () => { mpNext(-1); render('music', { tab: 'now' }); }; $('mNext').onclick = () => { mpNext(1); render('music', { tab: 'now' }); };
           $('mNowP').onclick = mpToggle; $('mLike').onclick = () => $('mLike').classList.toggle('on', mpLike(s));
+          $('mShuf').onclick = () => { MP.shuffle = !MP.shuffle; $('mShuf').classList.toggle('on', MP.shuffle); }; $('mRep').onclick = () => { MP.repeat = MP.repeat === 'one' ? 'all' : 'one'; $('mRep').classList.toggle('on', MP.repeat === 'one'); };
+          { const pg = pbody.querySelector('.mprog'); if (pg) pg.onclick = (e) => { const r = pg.getBoundingClientRect(), d = MP.a.duration || s.secs || 30; MP.a.currentTime = Math.max(0, Math.min(d - 0.5, d * (e.clientX - r.left) / r.width)); mpBar(true); }; }
           pbody.querySelectorAll('[data-bass]').forEach((b) => (b.onclick = () => { audioCtx(); setBass(+b.dataset.bass); pbody.querySelectorAll('[data-bass]').forEach((o) => o.classList.toggle('on', o === b)); }));
           // the visualiser: the music's spectrum as bars, the low end (the bass) brightest
           { const cv = $('mViz'), g2 = cv.getContext('2d'), buf = new Uint8Array(32); const draw = () => { if (!cv.isConnected) return; g2.clearRect(0, 0, cv.width, cv.height); if (AX.an) AX.an.getByteFrequencyData(buf); for (let k = 0; k < 28; k++) { const v = AX.an && !MP.a.paused ? buf[k] / 255 : 0.04 + Math.abs(Math.sin(performance.now() / 600 + k)) * 0.03, h = Math.max(3, v * cv.height), bw2 = cv.width / 28; const gr = g2.createLinearGradient(0, cv.height, 0, cv.height - h); gr.addColorStop(0, k < 6 ? '#16A34A' : '#0EA5E9'); gr.addColorStop(1, k < 6 ? '#86EFAC' : '#A78BFA'); g2.fillStyle = gr; g2.beginPath(); g2.roundRect(k * bw2 + 2, cv.height - h, bw2 - 4, h, 3); g2.fill(); } requestAnimationFrame(draw); }; draw(); }
@@ -8944,17 +8996,21 @@
         }
         // Home
         show(`${head}${tabs}<div id="mHome"><div class="dim" style="margin:8px 2px">Loading the charts…</div></div>`); wire();
-        const [top, rel, full] = await Promise.allSettled([dz('/playlist/1362516565/tracks?limit=50'), dz('/editorial/0/releases?limit=12'), au('/tracks/trending?limit=20')]);
-        lists.top = top.status === 'fulfilled' ? top.value.data.map(fromDz).filter(Boolean) : [];
-        lists.full = full.status === 'fulfilled' ? full.value.map(fromAu).filter(Boolean) : [];
-        let albums = rel.status === 'fulfilled' ? rel.value.data : [], albLabel = 'New releases';
-        if (!albums.length) { try { albums = (await dz('/chart/0/albums?limit=12')).data; albLabel = 'Top albums'; } catch {} }
-        try { const pl = (await dz('/search/playlist?q=' + encodeURIComponent('new music friday') + '&limit=1')).data[0]; if (pl) lists.fresh = (await dz('/playlist/' + pl.id + '/tracks?limit=25')).data.map(fromDz).filter(Boolean); } catch {}
+        const loadHome = async () => { const [top, rel, full, fr] = await Promise.allSettled([dz('/playlist/1362516565/tracks?limit=50'), dz('/editorial/0/releases?limit=12'), au('/tracks/trending?limit=20'), dz('/search/playlist?q=' + encodeURIComponent('new music friday') + '&limit=1')]);
+          const d = { at: Date.now(), top: top.status === 'fulfilled' ? top.value.data.map(fromDz).filter(Boolean) : [], full: full.status === 'fulfilled' ? full.value.map(fromAu).filter(Boolean) : [], albums: rel.status === 'fulfilled' ? rel.value.data : [], albLabel: 'New releases', fresh: [] };
+          const extra = await Promise.allSettled([d.albums.length ? Promise.resolve(null) : dz('/chart/0/albums?limit=12'), fr.status === 'fulfilled' && fr.value.data[0] ? dz('/playlist/' + fr.value.data[0].id + '/tracks?limit=25') : Promise.resolve(null)]);
+          if (!d.albums.length && extra[0].status === 'fulfilled' && extra[0].value) { d.albums = extra[0].value.data; d.albLabel = 'Top albums'; }
+          if (extra[1].status === 'fulfilled' && extra[1].value) d.fresh = extra[1].value.data.map(fromDz).filter(Boolean);
+          if (d.top.length || d.full.length) { MUSIC_HOME.d = d; try { store.set('li.musicHome', JSON.stringify(d)); } catch {} } return d; };
+        let hd = MUSIC_HOME.d || (() => { try { const v = JSON.parse(store.get('li.musicHome') || 'null'); return v && Date.now() - v.at < 6 * 3600e3 ? v : null; } catch { return null; } })();
+        if (!hd) hd = await loadHome(); else if (Date.now() - hd.at > 15 * 60000) loadHome().catch(() => {});
+        lists.top = hd.top; lists.full = hd.full; lists.fresh = hd.fresh; let albums = hd.albums, albLabel = hd.albLabel;
         const GENRES = [['Afrobeats', '#F59E0B'], ['Amapiano', '#A855F7'], ['Afro gospel', '#0EA5E9'], ['Naija hip hop', '#EF4444'], ['Highlife', '#22C55E'], ['Fuji', '#B45309'], ['Alté', '#EC4899'], ['R&B', '#6366F1']];
         if (!$('mHome')) return;
         const feat = (lists.fresh && lists.fresh[0]) || lists.top[0], playing = MP.q[MP.i];
         if (feat) lists.feat = [feat];
         $('mHome').innerHTML = `${playing ? `<button class="mmini" data-mt="now"><img src="${esc(playing.art)}" alt=""><span><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(playing.title)}</b><em>${esc(playing.artist)}</em></span>${MP.a.paused ? '' : '<i class="meq"><s></s><s></s><s></s></i>'}</button>` : ''}
+          <div class="mtools"><button id="mRadio">📻 Island Radio</button><button id="mShufTop" class="alt">🔀 Shuffle the top 50</button></div>
           ${feat ? `<div class="mfeat" style="--art:url('${esc(feat.art)}')"><div class="mbg"></div><img src="${esc(feat.art)}" alt=""><div class="mft"><small>${lists.fresh && lists.fresh[0] === feat ? 'NEW THIS WEEK' : 'NUMBER ONE IN NIGERIA'}</small><b>${esc(feat.title)}</b><span>${esc(feat.artist)}</span><button class="mplay" data-ml="feat" data-mi="0" aria-label="Play">▶ Play</button></div></div>` : ''}
           ${lists.fresh && lists.fresh.length ? `<div class="msec">New Music Friday</div><div class="mcards">${lists.fresh.slice(0, 12).map((s, i) => `<button data-ml="fresh" data-mi="${i}" class="${MP.q[MP.i] && MP.q[MP.i].id === s.id ? 'on' : ''}"><img src="${esc(s.art)}" alt="" loading="lazy"><b>${esc(s.title)}</b><small>${esc(s.artist)}</small></button>`).join('')}</div>` : ''}
           ${albums.length ? `<div class="msec">${albLabel}</div><div class="malb">${albums.map((al) => `<button data-album="${al.id}" data-title="${esc(al.title)}"><img src="${esc(al.cover_medium)}" alt="" loading="lazy"><b>${esc(al.title)}</b><small>${esc(al.artist ? al.artist.name : '')}</small></button>`).join('')}</div>` : ''}
@@ -8963,6 +9019,8 @@
           ${lists.full.length ? `<div class="msec">Full tracks<small>Trending on Audius</small></div><div class="lst">${lists.full.map((s, i) => row(s, i, 'full')).join('')}</div>` : ''}
           ${!lists.top.length && !lists.full.length ? '<div class="pcard err">Music is offline right now. Try again in a moment.</div>' : ''}
           <div class="lock">Chart songs play as 30-second previews from Deezer; full tracks come from independent artists on Audius.</div>`;
+        $('mRadio').onclick = async () => { const b = $('mRadio'); b.textContent = '📻 Tuning in…'; try { await mpRadio(); render('music', { tab: 'now' }); } catch (e) { b.textContent = '📻 Island Radio'; fail(e); } };
+        $('mShufTop').onclick = () => { if (!lists.top.length) return; MP.shuffle = true; mpPlay(lists.top, Math.floor(Math.random() * lists.top.length)); render('music', { tab: 'now' }); };
         wire(); return;
       }
       if (app === 'casino') {
@@ -9545,7 +9603,7 @@
   if (signedIn()) {
     document.getElementById('auth').style.display = 'none'; document.getElementById('lookPick').style.display = 'none';
     const who = document.getElementById('who'); who.style.display = 'block'; who.textContent = 'Welcome back.';
-    my('me').then((v) => { myName = v.handle; who.textContent = `Welcome back, ${v.handle}.`; if (v.look) { myLook = v.look; store.set('li.look', myLook); } }).catch(() => { who.style.display = 'none'; document.getElementById('auth').style.display = 'block'; });
+    my('me').then((v) => { myName = v.handle; who.textContent = `Welcome back, ${v.handle}.`; if (!playing) setTimeout(() => { if (!playing && signedIn()) start(); }, 400); if (v.look) { myLook = v.look; store.set('li.look', myLook); } }).catch(() => { who.style.display = 'none'; document.getElementById('auth').style.display = 'block'; });
   }
   document.getElementById('go').onclick = async () => {
     if (signedIn() && document.getElementById('auth').style.display === 'none') return start();
