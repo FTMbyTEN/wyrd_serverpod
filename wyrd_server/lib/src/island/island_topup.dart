@@ -29,6 +29,16 @@ abstract final class TopUp {
   /// where checkout may send the player back to (the game's own addresses)
   static final _returnOk = RegExp(r'^(https://play\.lagos-island\.workers\.dev|https://wryd00\.api\.serverpod\.space|http://localhost:\d+)(/[^\s?#]*)?$');
 
+  static final _http = http.Client();
+  static DateTime _warmed = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// open the connection to Flutterwave ahead of a checkout (at most once a minute)
+  static void warm() {
+    if (DateTime.now().difference(_warmed) < const Duration(minutes: 1)) return;
+    _warmed = DateTime.now();
+    unawaited(_http.head(Uri.parse('https://api.flutterwave.com/')).timeout(const Duration(seconds: 8)).catchError((_) => http.Response('', 599)));
+  }
+
   static String _key(Session s) => (s.passwords['flutterwaveSecretKey'] ?? '').trim();
 
   /// off, test or live
@@ -38,10 +48,13 @@ abstract final class TopUp {
     return k.contains('_TEST') ? 'test' : 'live';
   }
 
-  static Map<String, dynamic> info(Session s) => {
+  static Map<String, dynamic> info(Session s) {
+    if (mode(s) != 'off') warm();
+    return {
         'mode': mode(s),
         'packs': [for (final e in packs.entries) {'id': e.key, 'ngn': e.value.ngn, 'naira': e.value.naira}],
       };
+  }
 
   /// Start checkout for [pack]: returns Flutterwave's payment link and our reference.
   static Future<Map<String, dynamic>> start(Session s, UuidValue u, String pack, String returnTo) async {
@@ -49,10 +62,12 @@ abstract final class TopUp {
     if (p == null) throw TopUpRefused('That pack is not for sale.');
     if (mode(s) == 'off') throw TopUpRefused('Buying naira opens soon.');
     if (!_returnOk.hasMatch(returnTo)) throw TopUpRefused('Open the game from its own address to buy naira.');
-    final acct = await EmailAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+    final (acct, recent) = await (
+      EmailAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(u)),
+      // a double tap within 20 s doesn't open a second checkout
+      IslandTopUp.db.findFirstRow(s, where: (t) => t.authUserId.equals(u) & t.status.equals('pending'), orderBy: (t) => t.createdAt.desc()),
+    ).wait;
     if (acct == null || acct.email.endsWith('@lagosisland.wyrd')) throw TopUpRefused('Add your email to your WYRD ID first (open your phone).');
-    // a few minutes between checkouts started, so a double tap doesn't open two
-    final recent = await IslandTopUp.db.findFirstRow(s, where: (t) => t.authUserId.equals(u) & t.status.equals('pending'), orderBy: (t) => t.createdAt.desc());
     final now = DateTime.now().toUtc();
     final rnd = Random.secure();
     final ref = 'LI-${now.millisecondsSinceEpoch}-${List.generate(8, (_) => rnd.nextInt(36).toRadixString(36)).join()}';
@@ -61,13 +76,14 @@ abstract final class TopUp {
     }
     await IslandTopUp.db.insertRow(s, IslandTopUp(authUserId: u, txRef: ref, pack: pack, amountNgn: p.ngn, naira: p.naira, status: 'pending', createdAt: now));
     final sep = returnTo.contains('?') ? '&' : '?';
-    final r = await http.post(
+    final r = await _http.post(
       Uri.parse('https://api.flutterwave.com/v3/payments'),
       headers: {'Authorization': 'Bearer ${_key(s)}', 'Content-Type': 'application/json'},
       body: jsonEncode({
         'tx_ref': ref,
         'amount': p.ngn,
         'currency': 'NGN',
+        'payment_options': 'card, banktransfer, ussd',
         'redirect_url': '$returnTo${sep}topup=$ref',
         'customer': {'email': acct.email},
         'customizations': {'title': 'Lagos Island', 'description': '${_n(p.naira)} game naira'},
@@ -89,7 +105,7 @@ abstract final class TopUp {
     if (row == null || (onlyFor != null && row.authUserId != onlyFor)) return {'status': 'unknown'};
     if (row.status == 'paid') return {'status': 'paid', 'naira': row.naira};
     if (mode(s) == 'off') return {'status': row.status};
-    final r = await http.get(
+    final r = await _http.get(
       Uri.parse('https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${Uri.encodeQueryComponent(ref)}'),
       headers: {'Authorization': 'Bearer ${_key(s)}'},
     ).timeout(const Duration(seconds: 20));
@@ -100,6 +116,7 @@ abstract final class TopUp {
       if (failed) await IslandTopUp.db.updateRow(s, row.copyWith(status: 'failed', flwId: '${d['id'] ?? ''}'));
       return {'status': failed ? 'failed' : 'pending'};
     }
+    s.log('[topup] $ref confirmed by Flutterwave: ${d['payment_type']} ${d['amount']} ${d['currency']} id=${d['id']} mode=${mode(s)}', level: LogLevel.info);
     final res = await Bank.post(s, row.authUserId, key: 'topup:$ref', amount: row.naira, kind: 'topup', counter: 'city:treasury', memo: 'Bought ${_n(row.naira)} naira (Flutterwave)');
     if (res.short != null) return {'status': 'pending'};
     await IslandTopUp.db.updateRow(s, row.copyWith(status: 'paid', flwId: '${d['id'] ?? ''}', paidAt: DateTime.now().toUtc()));

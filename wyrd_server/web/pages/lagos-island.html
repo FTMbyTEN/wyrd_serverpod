@@ -1142,6 +1142,22 @@
   @keyframes skel { to { background-position: -200% 0; } }
   .mtools { display: flex; gap: 8px; margin: 10px 0 4px; } .mtools button { flex: 1; padding: 11px 10px; border: 0; border-radius: 14px; cursor: pointer; font: 800 13px 'Plus Jakarta Sans', sans-serif; color: #fff; background: linear-gradient(135deg, #EC4899, #8B5CF6); box-shadow: 0 6px 16px rgba(139,92,246,.3); } .mtools button.alt { background: linear-gradient(135deg, #0EA5E9, #6366F1); }
   .mctl button.mode { font-size: 15px; opacity: .55; } .mctl button.mode.on { opacity: 1; } .mprog { cursor: pointer; padding: 8px 0; background-clip: content-box; }
+  .ccard { position: relative; overflow: hidden; aspect-ratio: 1.586; padding: 18px 20px; border-radius: 22px; color: #fff; box-shadow: 0 18px 36px rgba(15,23,42,.28), inset 0 1px 0 rgba(255,255,255,.25); display: flex; flex-direction: column; justify-content: space-between; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .ccard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.18) 48%, transparent 60%); pointer-events: none; }
+  .ccard.ink { color: #0F172A; } .ccard.ink .ccNo, .ccard.ink .cc3 small { text-shadow: none; }
+  .ccard .cc1 { display: flex; justify-content: space-between; align-items: center; } .ccard .cc1 b { font: 900 20px 'Plus Jakarta Sans', sans-serif; letter-spacing: .12em; } .ccard .cl .pi { width: 24px; height: 24px; transform: rotate(0deg); }
+  .ccard .cc2 { display: flex; align-items: center; justify-content: space-between; } .ccard .chip { width: 44px; height: 34px; border-radius: 7px; background: linear-gradient(135deg, #FDE68A, #D97706 60%, #FBBF24); box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); position: relative; }
+  .ccard .chip::before { content: ""; position: absolute; inset: 8px 6px; border: 1px solid rgba(120,53,15,.45); border-radius: 4px; }
+  .ccard .ccBal { text-align: right; font: 800 24px 'Plus Jakarta Sans', sans-serif; letter-spacing: -.01em; } .ccard small { display: block; font: 700 9.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+  .ccard .ccNo { font: 600 19px ui-monospace, Menlo, monospace; letter-spacing: .12em; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .ccard .cc3 { display: flex; gap: 18px; align-items: flex-end; font: 700 13px 'Plus Jakarta Sans', sans-serif; text-transform: uppercase; letter-spacing: .04em; } .ccard .ccBrand { margin-left: auto; text-align: right; font: 900 12px/1.05 'Plus Jakarta Sans', sans-serif; letter-spacing: .06em; opacity: .95; }
+  .ccMeta { display: flex; justify-content: space-between; align-items: center; margin: 10px 4px 0; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); } .ccMeta b { color: var(--ppInk); }
+  .ccMeta button { padding: 7px 12px; border: 0; border-radius: 999px; cursor: pointer; background: var(--ppCard); box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk); font: 700 12px 'Plus Jakarta Sans', sans-serif; }
+  .ccPick { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0 2px; } .ccPick button { aspect-ratio: 1.586; border: 0; border-radius: 10px; cursor: pointer; position: relative; box-shadow: inset 0 0 0 1px rgba(15,23,42,.1); }
+  .ccPick button.on { box-shadow: 0 0 0 3px var(--pp1); } .ccPick span { position: absolute; left: 0; right: 0; bottom: -16px; font: 700 10px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ccPick { padding-bottom: 14px; }
+  #flwGo { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(248,250,252,.96); font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; text-align: center; }
+  #flwGo i { display: block; width: 46px; height: 46px; margin: 0 auto 14px; border-radius: 50%; border: 4px solid #E2E8F0; border-top-color: #F5A623; animation: flwSpin .8s linear infinite; } #flwGo b { display: block; font: 800 17px 'Plus Jakarta Sans', sans-serif; } #flwGo small { display: block; margin-top: 4px; font: 600 13px 'Plus Jakarta Sans', sans-serif; color: #64748B; }
+  @keyframes flwSpin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -6778,7 +6794,7 @@
   // ---- people: a Lagosian's public profile (never their wallet, email, messages, where they are, who their friends are
   // or what's inside their home), real friend requests (they see it, they accept or decline), and finding people
   const sinceStr = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-NG', { month: 'long', year: 'numeric' }); };
-  const PI = { home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>', work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>', tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>', plane: '<path d="M2 16l20-6-20-6 3 6z"/><path d="M5 10h8"/>', users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/>', add: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/>', check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', go: '<path d="M9 6l6 6-6 6"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', inbox: '<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>', spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>', send: '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>', car: '<path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="16" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="18" r=".6"/><circle cx="16.5" cy="18" r=".6"/>', bank: '<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>', key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M14 9l2 2"/>', shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/>', trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>' };
+  const PI = { home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>', work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>', tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>', plane: '<path d="M2 16l20-6-20-6 3 6z"/><path d="M5 10h8"/>', users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/>', add: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/>', check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>', go: '<path d="M9 6l6 6-6 6"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', inbox: '<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>', spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>', wifi: '<path d="M8.5 7a8 8 0 0 1 0 10M12 4.5a12 12 0 0 1 0 15M5 9.5a4 4 0 0 1 0 5"/>', send: '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>', car: '<path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="16" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="18" r=".6"/><circle cx="16.5" cy="18" r=".6"/>', bank: '<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>', key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M14 9l2 2"/>', shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/>', trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>' };
   const pi = (k) => `<svg class="pi" viewBox="0 0 24 24" aria-hidden="true">${PI[k] || ''}</svg>`;
   const REL = { none: '➕ Add friend', sent: '⏳ Request sent', received: '✓ Accept request', friends: '✓ Friends', me: '' };
   function profileHtml(p) {
@@ -8191,8 +8207,9 @@
           return head + `<div class="wRow"><span class="ic2${e.amount > 0 ? ' in' : ''}">${icon(e.memo, e.amount)}</span><span class="t"><b>${esc(e.memo)}</b>${e.at ? `<small>${when(e.at)}</small>` : ''}</span><span class="amt ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</span></div>`; }).join('');
         const spent = r.filter((e) => e.amount < 0 && e.at && dayOf(e.at) === 'Today').reduce((n, e) => n - e.amount, 0);
         show(`<div class="ppTop"><div><h2>Wallet</h2><small>@${esc(me$.handle)} · game naira</small></div></div>
-          <div class="wCard"><div class="k"><span>Balance</span><span class="chip"></span></div><div class="v">${naira(me$.naira)}</div><div class="s">Game currency · can't be withdrawn</div>
-            <div class="s" style="margin-top:12px">Earned today ${naira(me$.earnedToday || 0)}</div></div>
+          ${bankCard()}
+          <div class="ccMeta"><span>Earned today <b>${naira(me$.earnedToday || 0)}</b></span><button id="wDesign">🎨 Card design</button></div>
+          <div class="ccPick" id="wPick" style="display:none">${CARD_DESIGNS.map((d, i) => `<button data-cd="${i}" class="${i === cardDesign() ? 'on' : ''}" style="background:${d.bg}" aria-label="${esc(d.name)}"><span>${esc(d.name)}</span></button>`).join('')}</div>
           <button class="wReal" id="wBuy" style="margin-top:12px"><span class="ic2" style="background:rgba(14,165,233,.15);color:#0EA5E9">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Buy naira</b><small>Card, bank transfer or USSD · Flutterwave</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button><button id="wShop"><span>${pi('bag')}</span>Store</button><button id="wCars"><span>${pi('car')}</span>Cars</button></div>
           <div id="realBox"></div>
@@ -8202,6 +8219,8 @@
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
         pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
         $('wBuy').onclick = () => go('buynaira');
+        $('wDesign').onclick = () => { const k = $('wPick'); k.style.display = k.style.display === 'none' ? 'grid' : 'none'; };
+        pbody.querySelectorAll('[data-cd]').forEach((b) => (b.onclick = () => { store.set('li.card.' + me$.handle, b.dataset.cd); render('wallet'); }));
         const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
         $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => toggle('earnBox', 'wEarn'); $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
         pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
@@ -8223,8 +8242,9 @@
           <div class="err" id="bnErr" style="margin:10px 4px;color:#DC2626;font:600 13px 'Plus Jakarta Sans',sans-serif"></div>
           <div class="ppEmpty" style="padding:12px 8px;font-size:12px">Game naira stay in the game: they can't be withdrawn. Your card details go to Flutterwave, never to Lagos Island.</div>`;
         body.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = async () => { if (b.disabled) return; b.disabled = true; $('bnErr').textContent = '';
-          try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; }
-          catch (e) { b.disabled = false; $('bnErr').textContent = e.message; } }));
+          const ov = document.createElement('div'); ov.id = 'flwGo'; ov.innerHTML = '<div><i></i><b>Opening secure checkout</b><small>Flutterwave · your card details never touch the game</small></div>'; document.body.append(ov);
+          try { const r = await my('topUpStart', { pack: b.dataset.pk, returnTo: location.origin + location.pathname }); store.set('li.topup', r.ref); location.href = r.link; setTimeout(() => ov.remove(), 15000); }
+          catch (e) { ov.remove(); b.disabled = false; $('bnErr').textContent = e.message; } }));
         return;
       }
       if (app === 'treasury') {
@@ -9346,6 +9366,27 @@
         } catch (e) { go.disabled = false; go.textContent = mode === 'courier' ? 'Send it · ' + naira(1500) : 'Take it home'; el.querySelector('#dlvErr').textContent = e.message; } };
     };
     draw(); document.body.append(el);
+  }
+  // ---- the wallet card: a design and a card number for each player (from their name, so it's the same on every device),
+  // the design theirs to change (kept on this device)
+  const CARD_DESIGNS = [
+    { name: 'Lagos Sunset', bg: 'radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.28), transparent 55%), linear-gradient(135deg, #F97316, #DB2777 55%, #7C3AED)' },
+    { name: 'Lagoon', bg: 'radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.25), transparent 55%), linear-gradient(135deg, #0F766E, #0EA5E9 52%, #6366F1)' },
+    { name: 'Midnight', bg: 'radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.12), transparent 55%), linear-gradient(135deg, #0F172A, #1E1B4B 60%, #312E81)' },
+    { name: 'Gold', bg: 'radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.4), transparent 55%), linear-gradient(135deg, #A16207, #EAB308 45%, #CA8A04 70%, #713F12)' },
+    { name: 'Emerald', bg: 'radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.22), transparent 55%), linear-gradient(135deg, #064E3B, #059669 55%, #34D399)' },
+    { name: 'Aurora', bg: 'radial-gradient(80% 70% at 10% 0%, rgba(52,211,153,.75), transparent 60%), radial-gradient(80% 80% at 100% 100%, rgba(236,72,153,.75), transparent 60%), linear-gradient(135deg, #1E1B4B, #4C1D95)' },
+    { name: 'Carbon', bg: 'repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 6px, transparent 6px 12px), linear-gradient(135deg, #18181B, #3F3F46)' },
+    { name: 'Naija', bg: 'linear-gradient(90deg, #008751 0 33.3%, #F8FAFC 33.3% 66.6%, #008751 66.6%)', dark: true },
+  ];
+  const nameHash = (s) => { let x = 2166136261; for (const ch of String(s)) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619) >>> 0; } return x; };
+  const cardDesign = () => { const v = me$ && store.get('li.card.' + me$.handle); return v != null && v !== '' && CARD_DESIGNS[+v] ? +v : nameHash(me$ ? me$.handle : 'guest') % CARD_DESIGNS.length; };
+  function bankCard() {
+    const d = CARD_DESIGNS[cardDesign()], hsh = nameHash((me$ ? me$.handle : '') + ':card'), last4 = String(1000 + (hsh % 9000)), yy = String((new Date().getFullYear() + 4) % 100).padStart(2, '0'), mm = String(1 + (hsh >> 8) % 12).padStart(2, '0');
+    return `<div class="ccard${d.dark ? ' ink' : ''}" style="background:${d.bg}"><div class="cc1"><b>WYRD</b><span class="cl">${pi('wifi')}</span></div>
+      <div class="cc2"><span class="chip"></span><span class="ccBal"><small>Balance</small>${naira(me$.naira)}</span></div>
+      <div class="ccNo">•••• •••• •••• ${last4}</div>
+      <div class="cc3"><span><small>Cardholder</small>${esc(me$.handle)}</span><span><small>Valid thru</small>${mm}/${yy}</span><span class="ccBrand">Lagos<br>Island</span></div></div>`;
   }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');
