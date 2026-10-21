@@ -216,7 +216,6 @@ class IslandMeEndpoint extends Endpoint {
   // ---------------- work and wallet ----------------
   /// Pay for one shift, and how long it is (a shift can be paid once per [minutes] at each workplace).
   static const shifts = {
-    'refinery': (pay: 6500, minutes: 10, memo: 'Shift at the refinery'),
     'club': (pay: 4000, minutes: 10, memo: 'Night shift at the club'),
     'market': (pay: 2500, minutes: 6, memo: 'Helping at the market stall'),
     'okada': (pay: 1800, minutes: 4, memo: 'Okada rides'),
@@ -341,8 +340,7 @@ class IslandMeEndpoint extends Endpoint {
           } else {
             pay = min(GridCareer.payFor(w.level, score), dailyCap - earned);
             final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
-            final air = GridCareer.airportTracks.contains(w.track);
-            final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:${air ? 'airport' : 'grid'}:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: air ? 'Lagos Island Airport shift' : 'National Grid shift');
+            final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:${GridCareer.placeOf(w.track)}:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: GridCareer.memoOf(w.track));
             if (r.repeat) {
               pay = 0;
               note = 'One paid shift every 40 minutes. This one counts for your experience.';
@@ -351,7 +349,7 @@ class IslandMeEndpoint extends Endpoint {
           if (pay > 0) await GridCareer.setPaid(session, w.id!, pay);
           final cash = await Bank.fresh(session, u);
           return jsonEncode({
-            'score': score, 'scores': scores, 'paid': pay, if (note != null) 'note': note, 'naira': cash.naira, 'memo': GridCareer.airportTracks.contains(w.track) ? 'Lagos Island Airport shift' : 'National Grid shift',
+            'score': score, 'scores': scores, 'paid': pay, if (note != null) 'note': note, 'naira': cash.naira, 'memo': GridCareer.memoOf(w.track),
             'level': c.level, 'xp': c.xp, 'canExam': c.level < 5 && c.xp >= GridCareer.xpFor[c.level],
           });
         } on GridRefused catch (e) {

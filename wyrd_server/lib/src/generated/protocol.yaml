@@ -271,6 +271,25 @@ partnerAdmin:
   - openStaging:
   - selfTest:
   - keys:
+rewards:
+  - jobs:
+  - accept:
+  - complete:
+  - cancel:
+  - earnings:
+  - withdraw:
+rewardsAdmin:
+  - dashboard:
+  - setRole:
+  - proposeFunding:
+  - decideFunding:
+  - setSwitch:
+  - newPolicy:
+  - createOffer:
+  - repairGameRewards:
+  - reviews:
+  - decideReview:
+  - exportCsv:
 city:
   - address:
   - wallet:

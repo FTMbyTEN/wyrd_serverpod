@@ -1206,6 +1206,10 @@
   #bankSheet .bsL { padding: 12px 10px 4px; font: 800 12px 'Plus Jakarta Sans', sans-serif; color: #94A3B8; } #bankSheet .bsNone { padding: 24px; text-align: center; color: #94A3B8; font: 600 14px 'Plus Jakarta Sans', sans-serif; }
   .poTerms { display: grid; gap: 8px; margin: 10px 0; padding: 14px; border-radius: 18px; background: rgba(14,165,233,.08); box-shadow: inset 0 0 0 1px rgba(14,165,233,.25); color: var(--ppInk); font: 500 13px/1.45 'Plus Jakarta Sans', sans-serif; }
   .poTerms b { font: 800 14px 'Plus Jakarta Sans', sans-serif; } .poTerms a { color: #0EA5E9; font-weight: 700; } .poTerms label { display: flex; gap: 8px; align-items: center; font-weight: 700; } .poTerms input { width: 18px !important; height: 18px; padding: 0 !important; box-shadow: none !important; }
+  .gpcdu { display: grid; grid-template-columns: 44px 1fr; gap: 12px; margin: 8px 0; } .gpcol { position: relative; min-height: 120px; border-radius: 22px 22px 8px 8px; background: linear-gradient(#334155, #1E293B); overflow: hidden; box-shadow: inset 0 0 0 2px rgba(255,255,255,.12); }
+  .gpcol i { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(#F59E0B, #B45309); transition: height .8s; } .gpcol i.bad { background: linear-gradient(#F87171, #B91C1C); } .gpcol em { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,.6); }
+  .gplim { display: block; opacity: .7; font-size: 11.5px; margin-top: 2px; } .gpdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; } #gridTask .gpgo[disabled] { opacity: .45; }
+  .gpdocket { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: #FEF3C7; color: #78350F; } .gpdocket small { display: block; font-weight: 800; font-size: 10px; letter-spacing: .12em; } .gpdocket b { display: block; font-size: 17px; } .gpdocket span { font-size: 12px; }
 </style>
 </head>
 <body>
@@ -1229,6 +1233,11 @@
   #launch .lbar i { display: block; height: 100%; width: 0; border-radius: 2px; background: linear-gradient(90deg, #22C55E, #0EA5E9, #6366F1); box-shadow: 0 0 10px rgba(14,165,233,.7); transition: width .35s ease-out; }
   #launch .lpct { position: absolute; left: 50%; bottom: calc(38px + env(safe-area-inset-bottom)); transform: translateX(-50%); font: 700 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .2em; color: #64748B; opacity: 0; animation: lFade .4s ease-out 1.6s forwards; }
   #launch .lskip { position: absolute; right: calc(16px + env(safe-area-inset-right)); top: calc(16px + env(safe-area-inset-top)); padding: 7px 12px; border-radius: 999px; background: rgba(15,23,42,.08); font: 700 11.5px 'Plus Jakarta Sans', sans-serif; color: #334155; opacity: 0; animation: lFade .4s ease-out 1.2s forwards; }
+  #launch .lcity { position: absolute; left: 0; right: 0; bottom: 0; height: 30vh; opacity: 0; transform: translateY(40px); animation: lCity 1.2s cubic-bezier(.2,.9,.3,1) 1.8s forwards; pointer-events: none; } #launch .lcity svg { width: 100%; height: 100%; display: block; }
+  #launch .lcity .fl { animation: lFlare 1.2s ease-in-out infinite alternate; transform-origin: 50% 100%; transform-box: fill-box; }
+  #launch .ltip { position: absolute; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(440px, 86vw); text-align: center; font: 600 12.5px/1.45 'Plus Jakarta Sans', sans-serif; color: #334155; opacity: 0; animation: lFade .5s ease-out 2.6s forwards; } #launch .ltip span { transition: opacity .35s; } #launch .ltip b { color: #0EA5E9; }
+  #launch.out .lcity { animation: lPartD .9s cubic-bezier(.6,0,.2,1) forwards; } #launch.out .ltip { opacity: 0 !important; transition: opacity .2s; }
+  @keyframes lCity { to { opacity: 1; transform: none; } } @keyframes lFlare { from { transform: scaleY(.8); opacity: .75; } to { transform: scaleY(1.15); opacity: 1; } }
   #launch .lflash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
   /* the exit: the clouds part, the name rushes at you, the island shows through */
   #launch.out { pointer-events: none; animation: lOut .9s cubic-bezier(.6,0,.2,1) forwards; }
@@ -1253,6 +1262,8 @@
   <div class="lcl c1"></div><div class="lcl c2"></div><div class="lcl c3"></div><div class="lcl c4"></div><div class="lcl c5"></div>
   <div class="lcore"><div class="lbadge"><span class="lring"></span><span class="lring r2"></span><svg viewBox="0 0 24 24"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></div>
     <div class="ltag">WYRD OS</div><div class="lname" id="lname">LAGOS ISLAND</div><div class="lsub">Ikoyi · VI · Eko Atlantic · Lekki · Ajah</div></div>
+  <div class="lcity"><svg viewBox="0 0 400 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path fill="rgba(30,58,138,.13)" d="M0 100V78h14v-8h10v10h8V62h12v18h6V54l8-6 8 6v26h10V70h14v10h8V40h4v-8h4v8h4v40h10V66h16v14h6V58h12v22h10V30l6-10 6 10v50h8V72h12v8h6V50h14v30h8V64h10v16h10V46h4V36h6v10h4v34h8V68h14v12h6V58h10v22h10V74h16v6h10V60h12v20h8V70h18v30z"/><path fill="rgba(30,58,138,.2)" d="M0 100V88h30v-6h20v6h40v-10h18v10h50v-4h30v4h40v-8h22v8h50v-6h26v6h74v12z"/><rect x="346" y="40" width="3" height="40" fill="rgba(239,68,68,.45)"/><path class="fl" d="M347.5 40c-3-4-1-8 0-11 1 3 3 7 0 11z" fill="#F97316"/></svg></div>
+  <div class="ltip" id="ltip"><span></span></div>
   <div class="lbar"><i id="lbari"></i></div><div class="lpct" id="lpct">LOADING 0%</div><div class="lskip">Tap to skip</div><div class="lflash"></div>
 </div>
 <script>
@@ -1260,14 +1271,20 @@
   const L = document.getElementById('launch'), bar = document.getElementById('lbari'), pct = document.getElementById('lpct'), nm = document.getElementById('lname');
   // the name, letter by letter (each slams in a beat after the last)
   nm.innerHTML = [...nm.textContent].map((c, i) => c === ' ' ? '<span style="width:.28em"></span>' : `<span style="animation-delay:${(1.6 + i * 0.055).toFixed(3)}s">${c}</span>`).join('');
-  const t0 = performance.now(), MIN = 3600, MAX = 9000; let loaded = document.readyState === 'complete', shown = 0, gone = false;
+  let back = false; try { back = Date.now() - (+localStorage.getItem('li.launched') || 0) < 6 * 3600e3; localStorage.setItem('li.launched', Date.now()); } catch {}
+  const t0 = performance.now(), MIN = back ? 2000 : 3600, MAX = 9000;
+  // a tip while it loads, one every few seconds
+  const TIPS = ['<b>New:</b> refinery careers. Run the crude unit, load the tankers, sign the gas permits.', 'Tap any building to see what you can do there.', 'The National Grid powers the whole island. Its shifts pay by your level.', 'Your chats on Link are end-to-end encrypted. Not even WYRD can read them.', 'Game naira stay in the game. Real money comes only from funded gigs.', 'The clubs open at 6 pm, Lagos time.', 'Pass a certification exam to move up: Trainee to Chief.'];
+  const tipEl = document.querySelector('#ltip span'); let tipN = Math.floor(Math.random() * TIPS.length); tipEl.innerHTML = TIPS[tipN];
+  const tipT = setInterval(() => { tipEl.style.opacity = 0; setTimeout(() => { tipN = (tipN + 1) % TIPS.length; tipEl.innerHTML = TIPS[tipN]; tipEl.style.opacity = 1; }, 350); }, 3200);
+  const STAGE = ['LAYING THE ROADS', 'LIGHTING THE FLARE', 'WAKING THE CITY', 'OPENING THE ISLAND']; let loaded = document.readyState === 'complete', shown = 0, gone = false;
   addEventListener('load', () => { loaded = true; });
-  const finish = () => { if (gone) return; gone = true; bar.style.width = '100%'; pct.textContent = 'READY'; L.classList.add('out'); setTimeout(() => L.remove(), 950); };
+  const finish = () => { if (gone) return; gone = true; bar.style.width = '100%'; pct.textContent = 'READY'; clearInterval(tipT); L.classList.add('out'); setTimeout(() => L.remove(), 950); };
   L.addEventListener('click', () => { if (performance.now() - t0 > 400) finish(); });
   (function step() { if (gone) return; const el = performance.now() - t0;
     // the bar follows the real load: crawls toward 90% while the page loads, finishes once it has (never before the show is done)
     const want = loaded ? 100 : Math.min(90, 90 * (1 - Math.exp(-el / 2200)));
-    shown += (want - shown) * 0.12; bar.style.width = shown.toFixed(1) + '%'; pct.textContent = 'LOADING ' + Math.round(shown) + '%';
+    shown += (want - shown) * 0.12; bar.style.width = shown.toFixed(1) + '%'; pct.textContent = STAGE[Math.min(3, Math.floor(shown / 25))] + ' · ' + Math.round(shown) + '%';
     if ((loaded && el > MIN && shown > 97) || el > MAX) return finish();
     requestAnimationFrame(step); })();
 })();
@@ -2754,6 +2771,21 @@
         });
         flat(a + 5, d - 15, a + 32, d - 3, 0.07, '#9AA3AE'); // the loading bay, with tankers waiting
         for (const [tx, col] of [[a + 9, '#F8FAFC'], [a + 17, '#FACC15'], [a + 25, '#F8FAFC']]) at(tx, d - 9, () => tanker(tx, d - 9, col));
+        at(a + 17, d - 3, () => { // the loading gantry over the tankers: a canopy on posts, an arm down into each
+          for (const gx of [a + 5, a + 29]) for (const gz of [d - 14, d - 4]) box(gx - 0.35, 0, gz - 0.35, gx + 0.35, 7, gz + 0.35, '#64748B');
+          for (const [ax, col] of [[a + 9, '#EF4444'], [a + 17, '#EAB308'], [a + 25, '#3B82F6']]) box(ax - 0.25, 3.4, d - 9.25, ax + 0.25, 7, d - 8.75, col);
+          box(a + 4.5, 7, d - 14.5, a + 29.5, 7.5, d - 3.5, '#E2E8F0'); box(a + 4.5, 7.5, d - 14.5, a + 29.5, 7.9, d - 3.5, '#F59E0B');
+        });
+        at(a + 25, b + 45, () => { // the fire station: a red engine and a foam monitor on its stand
+          box(a + 22, 0, b + 41, a + 30, 4, b + 49, '#F8FAFC', '#DC2626', 1); box(a + 22, 4, b + 41, a + 30, 4.5, b + 49, '#DC2626');
+          box(a + 23, 0, b + 50, a + 29, 2.4, b + 53, '#DC2626'); box(a + 23, 2.4, b + 50, a + 25, 3.2, b + 53, '#F8FAFC');
+          box(a + 31, 0, b + 50, a + 31.8, 2.8, b + 50.8, '#B91C1C');
+        });
+        at(a + 4, b + 37.5, () => { // the muster point, where everyone is counted
+          box(a + 3.8, 0, b + 37.3, a + 4.2, 4, b + 37.7, '#64748B'); box(a + 2.4, 4, b + 37.2, a + 5.6, 6, b + 37.8, '#16A34A');
+          const p = P(a + 4, 5, b + 37.5); x.fillStyle = '#fff'; x.font = `800 ${Math.max(5, K * 1.1)}px 'Plus Jakarta Sans', sans-serif`; x.textAlign = 'center'; x.fillText('MUSTER', p[0], p[1] + K * 0.4);
+        });
+        for (const [gx, gz] of [[a + 36, b + 14], [a + 60, b + 30], [a + 33, b + 30]]) at(gx, gz, () => { box(gx - 0.2, 0, gz - 0.2, gx + 0.2, 2.6, gz + 0.2, '#64748B'); box(gx - 0.5, 2.6, gz - 0.5, gx + 0.5, 3.3, gz + 0.5, '#FACC15'); }); // gas detectors
         const fx = c - 7, fz = b + 7; // the flare: red and white, and a flame that never goes out
         at(fx, fz, () => {
           for (let y = 0; y < 46; y += 6) cylLit(fx, fz, 0.8, y, 6, (y / 6) % 2 ? '#F8FAFC' : '#EF4444', y + 6 >= 46);
@@ -4636,7 +4668,7 @@
     if (rain > 0.3) feed.push([now - 600e3, '🌧️', 'Heavy rain: Works has crews on the VI drains. Avoid Ahmadu Bello Way if you can.']);
     if (typeof hqBoard !== 'undefined') for (const v of hqBoard.arrivals) feed.push([v.at, '🏠', `A new Lagosian moved into BQ #${v.k + 1} on HQ Row. Welcome home.`]);
     for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) if (p.until > now) feed.push([p.at || now - 1200e3, '🎉', `${p.host || 'A Lagosian'} is hosting a party${p.open ? ': everyone is welcome' : ''}.`]);
-    for (const s2 of (typeof GJ !== 'undefined' ? GJ.shifts : []).slice(0, 2)) feed.push([s2.at, GRID_TRACKS[s2.track].place === 'airport' ? '✈️' : '🔧', `A ${GRID_TRACKS[s2.track].name.toLowerCase()} ${GRID_TRACKS[s2.track].place === 'airport' ? 'worker' : ''} finished a shift at ${GRID_TRACKS[s2.track].place === 'airport' ? 'Lagos Island Airport' : 'the National Grid'}: ${s2.score}/100.`.replace('  ', ' ')]);
+    for (const s2 of (typeof GJ !== 'undefined' ? GJ.shifts : []).slice(0, 2)) feed.push([s2.at, GRID_TRACKS[s2.track].place === 'airport' ? '✈️' : '🔧', `A ${GRID_TRACKS[s2.track].name.toLowerCase()} ${GRID_TRACKS[s2.track].place === 'airport' ? 'worker' : ''} finished a shift at ${({ airport: 'Lagos Island Airport', refinery: 'the refinery' }[GRID_TRACKS[s2.track].place] || 'the National Grid')}: ${s2.score}/100.`.replace('  ', ' ')]);
     for (const w of works) if (w.p >= 1) feed.push([GOV_EPOCH + GOV_WORKS.findIndex((g) => g[0] === w.nm) * 5 * 864e5 + GOV_WORKS.find((g) => g[0] === w.nm)[2] * GOV_WEEK, '🏗️', `Completed: ${w.nm}.`]);
     feed.push([GOV_EPOCH + wk * GOV_WEEK, '🗳️', `New bill before the island: "${bill[0]}". Vote in the Government app.`]);
     feed.push([GOV_EPOCH + wk * GOV_WEEK - 3600e3, lastYes >= 0.5 ? '✅' : '❌', `Last week's bill, "${last[0]}", ${lastYes >= 0.5 ? 'passed' : 'failed'} with ${Math.round(lastYes * 100)}% yes.`]);
@@ -6779,7 +6811,7 @@
     golf: ['⛳ Play a round?', 'Ikoyi Club 1938.', null],
     skyline: ['🏙️ Visit Eko Atlantic?', 'Penthouses and the marina.', null],
     park: ['🌳 Take a walk?', 'Shade, music and art.', null], field: ['⭐ Visit?', 'Tafawa Balewa Square.', null], fountain: ['⛲ Visit?', 'Tinubu Square.', null],
-    refinery: ['🛢️ Work a shift?', 'The refinery pays ₦6,500 a shift.', (p) => { at$(p); doWork('refinery'); }],
+    refinery: ['🛢️ Work at the refinery?', 'Process operator, loading bay or safety officer: real tasks, from ₦12,000 a shift.', (p) => { at$(p); openPhone('refinery'); }],
     market: ['🧺 Help at a stall?', 'Market work pays ₦2,500 a turn.', (p) => { at$(p); doWork('market'); }],
     motorpark: ['🛵 Do okada rides?', 'Pays ₦1,800 a round.', (p) => { at$(p); doWork('okada'); }],
     dealer: null,
@@ -6927,21 +6959,24 @@
   hangarsLoad(); setInterval(hangarsLoad, 60000);
   const JETS = { light: ['Light jet', 6, 60000000, 'Six seats, Abuja and Accra in comfort'], midsize: ['Midsize jet', 8, 120000000, 'Eight seats, any of our cities nonstop'], heavy: ['Long-range jet', 13, 250000000, 'Thirteen seats, a bedroom, London nonstop'] };
   const jetFee = (d) => (d[0] === 'island' ? 2000 : Math.floor(d[4] / 4)); // fuel and handling for your own jet
-  // work at the airport: Ground Crew and Air Traffic Control, the same server-kept careers as the Grid's
-  async function airWorkBox(el) {
+  // work at the airport or the refinery: the same server-kept careers as the Grid's
+  const WORKPLACE = { airport: ['WORK AT THE AIRPORT', 'Ground Crew or Air Traffic Control', 'One paid airport shift every 40 minutes, within the daily cap.'], refinery: ['WORK AT THE REFINERY', 'Process Operator, Loading Bay or Safety Officer', 'One paid refinery shift every 40 minutes, within the daily cap.'] };
+  async function workBox(el, place) {
     if (!el) return;
-    if (!signedIn()) { el.innerHTML = '<div class="rsec">WORK AT THE AIRPORT</div><div class="pcard dim">Sign in to work here: Ground Crew or Air Traffic Control.</div>'; return; }
+    const [head, who, rule] = WORKPLACE[place];
+    if (!signedIn()) { el.innerHTML = `<div class="rsec">${head}</div><div class="pcard dim">Sign in to work here: ${who}.</div>`; return; }
     await gridSync();
-    const sh = GJ.shift, onAir = sh && GRID_TRACKS[sh.track] && GRID_TRACKS[sh.track].place === 'airport';
-    el.innerHTML = `<div class="rsec">WORK AT THE AIRPORT</div>${Object.entries(GRID_TRACKS).filter(([, t2]) => t2.place === 'airport').map(([k, t2]) => { const lv = gridLv(k), xp = GJ.xp[k] || 0;
+    const sh = GJ.shift, onHere = sh && GRID_TRACKS[sh.track] && GRID_TRACKS[sh.track].place === place;
+    el.innerHTML = `<div class="rsec">${head}</div>${Object.entries(GRID_TRACKS).filter(([, t2]) => t2.place === place).map(([k, t2]) => { const lv = gridLv(k), xp = GJ.xp[k] || 0;
       return `<div class="pcard"><div class="grow"><span><b>${t2.icon} ${t2.name}</b><small>${t2.blurb}</small><small class="dim">${GRID_LEVELS[lv - 1]} · level ${lv} · ${xp} XP · ${naira(GRID_PAY[lv - 1])} a shift at full marks</small></span></div>
-        <button class="pbtn" data-aw="${k}">${onAir && sh.track === k ? 'Carry on with your shift' : 'Start a shift'}</button>${lv < 5 && xp >= GRID_XP[lv] ? ` <button class="pbtn alt" data-ax="${k}">🎓 Certification exam</button>` : ''}</div>`; }).join('')}
-      <div class="lock">One paid airport shift every 40 minutes, within the daily cap. The server deals the work and marks it.</div>`;
+        <button class="pbtn" data-aw="${k}">${onHere && sh.track === k ? 'Carry on with your shift' : 'Start a shift'}</button>${lv < 5 && xp >= GRID_XP[lv] ? ` <button class="pbtn alt" data-ax="${k}">🎓 Certification exam</button>` : ''}</div>`; }).join('')}
+      <div class="lock">${rule} The server deals the work and marks it.</div>`;
     el.querySelectorAll('[data-aw]').forEach((b) => (b.onclick = async () => { const tr = b.dataset.aw;
-      if (!(onAir && sh.track === tr)) { if (sh && !confirm('Starting this drops the shift you are on. Start?')) return; try { await gridNewShift(tr); } catch (e) { return fail(e); } }
+      if (!(onHere && sh.track === tr)) { if (sh && !confirm('Starting this drops the shift you are on. Start?')) return; try { await gridNewShift(tr); } catch (e) { return fail(e); } }
       closePhone(); const t1 = gridTask(); if (t1) coachSay(`${GRID_TRACKS[tr].name} shift. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }));
-    el.querySelectorAll('[data-ax]').forEach((b) => (b.onclick = () => { closePhone(); gridExam(b.dataset.ax, () => openPhone('airport')); }));
+    el.querySelectorAll('[data-ax]').forEach((b) => (b.onclick = () => { closePhone(); gridExam(b.dataset.ax, () => openPhone(place)); }));
   }
+  const airWorkBox = (el) => workBox(el, 'airport');
   async function myJetBox(el) {
     if (!el) return;
     if (!signedIn()) { el.innerHTML = '<div class="rsec">YOUR OWN JET</div><div class="pcard dim">Sign in to buy a jet of your own: fly anywhere for just the fuel, your registration on a hangar door.</div>'; return; }
@@ -7195,13 +7230,13 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { people: '#38BDF8', airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { refinery: '#F59E0B', people: '#38BDF8', airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['people', '👥', 'People'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['refinery', '🛢️', 'Refinery'], ['people', '👥', 'People'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino', 'airport']], ['You', ['people', 'gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'refinery', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino', 'airport']], ['You', ['people', 'gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -7858,7 +7893,7 @@
   }
   // the island's paid work, as the server pays it (see IslandMeEndpoint.shifts and the Grid's levels)
   const EARN_SHIFTS = [
-    { place: 'refinery', i: '🛢️', name: 'Refinery shift', pay: 6500, min: 10, how: 'At the refinery gate, tap “Work a refinery shift”.' },
+    { place: 'refinery', i: '🛢️', name: 'Refinery careers', pay: 12000, min: 40, how: 'Open the Refinery app (or walk up to the refinery): process operator, loading bay or safety officer. Three real tasks, marked by the server.' },
     { place: 'club', i: '🎶', name: 'Night shift at a club', pay: 4000, min: 10, night: true, how: 'At any club door between 6 pm and 6 am, tap “Work a night shift”.' },
     { place: 'market', i: '🧺', name: 'Market stall', pay: 2500, min: 6, how: 'At the market, tap “Help at a market stall”.' },
     { place: 'motorpark', i: '🛵', name: 'Okada rides', pay: 1800, min: 4, how: 'At the motor park, tap “Do okada rides”.' },
@@ -8147,7 +8182,7 @@
     const s = MP.q[MP.i];
     if (inside && inside.kind === 'jetcabin') { const d = AIR.find(inside.flight) || AIR_JOY, left = Math.ceil(((inside.until || 0) - Date.now()) / 1000); islandSet('il-live il-fly', null, d[0] === 'island' ? 'Joyride' : 'LOS → ' + d[2], '✈️', mmss(left)); islOpen = null; }
     else if (s && !MP.a.paused) { islandSet('il-live il-music', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
-    else if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const n = GJ.shift.tasks.filter((tk) => tk.done).length, tk = GJ.shift.tasks.find((v) => !v.done); const air = GRID_TRACKS[GJ.shift.track] && GRID_TRACKS[GJ.shift.track].place === 'airport'; islandSet('il-live il-grid', null, tk ? tk.title : 'Hand in your shift', air ? '🦺' : '⚡', `${n}/${GJ.shift.tasks.length}`); islOpen = [air ? 'airport' : 'grid']; }
+    else if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const n = GJ.shift.tasks.filter((tk) => tk.done).length, tk = GJ.shift.tasks.find((v) => !v.done); const air = GRID_TRACKS[GJ.shift.track] && GRID_TRACKS[GJ.shift.track].place === 'airport'; islandSet('il-live il-grid', null, tk ? tk.title : 'Hand in your shift', air ? '🦺' : '⚡', `${n}/${GJ.shift.tasks.length}`); islOpen = [(GRID_TRACKS[GJ.shift.track] || {}).place || 'grid']; }
     else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, CITY.mix.now.title || 'DJ Eko Nights', '🎧', 'LIVE'); islOpen = ['music']; }
     else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? 'On the way' : 'Your ride is coming', '🛵', ''); islOpen = ['ride']; }
     else { islandSet('il-idle', null, ''); islOpen = null; }
@@ -8279,7 +8314,7 @@
         // the balance up top, quick actions, a send panel that opens when you want it, where to earn, then receipts with icons
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap));
         const icon = (m, a) => /ride|okada/i.test(m) ? '🛵' : /casino/i.test(m) ? '🎰' : /home store/i.test(m) ? '🛋️' : /bought a/i.test(m) ? '🔑' : /ticket/i.test(m) ? '🎟️' : /^to |^from /i.test(m) ? '↔️' : a > 0 ? '💼' : '🧾';
-        const EARN = [['refinery', '🛢️', 'Refinery shift', '₦6,500'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🎶', 'Club night shift', 'nights']];
+        const EARN = [['refinery', '🛢️', 'Refinery careers', 'from ₦12,000'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🎶', 'Club night shift', 'nights']];
         const when = (at) => new Date(at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
         const dayOf = (at) => { const d = new Date(at), t = new Date(); if (d.toDateString() === t.toDateString()) return 'Today'; t.setDate(t.getDate() - 1); return d.toDateString() === t.toDateString() ? 'Yesterday' : d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' }); };
         let lastDay = ''; const rows = r.map((e) => { const d = e.at ? dayOf(e.at) : ''; const head = d && d !== lastDay ? `<div class="wDay">${d}</div>` : ''; if (d) lastDay = d;
@@ -8925,6 +8960,20 @@
           catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); partiesLive[sel.key] = { ...base, local: true }; } // the server hasn't got parties yet: it's on for you to see
           notify(`Your ${PARTY_THEMES[sel.theme][0]} has started`, 'party'); render('parties');
         };
+        return;
+      }
+      if (app === 'refinery') {
+        // the Lekki Free Zone Refinery: the plant as it runs now, and the three careers in it
+        const hr = new Date().getHours(), crude = 612 + ((hr * 37) % 41), flare = hr >= 19 || hr < 6 ? 'Night flare: bright' : 'Flare: steady';
+        show(`${ahead('refinery', 'Lekki Free Zone Refinery', 'Never sleeps. Neither does the flare.')}
+          <div class="pcard" style="background:#1C1917;color:#F5F5F4"><h3 style="color:#F59E0B">🛢️ The plant now</h3>
+            <div class="row"><span>Crude unit</span><b style="color:#4ADE80">${crude}k barrels a day</b></div>
+            <div class="row"><span>Products</span><b>PMS · AGO · DPK · Jet A-1</b></div>
+            <div class="row"><span>Loading gantry</span><b style="color:#FACC15">${3 + (hr % 4)} tankers waiting</b></div>
+            <div class="row"><span>Safety</span><b style="color:#4ADE80">${flare} · ${40 + ((hr * 13) % 60)} days without a lost-time injury</b></div></div>
+          <div class="pcard"><h3>How a refinery shift works</h3><div class="dim">Pick a career below and the server deals you three tasks. Walk to each one (follow the yellow beacon): the control room, the crude unit, the tank yard or the loading gantry. You are marked on what you actually do, and paid by your level and your score. Pass the certification exam to move up: Trainee, Technician, Senior, Supervisor, Chief.</div></div>
+          <div id="refWorkBox"></div>`);
+        workBox($('refWorkBox'), 'refinery');
         return;
       }
       if (app === 'airport') {
@@ -9603,7 +9652,7 @@
 
   // ---- work and play where you stand: a button appears near a workplace or the casino
   const actBtn = document.getElementById('act');
-  const WORK = [['refinery', 'refinery', '🛢️ Work a refinery shift'], ['club', 'club', '🎶 Work a night shift'], ['market', 'market', '🧺 Help at a market stall'], ['motorpark', 'okada', '🛵 Do okada rides']];
+  const WORK = [['refinery', 'refinery', '🛢️ Refinery careers'], ['club', 'club', '🎶 Work a night shift'], ['market', 'market', '🧺 Help at a market stall'], ['motorpark', 'okada', '🛵 Do okada rides']];
   let act = null;
   function updateAct() {
     let next = null;
@@ -9674,6 +9723,7 @@
 
   async function doWork(place) {
     if (!signedIn()) return openPhone();
+    if (place === 'refinery') return openPhone('refinery');
     try { const v = await my('work', { place }); pnaira.textContent = naira(v.naira); bubbles.set('me', { text: `${v.memo}: +${naira(v.paid)}`, until: performance.now() + 5000 }); }
     catch (e) { if (e.message === 'signin') return openPhone(); bubbles.set('me', { text: e.message, until: performance.now() + 6000 }); }
   }
@@ -10112,8 +10162,12 @@
     solar: { name: 'Solar Technician', icon: '☀️', for: ['creative', 'socialite'], blurb: 'The solar farm is yours: clean the dirty panels, flag the cracked ones, keep every string producing.' },
     marshal: { name: 'Ground Crew', icon: '🦺', for: [], place: 'airport', blurb: 'Turn the jets round on the apron in the right order, and marshal arrivals onto their stands with the right signals.' },
     atc: { name: 'Air Traffic Control', icon: '🗼', for: [], place: 'airport', blurb: 'Up in the tower: clear arrivals and departures for runway 27 in the right order, nobody held, nobody close.' },
+    process: { name: 'Process Operator', icon: '🛢️', for: [], place: 'refinery', blurb: 'Run the crude unit from the control room: hold the column on spec through a crude swap, then walk the plant and catch what the screens miss.' },
+    loader: { name: 'Loading Bay Operator', icon: '🚛', for: [], place: 'refinery', blurb: 'Fill the tankers that fuel Lagos: the right product, the right compartment, earthed and sealed, every time.' },
+    hse: { name: 'Safety Officer', icon: '⛑️', for: [], place: 'refinery', blurb: 'Gas-test before anyone welds or goes inside a tank, sign or refuse the permits, and lead the drill when it goes wrong.' },
     plant: { name: 'Plant Engineer', icon: '⚙️', for: ['entrepreneur'], blurb: 'The turbines are your responsibility. Read their temperatures, vibration and oil, and call it: keep running, ease off, or shut down.' },
   };
+  const PLACE_OF = (tr) => (GRID_TRACKS[tr] || {}).place || 'grid', PLACE_APP = { airport: 'Airport', refinery: 'Refinery', grid: 'WYRD Grid' }, PLACE_NAME = { airport: 'Lagos Island Airport', refinery: 'the refinery', grid: 'the National Grid' };
   const GRID_LEVELS = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'], GRID_XP = [0, 60, 160, 320, 560], GRID_PAY = [12000, 16000, 21000, 27000, 34000];
   // the certification exams are set and marked by the server (GridCareer.bank)
   const gridLoad = () => { try { return JSON.parse(store.get('li.grid') || 'null'); } catch { return null; } };
@@ -10130,11 +10184,13 @@
     return { apron: { x: c - 40, z: d - 24, name: 'the apron' }, tower: { x: c - 6, z: d - 7, name: 'the control tower' } }[kind]; }
   function gridSpot(kind) { const p = gridPlace(); if (!p) return null; const a = p[1] * T, b = p[2] * T, c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
     return { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; }
+  function refSpot(kind) { const p = PLACES.find((v) => v[0] === 'refinery' && v[4] > 5); if (!p) return null; const a = p[1] * T, b = p[2] * T, d = (p[2] + p[4]) * T;
+    return { control: { x: a + 13, z: b + 54, name: 'the refinery control room' }, unit: { x: a + 48, z: b + 31, name: 'the crude unit' }, tanks: { x: a + 17, z: b + 34, name: 'the tank yard' }, bay: { x: a + 17, z: d - 1, name: 'the loading gantry' } }[kind]; }
   function faultSpot(seed) { const dist = SECTORS.filter((s2) => ['lagos', 'ikoyi', 'vi', 'lekki', 'ajah', 'hqrow'].includes(s2.id) && !s2.sand), R2 = rnd(seed), sct = dist[Math.floor(R2() * dist.length)], [i0, j0, i1, j1] = sct.rect, pool = roadTiles.filter(([i, j]) => i >= i0 && i <= i1 && j >= j0 && j <= j1), [ti, tj] = pool[Math.floor(R2() * pool.length)] || [i0, j0]; return { x: ti * T + T / 2, z: tj * T + T / 2, name: `a feeder fault in ${sct.name}` }; }
   // a shift: three tasks for your track (a lineman's start at the Grid, collecting the van)
   async function gridNewShift(tr) {
     const d = await my('gridStart', { track: tr });
-    const spotFor = (t) => t.type === 'marshal' || t.type === 'turnaround' ? airSpot('apron') : t.type === 'atc' ? airSpot('tower') : t.type === 'van' ? gridSpot('gate') : t.type === 'fault' ? faultSpot(t.seed) : t.type === 'solar' ? gridSpot('solar') : t.type === 'balance' ? gridSpot('control') : gridSpot(tr === 'plant' ? 'turbine' : 'control');
+    const spotFor = (t) => t.at ? refSpot(t.at) : t.type === 'marshal' || t.type === 'turnaround' ? airSpot('apron') : t.type === 'atc' ? airSpot('tower') : t.type === 'van' ? gridSpot('gate') : t.type === 'fault' ? faultSpot(t.seed) : t.type === 'solar' ? gridSpot('solar') : t.type === 'balance' ? gridSpot('control') : gridSpot(tr === 'plant' ? 'turbine' : 'control');
     GJ.shift = { id: d.id, track: tr, tasks: d.tasks.map((t) => ({ ...t, spot: spotFor(t), done: false, score: 0, result: {} })), at: Date.now() }; GJ.level[tr] = d.level; gridSave();
   }
   const gridTask = () => GJ.shift && GJ.shift.tasks.find((tk) => !tk.done);
@@ -10213,6 +10269,60 @@
           const right = [...tk.items].sort((p1, p2) => p1.t - p2.t || (p1.kind === 'arr' ? -1 : 1)), ok = right.filter((it, i) => order[i] === it.cs).length;
           done(ok / right.length * 100, ok === right.length ? 'Smooth flow: nobody held, nobody close. Tower approves.' : `Right order: ${right.map((it) => it.cs).join(', ')}.`); })); };
       draw(); return; }
+    if (tk.type === 'cdu') { // the crude column for 75 seconds: hold the top at 114 to 126 °C and the bottom level at 30 to 70 %
+      const S = { t: 0, f: 70, r: 30, q: 60, lvl: 50, inBand: 0 }, log = []; tk.result = { log };
+      const topNow = () => 60 + S.f - 0.6 * S.r + (tk.swap && S.t >= 25 ? 14 : 0) + 0.3 * (S.q - 60);
+      const draw = () => { const top = topNow(), okT = Math.abs(top - 120) <= 6, okL = S.lvl >= 30 && S.lvl <= 70;
+        const stat = `<div class="gphd"><b>${esc(tk.title)}</b><span>${Math.max(0, 75 - S.t)} s</span></div>
+          <div class="gpcdu"><div class="gpcol"><i style="height:${Math.round(S.lvl)}%" class="${okL ? '' : 'bad'}"></i><em style="bottom:30%"></em><em style="bottom:70%"></em></div>
+            <div><div class="gpfreq ${okT ? 'ok' : 'bad'}"><b>${top.toFixed(1)} °C</b><small>column top: keep it 114 to 126</small></div>
+            <div class="gprow2"><span>Bottom level</span><b style="color:${okL ? '#4ADE80' : '#F87171'}">${Math.round(S.lvl)} %</b></div>
+            <div class="gprow2"><span>Cuts</span><b>${okT ? 'Naphtha · kerosene · diesel on spec' : top > 126 ? 'Kerosene too heavy, off spec' : 'Naphtha too light, off spec'}</b></div></div></div>
+          ${tk.swap && S.t >= 25 ? '<div class="gpwarn">Lighter crude in the feed: more of it boils, the top is heating up.</div>' : ''}
+          <p class="dim" style="margin:6px 0 0">More firing heats the top and boils the bottom down. More reflux cools the top. More feed raises the level.</p>`;
+        if (!gpEl.querySelector('#gpStat')) { gpShow(`<div id="gpStat"></div>${[['f', 'Furnace firing', 40, 100, '%'], ['r', 'Reflux', 0, 80, '%'], ['q', 'Crude feed', 30, 90, 'kb/d']].map(([k, l, mn, mx, un]) => `<label class="gpsl"><span>${l}</span><input type="range" min="${mn}" max="${mx}" step="1" value="${S[k]}" data-s="${k}"><b>${S[k]} ${un}</b></label>`).join('')}`);
+          gpEl.querySelectorAll('[data-s]').forEach((rg) => (rg.oninput = () => { S[rg.dataset.s] = +rg.value; rg.nextElementSibling.textContent = rg.value + ' ' + (rg.dataset.s === 'q' ? 'kb/d' : '%'); draw(); })); }
+        gpEl.querySelector('#gpStat').innerHTML = stat; };
+      draw(); gpTimer = setInterval(() => {
+        log.push([S.f, S.r, S.q]); const top = topNow(); S.lvl = Math.max(0, Math.min(100, S.lvl + (S.q - 60) * 0.12 - (S.f - 80) * 0.05));
+        if (Math.abs(top - 120) <= 6 && S.lvl >= 30 && S.lvl <= 70) S.inBand++;
+        S.t++; if (S.t >= 75) { const sc = S.inBand / 75 * 100; done(sc, sc > 85 ? 'On spec the whole time. The lab is happy, the tankers are full.' : sc > 55 ? 'Mostly on spec. Move earlier: the column answers slowly.' : 'Off spec too long. Watch the top temperature and the level together.'); } else draw(); }, 1000); return; }
+    if (tk.type === 'checks') { // readings to judge: rounds (normal or report) or permits (issue or refuse)
+      const pick = {}; tk.result = { picks: pick }; const permit = /^Issue/.test(tk.opts[0]);
+      const truth = (it) => { const n = (s) => (s.match(/-?\d+(\.\d+)?/g) || []).map(Number), v = n(it.read), l = n(it.lim);
+        return permit ? (v[0] < l[0] && v[1] >= l[1] && v[1] <= l[2] && v[2] < l[3] ? 'ok' : 'act') : (v[0] >= l[0] && v[0] <= l[1] ? 'ok' : 'act'); };
+      const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${Object.keys(pick).length} of ${tk.items.length}</span></div>
+          <p>${permit ? 'The gas test at each job. Issue the permit only if every reading is safe.' : 'Walk the unit. Report anything outside its normal range.'}</p>
+          ${tk.items.map((it) => `<div class="gpunit"><b>${esc(it.label)}</b><span>${esc(it.read)}</span><small class="gplim">${esc(it.lim)}</small><div class="gpopts sm">${[['ok', tk.opts[0]], ['act', tk.opts[1]]].map(([k, l]) => `<button data-tg="${esc(it.tag)}" data-a="${k}" class="${pick[it.tag] === k ? 'sel' : ''}">${esc(l)}</button>`).join('')}</div></div>`).join('')}
+          <button class="gpgo" ${Object.keys(pick).length < tk.items.length ? 'disabled' : ''}>${permit ? 'Sign the permits' : 'Log the rounds'}</button>`);
+        gpEl.querySelectorAll('[data-tg]').forEach((b) => (b.onclick = () => { pick[b.dataset.tg] = b.dataset.a; draw(); }));
+        gpEl.querySelector('.gpgo').onclick = () => { const wrong = tk.items.filter((it) => pick[it.tag] !== truth(it));
+          done((tk.items.length - wrong.length) / tk.items.length * 100, !wrong.length ? (permit ? 'Every call safe. Nobody gets hurt on your watch.' : 'Nothing missed. The unit runs safe.') : wrong.map((it) => `${it.tag}: should have been “${truth(it) === 'ok' ? tk.opts[0] : tk.opts[1]}”`).join('. ') + '.'); }; };
+      draw(); return; }
+    if (tk.type === 'seq') { // a procedure in the right order
+      const ORDER = { startup: ['Check the valve line-up', 'Open the suction valve', 'Vent and prime the pump', 'Start the motor', 'Slowly open the discharge valve', 'Check the pressure and the flow'], fire: ['Raise the alarm', 'Hit the pump\'s emergency stop', 'Close the block valves either side', 'Turn the fire monitor on the fire', 'Count everyone at the muster point', 'Brief the fire team when they arrive'], leak: ['Raise the alarm and call it in', 'Move upwind and test the air', 'Put on breathing apparatus', 'Isolate the leaking line', 'Drain and purge the line', 'Gas-test again before anyone goes back'] }[tk.name];
+      const lead = { startup: 'Start the loading pump safely: a pump started wrong runs dry or hammers the line.', fire: '🔥 A pump seal is on fire in the crude unit. Do it in order.', leak: '☠️ The H₂S alarm is sounding at the sour-water line. Do it in order.' }[tk.name];
+      const clicks = []; tk.result = { clicks }; let next = 0, strikes = 0;
+      const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>step ${Math.min(next + 1, ORDER.length)} of ${ORDER.length}</span></div><p>${lead}${strikes ? ` <b style="color:#F87171">Strikes: ${strikes}</b>` : ''}</p>
+          <div class="gpopts">${tk.steps.map((s2) => `<button data-st="${esc(s2)}" ${ORDER.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`);
+        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { clicks.push(b.dataset.st); if (b.dataset.st === ORDER[next]) { next++; if (next >= ORDER.length) return done(100 - strikes * 15, strikes ? `Done, with ${strikes} strike${strikes > 1 ? 's' : ''}. The order is what keeps people alive.` : 'Textbook. Calm, in order, everybody home tonight.'); } else strikes++; draw(); })); };
+      draw(); return; }
+    if (tk.type === 'loading') { // the docket: the right arm, the right compartment, then the routine in order
+      const ORDER = ['Chock the wheels', 'Clip on the earth clamp', 'Wait for the green earth light', 'Open the compartment hatch', 'Lower the loading arm', 'Load to the preset', 'Raise the arm and close the hatch', 'Seal the hatch and sign the docket', 'Unclip the earth clamp'];
+      const ARMS = [['PMS (petrol)', '#EF4444'], ['AGO (diesel)', '#EAB308'], ['DPK (kerosene)', '#3B82F6'], ['Jet A-1', '#64748B']];
+      const st = { arm: null, comp: null, clicks: [] }; tk.result = st; let next = 0, strikes = 0;
+      const L = (n) => n.toLocaleString('en-NG') + ' L', right = Math.min(...tk.caps.filter((c) => c >= tk.litres));
+      const draw = () => { const ph = st.arm == null ? 'arm' : st.comp == null ? 'comp' : 'steps';
+        gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${ph === 'steps' ? `step ${Math.min(next + 1, 9)} of 9` : ph === 'arm' ? 'the arm' : 'the compartment'}</span></div>
+          <div class="gpdocket"><small>LOADING DOCKET</small><b>${L(tk.litres)} of ${esc(tk.product)}</b><span>Tanker: ${tk.caps.map((c, k) => `C${k + 1} ${L(c)}`).join(' · ')}</span></div>
+          ${ph === 'arm' ? `<p>Pick the loading arm for the product on the docket.</p><div class="gpopts">${ARMS.map(([a, col]) => `<button data-arm="${esc(a)}"><i class="gpdot" style="background:${col}"></i>${esc(a)}</button>`).join('')}</div>`
+          : ph === 'comp' ? `<p>Pick the compartment: the smallest one it fits in, so nothing overfills and nothing sloshes.</p><div class="gpopts">${tk.caps.map((c, k) => `<button data-cp="${k}">C${k + 1} · ${L(c)}</button>`).join('')}</div>`
+          : `<p>Now load it safely, in order.${strikes ? ` <b style="color:#F87171">Strikes: ${strikes}</b>` : ''}</p><div class="gpopts">${tk.steps.map((s2) => `<button data-st="${esc(s2)}" ${ORDER.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`}`);
+        gpEl.querySelectorAll('[data-arm]').forEach((b) => (b.onclick = () => { st.arm = b.dataset.arm; if (st.arm !== tk.product) { strikes = 0; return done(0, `Wrong arm: ${st.arm} into a ${tk.product} order. The whole load is contaminated and has to be pumped back.`); } draw(); }));
+        gpEl.querySelectorAll('[data-cp]').forEach((b) => (b.onclick = () => { st.comp = +b.dataset.cp; draw(); }));
+        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { st.clicks.push(b.dataset.st); if (b.dataset.st === ORDER[next]) { next++; if (next >= ORDER.length) { const okC = tk.caps[st.comp] === right, sc = Math.max(0, 100 - strikes * 12 - (okC ? 0 : 40));
+          return done(sc, `${okC ? '' : `C${tk.caps.indexOf(right) + 1} (${L(right)}) was the right compartment. `}${strikes ? `${strikes} strike${strikes > 1 ? 's' : ''}: at a gantry, a spark is all it takes.` : 'Earthed, loaded, sealed. The driver signs and rolls out.'}`); } } else strikes++; draw(); })); };
+      draw(); return; }
     if (tk.type === 'turbine') { // three machines' readings: call each one
       const units = (tk.units || []).map((un) => ({ ...un, right: un.vib >= 8 || un.oil < 2 ? 'shut' : un.temp > 600 ? 'reduce' : 'keep' })); // the limits on the screen decide it
       const pick = {}; tk.result = { picks: pick }; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
@@ -10232,8 +10342,8 @@
     GJ.level[tr] = v.level; GJ.xp[tr] = v.xp;
     GJ.shifts.unshift({ at: Date.now(), track: tr, level: sh.tasks.length ? gridLv(tr) : 1, score, paid }); GJ.shifts.length = Math.min(30, GJ.shifts.length); GJ.shift = null; gridSave();
     if (typeof pnaira !== 'undefined' && v.naira != null) pnaira.textContent = naira(v.naira);
-    notify(`Grid shift done: ${score}/100${paid ? `, paid ${naira(paid)}` : ''}`, 'money', ['grid']);
-    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : (v.note || '')} You have ${v.xp} XP.${v.canExam ? ` You have the experience for promotion: take the certification exam in the ${GRID_TRACKS[tr].place === 'airport' ? 'Airport' : 'WYRD Grid'} app.` : ''}`, [[GRID_TRACKS[tr].place === 'airport' ? 'Airport' : 'WYRD Grid', () => { openPhone(GRID_TRACKS[tr].place === 'airport' ? 'airport' : 'grid'); return 'x'; }, true], ['Later', null]]);
+    notify(`${{ airport: 'Airport', refinery: 'Refinery' }[PLACE_OF(tr)] || 'Grid'} shift done: ${score}/100${paid ? `, paid ${naira(paid)}` : ''}`, 'money', ['grid']);
+    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : (v.note || '')} You have ${v.xp} XP.${v.canExam ? ` You have the experience for promotion: take the certification exam in the ${PLACE_APP[PLACE_OF(tr)]} app.` : ''}`, [[PLACE_APP[PLACE_OF(tr)], () => { openPhone(PLACE_OF(tr)); return 'x'; }, true], ['Later', null]]);
   }
   // the certification exam for the next level: five questions, four to pass
   async function gridExam(tr, onDone) {

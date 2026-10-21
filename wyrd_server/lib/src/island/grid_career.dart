@@ -16,7 +16,14 @@ class GridRefused implements Exception {
 /// worked out here by replaying it. Level and experience live here too, and promotion is a certification exam the
 /// server sets and marks. So pay can't be raised by telling the server a higher level or a better score.
 abstract final class GridCareer {
-  static const tracks = ['control', 'lineman', 'solar', 'plant', 'marshal', 'atc'];
+  static const tracks = ['control', 'lineman', 'solar', 'plant', 'marshal', 'atc', 'process', 'loader', 'hse'];
+
+  /// the refinery's tracks (Process Operator, Loading Bay, Safety Officer): paid on their own 40-minute slot
+  static const refineryTracks = {'process', 'loader', 'hse'};
+
+  /// which workplace pays a track, and the line on the receipt
+  static String placeOf(String track) => airportTracks.contains(track) ? 'airport' : refineryTracks.contains(track) ? 'refinery' : 'grid';
+  static String memoOf(String track) => switch (placeOf(track)) { 'airport' => 'Lagos Island Airport shift', 'refinery' => 'Lekki Free Zone Refinery shift', _ => 'National Grid shift' };
 
   /// the airport's tracks (Ground Crew, Air Traffic Control): paid on their own 40-minute slot, not the Grid's
   static const airportTracks = {'marshal', 'atc'};
@@ -28,12 +35,22 @@ abstract final class GridCareer {
   static const pay = [12000, 16000, 21000, 27000, 34000];
 
   /// the least a whole shift can take on each track (the control room's three balancing tasks are 90 s each)
-  static const minSeconds = {'control': 270, 'lineman': 40, 'solar': 40, 'plant': 30, 'marshal': 40, 'atc': 45};
+  static const minSeconds = {'control': 270, 'lineman': 40, 'solar': 40, 'plant': 30, 'marshal': 40, 'atc': 45, 'process': 160, 'loader': 50, 'hse': 45};
 
   /// a turnaround, in the order it's done
   static const turnaround = ['Chocks in', 'Ground power on', 'Open the doors', 'Unload the bags', 'Refuel', 'Load the bags', 'Close the doors', 'Ground power off', 'Chocks out'];
   /// what the marshaller sees, and the signal it calls for
   static const marshalCues = {'far': 'straight', 'left': 'right', 'right': 'left', 'close': 'slow', 'bar': 'stop'};
+
+  /// the refinery's procedures, in the order they're done
+  static const procedures = {
+    'startup': ['Check the valve line-up', 'Open the suction valve', 'Vent and prime the pump', 'Start the motor', 'Slowly open the discharge valve', 'Check the pressure and the flow'],
+    'fire': ['Raise the alarm', 'Hit the pump\'s emergency stop', 'Close the block valves either side', 'Turn the fire monitor on the fire', 'Count everyone at the muster point', 'Brief the fire team when they arrive'],
+    'leak': ['Raise the alarm and call it in', 'Move upwind and test the air', 'Put on breathing apparatus', 'Isolate the leaking line', 'Drain and purge the line', 'Gas-test again before anyone goes back'],
+  };
+  /// the tanker loading routine, in order
+  static const loadSteps = ['Chock the wheels', 'Clip on the earth clamp', 'Wait for the green earth light', 'Open the compartment hatch', 'Lower the loading arm', 'Load to the preset', 'Raise the arm and close the hatch', 'Seal the hatch and sign the docket', 'Unclip the earth clamp'];
+  static const products = ['PMS (petrol)', 'AGO (diesel)', 'DPK (kerosene)', 'Jet A-1'];
 
   static const shiftHours = 2, examMinutes = 30, examRetryMinutes = 30;
 
@@ -88,6 +105,30 @@ abstract final class GridCareer {
       ["All readings normal. You…", ["Keep it running", "Shut it down", "Reduce load to zero"], 0],
       ["Why keep spinning reserve?", ["To cover a trip instantly", "To waste gas", "For decoration"], 0],
       ["The cooling towers…", ["Reject heat from the cycle", "Make the electricity", "Store gas"], 0],
+    ],
+    "process": [
+      ["The top of the crude column runs too hot. The quickest fix is…", ["More reflux", "More furnace firing", "More feed"], 0],
+      ["The column bottom level keeps rising. You…", ["Cut the feed or draw more off the bottom", "Close the bottom draw", "Fire the furnace harder"], 0],
+      ["A lighter crude arrives. The column top will…", ["Run hotter: more of it boils", "Run colder", "Not change"], 0],
+      ["A pump seal drips more than 5 drops a minute. On your rounds you…", ["Report it for repair", "Ignore it", "Tighten it with the pump running"], 0],
+      ["Furnace stack oxygen under 2% means…", ["Too little air: unburnt fuel, danger", "Perfect burning", "Too much air"], 0],
+      ["Why walk the plant when the control room shows it all?", ["Leaks, smells, noise and heat don't all show on a screen", "To get steps in", "There's no reason"], 0],
+    ],
+    "loader": [
+      ["Before anything else at the gantry, the tanker gets…", ["Chocked and earthed", "Its hatch open", "Its arm lowered"], 0],
+      ["The earth clamp stops…", ["A static spark igniting the vapour", "The tanker rolling", "Theft"], 0],
+      ["Loading diesel into a petrol compartment is…", ["Contamination: the whole load is ruined", "Fine if it's small", "A good mix"], 0],
+      ["An order fits two compartments. You use…", ["The smallest it fits in, no overfill", "The biggest", "Two of them"], 0],
+      ["The last thing before the tanker leaves the gantry:", ["Unclip the earth clamp", "Open the hatch", "Start the meter"], 0],
+      ["Jet A-1 goes to…", ["Aircraft", "Cars", "Generators at home"], 0],
+    ],
+    "hse": [
+      ["Hot work needs the flammable gas reading (LEL) at…", ["Under 1%", "Under 50%", "Any level"], 0],
+      ["Safe oxygen for entering a tank is…", ["19.5% to 23.5%", "Under 15%", "Over 30%"], 0],
+      ["H₂S smells of rotten eggs, but at high levels…", ["It kills your sense of smell: trust the meter", "It smells stronger", "It's harmless"], 0],
+      ["A pump seal catches fire. The first thing you do is…", ["Raise the alarm", "Fight it alone", "Finish your rounds"], 0],
+      ["After a gas leak you go…", ["Upwind", "Downwind", "Towards it"], 0],
+      ["Who counts heads at the muster point?", ["The safety officer / area warden", "Nobody", "The tanker drivers"], 0],
     ],
   };
 
@@ -144,6 +185,35 @@ abstract final class GridCareer {
         final ts = <int>{}; while (ts.length < 4) { ts.add(2 + r.nextInt(23)); }
         final tl = ts.toList(), al = ['LIA', 'ARK', 'EKO', 'WYR', 'ISL', 'BNA'];
         return {'type': type, 'title': title, 'items': [for (var i = 0; i < 4; i++) {'cs': '${al[r.nextInt(al.length)]}${100 + r.nextInt(900)}', 'kind': i < 2 ? 'arr' : 'dep', 't': tl[i] * 10}]};
+      case 'cdu': // 75 seconds on the crude column: hold the top temperature and the bottom level
+        return {'type': type, 'title': title, 'at': 'control', 'swap': title.contains('swap')};
+      case 'rounds': // six pieces of plant: a reading and its normal range; report what's out of it
+        final pool = [...roundsPool]..shuffle(r);
+        return {'type': 'checks', 'title': title, 'at': 'unit', 'opts': ['Normal', 'Report it'], 'items': [for (final e in pool.take(6)) _reading(r, e)]};
+      case 'permit': // three jobs waiting for a permit: the gas test at each; issue it or refuse it
+        final hot = title.contains('Hot');
+        final sites = (hot ? ['Pump bay P-101: welding a bracket', 'Pipe rack bay 4: grinding a support', 'Tank 203 roof: cutting a vent'] : ['Tank 201: cleaning inside', 'Separator V-120: inspection', 'Drain pit 3: clearing a blockage'])..shuffle(r);
+        return {
+          'type': 'checks', 'title': title, 'at': 'tanks', 'opts': ['Issue the permit', 'Refuse it'],
+          'items': [
+            for (final site in sites)
+              (() {
+                final bad = r.nextInt(3) == 0 ? -1 : r.nextInt(3); // a third are safe; the rest fail one test
+                final lelMax = hot ? 1 : 10;
+                final lel = bad == 0 ? lelMax + 1 + r.nextInt(hot ? 9 : 20) : r.nextInt(lelMax);
+                final o2 = bad == 1 ? (r.nextBool() ? 17.0 + r.nextInt(20) / 10 : 23.8 + r.nextInt(10) / 10) : 20.0 + r.nextInt(10) / 10;
+                final h2s = bad == 2 ? 6 + r.nextInt(30) : r.nextInt(4);
+                return {'tag': site.split(':').first, 'label': site, 'read': 'LEL $lel % · O₂ ${o2.toStringAsFixed(1)} % · H₂S $h2s ppm', 'lim': 'Safe: LEL under $lelMax %, O₂ 19.5 to 23.5 %, H₂S under 5 ppm', 'right': lel < lelMax && o2 >= 19.5 && o2 <= 23.5 && h2s < 5 ? 'ok' : 'act'};
+              })(),
+          ],
+        };
+      case 'loading': // an order, a tanker with three compartments, the routine in order
+        final caps = ([6000, 9000, 12000, 15000]..shuffle(r)).take(3).toList();
+        final fits = [...caps]..sort();
+        final litres = [5000, 8000, 10000, 12000].where((l) => l <= fits.last).toList()[r.nextInt([5000, 8000, 10000, 12000].where((l) => l <= fits.last).length)];
+        return {'type': type, 'title': title, 'at': 'bay', 'product': products[r.nextInt(products.length)], 'litres': litres, 'caps': caps, 'steps': [...loadSteps]..shuffle(r)};
+      case 'startup': case 'fire': case 'leak':
+        return {'type': 'seq', 'title': title, 'at': type == 'startup' ? 'bay' : 'unit', 'name': type, 'steps': [...procedures[type]!]..shuffle(r)};
       case 'turbine':
         return {
           'type': type, 'title': title,
@@ -160,9 +230,55 @@ abstract final class GridCareer {
     }
   }
 
+  /// [tag, what, unit, lo, hi, decimals]
+  static const roundsPool = [
+    ['P-101', 'Crude charge pump: discharge pressure', 'bar', 8.0, 12.0, 1],
+    ['P-102', 'Reflux pump: seal drips', 'drops/min', 0.0, 5.0, 0],
+    ['E-110', 'Preheat exchanger: crude outlet', '°C', 140.0, 170.0, 0],
+    ['T-201', 'Crude tank 201: level', '%', 10.0, 90.0, 0],
+    ['C-101', 'Crude column: top pressure', 'bar', 1.0, 1.6, 2],
+    ['K-301', 'Gas compressor: vibration', 'mm/s', 0.0, 7.0, 1],
+    ['F-101', 'Furnace stack: oxygen', '%', 2.0, 5.0, 1],
+    ['V-120', 'Separator: water level', '%', 20.0, 60.0, 0],
+    ['P-205', 'Product pump: motor temperature', '°C', 40.0, 85.0, 0],
+  ];
+  static Map<String, dynamic> _reading(Random r, List<Object> e) {
+    final lo = e[3] as double, hi = e[4] as double, span = hi - lo, dp = e[5] as int, bad = r.nextDouble() < 0.35;
+    var v = bad ? (r.nextBool() && lo > 0 ? lo - span * (0.12 + r.nextDouble() * 0.3) : hi + span * (0.12 + r.nextDouble() * 0.3)) : lo + span * (0.1 + r.nextDouble() * 0.8);
+    if (v < 0) v = hi + span * 0.2;
+    final s = v.toStringAsFixed(dp), val = double.parse(s);
+    return {'tag': e[0], 'label': '${e[0]} · ${e[1]}', 'read': '$s ${e[2]}', 'lim': 'Normal: ${lo.toStringAsFixed(dp)} to ${hi.toStringAsFixed(dp)} ${e[2]}', 'right': val >= lo && val <= hi ? 'ok' : 'act'};
+  }
+
+  /// The crude column, one second at a time: furnace firing f (%), reflux r (%), feed q (kb/d). Returns (seconds in
+  /// band, the worst top temperature). The top runs 60 + f − 0.6 r (+14 once a lighter crude arrives) + 0.3 (q − 60);
+  /// the bottom level rises with feed and falls with firing.
+  static (int, double) cduReplay(bool swap, List log) {
+    var lvl = 50.0, inBand = 0, worst = 0.0;
+    for (var i = 0; i < log.length; i++) {
+      final e = log[i];
+      if (e is! List || e.length != 3) return (0, 0);
+      final f = _int(e[0], 40, 100), rf = _int(e[1], 0, 80), q = _int(e[2], 30, 90);
+      final top = 60 + f - 0.6 * rf + (swap && i >= 25 ? 14 : 0) + 0.3 * (q - 60);
+      lvl = (lvl + (q - 60) * 0.12 - (f - 80) * 0.05).clamp(0, 100);
+      if ((top - 120).abs() <= 6 && lvl >= 30 && lvl <= 70) inBand++;
+      worst = max(worst, (top - 120).abs());
+    }
+    return (inBand, worst);
+  }
+
+  /// in order: every wrong tap a strike; all of it done, or nothing
+  static (int, int) _ordered(List<String> order, Object? clicks, int per) {
+    if (clicks is! List || clicks.length > 60) return (0, 0);
+    var next = 0, strikes = 0;
+    for (final c in clicks) { if (next >= order.length) break; if ('$c' == order[next]) { next++; } else { strikes++; } }
+    return (next >= order.length ? max(0, 100 - strikes * per) : 0, strikes);
+  }
+
   /// What the phone may see: the deal without the answers.
   static Map<String, dynamic> _public(Map<String, dynamic> t) => {
         ...t,
+        if (t['type'] == 'checks') 'items': [for (final it in t['items'] as List) {...(it as Map<String, dynamic>)}..remove('right')],
         if (t['units'] != null) 'units': [for (final un in t['units'] as List) {...(un as Map<String, dynamic>)}..remove('right')],
       };
 
@@ -177,6 +293,9 @@ abstract final class GridCareer {
       'control' => [_task(r, 'balance', 'Morning ramp-up'), _task(r, 'balance', 'The evening peak'), _task(r, 'balance', 'Turbine 2 trips!')],
       'lineman' => [_task(r, 'van', 'Collect the crew van'), _task(r, 'fault', 'Repair the fault'), _task(r, 'fault', 'Second call-out')],
       'solar' => [_task(r, 'solar', 'Clean and inspect, rows A to C'), _task(r, 'solar', 'Clean and inspect, rows D to F'), _task(r, 'turbine', 'Inverter station readings')],
+      'process' => [_task(r, 'cdu', 'Steady the crude unit'), _task(r, 'rounds', 'Field rounds'), _task(r, 'cdu', 'Crude swap: a lighter crude arrives')],
+      'loader' => [_task(r, 'startup', 'Start the loading pump'), _task(r, 'loading', 'Load the first tanker'), _task(r, 'loading', 'Load the second tanker')],
+      'hse' => [_task(r, 'permit', 'Hot-work permits'), _task(r, r.nextBool() ? 'fire' : 'leak', 'Emergency drill'), _task(r, 'permit', 'Confined-space entry permits')],
       _ => [_task(r, 'turbine', 'Morning rounds'), _task(r, 'turbine', 'Load change review'), _task(r, 'turbine', 'End of shift handover')],
     };
     final w = await IslandGridWork.db.insertRow(s, IslandGridWork(authUserId: u, kind: 'shift', track: track, level: c.level, spec: jsonEncode({'tasks': tasks}), status: 'open', issuedAt: DateTime.now().toUtc()));
@@ -202,11 +321,8 @@ abstract final class GridCareer {
         for (var i = 0; i < cues.length; i++) { if (i < picks.length && '${picks[i]}' == marshalCues[cues[i]]) ok++; }
         return ((ok / cues.length * 100).round(), null);
       case 'turnaround': // the taps in order: a wrong job is a strike; all of it done, or nothing
-        final clicks = r['clicks'];
-        if (clicks is! List || clicks.length > 60) return (0, null);
-        var next = 0, strikes = 0;
-        for (final c in clicks) { if (next >= turnaround.length) break; if ('$c' == turnaround[next]) { next++; } else { strikes++; } }
-        return (next >= turnaround.length ? max(0, 100 - strikes * 12) : 0, '$strikes');
+        final (sc, strikes) = _ordered(turnaround, r['clicks'], 12);
+        return (sc, '$strikes');
       case 'atc': // the runway in time order (an arrival first when it's a tie): each aircraft in its right place
         final order = r['order'], items = (t['items'] as List).cast<Map<String, dynamic>>();
         if (order is! List || order.length != items.length) return (0, null);
@@ -273,6 +389,26 @@ abstract final class GridCareer {
         }
         final left = p.where((v) => v == 'dust' || v == 'crack').length, total = right + left;
         return (total == 0 ? 100 : max(0, min(100, (right / total * 100 - wrong * 8).round())), null);
+      case 'cdu':
+        final log = r['log'];
+        if (log is! List || log.length != 75) return (0, null);
+        final (inBand, worst) = cduReplay(t['swap'] == true, log);
+        return ((inBand / 75 * 100).round(), worst.toStringAsFixed(1));
+      case 'checks':
+        final picks = r['picks'], items = t['items'] as List;
+        if (picks is! Map) return (0, null);
+        final ok = items.where((it) => picks['${it['tag']}'] == it['right']).length;
+        return ((ok / items.length * 100).round(), null);
+      case 'seq':
+        final (sc, strikes) = _ordered(procedures[t['name']]!, r['clicks'], 15);
+        return (sc, '$strikes');
+      case 'loading': // the wrong product ruins the load; the wrong compartment overfills or wastes space
+        if (r['arm'] != t['product']) return (0, 'product');
+        final caps = (t['caps'] as List).cast<int>(), litres = t['litres'] as int;
+        final right = (caps.where((c) => c >= litres).toList()..sort()).first;
+        final (sc, strikes) = _ordered(loadSteps, r['clicks'], 12);
+        final comp = _int(r['comp'], -1, 2);
+        return (comp >= 0 && caps[comp] == right ? sc : max(0, sc - 40), '$strikes');
       case 'turbine':
         final picks = r['picks'];
         if (picks is! Map) return (0, null);
