@@ -2184,7 +2184,11 @@ class IslandMeEndpoint extends Endpoint {
   };
 
   /// Pay for a seat on a flight; the trip itself (out, a moment there, home) runs in the game.
+  /// Lagos Island Airport is closed to flights for now (nobody is charged for a seat or for fuel while it is)
+  static const airportOpen = false;
+
   Future<String> bookFlight(Session session, String dest) => _money(session, (u) async {
+    if (!airportOpen) return _err('Lagos Island Airport is closed for now. Flights will be back soon.');
     final f = flights[dest];
     if (f == null) return _err('There\'s no flight there.');
     final w = await WorldAuthority.citizen(session, u);
@@ -2247,6 +2251,7 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Fly my own jet: no seat to buy, only the fuel and handling (a quarter of a seat's price; N2,000 round the island).
   Future<String> flyJet(Session session, String dest) => _money(session, (u) async {
+    if (!airportOpen) return _err('Lagos Island Airport is closed for now. Flights will be back soon.');
     final f = flights[dest];
     if (f == null) return _err('There\'s no flight there.');
     final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
@@ -2759,6 +2764,34 @@ class IslandMeEndpoint extends Endpoint {
       'treasury2': await TopUp.treasury2(session),
     });
   }
+
+  // ---- trip refunds (administrators): a fare or charter charged for a trip that never happened goes back, with its tax
+  static bool _isTrip(NairaEntry e) => e.amount < 0 && (e.kind == 'ride' || e.kind == 'fee') && (e.kind == 'ride' || e.memo.startsWith('Lagos Island Airport') || e.memo.startsWith('Banana Island Marina') || e.key.startsWith('island:flight:') || e.key.startsWith('island:jetfly:') || e.key.startsWith('island:yacht:'));
+
+  /// A player's trip charges from the last 14 days (administrators only).
+  Future<String> govTrips(Session session, String handle) async {
+    final u = _user(session);
+    if (!await _govAdmin(session, u)) return _err('Administrators only.');
+    final p = await _byHandle(session, handle.trim().replaceFirst(RegExp(r'^@'), ''));
+    if (p == null) return _err('No Lagosian by that name.');
+    final since = DateTime.now().toUtc().subtract(const Duration(days: 14));
+    final rows = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.createdAt > since) & t.kind.inSet({'fee', 'ride'}), orderBy: (t) => t.createdAt.desc(), limit: 60);
+    return jsonEncode({'handle': p.handle, 'trips': [for (final e in rows.where(_isTrip)) {'id': e.id, 'memo': e.memo, 'amount': -e.amount, 'at': e.createdAt.toIso8601String(), 'refunded': e.status == 'reversed'}]});
+  }
+
+  /// Refund one trip charge, and the tax taken with it (administrators only; once; logged).
+  Future<String> govRefund(Session session, int entryId) => _money(session, (u) async {
+    if (!await _govAdmin(session, u)) return _err('Administrators only.');
+    final e = await NairaEntry.db.findById(session, entryId);
+    if (e == null || !_isTrip(e)) return _err('That is not a trip charge.');
+    if (e.status == 'reversed') return _err('Already refunded.');
+    if (DateTime.now().toUtc().difference(e.createdAt) > const Duration(days: 14)) return _err('Only trips from the last 14 days can be refunded here.');
+    final r = await Bank.reverse(session, e.id!, 'Refund: ${e.memo}');
+    final tax = await NairaEntry.db.findFirstRow(session, where: (t) => t.key.equals('${e.key}:tax'));
+    if (tax != null && tax.status != 'reversed') await Bank.reverse(session, tax.id!, 'Refund: tax on ${e.memo}');
+    session.log('[gov] trip refund ${e.id} (${-e.amount}) for ${e.authUserId.uuid} by ${u.uuid}', level: LogLevel.warning);
+    return jsonEncode({'refunded': -e.amount + (tax == null ? 0 : -tax.amount), 'ok': r.ok});
+  });
 
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
   Future<String> treasury2(Session session) async {
