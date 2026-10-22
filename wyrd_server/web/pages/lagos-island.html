@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T03:49:37.569Z">
+<meta name="li-build" content="2026-10-22T04:13:36.761Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4716,7 +4716,7 @@
       if (before != null && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']);
     } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
   }
-  setTimeout(() => { housingPoll(); setInterval(housingPoll, 20000); }, 1500);
+  setTimeout(() => { housingPoll(); setInterval(() => { if (!document.hidden) housingPoll(); }, 30000); }, 1500); // not while the game is in the background
   // the Government button in the top bar: a panel dropping out of it with your rent, tax and pay, the power, the island's homes
   const govPanel = document.createElement('div'); govPanel.id = 'govPanel'; document.body.append(govPanel);
   const GPC = { cv: null, gb: null }; // the panel's real figures: my own tax (everyone), the Treasury (administrators only)
@@ -7509,13 +7509,16 @@
   const phoneEl0 = document.getElementById('phone');
   function frame(t) {
     // on a phone: a steady 30 frames a second (half the work, and smoother than a stuttering 60)
+    // a phone with its phone app open: the island behind it is covered, so it ticks over slowly and the apps get the speed
+    if (MOBILE && phoneEl0.style.display === 'block' && !inside && t - (frame.drawn || 0) < 180) { requestAnimationFrame(frame); return; }
     if (thirty() && t - (frame.drawn || 0) < 31) { requestAnimationFrame(frame); return; }
     frame.drawn = t;
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
     if (document.hidden) { requestAnimationFrame(frame); return; }
     // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
     const at30 = thirty(), late = at30 ? 0.048 : 0.024; // a frame that missed its slot (60 fps: 17 ms; 30 fps: 33 ms)
-    if (dt > late) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    const covered = MOBILE && phoneEl0.style.display === 'block' && !inside; // frames held back on purpose don't count as slow
+    if (covered) { /* the phone's app is in front */ } else if (dt > late) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
     const floor = MOBILE ? 0.6 : PERF.mode === 'sharp' ? 0.85 : 0.6;
     if (slow > (MOBILE ? 30 : 40) && quality > floor) { quality = Math.max(floor, quality - 0.1); slow = 0; resize(); }
     else if (!MOBILE && PERF.mode === 'auto' && !PERF.cap30 && slow > 40 && quality <= floor) { PERF.cap30 = true; slow = 0; } // still slow at the lowest resolution: 30 fps
@@ -10263,7 +10266,7 @@
       await loadHqRow();
     } catch {}
   }
-  poll(); setInterval(poll, 15000);
+  poll(); setInterval(() => { if (!document.hidden) poll(); }, 30000); // half as often, and never in the background (the wake line brings anything urgent at once)
   if (signedIn()) my('myCars').then((l) => { myCarsL = l; const a = l.find((c2) => c2.active); if (a) myCar = a.model + ':' + a.color; }).catch(() => {});
 
   // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
