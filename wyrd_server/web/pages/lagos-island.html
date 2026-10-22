@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T02:05:37.232Z">
+<meta name="li-build" content="2026-10-22T02:35:58.727Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4671,6 +4671,12 @@
   setTimeout(() => { housingPoll(); setInterval(housingPoll, 20000); }, 1500);
   // the Government button in the top bar: a panel dropping out of it with your rent, tax and pay, the power, the island's homes
   const govPanel = document.createElement('div'); govPanel.id = 'govPanel'; document.body.append(govPanel);
+  const GPC = { cv: null, gb: null }; // the panel's real figures: my own tax (everyone), the Treasury (administrators only)
+  function govPanelLoad() {
+    if (!signedIn()) return;
+    my('civic').then((v) => { GPC.cv = v; if (govPanel.classList.contains('on')) govPanelDraw();
+      if (v && v.admin) my('govBoard').then((g) => { GPC.gb = g; if (govPanel.classList.contains('on')) govPanelDraw(); }).catch(() => {}); else GPC.gb = null; }).catch(() => {});
+  }
   function govPanelDraw() {
     const A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, pct = A.cap ? Math.min(100, Math.round(A.pay / A.cap * 100)) : 0;
     const L = govLive(), row = (k, v, sub, cls = '') => `<div class="gprow ${cls}"><span>${k}${sub ? `<small>${sub}</small>` : ''}</span><b>${v}</b></div>`;
@@ -4679,11 +4685,11 @@
       <div class="gpsec">Your bills</div>
       ${row('Rent · your BQ on HQ Row', A.trial ? 'Free' : naira(A.rent) + '/wk', A.trial ? `your first week · free until ${new Date(A.trialEnd).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'a basic apartment, after the free first week')}
       ${A.homes.map((h) => row(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `service charge · land use ${naira(h.landUseWk)}/wk`)).join('')}
-      ${row('Income tax (PAYE, 7%)', naira(A.paye), `on today's pay · you keep ${naira(A.net)}`)}
+      ${row('Tax (2% of every naira that moves)', GPC.cv ? naira(GPC.cv.taxWeek) : '…', GPC.cv ? `paid in the last 7 days · ${naira(GPC.cv.taxPaid)} in all` : 'to the city treasury')}
       ${row('Due this week', naira(A.dueWk), [A.rent ? 'BQ rent' : '', A.homes.length ? 'service charges and land use' : ''].filter(Boolean).join(', ') || 'nothing due: your first week is free', 'total')}
-      <div class="gpnote">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : `<div class="gpnote">Your rent, tax and pay show here once you're signed in to WYRD.</div>`}
+      <div class="gpnote">Rates set by WYRD's government. The 2% tax is taken as naira moves; naira bought with real money and refunds aren't taxed.</div>` : `<div class="gpnote">Your rent, tax and pay show here once you're signed in to WYRD.</div>`}
       <div class="gpsec">The island now <em class="gplive">● live</em></div>
-      <div class="gptiles"><div class="gpt"><span>WYRD approval</span><b class="${L.approval >= 50 ? 'gpup' : 'gpdn'}">${L.approval}%</b><small>${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div class="gpt"><span>Treasury</span><b>${naira(L.treasury)}</b><small>${naira(Math.round(L.rateWk))} a week once rates are collected</small></div></div>
+      <div class="gptiles"><div class="gpt"><span>WYRD approval</span><b class="${L.approval >= 50 ? 'gpup' : 'gpdn'}">${L.approval}%</b><small>${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div>${GPC.cv && GPC.cv.admin && GPC.gb ? `<div class="gpt"><span>Treasury</span><b>${naira(GPC.gb.tax.total)}</b><small>2% tax collected · ${naira(GPC.gb.tax.today)} today</small></div>` : `<div class="gpt"><span>Light today</span><b>${Array.from({ length: 24 }, (_, k) => nepaAt(lagosMs() - 3600e3 - k * 3600e3)).filter(Boolean).length}/24h</b><small>hours NEPA had light</small></div>`}</div>
       ${L.feed.slice(0, 3).map((f) => `<div class="gpfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}
       <div class="gpbill"><small>This week's bill · ${L.bill[2]}</small><b>${esc(L.bill[0])}</b><div class="gpbar"><i style="width:${Math.round(L.yes / Math.max(1, L.yes + L.no) * 100)}%"></i></div><small>${L.yes} yes · ${L.no} no${L.mine ? ` · you voted ${L.mine}` : ''}</small><div class="gpvote"><button data-pv="yes" class="${L.mine === 'yes' ? 'on' : ''}">👍 Yes</button><button data-pv="no" class="${L.mine === 'no' ? 'on' : ''}">👎 No</button></div></div>
       ${row('Power', grid ? 'NEPA has light' : 'NEPA took light', grid ? '' : 'inverters on', grid ? 'ok' : 'off')}
@@ -4693,8 +4699,8 @@
     govPanel.querySelector('.gpx').onclick = () => govPanel.classList.remove('on');
     govPanel.querySelector('.gpopen').onclick = () => { govPanel.classList.remove('on'); openPhone('gov'); };
   }
-  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tGov')) { if (govPanel.classList.toggle('on')) { govPanelDraw(); if (signedIn() && !me$) my('me').then((v) => { me$ = v; govPanelDraw(); }).catch(() => {}); } } else if (govPanel.classList.contains('on') && !e.target.closest('#govPanel')) govPanel.classList.remove('on'); });
-  setInterval(() => { const b = document.getElementById('tGov'); if (!b) return; if (!b.innerHTML) b.innerHTML = ico('gov') + '<s class="tga"></s><em></em>'; const A = govAccount(); { const L = govLive(), s = b.querySelector('.tga'), v = `${L.approval}%`; if (s && s.textContent !== v) { s.textContent = v; s.className = 'tga ' + (L.approval >= 50 ? 'up' : 'dn'); } b.title = `WYRD approval ${L.approval}% (${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday) · treasury ${naira(L.treasury)} · this week: ${L.bill[0]}`; } b.classList.toggle('due', A.dueWk > 0 || (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3))); if (govPanel.classList.contains('on')) govPanelDraw(); }, 3000);
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tGov')) { if (govPanel.classList.toggle('on')) { govPanelDraw(); govPanelLoad(); if (signedIn() && !me$) my('me').then((v) => { me$ = v; govPanelDraw(); }).catch(() => {}); } } else if (govPanel.classList.contains('on') && !e.target.closest('#govPanel')) govPanel.classList.remove('on'); });
+  setInterval(() => { const b = document.getElementById('tGov'); if (!b) return; if (!b.innerHTML) b.innerHTML = ico('gov') + '<s class="tga"></s><em></em>'; const A = govAccount(); { const L = govLive(), s = b.querySelector('.tga'), v = `${L.approval}%`; if (s && s.textContent !== v) { s.textContent = v; s.className = 'tga ' + (L.approval >= 50 ? 'up' : 'dn'); } b.title = `WYRD approval ${L.approval}% (${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday) · this week: ${L.bill[0]}`; } b.classList.toggle('due', A.dueWk > 0 || (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3))); if (govPanel.classList.contains('on')) govPanelDraw(); }, 3000);
   // the top bar's housing chip: free homes and lived-in homes, all of them (BQs too), refreshed every two seconds
   setInterval(() => { const el = document.getElementById('tHome'); if (!el) return; const c = census(), h = `${ico('hq')}<b>${c.all.total - c.all.taken}</b><span>free</span><i></i><b>${c.all.taken}</b><span>lived in</span>`; if (el.innerHTML !== h) el.innerHTML = h; el.title = `Housing register: ${c.all.total} homes, ${c.all.taken} lived in, ${c.all.total - c.all.taken} free`; }, 2000);
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tHome')) openPhone('gov'); });
