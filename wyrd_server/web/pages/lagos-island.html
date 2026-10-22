@@ -6614,8 +6614,71 @@
   }
   // the arena's stage: lights, the big screen with the artist's live lines, the crowd's glow
   let stageLines = [], stageInfo = null;
+  // ---- the arena's building: the bowl's walls and roof edge round the floor, an LED ribbon running the show's name, exits,
+  // the bars in the back corners; a glossy floor that catches the stage's colours; haze hanging in the light
+  function drawArenaShell(R, t, beat, live) {
+    const H2 = 34, name = (stageInfo && stageInfo.artist) || R.title || 'The Arena';
+    // the walls: back and left (the camera's side), dark, with ribs every few metres
+    box(-6, 0, -6, R.w + 6, H2, -1.5, '#090D1A'); box(-6, 0, -6, -1.5, H2, R.d + 4, '#0B1020');
+    for (let px = 4; px < R.w; px += 12) box(px, 0, -1.6, px + 0.8, H2, -1.2, '#141A2E');
+    for (let pz = 6; pz < R.d; pz += 12) box(-1.6, 0, pz, -1.2, H2, pz + 0.8, '#141A2E');
+    box(-6, H2, -6, R.w + 6, H2 + 1.2, -1.5, '#1F2937'); box(-6, H2, -6, -1.5, H2 + 1.2, R.d + 4, '#1F2937'); // the roof's edge
+    // the LED ribbon round the bowl: the show's name scrolling, the colour running with the beat
+    { const y0 = 21, y1 = 24, hue = (t * 25) % 360;
+      quad([P(-1.4, y0, R.d), P(-1.4, y0, 0), P(-1.4, y1, 0), P(-1.4, y1, R.d)], `hsl(${hue},80%,${18 + beat * 10}%)`);
+      quad([P(0, y0, -1.4), P(R.w, y0, -1.4), P(R.w, y1, -1.4), P(0, y1, -1.4)], `hsl(${(hue + 40) % 360},80%,${18 + beat * 10}%)`);
+      if (K > 2) { const msg = `${name.toUpperCase()}   ·   ${live ? 'LIVE NOW' : 'TONIGHT'}   ·   LAGOS ISLAND ARENA   ·   `, step = msg.length * 1.05, off = (t * 6) % step;
+        const c0 = P(0, y0, -1.3), c1 = P(R.w, y0, -1.3), c2 = P(R.w, y1, -1.3), c3 = P(0, y1, -1.3); x.save(); x.beginPath(); x.moveTo(c0[0], c0[1]); x.lineTo(c1[0], c1[1]); x.lineTo(c2[0], c2[1]); x.lineTo(c3[0], c3[1]); x.closePath(); x.clip(); // only on the ribbon
+        for (let k = -1; k < Math.ceil(R.w / step) + 1; k++) faceText(msg, k * step - off + step / 2, 22.5, -1.3, '#FFFFFF', 1.1, 4, 800); x.restore(); } }
+    // the exits: green signs over the side doors
+    for (const ez of [R.d * 0.45, R.d * 0.8]) { box(-1.5, 0, ez - 2.5, -1.1, 7, ez + 2.5, '#1F2937'); quad([P(-1.05, 7.6, ez - 2), P(-1.05, 7.6, ez + 2), P(-1.05, 9.2, ez + 2), P(-1.05, 9.2, ez - 2)], '#16A34A'); if (K > 3) faceText('EXIT', -1.0, 8.4, ez, '#FFFFFF', 0.8, 3, 800); }
+    // the bars in the back corners, lit warm
+    for (const bx of [3, R.w - 15]) { box(bx, 0, R.d - 8, bx + 12, 3.4, R.d - 5, '#3F2A1D'); box(bx - 0.2, 3.4, R.d - 8.2, bx + 12.2, 3.7, R.d - 4.8, '#D4AF37');
+      for (let k = 0; k < 8; k++) box(bx + 0.8 + k * 1.4, 3.7, R.d - 7, bx + 1.2 + k * 1.4, 5 + (k % 3) * 0.4, R.d - 6.6, ['#22C55E', '#F59E0B', '#EF4444', '#38BDF8'][k % 4]);
+      const p = P(bx + 6, 4, R.d - 6.5); glow.push(() => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 9); g.addColorStop(0, 'rgba(251,191,36,0.35)'); g.addColorStop(1, 'rgba(251,191,36,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 9, 0, Math.PI * 2); x.fill(); x.restore(); }); }
+    // the floor: polished dark, the stage's light pooling on it, the pit barrier lit along its top
+    flat(14, 24, R.w - 14, R.d - 2, 0.015, '#0B0F1A');
+    { const p = P(R.w / 2, 0.02, 34), r = K * 46; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(t * 40) % 360},90%,55%,${0.16 + beat * 0.18})`); g.addColorStop(0.6, `hsla(${(t * 40 + 120) % 360},90%,45%,0.06)`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); }
+  }
+  // over the floor: the second truss's moving heads sweeping the crowd, the haze, the canopy over the mixing desk
+  function drawArenaRig(R, t, beat, live) {
+    const zt = 30;
+    for (const tx of [14, R.w - 14]) box(tx - 0.45, 0, zt - 0.45, tx + 0.45, 30, zt + 0.45, '#374151');
+    box(14, 29.4, zt - 0.5, R.w - 14, 30.4, zt + 0.5, '#4B5563');
+    x.save(); x.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 7; k++) {
+      const hx = 20 + k * (R.w - 40) / 6, p = P(hx, 29.2, zt), sw = Math.sin(t * (live ? 1.6 : 0.7) + k * 0.9), q = P(hx + sw * 18, 0, zt + 18 + Math.cos(t * 0.9 + k) * 10), hue = (k * 50 + t * 60) % 360;
+      const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${hue},100%,70%,${0.32 + beat * 0.25})`); g.addColorStop(1, `hsla(${hue},100%,60%,0)`);
+      x.fillStyle = g; x.beginPath(); x.moveTo(p[0] - K * 0.4, p[1]); x.lineTo(p[0] + K * 0.4, p[1]); x.lineTo(q[0] + K * 3.2, q[1]); x.lineTo(q[0] - K * 3.2, q[1]); x.closePath(); x.fill();
+      x.fillStyle = `hsl(${hue},100%,80%)`; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill();
+    }
+    // the haze: soft drifting light in the air over the crowd
+    for (let k = 0; k < 4; k++) { const p = P(R.w * (0.2 + k * 0.2) + Math.sin(t * 0.2 + k) * 6, 10, 40 + Math.cos(t * 0.15 + k) * 8), r = K * 22, g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(t * 20 + k * 90) % 360},60%,60%,0.06)`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); }
+    x.restore();
+    // the mixing desk's tower and canopy, its lights pointing at the stage
+    box(R.w / 2 - 7, 9, 52.5, R.w / 2 + 7, 9.6, 61.5, '#111827'); for (const cx of [R.w / 2 - 6.5, R.w / 2 + 6.5]) for (const cz of [53, 61]) box(cx - 0.2, 0, cz - 0.2, cx + 0.2, 9, cz + 0.2, '#4B5563');
+    for (let k = 0; k < 4; k++) { const p = P(R.w / 2 - 4.5 + k * 3, 9.6, 53); x.fillStyle = (Math.floor(t * 3) + k) % 2 ? '#F8FAFC' : '#FDE68A'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.35), 0, Math.PI * 2); x.fill(); }
+  }
+  // the crowd: people (legs, a top, a head, hands up), thickest at the barrier, bouncing when the show's live; at night
+  // phone lights and glow sticks
+  function drawArenaCrowd(R, t, live) {
+    const Rc = rnd(77), dark = night > 0.4, TOPS = ['#F8FAFC', '#FACC15', '#22C55E', '#F472B6', '#38BDF8', '#EF4444', '#A855F7', '#111827', '#F97316'], SKIN = ['#7C4A2D', '#5C3A21', '#8D5524', '#A0673C'];
+    const n = MOBILE ? 150 : 220;
+    for (let k = 0; k < n; k++) {
+      const front = Rc() < 0.45, cxp = 18 + Rc() * (R.w - 36), czp = front ? 26 + Rc() * 12 : 38 + Rc() * 40, top = TOPS[Math.floor(Rc() * TOPS.length)], skin = SKIN[Math.floor(Rc() * SKIN.length)], ph = Rc() * 6, hands = Rc();
+      if (Math.abs(cxp - R.w / 2) < 6 && czp < 40) continue; // the runway
+      if (Math.abs(cxp - R.w / 2) < 9 && czp > 51 && czp < 63) continue; // the mixing desk
+      const p = P(cxp, 0, czp), hb = (live ? Math.abs(Math.sin(t * 4.2 + ph)) * 0.9 : Math.sin(t * 2 + ph) * 0.2) * K;
+      x.fillStyle = '#1F2937'; x.fillRect(p[0] - K * 0.38, p[1] - K * 1.1 - hb * 0.3, K * 0.32, K * 1.1); x.fillRect(p[0] + K * 0.06, p[1] - K * 1.1 - hb * 0.3, K * 0.32, K * 1.1); // legs
+      x.fillStyle = top; x.fillRect(p[0] - K * 0.48, p[1] - K * 2.5 - hb, K * 0.96, K * 1.5); // the top
+      x.fillStyle = skin; x.beginPath(); x.arc(p[0], p[1] - K * 2.95 - hb, K * 0.42, 0, Math.PI * 2); x.fill();
+      if (hands < (live ? 0.5 : 0.18)) { x.strokeStyle = skin; x.lineWidth = Math.max(1, K * 0.22); x.lineCap = 'round'; x.beginPath(); x.moveTo(p[0] + K * 0.4, p[1] - K * 2.3 - hb); x.lineTo(p[0] + K * 0.85, p[1] - K * 3.8 - hb * 1.4); if (hands < 0.22) { x.moveTo(p[0] - K * 0.4, p[1] - K * 2.3 - hb); x.lineTo(p[0] - K * 0.85, p[1] - K * 3.8 - hb * 1.4); } x.stroke();
+        if (dark && hands < 0.12) { const lp = [p[0] + K * 0.9, p[1] - K * 4 - hb * 1.4]; x.fillStyle = hands < 0.06 ? 'rgba(255,255,255,0.95)' : `hsl(${(k * 47) % 360},100%,65%)`; x.beginPath(); x.arc(lp[0], lp[1], Math.max(1.2, K * 0.28), 0, Math.PI * 2); x.fill(); } } // a phone light or a glow stick
+    }
+  }
   function drawStage(now) {
     const R = inside, t = now / 1000, beat = Math.max(0, Math.sin(t * Math.PI * 2.1)) ** 3, live = !!(stageInfo && stageInfo.live);
+    drawArenaShell(R, t, beat, live);
     // the floor: LED tiles that pulse with the beat
     for (let i = 0; i < 10; i++) for (let j = 0; j < 6; j++) { const x0 = 18 + i * 8.4, z0 = 28 + j * 8.4, hue = (t * 30 + i * 18 + j * 25) % 360, on = ((i + j + Math.floor(t * 2)) % 4 === 0); flat(x0 + 0.3, z0 + 0.3, x0 + 8.1, z0 + 8.1, 0.02, on ? `hsla(${hue},90%,55%,${0.18 + beat * 0.25})` : 'rgba(30,41,59,0.55)'); }
     // the stage and its runway into the crowd, lit edges
@@ -6652,16 +6715,8 @@
     // CO2 cannons and flames at the front of the stage every few seconds
     const burst = (t % 8) < 1.2;
     for (const fx of [18, R.w - 18]) { if (burst) { if (Math.floor(t) % 16 < 8) flame(fx, 4.4, 21); else { x.save(); x.globalCompositeOperation = 'lighter'; const p = P(fx, 4.4, 21), q = P(fx, 20, 21); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, 'rgba(255,255,255,0.75)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(p[0] - K, p[1]); x.lineTo(q[0] - K * 3, q[1]); x.lineTo(q[0] + K * 3, q[1]); x.lineTo(p[0] + K, p[1]); x.fill(); x.restore(); } } }
-    // the crowd on the floor: bobbing to the beat (bouncing when the show is live)
-    const Rc = rnd(77);
-    for (let k = 0; k < 140; k++) {
-      const cxp = 18 + Rc() * (R.w - 36), czp = 42 + Rc() * 34, col = ['#F8FAFC', '#FACC15', '#22C55E', '#F472B6', '#38BDF8', '#EF4444', '#A855F7'][Math.floor(Rc() * 7)], ph = Rc() * 6;
-      if (Math.abs(cxp - R.w / 2) < 9 && (czp < 46 || (czp > 51 && czp < 63))) continue; // round the runway's end and the mixing desk
-      const p = P(cxp, 0, czp), hb = (live ? Math.abs(Math.sin(t * 4.2 + ph)) * 0.9 : Math.sin(t * 2 + ph) * 0.2) * K;
-      x.fillStyle = col; x.fillRect(p[0] - K * 0.45, p[1] - K * 2.4 - hb, K * 0.9, K * 1.6);
-      x.fillStyle = '#7C4A2D'; x.beginPath(); x.arc(p[0], p[1] - K * 2.9 - hb, K * 0.42, 0, Math.PI * 2); x.fill();
-      if (k % 5 === 0) { x.strokeStyle = '#7C4A2D'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p[0] + K * 0.4, p[1] - K * 2.2 - hb); x.lineTo(p[0] + K * 0.8, p[1] - K * 3.6 - hb * 1.5); x.stroke(); } // a hand in the air
-    }
+    drawArenaRig(R, t, beat, live);
+    drawArenaCrowd(R, t, live);
   }
   async function enterRoom(kind, key, title, extra = {}) {
     if (inside && !extra.stairs) return;
@@ -6962,6 +7017,7 @@
   let sector = SECTORS[0];
   { const in0 = new URLSearchParams(location.search).get('in'); if (in0) setTimeout(() => { const p = PLACES.find((v) => v[0] === in0); if (p && ENTERABLE.has(in0)) enterPlace(p); }, 1200); } // ?in=mall opens a building straight away
   { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
+  if (/^(localhost|127.0.0.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('room') === 'arena') setTimeout(() => enterRoom('arena', 'arena:preview', 'The Arena · Preview', {}), 1500); // a local preview only
   // testing on a local copy: ?task=marshal | turnaround | atc opens that airport task with sample data (nothing is paid)
   { const t0 = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('task') : null;
     const S0 = { marshal: { type: 'marshal', title: 'Bring in the arrival', cues: ['far', 'left', 'far', 'right', 'close', 'bar'] }, turnaround: { type: 'turnaround', title: 'Turnaround on the apron', steps: ['Refuel', 'Chocks in', 'Close the doors', 'Open the doors', 'Ground power off', 'Unload the bags', 'Chocks out', 'Load the bags', 'Ground power on'] }, atc: { type: 'atc', title: 'The busy hour', items: [{ cs: 'EKO412', kind: 'arr', t: 90 }, { cs: 'WYR230', kind: 'arr', t: 40 }, { cs: 'LIA118', kind: 'dep', t: 90 }, { cs: 'ISL771', kind: 'dep', t: 150 }] } };
