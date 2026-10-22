@@ -5901,7 +5901,7 @@
     // black at the doorway from the foyer
     R._crowd = [];
     if (PEOPLE.ok) {
-      const WEAR = { quilox: ['gucci_track', 'versace_silk', 'balenciaga_set', 'fendi_set', 'lv_jacket', 'dior_gown'], secret: ['dior_gown', 'versace_silk', 'ralph_suit', 'atafo_agbada', 'fendi_set', 'zara_dress'], vein: ['zara_dress', 'offwhite_set', 'dior_gown', 'nike_tech', 'hm_hoodie', 'lv_jacket'], lekki: ['st_tee', 'puma_run', 'zara_linen', 'st_ankara', 'folawiyo_ankara', 'nike_dri'], ozumba: ['levis_denim', 'offwhite_set', 'zara_dress', 'lanre_buba', 'balenciaga_set', 'orange_kaftan'] }[LK.theme] || ['st_tee'];
+      const WEAR = CLUB_WEAR[LK.theme] || ['st_tee'];
       const R4 = rnd(R.key.length * 31 + 7); let k = 0;
       for (const it of R.layout.filter((v) => v.k === 'dance')) for (const [ox, oz] of [[-4.5, -2.5], [3.5, -1.5], [-1, 2.5], [5, 3], [-5.5, 3]]) {
         const g = R4() < 0.5 ? 'f' : 'm', look = `${g},${Math.floor(R4() * 6)},${Math.floor(R4() * 4)},${Math.floor(R4() * 4)},${Math.floor(R4() * 5)},${WEAR[k % WEAR.length]}`;
@@ -6790,6 +6790,7 @@
     inside = R; me.x = R.w / 2; me.z = R.d - 3; cam.x = R.w / 2; cam.z = R.d / 2; cam.user = 1; cam.follow = false;
     others.clear(); updateWhere(); setDeco();
     if (kind === 'arena') { stageLines = []; stagePoll(); }
+    if (kind === 'club') { clubWarm(key); const s = clubSrc(key); if (s && CITY.master) { CITY.master.gain.value = Math.max(CITY.master.gain.value, 0.5); s.g.gain.value = 0.6; if (s.a.src && s.a.paused) s.a.play().catch(() => {}); } } // straight in, music on
     if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
   }
   function leaveRoom() { if (!touring) coachHide(); closeInverter();
@@ -7663,11 +7664,14 @@
   ];
   CITY_SPOTS.push(...CITY_SPOTS_MORE);
   async function residentSet(s) { // the resident DJ's mix: long, streamable, not one another club is playing
+    const ck = 'li.res.' + (s.room || s.spot.name);
+    try { const c = JSON.parse(localStorage.getItem(ck) || 'null'); if (c && Date.now() - c.at < 6 * 3600e3 && !CITY.used.has(c.id)) { CITY.used.add(c.id); return c.set; } } catch {} // picked earlier: straight on
+    const keep = (id, set) => { try { localStorage.setItem(ck, JSON.stringify({ id, set, at: Date.now() })); } catch {} return set; };
     for (const q of s.spot.q) {
       try {
         const list = (await au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=15')).filter((t) => t.is_streamable !== false && t.duration > 600 && !CITY.used.has(t.id)).sort((x1, x2) => x2.duration - x1.duration);
         const tr = list[Math.floor(Math.random() * Math.min(3, list.length))];
-        if (tr) { CITY.used.add(tr.id); return { url: `${MUSIC.au}/tracks/${tr.id}/stream?app_name=${MUSIC.app}`, title: tr.title, artist: tr.user ? tr.user.name : '', dj: s.spot.dj, resident: true }; }
+        if (tr) { CITY.used.add(tr.id); return keep(tr.id, { url: `${MUSIC.au}/tracks/${tr.id}/stream?app_name=${MUSIC.app}`, title: tr.title, artist: tr.user ? tr.user.name : '', dj: s.spot.dj, resident: true }); }
       } catch {}
     }
     return null;
@@ -7930,7 +7934,18 @@
       else if (!d && s.now && !s.now.resident && !s.now.local) residentSet(s).then((set) => deckPlay(s, set));
     }
   }
+  const CLUB_WEAR = { quilox: ['gucci_track', 'versace_silk', 'balenciaga_set', 'fendi_set', 'lv_jacket', 'dior_gown'], secret: ['dior_gown', 'versace_silk', 'ralph_suit', 'atafo_agbada', 'fendi_set', 'zara_dress'], vein: ['zara_dress', 'offwhite_set', 'dior_gown', 'nike_tech', 'hm_hoodie', 'lv_jacket'], lekki: ['st_tee', 'puma_run', 'zara_linen', 'st_ankara', 'folawiyo_ankara', 'nike_dri'], ozumba: ['levis_denim', 'offwhite_set', 'zara_dress', 'lanre_buba', 'balenciaga_set', 'orange_kaftan'] }; // what each club's crowd wears
   const clubSrc = (room) => CITY.srcs.find((s) => s.room === room);
+  // a club's music starts loading while you're still at its door (and plays the moment you're in)
+  function clubWarm(room) {
+    if (CITY.on && !CITY.master && AX.ctx) cityStart(); // only once sound is allowed (after a tap)
+    // its dancers' outfits start downloading too, so the crowd is dressed when you walk in
+    if (!clubWarm.dressed) clubWarm.dressed = new Set();
+    if (window.__three && !clubWarm.dressed.has(room)) { const pl = PLACES.find((v) => v[0] === 'club' && 'place:club:' + v[1] === room);
+      if (pl) { clubWarm.dressed.add(room); for (const o of CLUB_WEAR[clubLook(pl[5].replace(' (open every night)', '')).theme] || []) for (const g of ['m', 'f']) for (const [gk] of ((WEAR[o] || WEAR._)[g] || [])) wearLoad(WEAR_FIT[gk][0]); } }
+    const s = clubSrc(room); if (!s || !s.a.src || s.warm) return;
+    s.warm = true; s.a.preload = 'auto'; try { s.a.load(); } catch {}
+  }
   // the top bar shows who's playing where you are: the club's DJ inside a club, the city's DJ out on the island at night
   function djChip() {
     const el = document.getElementById('tDj'); if (!el) return;
@@ -7955,6 +7970,7 @@
   setInterval(() => {
     if (CITY.dj && (!inside || inside.key !== CITY.dj)) djLeave(); // you walked out: the resident takes over
     const inClub = inside && inside.kind === 'club';
+    if (CITY.on && AX.ctx && !CITY.master) cityStart(); // ready before you reach a door
     if (!CITY.on || (night < 0.2 && !inClub)) { djChip(); if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) { for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); if (CITY.mix) CITY.mix.pause(); } } return; }
     if (!AX.ctx) return; if (!CITY.master) { cityStart(); return; }
     const duck = MP.a.paused ? 1 : 0.18, nf = inClub ? 1 : Math.min(1, (night - 0.2) / 0.4);
@@ -10059,7 +10075,7 @@
       else next = null;
     }
     else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
-    else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); next = { label: '🎶 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
+    else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); clubWarm('place:club:' + p[1]); next = { label: '🎶 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
