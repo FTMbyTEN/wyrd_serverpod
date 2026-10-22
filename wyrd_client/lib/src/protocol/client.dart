@@ -825,6 +825,1124 @@ class EndpointIsland extends _isc.EndpointRef {
   );
 }
 
+/// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
+///
+/// - Wallet: naira on the same balanced books as the rest of the city (Bank), earned at realistic
+///   Lagos rates by shifts at the refinery and the clubs, capped a day; no cash in or out.
+/// - Casino: play money only, small stakes, a daily loss limit.
+/// - Jobs: real employers post real jobs; WYRD's operator checks each before it shows. A user's
+///   skills are matched to jobs only when they choose to be open to work, and an employer sees an
+///   applicant's handle, skills and note -- nothing more -- and only after they apply.
+/// - Chats: end-to-end encrypted in the browser. The server stores ciphertext and wrapped keys; it
+///   can't read a message, a group's name, or who said what inside it.
+/// - HQ: everyone's own place on HQ Row: invite-only unless they open it.
+/// - WYRD: asked from the phone, it hears what the user types and which district they're in. It never
+///   sees their chats, and their wallet only as a number when they ask about money.
+/// {@category Endpoint}
+class EndpointIslandMe extends _isc.EndpointRef {
+  EndpointIslandMe(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'islandMe';
+
+  /// Who I am on the island, my naira, and whether I can check job posts. JSON.
+  /// Add my real email (an account made with only a username gets asked for it the first time the phone opens).
+  _ida.Future<String> setEmail(String email) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'setEmail',
+        {'email': email},
+      );
+
+  /// Confirm my game ID with my email and game password before the phone opens.
+  _ida.Future<String> confirmPhone(
+    String email,
+    String password,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'confirmPhone',
+    {
+      'email': email,
+      'password': password,
+    },
+  );
+
+  _ida.Future<String> me() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'me',
+    {},
+  );
+
+  /// Change my handle, skills, open-to-work, or messaging key. Empty strings leave a field as it is.
+  _ida.Future<String> setProfile(
+    String handle,
+    String skills,
+    bool openToWork,
+    String pubKey,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setProfile',
+    {
+      'handle': handle,
+      'skills': skills,
+      'openToWork': openToWork,
+      'pubKey': pubKey,
+    },
+  );
+
+  /// Ghost mode on or off: anonymous on the island (no name on the map or in chat, hidden from search and profiles, HQ
+  /// and homes closed to visitors and knocks), still on the map as a light, homes still counted as lived in.
+  _ida.Future<String> setGhost(bool on) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setGhost',
+    {'on': on},
+  );
+
+  /// Save how I look on the island (chosen when I joined; changeable in Profile).
+  _ida.Future<String> setLook(String look) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setLook',
+    {'look': look},
+  );
+
+  /// Someone's public messaging key, by handle: {handle, pubKey} or {error}.
+  _ida.Future<String> keyOf(String handle) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'keyOf',
+    {'handle': handle},
+  );
+
+  /// Start a shift: the server deals the work, a route of real stops on the island. The market: carry customers' goods
+  /// from the market to two homes or shops nearby and come back. Okada: go to a passenger, ride them to where they're
+  /// going. The club: fetch the night's drinks delivery from a shop or mall and bring it in. Paid when every stop is done.
+  _ida.Future<String> shiftStart(String place) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'shiftStart',
+        {'place': place},
+      );
+
+  /// Where I am on my shift: the server checks whether I'm at the next stop (and got there honestly) and moves me on.
+  _ida.Future<String> shiftCheck() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'shiftCheck',
+    {},
+  );
+
+  /// Give up the shift I'm on (nothing is paid).
+  _ida.Future<String> shiftDrop() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'shiftDrop',
+    {},
+  );
+
+  /// Hand in a shift at [place] (club, market, okada): paid at Lagos rates, capped each day, and only when every stop
+  /// of the route the server dealt has been reached.
+  _ida.Future<String> work(String place) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'work',
+    {'place': place},
+  );
+
+  /// The Earn board, from what the server knows for me right now: each workplace's pay (and what lands after the
+  /// treasury's tax), whether a shift is open now or when the next one opens, the clubs' hours, what I've earned today
+  /// (and whether today's work is done), my National Grid levels, the job board, and my last paydays.
+  _ida.Future<String> earnBoard() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'earnBoard',
+    {},
+  );
+
+  /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
+  _ida.Future<String> gridCareer() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridCareer',
+    {},
+  );
+
+  /// Start a shift on [track]: the server deals the tasks and keeps the answers.
+  _ida.Future<String> gridStart(String track) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'gridStart',
+        {'track': track},
+      );
+
+  /// Hand in a shift: [results] is what the player did in each task, as JSON. The server replays and scores it, adds
+  /// the experience, and pays by the level it keeps and the score it worked out: one paid shift every 40 minutes,
+  /// within the daily cap.
+  _ida.Future<String> gridFinish(
+    int workId,
+    String results,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridFinish',
+    {
+      'workId': workId,
+      'results': results,
+    },
+  );
+
+  /// The certification exam for the next level on [track] (needs the experience); the server sets and marks it.
+  _ida.Future<String> gridExamStart(String track) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'gridExamStart',
+        {'track': track},
+      );
+
+  _ida.Future<String> gridExamAnswer(
+    int workId,
+    String answers,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridExamAnswer',
+    {
+      'workId': workId,
+      'answers': answers,
+    },
+  );
+
+  /// The old shift report (the phone chose its own level and score). Kept so an old page gets an answer, not an error.
+  _ida.Future<String> gridShift(
+    int level,
+    int score,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'gridShift',
+    {
+      'level': level,
+      'score': score,
+    },
+  );
+
+  /// My last receipts (JSON list).
+  _ida.Future<String> receipts() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'receipts',
+    {},
+  );
+
+  /// Send naira to another person by handle (at most ₦50,000 at a time).
+  _ida.Future<String> send(
+    String handle,
+    int amount,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'send',
+    {
+      'handle': handle,
+      'amount': amount,
+      'note': note,
+    },
+  );
+
+  /// One round. [game]: roulette (bet red | black | green) or slots. [stake]: ₦100 to ₦5,000.
+  /// Play money only, with a daily loss limit.
+  _ida.Future<String> casino(
+    String game,
+    String bet,
+    int stake,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'casino',
+    {
+      'game': game,
+      'bet': bet,
+      'stake': stake,
+    },
+  );
+
+  /// The job board: open jobs, best matches first when I'm open to work (WYRD compares my skills with
+  /// each job's, here on the server, for me only), with the ones I've applied to marked.
+  _ida.Future<String> jobs() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'jobs',
+    {},
+  );
+
+  /// Post a real job. It shows once WYRD's operator has checked it.
+  _ida.Future<String> postJob(
+    String company,
+    String title,
+    String pay,
+    String skills,
+    String location,
+    String about,
+    String contact,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'postJob',
+    {
+      'company': company,
+      'title': title,
+      'pay': pay,
+      'skills': skills,
+      'location': location,
+      'about': about,
+      'contact': contact,
+    },
+  );
+
+  /// Apply: the employer sees my handle, my skills and [note].
+  _ida.Future<String> apply(
+    int jobId,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'apply',
+    {
+      'jobId': jobId,
+      'note': note,
+    },
+  );
+
+  /// My posts, each with who applied: their handle, skills and note.
+  _ida.Future<String> myJobs() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myJobs',
+    {},
+  );
+
+  /// Close one of my posts.
+  _ida.Future<String> closeJob(int jobId) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'closeJob',
+    {'jobId': jobId},
+  );
+
+  /// The operator's queue: posts waiting to be checked.
+  _ida.Future<String> pendingJobs() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'pendingJobs',
+    {},
+  );
+
+  /// The operator approves (open) or rejects a post.
+  _ida.Future<String> reviewJob(
+    int jobId,
+    bool approve,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'reviewJob',
+    {
+      'jobId': jobId,
+      'approve': approve,
+    },
+  );
+
+  /// Start a chat. [members]: JSON list of {handle, wrappedKey} -- me included -- each with the group
+  /// key wrapped (in my browser) for that person, using my public key [wrapperPub].
+  _ida.Future<String> createGroup(
+    String nameCt,
+    String wrapperPub,
+    String members,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'createGroup',
+    {
+      'nameCt': nameCt,
+      'wrapperPub': wrapperPub,
+      'members': members,
+    },
+  );
+
+  /// Post a message with the phone's own id for it ([cid]): sending it again (a retry after a dropped connection,
+  /// a double tap) returns the first one instead of posting it twice.
+  _ida.Future<String> postOnce(
+    int groupId,
+    String ct,
+    String cid,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'postOnce',
+    {
+      'groupId': groupId,
+      'ct': ct,
+      'cid': cid,
+    },
+  );
+
+  /// Add someone to a chat I'm in, with the group key wrapped for them.
+  _ida.Future<String> addMember(
+    int groupId,
+    String handle,
+    String wrappedKey,
+    String wrapperPub,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'addMember',
+    {
+      'groupId': groupId,
+      'handle': handle,
+      'wrappedKey': wrappedKey,
+      'wrapperPub': wrapperPub,
+    },
+  );
+
+  /// Leave a chat.
+  _ida.Future<String> leaveGroup(int groupId) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'leaveGroup',
+        {'groupId': groupId},
+      );
+
+  /// My chats: each with its encrypted name, my wrapped key, who's in it, and the last message's id.
+  _ida.Future<String> groups() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'groups',
+    {},
+  );
+
+  /// Every chat I'm in, in one go: its key material (as [groups]), its members, its latest message (still encrypted)
+  /// and how many messages I haven't seen ([seenJson]: {groupId: last seen message id}). One request for the Link app's
+  /// list and for the new-message notifications, instead of one per chat; the queries are batched too.
+  _ida.Future<String> inbox(String seenJson) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'inbox',
+        {'seenJson': seenJson},
+      );
+
+  _ida.Future<String> post(
+    int groupId,
+    String ct,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'post',
+    {
+      'groupId': groupId,
+      'ct': ct,
+    },
+  );
+
+  /// A chat's messages after [since] (at most 100), as ciphertext with the sender's handle.
+  _ida.Future<String> messages(
+    int groupId,
+    int since,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'messages',
+    {
+      'groupId': groupId,
+      'since': since,
+    },
+  );
+
+  /// Wait (up to 20 s) for anything new in a chat after [since] / version [ver]; returns the new messages, who's typing
+  /// (and for how much longer), how far each other member has read, and the chat's version now.
+  _ida.Future<String> live(
+    int groupId,
+    int since,
+    int ver,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'live',
+    {
+      'groupId': groupId,
+      'since': since,
+      'ver': ver,
+    },
+  );
+
+  /// I'm typing in a chat (sent every few seconds while I type; it lapses on its own).
+  _ida.Future<String> typing(int groupId) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'typing',
+    {'groupId': groupId},
+  );
+
+  /// I've read a chat up to message [upTo].
+  _ida.Future<String> read(
+    int groupId,
+    int upTo,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'read',
+    {
+      'groupId': groupId,
+      'upTo': upTo,
+    },
+  );
+
+  /// Set up my HQ: its name, colour, whether it's locked, and who's invited (JSON list of handles).
+  _ida.Future<String> setHq(
+    String name,
+    String color,
+    bool locked,
+    String invites,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setHq',
+    {
+      'name': name,
+      'color': color,
+      'locked': locked,
+      'invites': invites,
+    },
+  );
+
+  /// HQ Row: every HQ, with whether I may go in (mine, open, or I'm invited). Names show only for
+  /// HQs I may enter.
+  _ida.Future<String> hqRow() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'hqRow',
+    {},
+  );
+
+  /// Put my announcement on the HQ Row board (an empty [text] takes it down).
+  _ida.Future<String> boardPost(String text) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'boardPost',
+        {'text': text},
+      );
+
+  /// What's on the HQ Row board now: residents' announcements from the last day, newest first.
+  _ida.Future<String> board() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'board',
+    {},
+  );
+
+  /// Ask to enter the HQ in [slot] (from hqRow). The owner gets the request on their phone.
+  _ida.Future<String> askHq(int slot) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'askHq',
+    {'slot': slot},
+  );
+
+  /// Requests to enter my HQ, waiting for my answer.
+  _ida.Future<String> hqRequests() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'hqRequests',
+    {},
+  );
+
+  /// Let someone in (they join my HQ's invite list) or turn them away.
+  _ida.Future<String> answerHq(
+    int id,
+    bool grant,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'answerHq',
+    {
+      'id': id,
+      'grant': grant,
+    },
+  );
+
+  /// What a trip would cost, and roughly how long until a rider reaches you.
+  _ida.Future<String> rideQuote(
+    int fi,
+    int fj,
+    int ti,
+    int tj,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'rideQuote',
+    {
+      'fi': fi,
+      'fj': fj,
+      'ti': ti,
+      'tj': tj,
+    },
+  );
+
+  /// Book a ride: the fare is fixed now (and must be affordable); it's charged when you arrive.
+  _ida.Future<String> requestRide(
+    int fi,
+    int fj,
+    int ti,
+    int tj,
+    String kind,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'requestRide',
+    {
+      'fi': fi,
+      'fj': fj,
+      'ti': ti,
+      'tj': tj,
+      'kind': kind,
+    },
+  );
+
+  /// You've arrived: pay the fare (once).
+  _ida.Future<String> payRide(String id) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payRide',
+    {'id': id},
+  );
+
+  /// Cancel before the trip starts: nothing is charged.
+  _ida.Future<String> cancelRide(String id) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'cancelRide',
+        {'id': id},
+      );
+
+  /// The catalogue (for the dealers' showrooms and the Garage app).
+  _ida.Future<String> cars() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'cars',
+    {},
+  );
+
+  /// The cars I own.
+  _ida.Future<String> myCars() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myCars',
+    {},
+  );
+
+  /// Buy a car: the price comes out of my wallet; it becomes the car I drive.
+  _ida.Future<String> buyCar(
+    String model,
+    String color,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyCar',
+    {
+      'model': model,
+      'color': color,
+    },
+  );
+
+  /// Choose which of my cars I drive.
+  _ida.Future<String> driveCar(int carId) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'driveCar',
+    {'carId': carId},
+  );
+
+  /// Buy an outfit: the price comes out of my wallet; it's in my wardrobe to wear whenever I like.
+  _ida.Future<String> buyOutfit(String item) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'buyOutfit',
+        {'item': item},
+      );
+
+  /// The outfits in my wardrobe (the free starters are everyone's and aren't listed).
+  _ida.Future<String> myOutfits() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myOutfits',
+    {},
+  );
+
+  /// Buy one piece: the price comes out of my wallet; I place it from my home's "Arrange furniture".
+  _ida.Future<String> buyFurniture(String item) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'buyFurniture',
+        {'item': item},
+      );
+
+  /// What I own: {items: {id: count}}, and how many of each already stand in my homes other than [room] ('' for all).
+  _ida.Future<String> myFurniture(String room) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'myFurniture',
+        {'room': room},
+      );
+
+  /// Every bought plot: who owns it (when I may know), and whether I may go in.
+  _ida.Future<String> homes() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'homes',
+    {},
+  );
+
+  /// Buy the home on [plot]: it's mine to furnish, and it's where my HQ settings (name, colour, who may enter) apply too.
+  _ida.Future<String> buyHome(String plot) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyHome',
+    {'plot': plot},
+  );
+
+  /// Take the next free room in a tower (paid) or a housing block (free, allocated): filled room by room until full.
+  _ida.Future<String> takeRoom(String building) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'takeRoom',
+        {'building': building},
+      );
+
+  /// New Town's fill: building id -> rooms taken, and the rooms that are mine.
+  _ida.Future<String> towers() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'towers',
+    {},
+  );
+
+  /// Housing allocation (administrators): every citizen with no home is given a free room in a New Town housing
+  /// block, filling one block before the next.
+  _ida.Future<String> govAllocate() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'govAllocate',
+    {},
+  );
+
+  /// Throw a party in one of my homes for [minutes] (30 to 180). [open]: anyone may walk in; otherwise the people on my
+  /// invite list (my HQ settings) and [guests] (handles, JSON list). Those invited see it on their phones.
+  _ida.Future<String> startParty(
+    String key,
+    String theme,
+    int minutes,
+    bool open,
+    String guests,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'startParty',
+    {
+      'key': key,
+      'theme': theme,
+      'minutes': minutes,
+      'open': open,
+      'guests': guests,
+    },
+  );
+
+  /// End my party early.
+  _ida.Future<String> endParty(String key) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'endParty',
+    {'key': key},
+  );
+
+  /// The parties I can go to right now: open ones, ones I'm invited to, and my own.
+  _ida.Future<String> parties() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'parties',
+    {},
+  );
+
+  /// Pay for a charter; the trip itself runs in the game.
+  _ida.Future<String> charterYacht(String kind) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'charterYacht',
+        {'kind': kind},
+      );
+
+  _ida.Future<String> bookFlight(String dest) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'bookFlight',
+        {'dest': dest},
+      );
+
+  /// My jet, if I have one.
+  _ida.Future<String> myJet() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'myJet',
+    {},
+  );
+
+  /// Buy a jet (one each): the price comes out of my wallet; it gets its own registration and lives in a hangar.
+  _ida.Future<String> buyJet(
+    String model,
+    int livery,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyJet',
+    {
+      'model': model,
+      'livery': livery,
+    },
+  );
+
+  /// Repaint my jet, or show / hide my name on its hangar.
+  _ida.Future<String> setJet(
+    int livery,
+    bool showName,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'setJet',
+    {
+      'livery': livery,
+      'showName': showName,
+    },
+  );
+
+  /// Fly my own jet: no seat to buy, only the fuel and handling (a quarter of a seat's price; N2,000 round the island).
+  _ida.Future<String> flyJet(String dest) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'flyJet',
+    {'dest': dest},
+  );
+
+  _ida.Future<String> publicProfile(String handle) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'publicProfile',
+        {'handle': handle},
+      );
+
+  /// The newest Lagosians (to say hello to), and a search by name.
+  _ida.Future<String> people(String query) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'people',
+    {'query': query},
+  );
+
+  /// This phone's push address (from its browser), so it can be woken while the game is closed.
+  _ida.Future<String> pushSubscribe(String endpoint) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'pushSubscribe',
+        {'endpoint': endpoint},
+      );
+
+  /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
+  _ida.Future<String> wake(int ver) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'wake',
+    {'ver': ver},
+  );
+
+  _ida.Future<String> friendRequest(
+    String handle,
+    String note,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'friendRequest',
+    {
+      'handle': handle,
+      'note': note,
+    },
+  );
+
+  /// Accept or decline a request someone sent me.
+  _ida.Future<String> friendRespond(
+    String handle,
+    bool accept,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'friendRespond',
+    {
+      'handle': handle,
+      'accept': accept,
+    },
+  );
+
+  /// Cancel a request I sent, or end a friendship (either side).
+  _ida.Future<String> unfriend(String handle) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'unfriend',
+        {'handle': handle},
+      );
+
+  /// My friends, the requests waiting for me (with their hello), and the ones I sent.
+  _ida.Future<String> friends() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'friends',
+    {},
+  );
+
+  /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
+  /// owner and the people they've let in.
+  _ida.Future<String> room(String key) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'room',
+    {'key': key},
+  );
+
+  /// Save a room's furniture.
+  _ida.Future<String> saveRoom(
+    String key,
+    String layout,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'saveRoom',
+    {
+      'key': key,
+      'layout': layout,
+    },
+  );
+
+  /// Have bought furniture delivered into one of my homes (or my HQ): [layout] is that room with the new pieces in it,
+  /// checked like any arrangement (only pieces I own). [mode] courier: Eko Swift Couriers bring it for N1,500;
+  /// car: I take it home in my own car, free (I need a car).
+  _ida.Future<String> deliverFurniture(
+    String key,
+    String layout,
+    String mode,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'deliverFurniture',
+    {
+      'key': key,
+      'layout': layout,
+      'mode': mode,
+    },
+  );
+
+  /// Whether buying naira is open (off, test or live) and the packs.
+  _ida.Future<String> topUpInfo() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'topUpInfo',
+    {},
+  );
+
+  /// Start checkout for a pack; [returnTo] is the game's address to come back to.
+  _ida.Future<String> topUpStart(
+    String pack,
+    String returnTo,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'topUpStart',
+    {
+      'pack': pack,
+      'returnTo': returnTo,
+    },
+  );
+
+  /// Nigerian banks for the payout account form.
+  _ida.Future<String> payoutBanks() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutBanks',
+    {},
+  );
+
+  /// My payout account (the number masked), or none.
+  _ida.Future<String> payoutAccount() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutAccount',
+    {},
+  );
+
+  /// Add or replace my payout account: looked up at the bank, names compared, a code emailed.
+  _ida.Future<String> payoutAccountSet(
+    String bankCode,
+    String accountNumber,
+    String legalName,
+    String email,
+    String dateOfBirth,
+    String password,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutAccountSet',
+    {
+      'bankCode': bankCode,
+      'accountNumber': accountNumber,
+      'legalName': legalName,
+      'email': email,
+      'dateOfBirth': dateOfBirth,
+      'password': password,
+    },
+  );
+
+  /// The code from the email.
+  _ida.Future<String> payoutAccountVerify(String code) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'payoutAccountVerify',
+        {'code': code},
+      );
+
+  /// Send the email code again.
+  _ida.Future<String> payoutAccountResend() =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'payoutAccountResend',
+        {},
+      );
+
+  /// I accept the payout terms (needed once before the first withdrawal).
+  _ida.Future<String> payoutAcceptTerms() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutAcceptTerms',
+    {},
+  );
+
+  /// Withdraw real earnings to my verified bank account: verified (name and email), 18 or older, terms accepted;
+  /// the limits, the fee and the review window are the payout system's (Withdrawals.request).
+  _ida.Future<String> withdrawToBank(
+    int amountKobo,
+    String requestKey,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'withdrawToBank',
+    {
+      'amountKobo': amountKobo,
+      'requestKey': requestKey,
+    },
+  );
+
+  /// Operators: withdrawals waiting in their review window (who, how much, when they go), to stop any that look wrong.
+  _ida.Future<String> payoutQueue() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'payoutQueue',
+    {},
+  );
+
+  /// Operators: stop a withdrawal in review (the money goes back to the player's available earnings).
+  _ida.Future<String> payoutStop(String ref) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'payoutStop',
+        {'ref': ref},
+      );
+
+  /// What every citizen sees of the government about themselves: the tax they've paid, rent and fines paid, what they owe.
+  _ida.Future<String> civic() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'civic',
+    {},
+  );
+
+  /// The Government console (administrators only): Treasury 1 (the 2% tax on every movement of game naira), what each
+  /// city account has taken in and paid out, the citizens and the naira in circulation, and Treasury 2 (real naira).
+  _ida.Future<String> govBoard() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'govBoard',
+    {},
+  );
+
+  /// I'm on it: the trip I paid for has started (once; mine only).
+  _ida.Future<String> tripStarted(String trip) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'tripStarted',
+        {'trip': trip},
+      );
+
+  /// A player's trip charges from the last 14 days (administrators only).
+  _ida.Future<String> govTrips(String handle) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'govTrips',
+        {'handle': handle},
+      );
+
+  /// Refund one trip charge, and the tax taken with it (administrators only; once; logged).
+  _ida.Future<String> govRefund(int entryId) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'govRefund',
+        {'entryId': entryId},
+      );
+
+  /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
+  _ida.Future<String> treasury2() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'treasury2',
+    {},
+  );
+
+  /// My naira purchases, newest first: each one's pack, price, naira and state (paid only once Flutterwave confirmed it).
+  _ida.Future<String> topUpHistory() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'topUpHistory',
+    {},
+  );
+
+  /// How my payment [ref] went (asks Flutterwave, credits it once if it succeeded).
+  _ida.Future<String> topUpCheck(String ref) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'topUpCheck',
+        {'ref': ref},
+      );
+
+  /// Shows on sale and coming up (and my own, whatever their status).
+  _ida.Future<String> shows() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'shows',
+    {},
+  );
+
+  /// An artist books the arena. Tickets go on sale once WYRD's operator has checked it.
+  _ida.Future<String> hostShow(
+    String artist,
+    String title,
+    String startsAt,
+    int minutes,
+    int price,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'hostShow',
+    {
+      'artist': artist,
+      'title': title,
+      'startsAt': startsAt,
+      'minutes': minutes,
+      'price': price,
+    },
+  );
+
+  /// The operator's queue of shows to check, and the decision.
+  _ida.Future<String> pendingShows() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'pendingShows',
+    {},
+  );
+
+  _ida.Future<String> reviewShow(
+    int showId,
+    bool approve,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'reviewShow',
+    {
+      'showId': showId,
+      'approve': approve,
+    },
+  );
+
+  /// Buy a ticket with naira. Nine tenths goes to the artist who hosts the show.
+  _ida.Future<String> buyTicket(int showId) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'buyTicket',
+        {'showId': showId},
+      );
+
+  _ida.Future<String> stage(
+    int showId,
+    int since,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'stage',
+    {
+      'showId': showId,
+      'since': since,
+    },
+  );
+
+  /// The artist performs: a line onto the arena's screens, for everyone with a ticket.
+  _ida.Future<String> perform(
+    int showId,
+    String text,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'perform',
+    {
+      'showId': showId,
+      'text': text,
+    },
+  );
+
+  /// Ask WYRD from the phone or in WYRD Tower. It hears [text] and where the player is -- nothing from their chats.
+  _ida.Future<String> askWyrd(
+    String text,
+    String district,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'askWyrd',
+    {
+      'text': text,
+      'district': district,
+    },
+  );
+}
+
 /// WYRD for Konnectly, demo mode: open to anyone (no sign-in, no Konnectly data), so it is held to
 /// a shared pace and a daily allowance of its own (see KonnectlyService). The demo page lives at
 /// /konnectly on the web server. Replies are JSON strings so the page needs no generated client;
@@ -1909,6 +3027,14 @@ class EndpointRewards extends _isc.EndpointRef {
     },
   );
 
+  /// Where I am on a gig: the server checks the next stop in person and moves me on.
+  _ida.Future<String> progress(int acceptanceId) =>
+      caller.callServerEndpoint<String>(
+        'rewards',
+        'progress',
+        {'acceptanceId': acceptanceId},
+      );
+
   /// Report a job done. The server times it and checks it; it pays once.
   _ida.Future<String> complete(
     int acceptanceId,
@@ -2486,6 +3612,7 @@ class Client extends _isc.ServerpodClientShared {
     greeting = EndpointGreeting(this);
     islandAuth = EndpointIslandAuth(this);
     island = EndpointIsland(this);
+    islandMe = EndpointIslandMe(this);
     konnectly = EndpointKonnectly(this);
     account = EndpointAccount(this);
     alerts = EndpointAlerts(this);
@@ -2538,6 +3665,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointIslandAuth islandAuth;
 
   late final EndpointIsland island;
+
+  late final EndpointIslandMe islandMe;
 
   late final EndpointKonnectly konnectly;
 
@@ -2616,6 +3745,7 @@ class Client extends _isc.ServerpodClientShared {
     'greeting': greeting,
     'islandAuth': islandAuth,
     'island': island,
+    'islandMe': islandMe,
     'konnectly': konnectly,
     'account': account,
     'alerts': alerts,
