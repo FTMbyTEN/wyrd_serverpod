@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T12:12:51.019Z">
+<meta name="li-build" content="2026-10-22T12:30:51.302Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -5304,6 +5304,7 @@
     drawMapLabels(); // the districts' and estates' names
     drawWeather(now); // clouds, rain, lightning, fog, haze, over the town and under the pins
     gridJobDraw(); // where your grid shift sends you
+    routeDraw(); // the next stop of your shift or paid gig
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
@@ -7998,13 +7999,13 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { refinery: '#F59E0B', people: '#38BDF8', airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { earn: '#22C55E', refinery: '#F59E0B', people: '#38BDF8', airport: '#38BDF8', grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
-    ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
+    ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['earn', '💵', 'Real ₦ gigs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
     ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['refinery', '🛢️', 'Refinery'], ['people', '👥', 'People'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'refinery', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino', 'airport']], ['You', ['people', 'gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Real money · withdrawable', ['earn']], ['Game work · pays G₦', ['grid', 'refinery', 'airport']], ['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['people', 'gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -9127,7 +9128,7 @@
           <div id="wBankHold" style="display:none"><button class="wReal" id="wBank" style="margin-top:8px"><span class="ic2">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Bank account</b><small id="wBankSub">Where your real earnings are paid</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button></div>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button></div>
           <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3>${me$.send ? `<div class="sLeft">You can send <b>${naira(me$.send.left)}</b> more today <small>(${naira(me$.send.limit)} a day${me$.send.newAccount ? ', on your first day' : ''})</small></div>` : ''}<input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
-          <div id="earnBox" style="display:none"><div class="wSec"><span>Real earnings</span></div><div id="realBox"></div><div id="wBankSlot"></div><div id="earnList"><div class="wSec"><span>Where to earn</span></div><div class="ppList">${EARN.map(([k, ic, n, pay]) => `<button class="wRow" data-earn="${k}"><span class="ic2">${ic}</span><span class="t"><b>${n}</b><small>${pay} a shift · ride there</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`).join('')}</div></div></div>
+          <div id="earnBox" style="display:none"><div class="wSec"><span>Real earnings</span></div><div id="realBox"></div><div id="wBankSlot"></div><div id="earnList"><div class="wSec"><span>Game jobs · pay G₦, stay in the game</span></div><div class="ppList">${EARN.map(([k, ic, n, pay]) => `<button class="wRow" data-earn="${k}"><span class="ic2">${ic}</span><span class="t"><b>${n}</b><small>${pay} a shift · ride there</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`).join('')}</div></div></div>
           <div class="wSec"><span>Activity</span>${spent ? `<span>Spent today ${naira(spent)}</span>` : ''}</div>
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
         pbody.querySelectorAll('[data-amt]').forEach((b) => (b.onclick = () => { $('sAmt').value = b.dataset.amt; }));
@@ -9306,14 +9307,15 @@
         const when = (s) => new Date(s).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
         const fundTag = (f) => f === 'available' ? '<span class="tag" style="background:rgba(34,197,94,.15);color:#86EFAC">🟢 Cash reward funded</span>' : f === 'paused' ? '<span class="tag">⏸ New places paused</span>' : '<span class="tag">⚪ Cash fund used up</span>';
         const MINE = { completed: '✅ Done, reward paid', review: '🔎 Being checked', expired: '⌛ Time ran out', cancelled: 'Given up', rejected: '✖ Not confirmed' };
-        show(`${ahead('wallet', 'Real Earnings', sb ? 'SANDBOX · test money only, nothing goes to a bank' : 'Cash from funded gigs')}
+        show(`${ahead('earn', 'Real ₦ gigs', sb ? 'SANDBOX · test money only, nothing goes to a bank' : 'Real naira you can withdraw to your bank')}
+          <div class="pcard" style="border:1px solid rgba(34,197,94,.35)"><b>💵 Real money, kept apart from game jobs.</b><div class="dim">These gigs are funded with real naira: each pays a real cash part you can withdraw, after it's checked. Game jobs (the Grid, the refinery, the airport, the market, okada, the club) pay G₦: game money for the island that can't be withdrawn.</div></div>
           ${sb ? '<div class="pcard" style="border:1px dashed #F59E0B;color:#FDE68A">🧪 Sandbox. These amounts are for testing. No real money moves.</div>' : ''}
           <div class="hero" style="--ac:#22C55E"><div class="hl">Available to withdraw</div><div class="hv">${kobo(e.availableKobo)}</div><small>Pending ${kobo(e.pendingKobo)}${e.nextAvailableAt ? ' · next ready ' + when(e.nextAvailableAt) : ''} · Being paid out ${kobo(e.inFlightKobo)}</small></div>
           <div class="pcard dim">Pending cash is checked first and can't be withdrawn yet. Game currency (G₦) goes to your Game Wallet and can't be withdrawn.</div>
           <div class="rsec">PAID GIGS</div>
           ${funded.map((j) => `<div class="jc"><div class="jh"><div><b>${esc(j.title)}</b><small>Do it within ${j.completeMinutes} min · offer closes ${when(j.closesAt)}</small></div></div>
             <p><b>${esc(j.line)}</b></p><div>${fundTag(j.funding)}</div>
-            ${j.mine === 'accepted' ? `<div class="dim" style="margin-top:8px">Taken · finish by ${when(j.deadline)}</div><button class="pbtn" data-done="${j.acceptanceId}" style="margin-top:6px">I've done it</button> <button class="pbtn alt" data-drop="${j.acceptanceId}">Give it up</button>`
+            ${j.mine === 'accepted' ? `<div class="dim" style="margin-top:8px">Taken · finish by ${when(j.deadline)}</div><div class="gRoute" id="gr${j.acceptanceId}"><div class="dim">Loading your route…</div></div><button class="pbtn" data-route="${j.acceptanceId}" style="margin-top:6px">📍 Show me the route</button> <button class="pbtn" data-done="${j.acceptanceId}" style="margin-top:6px">Hand it in</button> <button class="pbtn alt" data-drop="${j.acceptanceId}">Give it up</button>`
               : j.mine ? `<div class="dim" style="margin-top:8px">${MINE[j.mine] || esc(j.mine)}</div>`
               : j.funding === 'available' ? `<button class="pbtn" data-take="${j.id}" style="margin-top:8px">Take this gig</button>` : ''}</div>`).join('') || '<div class="pcard dim">No paid gigs right now.</div>'}
           <div class="rsec">WITHDRAW</div>
@@ -9323,7 +9325,12 @@
         const note = (t) => { const n = document.createElement('div'); n.className = 'pcard'; n.textContent = t; pbody.prepend(n); setTimeout(() => n.remove(), 6000); };
         pbody.querySelectorAll('[data-take]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { await rw('accept', { offerId: Number(b.dataset.take), requestKey: rkey() }); render('earn'); } catch (er) { b.disabled = false; fail(er); } }));
         pbody.querySelectorAll('[data-done]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { const r = await rw('complete', { acceptanceId: Number(b.dataset.done), delivered: true }); await render('earn'); if (r.note) note(r.note); } catch (er) { b.disabled = false; fail(er); } }));
-        pbody.querySelectorAll('[data-drop]').forEach((b) => (b.onclick = async () => { try { await rw('cancel', { acceptanceId: Number(b.dataset.drop) }); render('earn'); } catch (er) { fail(er); } }));
+        pbody.querySelectorAll('[data-drop]').forEach((b) => (b.onclick = async () => { try { await rw('cancel', { acceptanceId: Number(b.dataset.drop) }); if (workRoute && workRoute.id === Number(b.dataset.drop)) { workRoute = null; routeChip(); } render('earn'); } catch (er) { fail(er); } }));
+        pbody.querySelectorAll('[data-route]').forEach(async (b) => { const id = Number(b.dataset.route), box = $('gr' + id);
+          try { const v = await rw('progress', { acceptanceId: id }); if (v.legacy) { box.innerHTML = '<div class="dim">An older gig: no route to follow. Hand it in when done.</div>'; b.remove(); return; }
+            box.innerHTML = `<p style="margin:6px 0">${esc(v.what || '')}</p>${v.stops.map((st, k) => `<div class="row"><span>${k < v.at ? '✅' : k === v.at ? '📍' : '⚪'} ${esc(st.name)}</span><b>${k === 0 ? 'pick up' : 'drop off'}</b></div>`).join('')}<div class="dim">${v.done ? 'Every stop done: hand it in.' : 'Go there in person. Each stop is checked when you arrive, and only counts if you travelled there.'}</div>`;
+            b.onclick = () => { routeSet(v, 'gig', { id }); closePhone(); };
+          } catch (er) { box.innerHTML = '<div class="dim">Could not load the route.</div>'; } });
         if ($('wdGo')) {
           const key = rkey();
           my('payoutAccount').then((v) => { const a = v.account, to = $('wdTo'); if (!to) return;
@@ -10626,10 +10633,49 @@
   leaveBtn.onclick = () => { pose = null; leaveRoom(); };
   setInterval(() => { leaveBtn.style.display = inside ? 'grid' : 'none'; }, 300);
 
+  // ---- a shift (market, okada, club) or a paid gig is a route the server deals: real stops on the island, in order.
+  // The server checks each stop in person (your own position) and that you travelled there; a beacon marks the next
+  // stop and a chip shows how far along you are. A shift pays G₦ (game money) when the last stop is done; a paid gig
+  // is handed in on the Real ₦ gigs page
+  let workRoute = null, workTimer = 0;
+  const routeEl = document.createElement('div'); routeEl.id = 'routeChip'; routeEl.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:86px;z-index:40;display:none;max-width:min(92vw,460px);background:rgba(15,23,42,.92);color:#F8FAFC;border-radius:16px;padding:10px 14px;font:600 13px/1.35 "Plus Jakarta Sans",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.3)'; document.body.append(routeEl);
+  function routeChip() {
+    if (!workRoute || inside) { routeEl.style.display = 'none'; return; }
+    const r = workRoute, nx = r.stops[r.at], gig = r.kind === 'gig', ic = gig ? '💵' : { market: '🧺', okada: '🛵', club: '🎶' }[r.place] || '💼';
+    routeEl.style.display = 'block';
+    routeEl.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><span style="font-size:20px">${ic}</span><span style="flex:1"><b style="color:${gig ? '#86EFAC' : '#FDE68A'}">${gig ? 'Paid gig · real ₦' : 'Game shift · pays G₦'} · ${r.at}/${r.total}</b><br>${r.done ? (gig ? 'Delivered. Hand it in on the Real ₦ gigs page.' : 'All done. Getting paid…') : 'Next: <b>' + esc(nx.name) + '</b>' + (r.why && !/^Head to/.test(r.why) ? '<br><small style="color:#FCA5A5">' + esc(r.why) + '</small>' : '')}</span><button id="rcX" style="background:none;border:0;color:#94A3B8;font-size:18px;cursor:pointer" aria-label="Stop">✕</button></div>`;
+    $('rcX').onclick = async () => { if (!confirm(gig ? 'Hide this gig\'s route? You can pick it up again from the Real ₦ gigs page.' : 'Give up this shift? Nothing is paid for a shift you drop.')) return; if (!gig) my('shiftDrop').catch(() => {}); workRoute = null; clearInterval(workTimer); routeChip(); };
+  }
+  function routeSet(v, kind, extra) { clearInterval(workTimer); workRoute = v && v.stops ? { ...v, kind, ...extra } : null; routeChip(); if (workRoute && !workRoute.done) workTimer = setInterval(routeTick, 3000); }
+  async function routeTick() {
+    if (!workRoute || inside) return routeChip();
+    try {
+      const r = workRoute, before = r.at, v = r.kind === 'shift' ? await my('shiftCheck') : await rw('progress', { acceptanceId: r.id });
+      if (!v || v.none) { workRoute = null; return routeChip(); }
+      Object.assign(r, v); if (!v.why) delete r.why;
+      if (v.at > before) { bubbles.set('me', { text: v.done ? '✓ Last stop done' : `✓ ${v.stops[v.at - 1].name}. Next: ${v.stops[v.at].name}`, until: performance.now() + 5000 }); }
+      if (v.done) { clearInterval(workTimer); if (r.kind === 'shift') finishShift(); else notify('Gig delivered: hand it in on the Real ₦ gigs page', 'money', ['earn']); }
+      routeChip();
+    } catch (e) {}
+  }
+  async function finishShift() {
+    const r = workRoute; if (!r || r.kind !== 'shift') return;
+    try { const v = await my('work', { place: r.place }); pnaira.textContent = naira(v.naira); bubbles.set('me', { text: `${v.memo}: +${naira(v.paid)} G₦`, until: performance.now() + 6000 }); notify(`${v.memo}: +${naira(v.paid)} (game money)`, 'money', ['wallet']); workRoute = null; routeChip(); }
+    catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 6000 }); if (/quicker/.test(e.message)) setTimeout(finishShift, 30000); else { workRoute = null; routeChip(); } }
+  }
+  function routeDraw() {
+    if (!workRoute || workRoute.done || inside) return; const nx = workRoute.stops[workRoute.at]; if (!nx) return;
+    const t = performance.now() / 1000, base = P(nx.x, 0, nx.z), top = P(nx.x, 34, nx.z), gig = workRoute.kind === 'gig', col = gig ? '34,197,94' : '250,204,21';
+    x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createLinearGradient(base[0], base[1], top[0], top[1]); g.addColorStop(0, `rgba(${col},0.55)`); g.addColorStop(1, `rgba(${col},0)`); x.fillStyle = g; x.fillRect(base[0] - K * 1.2, top[1], K * 2.4, base[1] - top[1]); x.restore();
+    const rr = K * (3 + Math.sin(t * 4)); x.strokeStyle = `rgb(${col})`; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.ellipse(base[0], base[1], rr, rr * sp, 0, 0, Math.PI * 2); x.stroke();
+    x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const lbl = `${gig ? '💵' : '📍'} ${nx.name}`, w = x.measureText(lbl).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(top[0] - w / 2, top[1] - 12, w, 22, 11); x.fill(); x.fillStyle = gig ? '#86EFAC' : '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(lbl, top[0], top[1]); x.textBaseline = 'alphabetic';
+  }
+  setTimeout(() => { if (signedIn()) my('shiftCheck').then((v) => { if (v && v.stops && !v.done) routeSet(v, 'shift', { place: v.place }); }).catch(() => {}); }, 5000); // a shift you were on carries on
   async function doWork(place) {
     if (!signedIn()) return openPhone();
     if (place === 'refinery') return openPhone('refinery');
-    try { const v = await my('work', { place }); pnaira.textContent = naira(v.naira); bubbles.set('me', { text: `${v.memo}: +${naira(v.paid)}`, until: performance.now() + 5000 }); }
+    if (workRoute && workRoute.kind === 'shift' && workRoute.place === place) return bubbles.set('me', { text: workRoute.done ? 'Handing it in…' : 'Next stop: ' + workRoute.stops[workRoute.at].name, until: performance.now() + 5000 });
+    try { const v = await my('shiftStart', { place }); routeSet(v, 'shift', { place }); bubbles.set('me', { text: v.task, until: performance.now() + 9000 }); routeTick(); }
     catch (e) { if (e.message === 'signin') return openPhone(); bubbles.set('me', { text: e.message, until: performance.now() + 6000 }); }
   }
   setInterval(updateAct, 400);

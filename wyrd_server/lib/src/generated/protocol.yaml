@@ -68,6 +68,9 @@ islandMe:
   - setGhost:
   - setLook:
   - keyOf:
+  - shiftStart:
+  - shiftCheck:
+  - shiftDrop:
   - work:
   - earnBoard:
   - gridCareer:
@@ -285,6 +288,7 @@ partnerAdmin:
 rewards:
   - jobs:
   - accept:
+  - progress:
   - complete:
   - cancel:
   - earnings:

@@ -69,6 +69,13 @@ class IslandEndpoint extends Endpoint {
     return (DateTime.now().difference(p.since).inSeconds / 60, p.moved);
   }
 
+  /// where [handle] is now (out on the island, seen in the last 30 s), and the metres moved so far (jumps don't count)
+  static ({double x, double z, double moved})? here(String handle) {
+    final p = _presence[handle.toLowerCase()];
+    if (p == null || DateTime.now().difference(p.last) > const Duration(seconds: 30)) return null;
+    return (x: p.x, z: p.z, moved: p.moved);
+  }
+
   /// a shift was paid: the walking starts again from nothing
   static void paidShift(String handle) {
     final k = handle.toLowerCase(), p = _presence[k];

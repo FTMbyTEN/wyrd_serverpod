@@ -44,6 +44,15 @@ class RewardsEndpoint extends Endpoint {
     }
   }
 
+  /// Where I am on a gig: the server checks the next stop in person and moves me on.
+  Future<String> progress(Session session, int acceptanceId) async {
+    try {
+      return jsonEncode(await FundedJobs.progress(session, _user(session), acceptanceId));
+    } catch (e) {
+      return _err(e);
+    }
+  }
+
   /// Report a job done. The server times it and checks it; it pays once.
   Future<String> complete(Session session, int acceptanceId, bool delivered) async {
     try {

@@ -1656,6 +1656,45 @@ class Endpoints extends _is.EndpointDispatch {
                     params['handle'],
                   ),
         ),
+        'shiftStart': _is.MethodConnector(
+          name: 'shiftStart',
+          params: {
+            'place': _is.ParameterDescription(
+              name: 'place',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .shiftStart(
+                    session,
+                    params['place'],
+                  ),
+        ),
+        'shiftCheck': _is.MethodConnector(
+          name: 'shiftCheck',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .shiftCheck(session),
+        ),
+        'shiftDrop': _is.MethodConnector(
+          name: 'shiftDrop',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .shiftDrop(session),
+        ),
         'work': _is.MethodConnector(
           name: 'work',
           params: {
@@ -5283,6 +5322,25 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['offerId'],
                     params['requestKey'],
+                  ),
+        ),
+        'progress': _is.MethodConnector(
+          name: 'progress',
+          params: {
+            'acceptanceId': _is.ParameterDescription(
+              name: 'acceptanceId',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['rewards'] as _i4hn2z2u.RewardsEndpoint).progress(
+                    session,
+                    params['acceptanceId'],
                   ),
         ),
         'complete': _is.MethodConnector(

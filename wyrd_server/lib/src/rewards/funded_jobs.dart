@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
+import '../island/island_endpoint.dart';
+import '../island/island_stops.dart';
 import '../world/bank.dart';
 import '../world/world_authority.dart';
 import 'reward_config.dart';
@@ -133,8 +135,7 @@ abstract final class FundedJobs {
       }
     }
     final p = o.policyVersion == null ? null : await policy(s, o.policyVersion!);
-    final dist = 800 + _rnd.nextInt(1700), limitS = (dist / 4).round() + 120; // a delivery the server sets
-    final spec = jsonEncode({'task': o.task, 'dist': dist, 'limitS': limitS});
+    final spec = jsonEncode(_dealGig(o.task));
     try {
       return await s.db.transaction((tx) async {
         if (o.places != null) {
@@ -179,6 +180,54 @@ abstract final class FundedJobs {
     }
   }
 
+  /// The work of a paid gig, dealt by the server: real stops on the island, in order. A parcel from one landmark to
+  /// another across the island (a delivery), or a pickup and two drop-offs (a courier run). The player has to be there
+  /// in person, getting from stop to stop by moving (see WorkRoute), before the gig can be handed in.
+  static Map<String, dynamic> _dealGig(String task) {
+    final ids = islandStops.keys.toList();
+    for (var tries = 0; tries < 40; tries++) {
+      final from = ids[_rnd.nextInt(ids.length)];
+      final to = WorkRoute.around(_rnd, from, 250, 650);
+      if (to == null) continue;
+      final courier = _rnd.nextBool(), to2 = courier ? WorkRoute.around(_rnd, to, 120, 400, not: {from}) : null;
+      final stops = [from, to, if (to2 != null) to2];
+      var units = 0.0;
+      for (var k = 1; k < stops.length; k++) units += WorkRoute.dist(stops[k - 1], stops[k]);
+      final dist = (units * 3).round(); // metres: a unit is 3 m
+      final what = to2 == null
+          ? 'Collect a parcel at ${islandStops[from]!.name} and deliver it to ${islandStops[to]!.name}.'
+          : 'Collect two parcels at ${islandStops[from]!.name}: one for ${islandStops[to]!.name}, one for ${islandStops[to2]!.name}.';
+      return {'task': task, 'kind': to2 == null ? 'delivery' : 'courier', 'what': what, 'stops': stops, 'at': 0, 'dist': dist, 'limitS': (dist / 4).round() + 120};
+    }
+    return {'task': task, 'dist': 1200, 'limitS': 420};
+  }
+
+  static List<Map<String, dynamic>> _stopsJson(List stops) => [for (final id in stops) {'id': id, 'name': islandStops[id]?.name ?? id, 'x': islandStops[id]?.x, 'z': islandStops[id]?.z}];
+
+  /// Where the player is on a gig: the server checks they're at the next stop, in person (their own position on the
+  /// island), and got there by moving; then moves them on. Returns the route and, when not reached, why.
+  static Future<Map<String, dynamic>> progress(Session s, UuidValue u, int acceptanceId) async {
+    final a = await JobAcceptance.db.findById(s, acceptanceId);
+    if (a == null || a.authUserId != u) throw JobRefused('No such job.');
+    final spec = jsonDecode(a.taskSpec) as Map<String, dynamic>;
+    final stops = (spec['stops'] as List?)?.cast<String>();
+    if (stops == null) return {'legacy': true};
+    final r = WorkRoute(stops, started: a.acceptedAt)..at = spec['at'] as int;
+    if (spec['lastAt'] != null) r.lastAt = DateTime.parse(spec['lastAt'] as String);
+    if (spec['movedAt'] != null) r.movedAt = (spec['movedAt'] as num).toDouble();
+    String? why;
+    if (a.status == 'accepted' && !r.done) {
+      final prof = await IslandProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+      final before = r.at;
+      why = r.step(prof == null ? null : IslandEndpoint.here(prof.handle));
+      if (r.at != before) {
+        spec['at'] = r.at; spec['lastAt'] = r.lastAt!.toIso8601String(); spec['movedAt'] = r.movedAt;
+        await JobAcceptance.db.updateRow(s, a.copyWith(taskSpec: jsonEncode(spec)));
+      }
+    }
+    return {'what': spec['what'], 'kind': spec['kind'], 'at': r.at, 'total': stops.length, 'done': r.done, 'stops': _stopsJson(stops), if (why != null) 'why': why};
+  }
+
   /// Complete an accepted job with the game's report ([seconds] is ignored: the server times it from acceptance).
   /// The delivery must be possible in the time taken and inside the deadline. Paid once per acceptance.
   static Future<Map<String, dynamic>> complete(Session s, UuidValue u, int acceptanceId, {required bool delivered}) async {
@@ -189,11 +238,15 @@ abstract final class FundedJobs {
     final now = DateTime.now().toUtc(), spec = jsonDecode(a0.taskSpec) as Map<String, dynamic>;
     final secs = now.difference(a0.acceptedAt).inMilliseconds / 1000, dist = spec['dist'] as int;
     if (!delivered) throw JobRefused('The delivery was not made.');
+    final stops = (spec['stops'] as List?)?.cast<String>();
+    if (stops != null && (spec['at'] as int) < stops.length) {
+      throw JobRefused('Not delivered yet: ${spec['at']} of ${stops.length} stops done. Next is ${islandStops[stops[spec['at'] as int]]?.name ?? 'the next stop'}.');
+    }
     if (now.isAfter(a0.deadline)) throw JobRefused('Too late: the job expired.');
     final tooFast = secs < dist / 45; // faster than anything in the game can go
     // nothing is paid on the player's word: every completion waits for an operator to confirm it (decideReview)
     if (!tooFast) {
-      await JobAcceptance.db.updateRow(s, a0.copyWith(status: 'review', note: 'Completed in ${secs.toStringAsFixed(0)} s: waiting for an operator to confirm.'));
+      await JobAcceptance.db.updateRow(s, a0.copyWith(status: 'review', note: 'Completed in ${secs.toStringAsFixed(0)} s${stops != null ? ', all ${stops.length} stops reached in person (${spec['dist']} m)' : ' (an old gig, no stops tracked)'}: waiting for an operator to confirm.'));
       return {'status': 'review', 'note': 'Done! An operator checks every paid gig before the cash reward is released. You\'ll be told when it\'s confirmed.'};
     }
     final offer = (await JobOffer.db.findById(s, a0.offerId))!;

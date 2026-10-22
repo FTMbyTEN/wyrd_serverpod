@@ -19,6 +19,7 @@ import '../rewards/reward_math.dart';
 import '../rewards/withdrawals.dart';
 import 'island_topup.dart';
 import 'island_newtown.dart';
+import 'island_stops.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
 ///
@@ -264,12 +265,76 @@ class IslandMeEndpoint extends Endpoint {
     return rows.fold<int>(0, (a, e) => a + e.amount);
   }
 
-  /// Work a shift at [place] (refinery, club, market, okada). Paid at Lagos rates, capped each day.
+  /// the shift each player is working now: the route the server dealt them (kept in memory: a shift lasts minutes)
+  static final _shiftRoutes = <String, ({String place, WorkRoute route})>{};
+
+  static String? _shiftOpen(String place) {
+    if (place == 'club') {
+      final h = DateTime.now().toUtc().add(const Duration(hours: 1)).hour;
+      if (h >= 6 && h < 18) return 'The clubs open at 6 pm. Come back tonight.';
+    }
+    return null;
+  }
+
+  /// Start a shift: the server deals the work, a route of real stops on the island. The market: carry customers' goods
+  /// from the market to two homes or shops nearby and come back. Okada: go to a passenger, ride them to where they're
+  /// going. The club: fetch the night's drinks delivery from a shop or mall and bring it in. Paid when every stop is done.
+  Future<String> shiftStart(Session session, String place) async {
+    final u = _user(session);
+    final sh = shifts[place];
+    if (sh == null) return _err('Nobody is hiring for that here.');
+    final closed = _shiftOpen(place);
+    if (closed != null) return _err(closed);
+    if (await _earnedToday(session, u) >= dailyCap) return _err('You have worked enough for today. Rest, and come back tomorrow.');
+    final me = await _profile(session, u), at = IslandEndpoint.here(me.handle);
+    final old = _shiftRoutes[u.uuid];
+    if (old != null && old.place == place && !old.route.done && DateTime.now().toUtc().difference(old.route.started) < const Duration(minutes: 40)) return jsonEncode({'place': place, ...old.route.json()});
+    final r = _rnd, homes = {'houses', 'shops', 'arcade', 'hotel', 'glass', 'mall', 'mosque', 'cathedral', 'hospital', 'towers'};
+    late WorkRoute route;
+    if (place == 'market') {
+      final m = WorkRoute.nearestOf('market', at?.x, at?.z);
+      final c1 = WorkRoute.around(r, m, 50, 230, kinds: homes) ?? WorkRoute.around(r, m, 50, 300)!;
+      final c2 = WorkRoute.around(r, c1, 50, 230, not: {m}, kinds: homes) ?? WorkRoute.around(r, c1, 50, 300, not: {m})!;
+      route = WorkRoute([m, c1, m, c2, m], task: 'Carry the customers goods from ${islandStops[m]!.name}: to ${islandStops[c1]!.name}, back for the next load, then to ${islandStops[c2]!.name}.');
+    } else if (place == 'okada') {
+      final park = WorkRoute.nearestOf('motorpark', null, null);
+      final pick = WorkRoute.around(r, park, 60, 260) ?? WorkRoute.around(r, park, 40, 400)!;
+      final drop = WorkRoute.around(r, pick, 150, 420, not: {park}) ?? WorkRoute.around(r, pick, 80, 600, not: {park})!;
+      route = WorkRoute([park, pick, drop], task: 'Collect your okada at ${islandStops[park]!.name}, pick up a passenger at ${islandStops[pick]!.name} and ride them to ${islandStops[drop]!.name}.');
+    } else {
+      final club = WorkRoute.nearestOf('club', at?.x, at?.z);
+      final shop = WorkRoute.around(r, club, 60, 420, kinds: {'arcade', 'mall', 'shops', 'market'}) ?? WorkRoute.around(r, club, 60, 800, kinds: {'arcade', 'mall', 'shops', 'market'})!;
+      route = WorkRoute([club, shop, club], task: 'Sign in at ${islandStops[club]!.name}, fetch the drinks delivery for tonight from ${islandStops[shop]!.name} and bring it back before the doors open.');
+    }
+    _shiftRoutes[u.uuid] = (place: place, route: route);
+    return jsonEncode({'place': place, ...route.json()});
+  }
+
+  /// Where I am on my shift: the server checks whether I'm at the next stop (and got there honestly) and moves me on.
+  Future<String> shiftCheck(Session session) async {
+    final u = _user(session), cur = _shiftRoutes[u.uuid];
+    if (cur == null) return jsonEncode({'none': true});
+    final me = await _profile(session, u);
+    final why = cur.route.step(IslandEndpoint.here(me.handle));
+    return jsonEncode({'place': cur.place, ...cur.route.json(), if (why != null) 'why': why});
+  }
+
+  /// Give up the shift I'm on (nothing is paid).
+  Future<String> shiftDrop(Session session) async {
+    _shiftRoutes.remove(_user(session).uuid);
+    return jsonEncode({'ok': true});
+  }
+
+  /// Hand in a shift at [place] (club, market, okada): paid at Lagos rates, capped each day, and only when every stop
+  /// of the route the server dealt has been reached.
   Future<String> work(Session session, String place) => _money(session, (
     u,
   ) async {
     final sh = shifts[place];
     if (sh == null) return _err('Nobody is hiring for that here.');
+    final cur = _shiftRoutes[u.uuid];
+    if (cur == null || cur.place != place) return _err('Start the shift first: the work comes from the boss, not a tap.');
+    if (!cur.route.done) return _err('Not done yet: ${cur.route.at} of ${cur.route.stops.length} stops. Next is ${islandStops[cur.route.next]!.name}.');
     if (place == 'club') {
       final h = DateTime.now().toUtc().add(const Duration(hours: 1)).hour;
       if (h >= 6 && h < 18)
@@ -281,11 +346,8 @@ class IslandMeEndpoint extends Endpoint {
       return _err(
         'You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.',
       );
-    // the work is being here: on the island, moving about, for the shift's length (a tap alone pays nothing)
     final me = await _profile(session, u);
-    final (mins, moved) = IslandEndpoint.activity(me.handle);
-    if (mins < sh.minutes) return _err('Stay on the island and keep working: a shift here is ${sh.minutes} minutes (you\'ve been here ${mins.floor()}).');
-    if (moved < 150) return _err('Get moving: walk or ride around the area to work your shift.');
+    if (DateTime.now().toUtc().difference(cur.route.started) < Duration(minutes: sh.minutes ~/ 2)) return _err('That was quicker than the work takes. Hand it in properly in a moment.');
     final pay = min(sh.pay, dailyCap - earned);
     final bucket =
         DateTime.now().millisecondsSinceEpoch ~/ (sh.minutes * 60000);
@@ -303,6 +365,7 @@ class IslandMeEndpoint extends Endpoint {
         'Your shift here is done. The next one starts in a few minutes.',
       );
     IslandEndpoint.paidShift(me.handle);
+    _shiftRoutes.remove(u.uuid);
     final c = await Bank.fresh(session, u);
     return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
   });
@@ -332,7 +395,7 @@ class IslandMeEndpoint extends Endpoint {
     try { grid = await GridCareer.all(session, u); } catch (_) {}
     return jsonEncode({
       'shifts': out, 'earnedToday': earned, 'doneForToday': earned >= dailyCap, 'taxRate': Bank.taxRate,
-      'grid': grid['tracks'] ?? {}, 'jobsOpen': jobs,
+      'grid': grid['tracks'] ?? {}, 'jobsOpen': jobs, if (_shiftRoutes[u.uuid] != null) 'active': {'place': _shiftRoutes[u.uuid]!.place, ..._shiftRoutes[u.uuid]!.route.json()},
       'recent': [for (final r in recent) {'memo': r.memo, 'amount': r.amount, 'at': r.createdAt.toIso8601String()}],
     });
   }
