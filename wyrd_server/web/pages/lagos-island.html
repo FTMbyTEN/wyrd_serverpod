@@ -5451,7 +5451,7 @@
     home: { w: 56, d: 40, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.78, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
     boutique: { w: 84, d: 56, floor: '#F5F5F4', wall: '#FAFAF9', trim: '#111827', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } }, // its stock and colours on the way in
-    arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
+    arena: { w: 170, d: 130, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.72 } },
   };
   // the Home Store's floor: every piece on its own plinth, room by room, cheapest first
   const STORE_ROOMS = ['Living', 'Bedroom', 'Dining', 'Kitchen', 'Bathroom', 'Office', 'Decor'];
@@ -6596,19 +6596,41 @@
     // by the door: a shoe rack and a mirror on a stand
     box(R.w / 2 + 6, 0, R.d - 2.2, R.w / 2 + 9, 1.4, R.d - 1.2, '#78350F'); for (let k = 0; k < 3; k++) box(R.w / 2 + 6.3 + k * 0.9, 1.4, R.d - 2, R.w / 2 + 6.9 + k * 0.9, 1.8, R.d - 1.4, ['#111827', '#F8FAFC', '#B91C1C'][k]);
   }
+  // the bowl: seven tiers rising to the walls on three sides, rows of seats in coloured sections split by aisles, VIP boxes
+  // along the top of each side, the entrance tunnel through the front stand; drawn far to near (the camera looks in from the front: the side stands from the wall down, the front stand from the floor back)
+  const ARENA_TIERS = 7, ARENA_STEP = 3.2, ARENA_RISE = 2.4, ARENA_SIDE = ARENA_TIERS * ARENA_STEP, ARENA_GATE = 7;
   function drawStands(R, now) {
-    const t = now / 1000;
-    for (let tier = 0; tier < 5; tier++) {
-      const y = tier * 1.6, inset = tier * 3;
-      box(0.5 + inset, 0, 28, 3.5 + inset, y + 1.6, R.d - 6, '#1F2937');
-      box(R.w - 3.5 - inset, 0, 28, R.w - 0.5 - inset, y + 1.6, R.d - 6, '#1F2937');
-      box(14, 0, R.d - 3.5 - inset, R.w - 14, y + 1.6, R.d - 0.5 - inset, '#1F2937');
-      for (let k = 0; k < 18; k++) { const z = 30 + k * 2.8; for (const sx of [2 + inset, R.w - 2 - inset]) { const p = P(sx, y + 1.7, z); x.fillStyle = (k + tier) % 4 ? '#DC2626' : '#2563EB'; x.fillRect(p[0] - K * 0.5, p[1] - K * 0.5, K, K * 0.8);
-        const Rs = rnd(k * 31 + tier * 7 + sx); if (Rs() < 0.7) { const hb = Math.sin(t * 5 + k + tier) * K * 0.15; x.fillStyle = ['#F8FAFC', '#FACC15', '#22C55E', '#F472B6', '#38BDF8'][Math.floor(Rs() * 5)]; x.fillRect(p[0] - K * 0.35, p[1] - K * 1.3 + hb, K * 0.7, K * 0.7); x.fillStyle = '#7C4A2D'; x.beginPath(); x.arc(p[0], p[1] - K * 1.7 + hb, K * 0.32, 0, Math.PI * 2); x.fill(); // a fan
-          if (Rs() < 0.3 && (Math.floor(t * 2 + k) % 5)) { x.fillStyle = 'rgba(255,255,255,0.9)'; x.beginPath(); x.arc(p[0] + K * 0.4, p[1] - K * 2.3 + hb, Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } } } } // a phone light
+    const t = now / 1000, items = [], SEC = ['#B91C1C', '#1D4ED8', '#B91C1C', '#7C3AED', '#1D4ED8'], put = (d, f) => items.push({ d, f });
+    const zs0 = 24, zs1 = R.d - ARENA_SIDE; // the side stands run beside the floor, to the front stand
+    const seats = (along, a0, a1, fixed, h, dir) => { // a row of seat backs along x (along = 'x') or z, broken by aisles every 12 m
+      for (let s = a0, n = 0; s < a1; s += 12, n++) { const e = Math.min(a1, s + 10.6), col = SEC[n % SEC.length];
+        if (along === 'z') { box(fixed, h, s, fixed + 0.5 * dir, h + 1.1, e, col); flat(Math.min(fixed, fixed + 1.6 * dir), s, Math.max(fixed, fixed + 1.6 * dir), e, h + 0.42, shadeHex(col, 1.25)); }
+        else { box(s, h, fixed, e, h + 1.1, fixed + 0.5 * dir, col); flat(s, Math.min(fixed, fixed + 1.6 * dir), e, Math.max(fixed, fixed + 1.6 * dir), h + 0.42, shadeHex(col, 1.25)); } } };
+    for (let r = 0; r < ARENA_TIERS; r++) {
+      const h = (ARENA_TIERS - r) * ARENA_RISE, a = r * ARENA_STEP, b = a + ARENA_STEP, tone = r % 2 ? '#1E293B' : '#1F2937';
+      // the left and right stands (row 0 against the wall, the highest)
+      put(r, () => { box(a, 0, zs0, b, h, zs1, tone); seats('z', zs0 + 1, zs1 - 1, a + 0.4, h, 1); });
+      put(r + 0.5, () => { box(R.w - b, 0, zs0, R.w - a, h, zs1, tone); seats('z', zs0 + 1, zs1 - 1, R.w - a - 0.4, h, -1); });
+      // the front stand, either side of the gate
+      const za = R.d - b, zb = R.d - a;
+      for (const [x0, x1] of [[0, R.w / 2 - ARENA_GATE], [R.w / 2 + ARENA_GATE, R.w]]) put(100 + ARENA_TIERS - r, () => { box(x0, 0, za, x1, h, zb, tone); seats('x', x0 + 1, x1 - 1, zb - 0.4, h, -1); });
     }
-    // the barrier in front of the stage, and the mixing desk in the middle of the floor
-    box(16, 0, 25, R.w - 16, 2.4, 25.6, '#9CA3AF');
+    // the gate: the tunnel's walls, its lit sign
+    put(200, () => {
+      for (const gx of [R.w / 2 - ARENA_GATE, R.w / 2 + ARENA_GATE - 0.8]) box(gx, 0, R.d - ARENA_SIDE, gx + 0.8, 5, R.d, '#0F172A');
+      box(R.w / 2 - ARENA_GATE, 5, R.d - ARENA_SIDE, R.w / 2 + ARENA_GATE, 6.2, R.d - ARENA_SIDE + 2, '#111827');
+      quad([P(R.w / 2 - 4, 5.1, R.d - ARENA_SIDE - 0.05), P(R.w / 2 + 4, 5.1, R.d - ARENA_SIDE - 0.05), P(R.w / 2 + 4, 6.1, R.d - ARENA_SIDE - 0.05), P(R.w / 2 - 4, 6.1, R.d - ARENA_SIDE - 0.05)], '#16A34A');
+      if (K > 2.5) faceText('GATE A · EXIT', R.w / 2, 5.6, R.d - ARENA_SIDE - 0.02, '#FFFFFF', 0.7, 3, 800);
+    });
+    // the VIP boxes along the top of each side: glass, lit warm, a little crowd of light inside
+    for (const side of [0, 1]) put(-1, () => {
+      const top = ARENA_TIERS * ARENA_RISE, x0 = side ? R.w - 2.4 : 0, x1 = side ? R.w : 2.4;
+      box(x0, top, zs0, x1, top + 5, zs1, '#0B1020'); box(x0 - 0.2, top + 5, zs0, x1 + 0.2, top + 5.5, zs1, '#D4AF37');
+      for (let z = zs0 + 2; z < zs1 - 6; z += 8) { const fx = side ? x0 - 0.02 : x1 + 0.02; quad([P(fx, top + 0.8, z), P(fx, top + 0.8, z + 6), P(fx, top + 4.4, z + 6), P(fx, top + 4.4, z)], night > 0.3 ? 'rgba(253,224,138,0.55)' : 'rgba(186,230,253,0.55)', '#475569'); }
+    });
+    items.sort((p, q) => p.d - q.d); for (const it of items) it.f();
+    // the barrier in front of the stage, lit along its top, and the mixing desk in the middle of the floor
+    box(ARENA_SIDE + 2, 0, 25, R.w - ARENA_SIDE - 2, 2.4, 25.6, '#9CA3AF'); box(ARENA_SIDE + 2, 2.4, 25, R.w - ARENA_SIDE - 2, 2.6, 25.6, `hsl(${(t * 40) % 360},90%,60%)`);
     box(R.w / 2 - 6, 0, 54, R.w / 2 + 6, 2.6, 60, '#111827'); box(R.w / 2 - 6.3, 2.6, 53.7, R.w / 2 + 6.3, 3, 60.3, '#374151');
     for (let k = 0; k < 8; k++) { const p = P(R.w / 2 - 5 + k * 1.4, 3.05, 57); x.fillStyle = (k + Math.floor(t * 4)) % 3 ? '#22C55E' : '#F59E0B'; x.fillRect(p[0] - 1, p[1] - 1, 2, 2); }
   }
@@ -6631,13 +6653,13 @@
         const c0 = P(0, y0, -1.3), c1 = P(R.w, y0, -1.3), c2 = P(R.w, y1, -1.3), c3 = P(0, y1, -1.3); x.save(); x.beginPath(); x.moveTo(c0[0], c0[1]); x.lineTo(c1[0], c1[1]); x.lineTo(c2[0], c2[1]); x.lineTo(c3[0], c3[1]); x.closePath(); x.clip(); // only on the ribbon
         for (let k = -1; k < Math.ceil(R.w / step) + 1; k++) faceText(msg, k * step - off + step / 2, 22.5, -1.3, '#FFFFFF', 1.1, 4, 800); x.restore(); } }
     // the exits: green signs over the side doors
-    for (const ez of [R.d * 0.45, R.d * 0.8]) { box(-1.5, 0, ez - 2.5, -1.1, 7, ez + 2.5, '#1F2937'); quad([P(-1.05, 7.6, ez - 2), P(-1.05, 7.6, ez + 2), P(-1.05, 9.2, ez + 2), P(-1.05, 9.2, ez - 2)], '#16A34A'); if (K > 3) faceText('EXIT', -1.0, 8.4, ez, '#FFFFFF', 0.8, 3, 800); }
     // the bars in the back corners, lit warm
-    for (const bx of [3, R.w - 15]) { box(bx, 0, R.d - 8, bx + 12, 3.4, R.d - 5, '#3F2A1D'); box(bx - 0.2, 3.4, R.d - 8.2, bx + 12.2, 3.7, R.d - 4.8, '#D4AF37');
-      for (let k = 0; k < 8; k++) box(bx + 0.8 + k * 1.4, 3.7, R.d - 7, bx + 1.2 + k * 1.4, 5 + (k % 3) * 0.4, R.d - 6.6, ['#22C55E', '#F59E0B', '#EF4444', '#38BDF8'][k % 4]);
-      const p = P(bx + 6, 4, R.d - 6.5); glow.push(() => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 9); g.addColorStop(0, 'rgba(251,191,36,0.35)'); g.addColorStop(1, 'rgba(251,191,36,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 9, 0, Math.PI * 2); x.fill(); x.restore(); }); }
+    for (const bx of [ARENA_SIDE + 3, R.w - ARENA_SIDE - 15]) { const bz = R.d - ARENA_SIDE - 3; box(bx, 0, bz - 3, bx + 12, 3.4, bz, '#3F2A1D'); box(bx - 0.2, 3.4, bz - 3.2, bx + 12.2, 3.7, bz + 0.2, '#D4AF37');
+      for (let k = 0; k < 8; k++) box(bx + 0.8 + k * 1.4, 3.7, bz - 2, bx + 1.2 + k * 1.4, 5 + (k % 3) * 0.4, bz - 1.6, ['#22C55E', '#F59E0B', '#EF4444', '#38BDF8'][k % 4]);
+      const p = P(bx + 6, 4, bz - 1.5); glow.push(() => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 9); g.addColorStop(0, 'rgba(251,191,36,0.35)'); g.addColorStop(1, 'rgba(251,191,36,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 9, 0, Math.PI * 2); x.fill(); x.restore(); }); }
     // the floor: polished dark, the stage's light pooling on it, the pit barrier lit along its top
-    flat(14, 24, R.w - 14, R.d - 2, 0.015, '#0B0F1A');
+    flat(ARENA_SIDE, 24, R.w - ARENA_SIDE, R.d - ARENA_SIDE, 0.015, '#0B0F1A');
+    for (const [zx, zz, lab] of [[R.w / 2, 82, 'GENERAL ADMISSION'], [R.w / 2, R.d - ARENA_SIDE - 4, 'MAIN FLOOR']]) groundText(lab, zx, zz, 2.2, 'rgba(148,163,184,0.18)');
     { const p = P(R.w / 2, 0.02, 34), r = K * 46; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(t * 40) % 360},90%,55%,${0.16 + beat * 0.18})`); g.addColorStop(0.6, `hsla(${(t * 40 + 120) % 360},90%,45%,0.06)`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); }
   }
   // over the floor: the second truss's moving heads sweeping the crowd, the haze, the canopy over the mixing desk
@@ -6680,7 +6702,8 @@
     const R = inside, t = now / 1000, beat = Math.max(0, Math.sin(t * Math.PI * 2.1)) ** 3, live = !!(stageInfo && stageInfo.live);
     drawArenaShell(R, t, beat, live);
     // the floor: LED tiles that pulse with the beat
-    for (let i = 0; i < 10; i++) for (let j = 0; j < 6; j++) { const x0 = 18 + i * 8.4, z0 = 28 + j * 8.4, hue = (t * 30 + i * 18 + j * 25) % 360, on = ((i + j + Math.floor(t * 2)) % 4 === 0); flat(x0 + 0.3, z0 + 0.3, x0 + 8.1, z0 + 8.1, 0.02, on ? `hsla(${hue},90%,55%,${0.18 + beat * 0.25})` : 'rgba(30,41,59,0.55)'); }
+    const fl0 = ARENA_SIDE + 2, fcols = Math.floor((R.w - 2 * fl0) / 8.4), fx0 = (R.w - fcols * 8.4) / 2;
+    for (let i = 0; i < fcols; i++) for (let j = 0; j < 6; j++) { const x0 = fx0 + i * 8.4, z0 = 28 + j * 8.4, hue = (t * 30 + i * 18 + j * 25) % 360, on = ((i + j + Math.floor(t * 2)) % 4 === 0); flat(x0 + 0.3, z0 + 0.3, x0 + 8.1, z0 + 8.1, 0.02, on ? `hsla(${hue},90%,55%,${0.18 + beat * 0.25})` : 'rgba(30,41,59,0.55)'); }
     // the stage and its runway into the crowd, lit edges
     box(15, 0, 2, R.w - 15, 4, 22, '#1F2937'); box(15, 4, 2, R.w - 15, 4.4, 22, '#111827'); box(15, 3.6, 21.7, R.w - 15, 4.4, 22.1, '#38BDF8');
     { const p = P(R.w / 2, 4.42, 12), r = 9 * K; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `hsla(${(t * 40) % 360},90%,60%,${0.25 + beat * 0.3})`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r * 2, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); } // the spotlight on the stage
@@ -6716,7 +6739,6 @@
     const burst = (t % 8) < 1.2;
     for (const fx of [18, R.w - 18]) { if (burst) { if (Math.floor(t) % 16 < 8) flame(fx, 4.4, 21); else { x.save(); x.globalCompositeOperation = 'lighter'; const p = P(fx, 4.4, 21), q = P(fx, 20, 21); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, 'rgba(255,255,255,0.75)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(p[0] - K, p[1]); x.lineTo(q[0] - K * 3, q[1]); x.lineTo(q[0] + K * 3, q[1]); x.lineTo(p[0] + K, p[1]); x.fill(); x.restore(); } } }
     drawArenaRig(R, t, beat, live);
-    drawArenaCrowd(R, t, live);
   }
   async function enterRoom(kind, key, title, extra = {}) {
     if (inside && !extra.stairs) return;
@@ -6974,7 +6996,7 @@
   const onFerry = (px, pz) => at(Math.floor(px / T), Math.floor(pz / T)) === FERRYLANE;
   function walkable(px, pz) {
     if (inside && inside.kind === 'yacht') return onDeck(px, pz);
-    if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && pz < 23);
+    if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && (pz < 23 || px < ARENA_SIDE + 1 || px > inside.w - ARENA_SIDE - 1 || (pz > inside.d - ARENA_SIDE - 1 && Math.abs(px - inside.w / 2) > ARENA_GATE - 1.5)));
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
     for (const b of blocked) if (px > b[0] && px < b[2] && pz > b[1] && pz < b[3]) return false;
