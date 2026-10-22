@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T11:46:42.725Z">
+<meta name="li-build" content="2026-10-22T12:12:51.019Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1958,7 +1958,8 @@
   // row of shops, a park, a car park), on paving, the windows lighting up after dark
   const CITY_COL = ['#E2E8F0', '#CBD5E1', '#F1F5F9', '#BFDBFE', '#E7E5E4', '#D6D3D1', '#C7D2FE', '#FDE68A'];
   function cityLot(a, b, c, d, R) {
-    const v = R(), dark = night > 0.4, win = dark ? '#FDE68A' : '#1E293B';
+    const v = R(), dark = night > 0.4, win = dark ? '#FDE68A' : '#1E293B', bid = 'nt' + (Math.round(b / T) * 100 + Math.round(a / T));
+    if (ntMine.some((h) => h.plot.split(':')[0] === bid)) parkOrder(myCarsL).slice(0, 2).forEach((c2, k) => drawCar(a + (c - a) * (k ? 0.72 : 0.28), d - 0.9, c2.model, c2.color, 0, 0.6)); // your cars at your door
     flat(a, b, c, d, 0.03, '#D1D5DB'); flat(a + 0.6, b + 0.6, c - 0.6, d - 0.6, 0.04, '#E5E7EB');
     if (v < 0.36) { // an office tower: glass bands, a crown
       const h = 12 + R() * 30, col = CITY_COL[Math.floor(R() * CITY_COL.length)];
@@ -1979,7 +1980,7 @@
     } else { // a car park
       flat(a + 0.8, b + 0.8, c - 0.8, d - 0.8, 0.05, '#6B7280');
       x.strokeStyle = 'rgba(255,255,255,0.7)'; x.lineWidth = 1; x.beginPath(); for (let k = 1; k < 4; k++) { const p = P(a + 0.8 + k * (c - a - 1.6) / 4, 0.06, b + 1), q = P(a + 0.8 + k * (c - a - 1.6) / 4, 0.06, b + 4); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
-      const n = 1 + Math.floor(R() * 3); for (let k = 0; k < n; k++) drawCar(a + 2 + k * 2.2, b + 2.6, ['corolla', 'highlander', 'lexusrx'][k % 3], ['#F8FAFC', '#1F2937', '#B91C1C'][k % 3], Math.PI / 2, 0.55);
+
     }
   }
   // ---- the refinery's disaster shield: what stands between the plant and the town. A blast wall along the town side
@@ -3058,7 +3059,7 @@
           box(m0 + 0.2, h + 0.6, b + 2.2, m1 - 0.2, h + 1, z1 - 0.2, '#1C1917'); // the roof deck
           { const g0 = P(m0 + 0.3, h + 1, z1 - 0.3), g1 = P(m1 - 0.3, h + 1, z1 - 0.3), g2 = P(m1 - 0.3, h + 2.6, z1 - 0.3), g3 = P(m0 + 0.3, h + 2.6, z1 - 0.3); quad([g0, g1, g2, g3], 'rgba(186,230,253,0.25)', '#D4AF37'); }
           for (let k = 0; k < 3; k++) { const ux = m0 + 2.5 + k * ((m1 - m0 - 5) / 2), uz = b + 5; box(ux - 0.06, h + 1, uz - 0.06, ux + 0.06, h + 3.4, uz + 0.06, '#E5E7EB'); const tp = P(ux, h + 3.5, uz), rr = 1.3 * K; x.fillStyle = '#D4AF37'; x.beginPath(); x.ellipse(tp[0], tp[1], rr, rr * sp * 0.7, 0, 0, Math.PI * 2); x.fill(); }
-          for (const [cx3, model, col] of [[m1 + 3, 'rangerover', '#111827'], [m1 + 7.5, 'urus', '#B91C1C']]) drawCar(cx3, d - 3, model, col, Math.PI / 2, 1.4); // valet
+
         }
         if (th === 'vein') {
           // VEIN: a white building in two stacked volumes with rounded-looking pink-lit edges, white steps up to a glass door
@@ -3285,7 +3286,7 @@
       // private jets parked on the apron in their airlines' colours, a fuel truck beside one
       for (let k = 0; k < gates; k++) jet(gX(k), d - 29, k + 5);
       box(a + 30, 0, d - 25.5, a + 34, 1.8, d - 24, '#FACC15');
-      flat(a + 50 - 0.8, d - 26, a + 50 + 0.8, d - 21, 0.1, '#B91C1C'); drawCar(a + 54, d - 23.5, 'cullinan', '#111827', 0, 1.6); // a red carpet and the Rolls waiting
+      flat(a + 50 - 0.8, d - 26, a + 50 + 0.8, d - 21, 0.1, '#B91C1C'); // a red carpet
       flush3d(); // the jets before the terminal goes up in front of them
       // the terminal: glass walls, a white wave roof, the name along the front
       const t0 = tA, t1 = c - a > 120 ? (a + c) / 2 + 40 : c - 14, f0 = d - 20, f1 = d - 8;
@@ -3294,7 +3295,7 @@
         for (const [x0, x1] of [[a + 32 + 60, t0 - 6], [t1 + 6, c - 22]]) { if (x1 - x0 < 10) continue;
           flat(x0, f0 + 1, x1, d - 1, 0.07, '#4B5563');
           for (let row = 0; row < 3; row++) { const rz = f0 + 3.5 + row * 5.5; x.strokeStyle = 'rgba(248,250,252,0.6)'; x.lineWidth = 1; x.beginPath(); for (let px = x0 + 1; px <= x1 - 1; px += 3) { const p = P(px, 0.08, rz - 2), q = P(px, 0.08, rz + 2); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
-            for (let px = x0 + 2.5; px < x1 - 1; px += 3) if (R2() < 0.6) drawCar(px, rz, ['corolla', 'camry', 'highlander', 'lexusrx'][Math.floor(R2() * 4)], PAINT[Math.floor(R2() * PAINT.length)], Math.PI / 2, 1); }
+ }
           for (let px = x0 + 4; px < x1; px += 12) tree(px, d - 0.8, 2.4); } }
       box(t0, 0, f0, t1, 9, f1, '#9CC9E8', '#E0F2FE', 2);
       for (let k = 0; k <= 12; k++) { const px = t0 + k * (t1 - t0) / 12, h0 = 10 + Math.sin(k / 12 * Math.PI * 2) * 1.2, h1 = 10 + Math.sin((k + 1) / 12 * Math.PI * 2) * 1.2; if (k < 12) quad([P(px, h0, f0 - 1), P(px + (t1 - t0) / 12, h1, f0 - 1), P(px + (t1 - t0) / 12, h1, f1 + 1.5), P(px, h0, f1 + 1.5)], k % 2 ? '#F1F5F9' : '#F8FAFC', 'rgba(100,116,139,0.25)'); }
@@ -3317,7 +3318,6 @@
       // the drop-off lane and car park out front
       flat(t0, f1 + 1.8, t1, d - 0.5, 0.07, '#57534E'); flat(t0, f1 + 4.2, t1, f1 + 4.5, 0.09, '#F8FAFC');
       const R = rnd(a + b);
-      for (let k = 0; k < Math.floor((t1 - t0 - 8) / 8); k++) if (R() < 0.7) drawCar(t0 + 6 + k * 8, f1 + 6, ['camry', 'corolla', 'highlander'][k % 3], k % 3 ? '#F7C81E' : CAR_COLORS[Math.floor(R() * CAR_COLORS.length)], 0, 1.4);
       for (let k = 0; k < Math.floor((t1 - t0) / 18) + 1; k++) palm(t0 + 4 + k * 18, f1 + 3, 8);
       // the control tower
       cylLit(c - 6, d - 12, 2.2, 0, 22, '#E5E7EB'); box(c - 8.6, 22, d - 14.6, c - 3.4, 26, d - 9.4, '#1E3A8A', '#93C5FD', 1); box(c - 9, 26, d - 15, c - 3, 26.6, d - 9, '#F8FAFC');
@@ -3473,7 +3473,7 @@
       { const bx0 = h1 - 10, bz = hz1 + 0.06; box(bx0, 3.4, bz - 0.02, bx0 + 8, 6.4, bz + 0.3, '#0B1020'); const tt = Math.floor(t / 3); ['MILE 2   4 MIN', 'IGANMU  9 MIN', 'MARINA 14 MIN'].forEach((ln, k) => faceText(ln, bx0 + 4, 5.8 - k * 0.85, bz + 0.32, (k + tt) % 3 ? '#FCD34D' : '#4ADE80', 0.55, night > 0.5 ? 6 : 0, 700)); }
       const UMB = ['#EF4444', '#F59E0B', '#22C55E', '#3B82F6', '#EC4899'];
       for (let k = 0; k < Math.min(8, Math.floor((c - a - 30) / 9)); k++) { const kx = (c - a > 80 ? h0 - 34 : a + 6) + k * 9 + (k >= 4 && c - a > 80 ? h1 - h0 + 32 : 0), kz = d - 7.5; box(kx - 1.2, 0, kz - 0.8, kx + 1.2, 1.6, kz + 0.8, '#F5F5F4'); box(kx - 0.06, 1.6, kz - 0.06, kx + 0.06, 4.2, kz + 0.06, '#57534E'); pyramid(kx - 2, kz - 2, kx + 2, kz + 2, 4.2, 0.9, UMB[k % UMB.length]); }
-      { const tx = c - a > 80 ? h1 + 20 : c - 13; flat(tx - 9, d - 9.8, tx, d - 5.2, 0.075, '#57534E'); groundText('TAXI', tx - 4.5, d - 5.8, 1.4, 'rgba(250,204,21,0.9)'); for (let k = 0; k < 2; k++) drawCar(tx - 7 + k * 5, d - 7.6, 'corolla', '#F7C81E', 0, 1.3); }
+      { const tx = c - a > 80 ? h1 + 20 : c - 13; flat(tx - 9, d - 9.8, tx, d - 5.2, 0.075, '#57534E'); groundText('TAXI', tx - 4.5, d - 5.8, 1.4, 'rgba(250,204,21,0.9)'); }
       if (c - a > 80) for (let px = a + 8; px < c - 8; px += 16) if (px < h0 - 36 || px > h1 + 40) { tree(px, d - 3, 3.2); } // trees along the rest of the long forecourt
     },
     dealer(a, b, c, d) {
@@ -3590,7 +3590,6 @@
       x.strokeStyle = 'rgba(248,250,252,0.8)'; x.lineWidth = Math.max(1, K * 0.2);
       for (let k = 0; k <= 8; k++) { const px = a + 6 + k * 7; const p = P(px, 0.08, zf + 9), q = P(px, 0.08, zf + 16); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       const R = rnd(a + b), parked = ['camry', 'corolla', 'highlander', 'landcruiser', 'rangerover'];
-      for (let k = 0; k < 8; k++) if (R() < 0.55) drawCar(a + 9.5 + k * 7, zf + 12.5, parked[Math.floor(R() * parked.length)], CAR_COLORS[Math.floor(R() * CAR_COLORS.length)], Math.PI / 2, 1.6);
       box(c - 12, 0, zf + 8, c - 6, 2.4, zf + 10, orange); box(c - 12, 2.4, zf + 8, c - 6, 2.6, zf + 10, '#F5F5F4'); // the trolley bay
       for (const [lx, lz] of [[a + 4, zf + 9], [c - 4, d - 4], [a + 4, d - 4]]) lamp(lx, lz, 8);
       glow.push(() => { const p = P(mid, 5, zf), r = K * 26; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,230,180,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.4, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
@@ -3763,7 +3762,7 @@
       box(mid - 9, 0, d - 4, mid - 6, 3.6, d - 1.5, '#334155', '#A5B4FC', 1); box(mid - 9.3, 3.6, d - 4.3, mid - 5.7, 4, d - 1.2, '#1E293B');
       { const lift = on ? 0 : 0; box(mid - 5.6, 1, d - 1.1, mid + 5.6, 1.3, d - 0.8, ['#F8FAFC', '#DC2626'][Math.floor(t) % 2 && lift ? 1 : 0]); for (let k = 0; k < 6; k++) box(mid - 5 + k * 2, 1, d - 1.12, mid - 4 + k * 2, 1.3, d - 1.1, '#DC2626'); }
       // the staff car park and the crew vans
-      flat(c - 22, d - 9, c - 3, d - 3, 0.07, '#4B5563'); { const R2 = rnd(a * 11 + 5); for (let k = 0; k < 5; k++) drawCar(c - 20 + k * 3.6, d - 6, ['corolla', 'camry', 'highlander', 'lexusrx', 'corolla'][k], ['#F8FAFC', '#111827', '#B91C1C', '#1D4ED8', '#9CA3AF'][Math.floor(R2() * 5)], Math.PI / 2, 0.9); }
+      flat(c - 22, d - 9, c - 3, d - 3, 0.07, '#4B5563');
       for (let k = 0; k < 2; k++) { const vx = a + 6 + k * 7, vz = d - 7; box(vx - 2.6, 0.4, vz - 1.2, vx + 2.6, 2.8, vz + 1.2, '#F8FAFC'); box(vx - 2.62, 1.4, vz - 1.22, vx + 2.62, 1.9, vz + 1.22, '#CA8A04'); for (const wx of [vx - 1.6, vx + 1.6]) disk(wx, vz + 1.22, 0.45, 0.45, '#111827'); box(vx - 1, 2.8, vz - 0.8, vx + 1.4, 3.1, vz + 0.8, '#94A3B8'); if (K > 3) faceText('GRID CREW', vx, 2.2, vz + 1.25, '#1E3A8A', 0.45, 0, 900); }
       // a helipad by the control centre
       { const hx = mid + 20, hz = d - 16; disk(hx, hz, 0.09, 3.6, '#374151'); disk(hx, hz, 0.1, 3.2, '#4B5563'); if (K > 2) groundText('H', hx, hz, 3, '#F8FAFC'); }
@@ -5031,7 +5030,38 @@
     b.name = b.kind === 'tower' ? `${b.district} Tower ${NT.filter((o) => o.district === b.district && o.kind === 'tower').length + 1}` : b.kind === 'block' ? `${b.district} Block ${String.fromCharCode(65 + NT.filter((o) => o.district === b.district && o.kind === 'block').length % 26)}` : b.kind === 'shops' ? `${b.district} shops` : b.kind === 'park' ? `${b.district} park` : `${b.district} car park`;
     NT.push(b); NT_BY[id] = b;
   }
-  if (/^(localhost|127.)/.test(location.hostname)) Object.assign(window, { __nt: NT, __at: at, __places: PLACES, __cam: cam, __open: openPhone, __render: render });
+  const HOUSES = []; // the old districts' family homes: measured and named by district, privately held
+  for (const l of lots) if (l.kind === 'house') { const R = rnd(l.i * 53 + l.j * 89), sec = SECTORS[sectorAt[l.j * BOARD.w + l.i]]; HOUSES.push({ id: 'h' + (l.j * 100 + l.i), i: l.i, j: l.j, kind: 'house', district: sec ? sec.name : 'Lagos Island', h: Math.round((4 + R() * 2) * NT_M + 2), w: Math.round(5 * NT_M), d: Math.round(5 * NT_M), floors: 2, rooms: 0 }); }
+  // the names on the map: each district once, at the middle of all its land, and every estate
+  const MAP_LABELS = (() => { const by = {};
+    for (const sct of SECTORS) { if (!sct.name) continue; const [i0, j0, i1, j1] = sct.rect, n = (i1 - i0 + 1) * (j1 - j0 + 1), o = by[sct.name] || (by[sct.name] = { name: sct.name, x: 0, z: 0, n: 0, big: 0, est: false }); o.x += (i0 + i1 + 1) / 2 * T * n; o.z += (j0 + j1 + 1) / 2 * T * n; o.n += n; o.big = Math.max(o.big, n); }
+    const out = Object.values(by).map((o) => ({ name: o.name, x: o.x / o.n, z: o.z / o.n, n: o.n, est: false }));
+    for (const pl of PLACES) if (ESTATE_OF[pl[5]]) out.push({ name: pl[5], x: (pl[1] + pl[3] / 2) * T, z: (pl[2] + pl[4] / 2) * T, n: pl[3] * pl[4], est: true });
+    return out.sort((p2, q2) => q2.n - p2.n); })();
+  function drawMapLabels() {
+    const taken = []; x.textAlign = 'center'; x.textBaseline = 'middle';
+    for (const l of MAP_LABELS) {
+      if (!l.est && l.n < 6 && K < 1.4) continue; const sp2 = P(l.x, 1, l.z); if (sp2[0] < -60 || sp2[0] > W + 60 || sp2[1] < -20 || sp2[1] > H + 20) continue;
+      const fs2 = l.est ? 10 : 11; x.font = `800 ${fs2}px 'Plus Jakarta Sans', sans-serif`; const txt = l.est ? '🏡 ' + l.name : l.name.toUpperCase(), w2 = x.measureText(txt).width + 14, h2 = fs2 + 8, bx = sp2[0] - w2 / 2, by2 = sp2[1] - h2 / 2;
+      if (taken.some(([a2, b2, c2, d2]) => bx < c2 && bx + w2 > a2 && by2 < d2 && by2 + h2 > b2)) continue; taken.push([bx, by2, bx + w2, by2 + h2]);
+      x.fillStyle = l.est ? 'rgba(255,255,255,0.92)' : 'rgba(15,23,42,0.72)'; x.beginPath(); x.roundRect(bx, by2, w2, h2, h2 / 2); x.fill();
+      x.fillStyle = l.est ? '#065F46' : '#F8FAFC'; x.fillText(txt, sp2[0], sp2[1] + 0.5);
+    }
+    x.textBaseline = 'alphabetic';
+  }
+  // which building is under a tap: every New Town building and every house, as the boxes they're drawn as; the nearest wins
+  function buildingAt(sx, sy) {
+    let best = null, bd = -Infinity;
+    for (const o of [...NT, ...HOUSES]) {
+      const a = o.i * T + 1.2, b = o.j * T + 1.2, c = a + T - 2.4, d = b + T - 2.4, hh = Math.max(1, o.h / NT_M), ps = [];
+      for (const y of [0, hh]) for (const [px, pz] of [[a, b], [c, b], [a, d], [c, d]]) ps.push(P(px, y, pz));
+      const xs = ps.map((q) => q[0]), ys = ps.map((q) => q[1]);
+      if (sx < Math.min(...xs) || sx > Math.max(...xs) || sy < Math.min(...ys) || sy > Math.max(...ys)) continue;
+      const dd = P(o.i * T + T / 2, 0, o.j * T + T / 2)[2]; if (dd > bd) { bd = dd; best = o; }
+    }
+    return best;
+  }
+  if (/^(localhost|127.)/.test(location.hostname)) Object.assign(window, { __nt: NT, __at: at, __places: PLACES, __cam: cam, __open: openPhone, __render: render, __bAt: (x2, y2) => buildingAt(x2, y2), __tap: (x2, y2) => tapAt(x2, y2), __P: (a2, b2, c2) => P(a2, b2, c2) });
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
   const PIN_H = { grid: 36, bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
@@ -5271,6 +5301,7 @@
       x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
       for (const g of glow) g();
     }
+    drawMapLabels(); // the districts' and estates' names
     drawWeather(now); // clouds, rain, lightning, fog, haze, over the town and under the pins
     gridJobDraw(); // where your grid shift sends you
     // the pins, on top
@@ -7504,8 +7535,13 @@
     if (target) { card.style.display = 'none'; return enterPlace(target); }
     const lot = hqIndex.get(i + ',' + j);
     if (!best && lot != null) { card.style.display = 'none'; return enterHq(lot, i, j); }
-    const ntb = NT_BY['nt' + (j * 100 + i)];
-    if (ntb && ntb.rooms && !(best && ENTERABLE.has(best[0]))) { card.style.display = 'none'; return openPhone('tower', ntb.id); }
+    const bh = buildingAt(sx, sy);
+    if (bh && !(best && bd < 16) && !plotAt(i, j)) {
+      if (bh.rooms && signedIn()) { card.style.display = 'none'; return openPhone('tower', bh.id); }
+      if (bh.rooms) return houseCard({ title: (bh.kind === 'tower' ? '🏙️ ' : '🏢 ') + bh.name, sub: bh.district + ' · New Town', head: `${bh.h} m · ${bh.floors} floors · ${bh.rooms - Math.min(bh.rooms, ntTaken[bh.id] || 0)} of ${bh.rooms} flats free`, note: bh.kind === 'tower' ? 'Sky apartments, ₦12,000,000 each. Sign in to buy one.' : 'Free rooms for citizens with no home yet. Sign in to get allocated.' });
+      const KIND = { shops: ['🛍️ Shops', 'A row of shops at street level.'], park: ['🌳 Park', 'Open to everyone: trees and a footpath.'], carpark: ['🅿️ Car park', 'Residents park here. Only cars Lagosians own are ever parked on the island.'], house: ['🏠 Family house', 'A private family home in the old town. Not on the market.'] }[bh.kind];
+      return houseCard({ title: KIND[0], sub: bh.district, head: bh.h ? `${bh.h} m · ${bh.floors} floor${bh.floors === 1 ? '' : 's'}` : `${bh.w} × ${bh.d} m`, note: `${KIND[1]} Plot ${bh.w} × ${bh.d} m.` });
+    }
     const pl = plotAt(i, j);
     if (pl && !(best && !ESTATE_OF[best[5]])) return homeCard(pl, i, j); // a house, unless you tapped another place's tag in front of it
     if (best) { placeCard(best); return; }
