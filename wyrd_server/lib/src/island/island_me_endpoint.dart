@@ -2734,14 +2734,19 @@ class IslandMeEndpoint extends Endpoint {
         .first;
     final byCounter = await session.db.unsafeQuery(
         'SELECT "counter", COALESCE(SUM(-"amount") FILTER (WHERE "amount" < 0), 0), COALESCE(SUM("amount") FILTER (WHERE "amount" > 0 AND "kind" <> \'open\'), 0) FROM "naira_entry" WHERE "kind" <> \'tax\' GROUP BY "counter" ORDER BY 1');
-    final cit = (await session.db.unsafeQuery('SELECT COUNT(*), COALESCE(SUM("naira"), 0), COALESCE(SUM("debt"), 0), COUNT(*) FILTER (WHERE "debt" > 0) FROM "world_citizen"')).first;
+    // every island player has a wallet: anyone missing one gets it now, so players and wallets always match
+    for (final r in await session.db.unsafeQuery('SELECT p."authUserId" FROM "island_profile" p LEFT JOIN "world_citizen" c ON c."authUserId" = p."authUserId" WHERE c."id" IS NULL')) {
+      try { await WorldAuthority.citizen(session, UuidValue.fromString('${r[0]}')); } catch (e) { session.log('[gov] wallet for ${r[0]} failed: $e', level: LogLevel.warning); }
+    }
+    final cit = (await session.db.unsafeQuery('SELECT COUNT(*), COALESCE(SUM(c."naira"), 0), COALESCE(SUM(c."debt"), 0), COUNT(*) FILTER (WHERE c."debt" > 0) FROM "world_citizen" c JOIN "island_profile" p ON p."authUserId" = c."authUserId"')).first;
+    final others = _i((await session.db.unsafeQuery('SELECT COUNT(*) FROM "world_citizen" c LEFT JOIN "island_profile" p ON p."authUserId" = c."authUserId" WHERE p."id" IS NULL')).first[0]);
     final days = await session.db.unsafeQuery(
         'SELECT to_char(date_trunc(\'day\', "createdAt" + INTERVAL \'1 hour\'), \'YYYY-MM-DD\'), SUM(-"amount") FROM "naira_entry" WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'14 days\' GROUP BY 1 ORDER BY 1');
     return jsonEncode({
       'tax': {'total': _i(t[0]), 'today': _i(t[1]), 'week': _i(t[2]), 'entries': _i(t[3]), 'payers': _i(t[4]), 'rate': Bank.taxRate},
       'days': [for (final d in days) {'day': d[0], 'tax': _i(d[1])}],
       'counters': [for (final r in byCounter) {'counter': r[0], 'in': _i(r[1]), 'out': _i(r[2])}],
-      'citizens': {'count': _i(cit[0]), 'naira': _i(cit[1]), 'owed': _i(cit[2]), 'owing': _i(cit[3]), 'players': await IslandProfile.db.count(session)},
+      'citizens': {'count': _i(cit[0]), 'naira': _i(cit[1]), 'owed': _i(cit[2]), 'owing': _i(cit[3]), 'players': await IslandProfile.db.count(session), 'otherWyrd': others},
       'treasury2': await TopUp.treasury2(session),
     });
   }

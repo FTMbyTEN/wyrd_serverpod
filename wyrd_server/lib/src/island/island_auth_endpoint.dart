@@ -3,6 +3,7 @@ import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import '../generated/protocol.dart';
+import '../world/world_authority.dart';
 
 /// One account for Lagos Island and WYRD: a username and a password, chosen at the door of the island (the email is
 /// added on the phone the first time it's opened; until then the account carries a placeholder, username@$domain). Registering makes a WYRD account (the same email/password provider the app uses, so
@@ -80,7 +81,14 @@ class IslandAuthEndpoint extends Endpoint {
       await AuthServices.instance.userProfiles.createUserProfile(session, user.id, UserProfileData(userName: name, email: given.isEmpty ? null : mail), transaction: tx);
       await IslandProfile.db.insertRow(session, IslandProfile(authUserId: user.id, handle: name, createdAt: DateTime.now().toUtc()), transaction: tx);
     });
-    return emailIdp.login(session, email: mail, password: password);
+    final auth = await emailIdp.login(session, email: mail, password: password);
+    try {
+      final made = await IslandProfile.db.findFirstRow(session, where: (t) => t.handle.equals(name));
+      if (made != null) await WorldAuthority.citizen(session, made.authUserId); // their wallet, from the start
+    } catch (e) {
+      session.log('[island] wallet at sign-up failed for $name: $e', level: LogLevel.warning);
+    }
+    return auth;
   }
 
   static final _mail = RegExp(r'^[^@\s]{1,64}@[^@\s]+\.[a-z]{2,}$');
