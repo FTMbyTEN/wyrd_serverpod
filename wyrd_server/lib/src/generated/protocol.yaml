@@ -118,6 +118,9 @@ islandMe:
   - myFurniture:
   - homes:
   - buyHome:
+  - takeRoom:
+  - towers:
+  - govAllocate:
   - startParty:
   - endParty:
   - parties:

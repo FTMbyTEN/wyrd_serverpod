@@ -18,6 +18,7 @@ import '../rewards/reward_config.dart';
 import '../rewards/reward_math.dart';
 import '../rewards/withdrawals.dart';
 import 'island_topup.dart';
+import 'island_newtown.dart';
 
 /// LAGOS ISLAND for signed-in WYRD users: the phone in the game.
 ///
@@ -1888,6 +1889,9 @@ class IslandMeEndpoint extends Endpoint {
     'mansion': (name: 'Mansion with BQ', price: 40000000),
     'villa': (name: 'Waterfront villa', price: 120000000),
     'nml': (name: "No Man's Land mansion", price: 500000000),
+    // New Town (island_newtown.dart): a sky apartment in a tower, or a free allocated room in a housing block
+    'sky': (name: 'Sky apartment', price: 12000000),
+    'alloc': (name: 'Allocated room', price: 0),
   };
 
   /// estate -> the style of each plot, in order (plot `<estate>:<n>`). The same list as ESTATES in web/index.html.
@@ -1938,6 +1942,10 @@ class IslandMeEndpoint extends Endpoint {
 
   static String? _styleOf(String plot) {
     final m = RegExp(r'^([a-z0-9]+):(\d+)$').firstMatch(plot);
+    if (m != null && ntBuildings.containsKey(m.group(1))) {
+      final b = ntBuildings[m.group(1)]!, n = int.parse(m.group(2)!);
+      return n >= 0 && n < b.rooms ? (b.tower ? 'sky' : 'alloc') : null;
+    }
     final list = m == null ? null : estates[m.group(1)];
     final n = m == null ? -1 : int.parse(m.group(2)!);
     return list != null && n >= 0 && n < list.length ? list[n] : null;
@@ -1947,7 +1955,9 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> homes(Session session) async {
     final u = _user(session);
     final me = await _profile(session, u);
-    final rows = await IslandHome.db.find(session, limit: 500);
+    final rows = [
+      ...await IslandHome.db.find(session, where: (t) => t.plot.notIlike('nt%') | t.authUserId.equals(u), limit: 500),
+    ];
     final out = [];
     for (final h in rows) {
       final owner = await IslandProfile.db.findFirstRow(
@@ -1996,6 +2006,12 @@ class IslandMeEndpoint extends Endpoint {
             ) >=
             3)
           return _err('Three homes is the limit.');
+        // an allocated room is free: one to a citizen, and only to one with no home of their own
+        if (style == 'alloc') {
+          if (await IslandHome.db.count(session, where: (t) => t.authUserId.equals(u)) > 0)
+            return _err('Allocated rooms are for citizens with no home yet. You already have one.');
+          return jsonEncode(await _allocate(session, u, plot));
+        }
         final c = await WorldAuthority.citizen(session, u);
         if (c.naira < h.price)
           return _err(
@@ -2029,6 +2045,64 @@ class IslandMeEndpoint extends Endpoint {
           'naira': after.naira,
         });
       });
+
+  static Future<Map<String, dynamic>> _allocate(Session session, UuidValue u, String plot) async {
+    await IslandHome.db.insertRow(session, IslandHome(authUserId: u, plot: plot, style: 'alloc', price: 0, boughtAt: DateTime.now().toUtc()));
+    final after = await Bank.fresh(session, u);
+    return {'plot': plot, 'style': 'alloc', 'name': homeStyles['alloc']!.name, 'naira': after.naira};
+  }
+
+  /// The lowest free room in a New Town building, or null when it's full.
+  static Future<int?> _freeRoom(Session session, String id) async {
+    final b = ntBuildings[id];
+    if (b == null) return null;
+    final taken = {for (final h in await IslandHome.db.find(session, where: (t) => t.plot.like('$id:%'))) h.plot};
+    for (var n = 0; n < b.rooms; n++) {
+      if (!taken.contains('$id:$n')) return n;
+    }
+    return null;
+  }
+
+  /// Take the next free room in a tower (paid) or a housing block (free, allocated): filled room by room until full.
+  Future<String> takeRoom(Session session, String building) async {
+    if (!ntBuildings.containsKey(building)) return _err('There is no building there.');
+    final n = await _freeRoom(session, building);
+    if (n == null) return _err('This building is full. Every room is taken.');
+    return buyHome(session, '$building:$n');
+  }
+
+  /// New Town's fill: building id -> rooms taken, and the rooms that are mine.
+  Future<String> towers(Session session) async {
+    final u = _user(session);
+    final rows = await IslandHome.db.find(session, where: (t) => t.plot.ilike('nt%'));
+    final taken = <String, int>{}, mine = [];
+    for (final h in rows) {
+      final id = h.plot.split(':').first;
+      taken[id] = (taken[id] ?? 0) + 1;
+      if (h.authUserId == u) mine.add({'plot': h.plot, 'style': h.style});
+    }
+    return jsonEncode({'taken': taken, 'mine': mine});
+  }
+
+  /// Housing allocation (administrators): every citizen with no home is given a free room in a New Town housing
+  /// block, filling one block before the next.
+  Future<String> govAllocate(Session session) async {
+    final u = _user(session);
+    if (!await _govAdmin(session, u)) return _err('Administrators only.');
+    final housed = {for (final h in await IslandHome.db.find(session)) h.authUserId};
+    final blocks = [for (final e in ntBuildings.entries) if (!e.value.tower) e.key];
+    var given = 0, bi = 0;
+    for (final p in await IslandProfile.db.find(session, orderBy: (t) => t.id)) {
+      if (p.ghost || housed.contains(p.authUserId)) continue;
+      int? n;
+      while (bi < blocks.length && (n = await _freeRoom(session, blocks[bi])) == null) bi++;
+      if (n == null) break;
+      await _allocate(session, p.authUserId, '${blocks[bi]}:$n');
+      housed.add(p.authUserId);
+      given++;
+    }
+    return jsonEncode({'given': given});
+  }
 
   // ---------------- house parties ----------------
   /// Parties going on now, by room key (`hq:<slot>` or `home:<plot>`). Kept in memory: a party lasts a few hours at most.

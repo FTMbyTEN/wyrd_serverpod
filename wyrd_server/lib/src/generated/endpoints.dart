@@ -2714,6 +2714,45 @@ class Endpoints extends _is.EndpointDispatch {
                     params['plot'],
                   ),
         ),
+        'takeRoom': _is.MethodConnector(
+          name: 'takeRoom',
+          params: {
+            'building': _is.ParameterDescription(
+              name: 'building',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .takeRoom(
+                    session,
+                    params['building'],
+                  ),
+        ),
+        'towers': _is.MethodConnector(
+          name: 'towers',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .towers(session),
+        ),
+        'govAllocate': _is.MethodConnector(
+          name: 'govAllocate',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .govAllocate(session),
+        ),
         'startParty': _is.MethodConnector(
           name: 'startParty',
           params: {
