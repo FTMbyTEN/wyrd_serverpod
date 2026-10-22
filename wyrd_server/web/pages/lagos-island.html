@@ -4853,13 +4853,42 @@
     if (h < 6.5) return 6.5 - h;
     return 0;
   }
+  // ---- the sea: ripples on a tile made once and slid across the water each frame (two layers crossing on a laptop, one on
+  // a phone), anchored to the world so they move with it; a band of shallow water and a breathing line of foam round each
+  // shore. A fill or two a frame, about what a flat sea costs.
+  const SEA = { tile: null, pats: new WeakMap() };
+  function seaTile() {
+    if (SEA.tile) return SEA.tile;
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), R = rnd(1717);
+    const curve = (px, py, w, lift, col, lw) => { for (const ox of [-256, 0, 256]) for (const oy of [-256, 0, 256]) { g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.beginPath(); g.moveTo(px + ox - w / 2, py + oy); g.quadraticCurveTo(px + ox, py + oy - lift, px + ox + w / 2, py + oy); g.stroke(); } };
+    for (let k = 0; k < 46; k++) curve(R() * 256, R() * 256, 18 + R() * 34, 2 + R() * 4, `rgba(10,45,95,${0.06 + R() * 0.07})`, 6 + R() * 5); // troughs
+    for (let k = 0; k < 64; k++) curve(R() * 256, R() * 256, 10 + R() * 26, 2 + R() * 3, `rgba(255,255,255,${0.10 + R() * 0.14})`, 3 + R() * 3); // crests
+    return (SEA.tile = c);
+  }
+  function seaPat() { let p = SEA.pats.get(x); if (!p) { p = x.createPattern(seaTile(), 'repeat'); SEA.pats.set(x, p); } return p; }
+  function drawSea(now) {
+    const o = P(0, 0, 0), ex = P(1, 0, 0), ez = P(0, 0, 1), ax = ex[0] - o[0], ay = ex[1] - o[1], bx = ez[0] - o[0], by = ez[1] - o[1], t = now / 1000;
+    const layer = (scale, dx, dz, alpha) => { // [scale] world units to a tile pixel; drifting dx, dz world units a second
+      const p = seaPat(), s = scale, ox = o[0] + (ax * dx + bx * dz) * t, oy = o[1] + (ay * dx + by * dz) * t;
+      p.setTransform(new DOMMatrix([ax * s, ay * s, bx * s, by * s, ox, oy])); x.globalAlpha = alpha; x.fillStyle = p; x.fillRect(0, 0, W, H);
+    };
+    layer(0.2, 0.9, 0.35, 1);
+    if (!thirty()) layer(0.32, -0.5, 0.7, 0.5); // a second swell crossing the first: the shimmer
+    x.globalAlpha = 1;
+  }
+  function drawShores(now) {
+    const t = now / 1000, ring = (pad, col, lw) => { x.strokeStyle = col; x.lineWidth = lw; x.lineJoin = 'round'; x.beginPath();
+      for (const s of SECTORS) { const [i0, j0, i1, j1] = s.rect, a = i0 * T - pad, b = j0 * T - pad, c = (i1 + 1) * T + pad, d = (j1 + 1) * T + pad, q = [P(a, 0, b), P(c, 0, b), P(c, 0, d), P(a, 0, d)]; x.moveTo(q[0][0], q[0][1]); for (let k = 1; k < 4; k++) x.lineTo(q[k][0], q[k][1]); x.closePath(); }
+      x.stroke(); };
+    ring(2.2, night > 0.5 ? 'rgba(56,130,190,0.22)' : 'rgba(125,211,252,0.28)', Math.max(2, K * 4.4)); // the shallows
+    ring(0.7 + Math.sin(t * 1.3) * 0.35, `rgba(255,255,255,${0.22 + Math.sin(t * 1.3) * 0.1})`, Math.max(1, K * 0.55)); // the foam, breathing in and out
+  }
   function draw() {
     setCam(); glow = []; night = nightNow();
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
     if (inside) return drawInterior(performance.now());
     x.fillStyle = C.water; x.fillRect(0, 0, W, H);
-    x.fillStyle = 'rgba(255,255,255,0.05)';
-    for (let k = -2; k < 12; k++) { x.beginPath(); x.ellipse(W * 0.1 * k, H * 0.12 * k, W * 0.5, 40, -0.4, 0, Math.PI * 2); x.fill(); }
+    { const now0 = performance.now(); drawSea(now0); drawShores(now0); }
     const visible = (i, j) => { const p = P(i * T + T / 2, 0, j * T + T / 2); return p[0] > -K * 40 && p[0] < W + K * 40 && p[1] > -K * 40 && p[1] < H + K * 60; };
     // the land slabs: a thick edge, then the top
     for (const s of SECTORS) {

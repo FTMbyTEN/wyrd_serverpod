@@ -167,7 +167,8 @@ abstract final class TopUp {
   /// Treasury 2: what players have paid in real naira, and the half of it kept for paychecks.
   static Future<Map<String, dynamic>> treasury2(Session s) async {
     final rows = await s.db.unsafeQuery('SELECT COALESCE(SUM("amountNgn"), 0), COUNT(*) FROM "island_topup" WHERE "status" = \'paid\'');
-    final paid = (rows.first[0] as num).toInt(), n = (rows.first[1] as num).toInt();
+    int n0(Object? v) => v is num ? v.toInt() : num.tryParse('$v')?.toInt() ?? 0; // a SUM comes back as text
+    final paid = n0(rows.first[0]), n = n0(rows.first[1]);
     return {'mode': mode(s), 'payments': n, 'paidNgn': paid, 'reserveNgn': (paid * reserveShare).floor(), 'share': reserveShare};
   }
 

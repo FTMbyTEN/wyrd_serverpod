@@ -235,7 +235,7 @@ class IslandMeEndpoint extends Endpoint {
   };
   static const dailyCap = 35000;
   /// the most one player can send to others in 24 hours
-  static const sendDaily = 20000;
+  static const sendDaily = 20000, sendDailyNew = 2000;
 
   static Future<int> _earnedToday(Session s, UuidValue u) async {
     final day = DateTime.now().toUtc().add(const Duration(hours: 1));
@@ -424,18 +424,16 @@ class IslandMeEndpoint extends Endpoint {
   ) => _money(session, (u) async {
     if (amount < 50 || amount > 50000)
       return _err('Send between ₦50 and ₦50,000.');
-    final to = await IslandProfile.db.findFirstRow(
-      session,
-      where: (t) => t.handle.equals(handle.trim()),
-    );
+    final to = await _byHandle(session, handle.trim().replaceFirst(RegExp(r'^@'), '')); // any capitals, with or without the @
     if (to == null) return _err('Nobody on the island by that name.');
     if (to.authUserId == u) return _err('That\'s you.');
     final me = await _profile(session, u);
     // new accounts can't send, and each sender has a daily limit, so a crowd of new accounts can't funnel naira to one
-    if (DateTime.now().toUtc().difference(me.createdAt) < const Duration(days: 3)) return _err('Sending naira opens after your first 3 days on the island.');
+    // a new account (its first 3 days) sends a little; after that the full daily amount
+    final newAcct = DateTime.now().toUtc().difference(me.createdAt) < const Duration(days: 3), limit = newAcct ? sendDailyNew : sendDaily;
     final dayAgo = DateTime.now().toUtc().subtract(const Duration(hours: 24));
     final sent = (await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.key.like('island:send:%:out') & (t.createdAt > dayAgo))).fold<int>(0, (a, e) => a - e.amount);
-    if (sent + amount > sendDaily) return _err('You can send up to ₦${_n(sendDaily)} a day (₦${_n(max(0, sendDaily - sent))} left today).');
+    if (sent + amount > limit) return _err('You can send up to ₦${_n(limit)} a day${newAcct ? ' in your first 3 days' : ''} (₦${_n(max(0, limit - sent))} left today).');
     await WorldAuthority.citizen(session, to.authUserId);
     final id =
         '${DateTime.now().microsecondsSinceEpoch}${_rnd.nextInt(1 << 16)}';
@@ -2260,7 +2258,7 @@ class IslandMeEndpoint extends Endpoint {
   static const _gridTitles = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'];
   static const _trackNames = {'control': 'Control Room Operator', 'lineman': 'Lineman', 'solar': 'Solar Technician', 'plant': 'Plant Engineer', 'marshal': 'Ground Crew', 'atc': 'Air Traffic Controller'};
   static Future<IslandProfile?> _byHandle(Session s, String handle) =>
-      IslandProfile.db.findFirstRow(s, where: (t) => t.handle.equals(_clean(handle, 40)));
+      IslandProfile.db.findFirstRow(s, where: (t) => t.handle.ilike(_clean(handle, 40).replaceAll(r'\', '').replaceAll('_', r'\_').replaceAll('%', r'\%'))); // names are unique in any case
 
   Future<String> publicProfile(Session session, String handle) async {
     final u = _user(session);
