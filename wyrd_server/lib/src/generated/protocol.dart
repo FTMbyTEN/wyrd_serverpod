@@ -77,6 +77,7 @@ import 'island/island_room.dart' as _i4c46r6a;
 import 'island/island_show.dart' as _ivo4faiv;
 import 'island/island_ticket.dart' as _il1ztsg5;
 import 'island/island_topup.dart' as _iflxo1ii;
+import 'island/island_trip.dart' as _ib7wcapy;
 import 'mind/account_export.dart' as _ij1ha6k5;
 import 'mind/alert_note.dart' as _itui3kw8;
 import 'mind/belief.dart' as _ijbewlez;
@@ -207,6 +208,7 @@ export 'island/island_room.dart';
 export 'island/island_show.dart';
 export 'island/island_ticket.dart';
 export 'island/island_topup.dart';
+export 'island/island_trip.dart';
 export 'mind/account_export.dart';
 export 'mind/alert_note.dart';
 export 'mind/belief.dart';
@@ -3906,6 +3908,62 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'island_trip',
+      dartName: 'IslandTrip',
+      schema: 'public',
+      module: 'wyrd',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'entryKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'bookedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'startedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'island_trip_entry_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'entryKey',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -8129,6 +8187,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iflxo1ii.IslandTopUp) {
       return _iflxo1ii.IslandTopUp.fromJson(data) as T;
     }
+    if (t == _ib7wcapy.IslandTrip) {
+      return _ib7wcapy.IslandTrip.fromJson(data) as T;
+    }
     if (t == _ij1ha6k5.AccountExport) {
       return _ij1ha6k5.AccountExport.fromJson(data) as T;
     }
@@ -8529,6 +8590,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_iflxo1ii.IslandTopUp?>()) {
       return (data != null ? _iflxo1ii.IslandTopUp.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ib7wcapy.IslandTrip?>()) {
+      return (data != null ? _ib7wcapy.IslandTrip.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_ij1ha6k5.AccountExport?>()) {
       return (data != null ? _ij1ha6k5.AccountExport.fromJson(data) : null)
@@ -9231,6 +9295,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _ivo4faiv.IslandShow => 'IslandShow',
       _il1ztsg5.IslandTicket => 'IslandTicket',
       _iflxo1ii.IslandTopUp => 'IslandTopUp',
+      _ib7wcapy.IslandTrip => 'IslandTrip',
       _ij1ha6k5.AccountExport => 'AccountExport',
       _itui3kw8.AlertNote => 'AlertNote',
       _ijbewlez.Belief => 'Belief',
@@ -9405,6 +9470,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'IslandTicket';
       case _iflxo1ii.IslandTopUp():
         return 'IslandTopUp';
+      case _ib7wcapy.IslandTrip():
+        return 'IslandTrip';
       case _ij1ha6k5.AccountExport():
         return 'AccountExport';
       case _itui3kw8.AlertNote():
@@ -9720,6 +9787,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'IslandTopUp') {
       return deserialize<_iflxo1ii.IslandTopUp>(data['data']);
+    }
+    if (dataClassName == 'IslandTrip') {
+      return deserialize<_ib7wcapy.IslandTrip>(data['data']);
     }
     if (dataClassName == 'AccountExport') {
       return deserialize<_ij1ha6k5.AccountExport>(data['data']);
@@ -10118,6 +10188,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _il1ztsg5.IslandTicket.t;
       case _iflxo1ii.IslandTopUp:
         return _iflxo1ii.IslandTopUp.t;
+      case _ib7wcapy.IslandTrip:
+        return _ib7wcapy.IslandTrip.t;
       case _ijbewlez.Belief:
         return _ijbewlez.Belief.t;
       case _ibisfjf2.Chat:

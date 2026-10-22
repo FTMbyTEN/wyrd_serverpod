@@ -454,7 +454,7 @@ class IslandMeEndpoint extends Endpoint {
       counter: 'city:services',
       memo: 'To ${to.handle}${memo.isEmpty ? '' : ': $memo'}',
     );
-    if (out.short != null) return _err('You don\'t have that much.');
+    if (out.short != null) return _err('As how naw.. As how naw 😅 Your balance no reach that one. Abeg go buy NAIRA, make e no cast am lol');
     await Bank.post(
       session,
       to.authUserId,
@@ -1530,7 +1530,7 @@ class IslandMeEndpoint extends Endpoint {
     final c = await WorldAuthority.citizen(session, u);
     if (c.naira < m.price)
       return _err(
-        'You need N${_n(m.price)} for the ${m.name}. You have N${_n(c.naira)}.',
+        'As how naw.. As how naw 😅 You need N${_n(m.price)} for the ${m.name}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
       );
     final r = await Bank.post(
       session,
@@ -1661,7 +1661,7 @@ class IslandMeEndpoint extends Endpoint {
     final c = await WorldAuthority.citizen(session, u);
     if (c.naira < o.price)
       return _err(
-        'The ${o.name} costs N${_n(o.price)}. You have N${_n(c.naira)}.',
+        'As how naw.. As how naw 😅 The ${o.name} costs N${_n(o.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
       );
     final r = await Bank.post(
       session,
@@ -1791,7 +1791,7 @@ class IslandMeEndpoint extends Endpoint {
     final c = await WorldAuthority.citizen(session, u);
     if (c.naira < f.price)
       return _err(
-        'You need N${_n(f.price)} for the ${f.name}. You have N${_n(c.naira)}.',
+        'As how naw.. As how naw 😅 You need N${_n(f.price)} for the ${f.name}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
       );
     final r = await Bank.post(
       session,
@@ -1999,7 +1999,7 @@ class IslandMeEndpoint extends Endpoint {
         final c = await WorldAuthority.citizen(session, u);
         if (c.naira < h.price)
           return _err(
-            'This ${h.name} costs N${_n(h.price)}. You have N${_n(c.naira)}.',
+            'As how naw.. As how naw 😅 This ${h.name} costs N${_n(h.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
           );
         final r = await Bank.post(
           session,
@@ -2155,7 +2155,7 @@ class IslandMeEndpoint extends Endpoint {
     final w = await WorldAuthority.citizen(session, u);
     if (w.naira < c.price)
       return _err(
-        'The ${c.name} costs N${_n(c.price)}. You have N${_n(w.naira)}.',
+        'As how naw.. As how naw 😅 The ${c.name} costs N${_n(c.price)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
       );
     final r = await Bank.post(
       session,
@@ -2167,8 +2167,9 @@ class IslandMeEndpoint extends Endpoint {
       memo: 'Banana Island Marina: ${c.name}',
     );
     if (r.short != null) return _err('Not enough naira.');
+    final trip = await _tripBooked(session, u, r.entry);
     final after = await Bank.fresh(session, u);
-    return jsonEncode({'kind': kind, 'name': c.name, 'naira': after.naira});
+    return jsonEncode({'kind': kind, 'name': c.name, 'naira': after.naira, if (trip != null) 'trip': trip});
   });
 
   /// Private-jet flights out of Lagos Island Airport, by destination: what a seat costs (the flight runs in the game).
@@ -2192,11 +2193,12 @@ class IslandMeEndpoint extends Endpoint {
     final f = flights[dest];
     if (f == null) return _err('There\'s no flight there.');
     final w = await WorldAuthority.citizen(session, u);
-    if (w.naira < f.price) return _err('A seat to ${f.name} is N${_n(f.price)}. You have N${_n(w.naira)}.');
+    if (w.naira < f.price) return _err('As how naw.. As how naw 😅 A seat to ${f.name} is N${_n(f.price)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol');
     final r = await Bank.post(session, u, key: 'island:flight:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -f.price, kind: 'fee', counter: 'city:services', memo: 'Lagos Island Airport: flight to ${f.name}');
     if (r.short != null) return _err('Not enough naira.');
+    final trip = await _tripBooked(session, u, r.entry);
     final after = await Bank.fresh(session, u);
-    return jsonEncode({'dest': dest, 'name': f.name, 'naira': after.naira});
+    return jsonEncode({'dest': dest, 'name': f.name, 'naira': after.naira, if (trip != null) 'trip': trip});
   });
 
   /// Private jets for sale at Lagos Island Airport (one each), by kind.
@@ -2222,7 +2224,7 @@ class IslandMeEndpoint extends Endpoint {
     if (livery < 0 || livery >= jetLiveries) return _err('Pick one of the colours.');
     if (await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)) != null) return _err('You already have a jet in the hangar.');
     final c = await WorldAuthority.citizen(session, u);
-    if (c.naira < m.price) return _err('A ${m.name} is N${_n(m.price)}. You have N${_n(c.naira)}.');
+    if (c.naira < m.price) return _err('As how naw.. As how naw 😅 A ${m.name} is N${_n(m.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol');
     final r = await Bank.post(session, u, key: 'island:jet:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -m.price, kind: 'fee', counter: 'city:market', memo: 'Bought a ${m.name}');
     if (r.short != null) return _err('Not enough naira.');
     final rnd = Random.secure();
@@ -2258,7 +2260,7 @@ class IslandMeEndpoint extends Endpoint {
     if (j == null) return _err('You don\'t have a jet. Buy one, or book a seat.');
     final fee = dest == 'island' ? 2000 : f.price ~/ 4;
     final w = await WorldAuthority.citizen(session, u);
-    if (w.naira < fee) return _err('Fuel and handling to ${f.name} is N${_n(fee)}. You have N${_n(w.naira)}.');
+    if (w.naira < fee) return _err('As how naw.. As how naw 😅 Fuel and handling to ${f.name} is N${_n(fee)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol');
     final r = await Bank.post(session, u, key: 'island:jetfly:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -fee, kind: 'fee', counter: 'city:services', memo: 'Lagos Island Airport: fuel and handling for ${j.tail} to ${f.name}');
     if (r.short != null) return _err('Not enough naira.');
     final after = await Bank.fresh(session, u);
@@ -2766,7 +2768,25 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   // ---- trip refunds (administrators): a fare or charter charged for a trip that never happened goes back, with its tax
-  static bool _isTrip(NairaEntry e) => e.amount < 0 && (e.kind == 'ride' || e.kind == 'fee') && (e.kind == 'ride' || e.memo.startsWith('Lagos Island Airport') || e.memo.startsWith('Banana Island Marina') || e.key.startsWith('island:flight:') || e.key.startsWith('island:jetfly:') || e.key.startsWith('island:yacht:'));
+  /// A paid trip, booked: the record that later says whether it started.
+  static Future<String?> _tripBooked(Session s, UuidValue u, NairaEntry? e) async {
+    if (e == null) return null;
+    try {
+      await IslandTrip.db.insertRow(s, IslandTrip(authUserId: u, entryKey: e.key, bookedAt: DateTime.now().toUtc()));
+    } catch (_) {}
+    return e.key;
+  }
+
+  /// I'm on it: the trip I paid for has started (once; mine only).
+  Future<String> tripStarted(Session session, String trip) async {
+    final u = _user(session);
+    final t = await IslandTrip.db.findFirstRow(session, where: (x) => x.entryKey.equals(trip) & x.authUserId.equals(u));
+    if (t == null) return _err('No such trip.');
+    if (t.startedAt == null) await IslandTrip.db.updateRow(session, t.copyWith(startedAt: DateTime.now().toUtc()));
+    return jsonEncode({'ok': true});
+  }
+
+  static bool _isTrip(NairaEntry e) => e.amount < 0 && e.kind == 'fee' && (e.memo.startsWith('Lagos Island Airport') || e.memo.startsWith('Banana Island Marina') || e.key.startsWith('island:flight:') || e.key.startsWith('island:jetfly:') || e.key.startsWith('island:yacht:'));
 
   /// A player's trip charges from the last 14 days (administrators only).
   Future<String> govTrips(Session session, String handle) async {
@@ -2775,8 +2795,9 @@ class IslandMeEndpoint extends Endpoint {
     final p = await _byHandle(session, handle.trim().replaceFirst(RegExp(r'^@'), ''));
     if (p == null) return _err('No Lagosian by that name.');
     final since = DateTime.now().toUtc().subtract(const Duration(days: 14));
-    final rows = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.createdAt > since) & t.kind.inSet({'fee', 'ride'}), orderBy: (t) => t.createdAt.desc(), limit: 60);
-    return jsonEncode({'handle': p.handle, 'trips': [for (final e in rows.where(_isTrip)) {'id': e.id, 'memo': e.memo, 'amount': -e.amount, 'at': e.createdAt.toIso8601String(), 'refunded': e.status == 'reversed'}]});
+    final rows = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.createdAt > since) & t.kind.equals('fee'), orderBy: (t) => t.createdAt.desc(), limit: 60);
+    final trips = rows.where(_isTrip).toList(), recs = {for (final t in await IslandTrip.db.find(session, where: (x) => x.entryKey.inSet(trips.map((e) => e.key).toSet()))) t.entryKey: t};
+    return jsonEncode({'handle': p.handle, 'trips': [for (final e in trips) {'id': e.id, 'memo': e.memo, 'amount': -e.amount, 'at': e.createdAt.toIso8601String(), 'refunded': e.status == 'reversed', 'state': recs[e.key] == null ? 'untracked' : recs[e.key]!.startedAt != null ? 'taken' : DateTime.now().toUtc().difference(e.createdAt) < const Duration(minutes: 10) ? 'booked' : 'never'}]});
   }
 
   /// Refund one trip charge, and the tax taken with it (administrators only; once; logged).
@@ -2785,6 +2806,11 @@ class IslandMeEndpoint extends Endpoint {
     final e = await NairaEntry.db.findById(session, entryId);
     if (e == null || !_isTrip(e)) return _err('That is not a trip charge.');
     if (e.status == 'reversed') return _err('Already refunded.');
+    // only a trip the server knows was booked and never started: one that was taken, or that has no record, stays paid
+    final rec = await IslandTrip.db.findFirstRow(session, where: (x) => x.entryKey.equals(e.key));
+    if (rec == null) return _err('There is no trip record for this charge (it was before trips were tracked), so there is no proof it never happened.');
+    if (rec.startedAt != null) return _err('This trip happened: the player was on it. It cannot be refunded.');
+    if (DateTime.now().toUtc().difference(e.createdAt) < const Duration(minutes: 10)) return _err('This trip may still be starting. Try again in a few minutes.');
     if (DateTime.now().toUtc().difference(e.createdAt) > const Duration(days: 14)) return _err('Only trips from the last 14 days can be refunded here.');
     final r = await Bank.reverse(session, e.id!, 'Refund: ${e.memo}');
     final tax = await NairaEntry.db.findFirstRow(session, where: (t) => t.key.equals('${e.key}:tax'));

@@ -1,0 +1,14 @@
+### A paid trip (a flight or a yacht charter): booked when it was paid for, started when the player was actually on it.
+### Only a trip that was booked and never started can be refunded.
+class: IslandTrip
+table: island_trip
+fields:
+  authUserId: UuidValue
+  ### the ledger entry that paid for it (its key)
+  entryKey: String
+  bookedAt: DateTime
+  startedAt: DateTime?
+indexes:
+  island_trip_entry_idx:
+    fields: entryKey
+    unique: true

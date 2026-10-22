@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T10:59:05.455Z">
+<meta name="li-build" content="2026-10-22T11:21:08.052Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -8321,7 +8321,7 @@
   const $ = (id) => document.getElementById(id);
   function fail(e) {
     if (e.message === 'signin') { me$ = null; return render('signin'); }
-    const n = document.createElement('div'); n.className = 'pcard err'; n.textContent = e.message; pbody.prepend(n); setTimeout(() => n.remove(), 4000);
+    const n = document.createElement('div'); n.className = 'pcard err'; n.textContent = e.message; if (/buy NAIRA/.test(e.message)) { const b = document.createElement('button'); b.className = 'pbtn'; b.style.marginTop = '8px'; b.textContent = '💸 Buy naira'; b.onclick = () => go('buynaira'); n.append(b); } pbody.prepend(n); setTimeout(() => n.remove(), /buy NAIRA/.test(e.message) ? 9000 : 4000);
   }
   async function loadMe() { me$ = await my('me'); pnaira.textContent = naira(me$.naira); myName = me$.handle; return me$; }
   async function ensureKey() {
@@ -9701,7 +9701,8 @@
             const v = await my('bookFlight', { dest: d[0] }); if (v.naira != null) pnaira.textContent = naira(v.naira);
             closePhone(); const ap = PLACES.find((p) => p[0] === 'airport'); if (ap && !inside) at$(ap);
             notify(`${d[0] === 'island' ? 'Island joyride' : 'Flight to ' + d[1]} from Lagos Island Airport`, 'airport');
-            enterRoom('jetcabin', `place:flight:${d[0]}:${AIR.slot()}`, `✈️ ${d[0] === 'island' ? 'Island joyride' : 'Lagos – ' + d[1]}`, { flight: d[0], from: Date.now(), until: Date.now() + d[5] * 1000 });
+            await enterRoom('jetcabin', `place:flight:${d[0]}:${AIR.slot()}`, `✈️ ${d[0] === 'island' ? 'Island joyride' : 'Lagos – ' + d[1]}`, { flight: d[0], from: Date.now(), until: Date.now() + d[5] * 1000 });
+            if (v.trip && inside) my('tripStarted', { trip: v.trip }).catch(() => {}); // you're on it: this trip happened
           } catch (e) { b.disabled = false; fail(/\((404|500)\)/.test(e.message) ? new Error('Flights open when the server update goes live.') : e); }
         }));
         return;
@@ -9716,10 +9717,11 @@
           const k = b.dataset.ch, c = CHARTERS[k];
           try {
             if (inside) leaveRoom(); // the trip has to be able to start
-            if (c[1]) { const v = await my('charterYacht', { kind: k }); if (v.naira != null) pnaira.textContent = naira(v.naira); }
+            let tripKey = null; if (c[1]) { const v = await my('charterYacht', { kind: k }); if (v.naira != null) pnaira.textContent = naira(v.naira); tripKey = v.trip || null; }
             closePhone(); const mp = PLACES.find((p) => p[0] === 'marina'); if (mp && !inside) at$(mp);
             notify(`${c[0]} from Banana Island Marina`, 'marina');
-            if (!startCruise(k)) enterRoom('yacht', k === 'private' ? 'place:yacht:private:' + (me$ ? me$.handle : id) : 'place:yacht:' + k, '⛵ ' + c[0], { charter: k, until: Date.now() + c[2] * 1000 });
+            const sailed = startCruise(k) || (await enterRoom('yacht', k === 'private' ? 'place:yacht:private:' + (me$ ? me$.handle : id) : 'place:yacht:' + k, '⛵ ' + c[0], { charter: k, until: Date.now() + c[2] * 1000 }), !!inside);
+            if (tripKey && sailed) my('tripStarted', { trip: tripKey }).catch(() => {}); // you're on it: this trip happened
           } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('Paid charters open when the server update goes live. The harbour tour is free.') : e); }
         }));
         return;
@@ -9811,7 +9813,7 @@
         pbody.querySelectorAll('[data-gt]').forEach((b) => (b.onclick = () => { stack.pop(); go('gov', { tab: b.dataset.gt }); }));
         pbody.querySelectorAll('[data-am]').forEach((b) => (b.onclick = () => go(b.dataset.am)));
         if ($('gtFind')) { const list = async () => { const box3 = $('gtList'); box3.innerHTML = '<div class="dim">Looking…</div>'; try { const v = await myNet('govTrips', { handle: $('gtHandle').value });
-            box3.innerHTML = v.trips.length ? v.trips.map((tr) => `<div class="grow"><span><b>${esc(tr.memo)}</b><small>${new Date(tr.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><em>${naira(tr.amount)} ${tr.refunded ? '· refunded' : `<button class="pbtn alt" data-rf="${tr.id}">Refund</button>`}</em></div>`).join('') : '<div class="dim">No trip charges in the last 14 days.</div>';
+            box3.innerHTML = v.trips.length ? v.trips.map((tr) => `<div class="grow"><span><b>${esc(tr.memo)}</b><small>${new Date(tr.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></span><em>${naira(tr.amount)} ${tr.refunded ? '· refunded' : tr.state === 'never' ? `<button class="pbtn alt" data-rf="${tr.id}">Refund</button>` : tr.state === 'taken' ? '· taken, not refundable' : tr.state === 'booked' ? '· starting…' : '· no trip record'}</em></div>`).join('') : '<div class="dim">No trip charges in the last 14 days.</div>';
             box3.querySelectorAll('[data-rf]').forEach((b) => (b.onclick = async () => { b.disabled = true; try { const r = await my('govRefund', { entryId: Number(b.dataset.rf) }); tickerSay(`Refunded ${naira(r.refunded)} to @${v.handle}`); list(); } catch (e) { b.disabled = false; fail(e); } })); } catch (e) { box3.innerHTML = '<div class="dim">' + esc(e.message) + '</div>'; } };
           $('gtFind').onclick = list; }
         pbody.querySelectorAll('[data-vote]').forEach((b) => (b.onclick = () => { store.set('li.vote.' + L.wk, b.dataset.vote); notify(`You voted ${b.dataset.vote} on "${L.bill[0]}"`, 'gov', ['gov']); render('gov', { tab: 'vote' }); }));
