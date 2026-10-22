@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T02:35:58.727Z">
+<meta name="li-build" content="2026-10-22T03:49:37.569Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1248,6 +1248,14 @@
   #deco.bm .bmTabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; } #deco.bm .bmTabs button { flex: none; padding: 6px 11px; border: 0; border-radius: 999px; background: #EEF2F6; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: #334155; cursor: pointer; } #deco.bm .bmTabs button.on { background: #0F172A; color: #fff; }
   #deco.bm .dscroll { max-width: none; padding-bottom: 2px; } #deco.bm .ditem { position: relative; width: 74px; } #deco.bm .ditem img { width: 44px; height: 44px; } #deco.bm .ditem em { position: absolute; top: 3px; right: 5px; font: 800 10px 'Plus Jakarta Sans', sans-serif; font-style: normal; color: #0F766E; }
   #deco.bm .bmTools { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; } #deco.bm .dbtn[disabled] { opacity: .4; cursor: default; }
+  .hday { display: block; width: 100%; text-align: left; border: 0; cursor: pointer; color: inherit; font: inherit; margin: 10px 0 2px; padding: 14px 16px; border-radius: 22px; background: var(--ppCard, #fff); box-shadow: inset 0 0 0 1px rgba(15,23,42,.07), 0 10px 26px -18px rgba(15,23,42,.45); animation: hIn .45s cubic-bezier(.2,1,.3,1) both; }
+  .hdTop { display: flex; justify-content: space-between; align-items: flex-end; } .hdTop small { display: block; font: 700 11px 'Plus Jakarta Sans', sans-serif; opacity: .6; text-transform: uppercase; letter-spacing: .06em; } .hdTop b { font: 800 26px 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; }
+  .hdIO { text-align: right; font: 700 13px 'Plus Jakarta Sans', sans-serif; } .hdIO .in { color: #16A34A; margin-right: 8px; } .hdIO .out { color: #DC2626; } .hdIO small { text-transform: none; letter-spacing: 0; }
+  .hdBar { height: 6px; border-radius: 3px; background: rgba(148,163,184,.25); margin: 10px 0 4px; overflow: hidden; } .hdBar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #22C55E, #0EA5E9); }
+  .hdCap { display: block; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; opacity: .7; }
+  .hdList { margin-top: 8px; border-top: 1px solid rgba(148,163,184,.2); } .hdRow { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 7px 0; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; border-bottom: 1px solid rgba(148,163,184,.12); }
+  .hdRow span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .hdRow em { font-style: normal; opacity: .55; font-size: 11px; } .hdRow b.pos { color: #16A34A; } .hdRow b.neg { color: #DC2626; }
+  .sLeft { margin: -4px 0 8px; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; opacity: .85; } .sLeft small { opacity: .7; }
 </style>
 </head>
 <body>
@@ -1920,6 +1928,19 @@
     x.fillStyle = c0; x.beginPath(); for (const [px, py, pr] of cl) { x.moveTo(px + pr, py); x.arc(px, py, pr, 0, Math.PI * 2); } x.fill();
     x.fillStyle = shadeHex(c0, 1.28); x.beginPath(); for (const [px, py, pr, s] of cl) if (s < 0.25) { const hx = px - pr * 0.3, hy = py - pr * 0.35; x.moveTo(hx + pr * 0.45, hy); x.arc(hx, hy, pr * 0.45, 0, Math.PI * 2); } x.fill();
   }
+  // a boat at the marina, along the x axis, its bow to the east: a superyacht (two decks), a yacht, a sailboat, a speedboat
+  function marinaBoat(bx, bz, kind, bob, t, col) {
+    const L = { super: 14, yacht: 9, sail: 8, speed: 5 }[kind], Wd = { super: 3.6, yacht: 2.8, sail: 2.2, speed: 1.8 }[kind], h = kind === 'speed' ? 0.9 : 1.6;
+    const x0 = bx - L / 2, x1 = bx + L / 2 - Wd, y = bob;
+    box(x0, y, bz - Wd / 2, x1, h + y, bz + Wd / 2, col || '#F8FAFC'); // the hull
+    quad([P(x1, h + y, bz - Wd / 2), P(x1 + Wd, h + y, bz), P(x1, h + y, bz + Wd / 2)], col || '#F8FAFC'); // the bow, to a point
+    quad([P(x1, y, bz + Wd / 2), P(x1 + Wd, y, bz), P(x1 + Wd, h + y, bz), P(x1, h + y, bz + Wd / 2)], shadeHex(col || '#F8FAFC', 0.82));
+    box(x0, y + 0.3, bz + Wd / 2 - 0.02, x1, y + 0.6, bz + Wd / 2 + 0.02, '#1E3A8A'); // the stripe
+    if (kind === 'super') { box(x0 + 1.5, h + y, bz - 1.4, x1 - 1, h + 2 + y, bz + 1.4, '#F1F5F9', '#0F172A', 1); box(x0 + 3, h + 2 + y, bz - 1, x1 - 2.5, h + 3.4 + y, bz + 1, '#E2E8F0', '#0F172A', 1); box(x1 - 3.2, h + 3.4 + y, bz - 0.1, x1 - 3, h + 5.4 + y, bz + 0.1, '#94A3B8'); }
+    else if (kind === 'yacht') box(x0 + 1.2, h + y, bz - 1, x1 - 0.8, h + 1.6 + y, bz + 1, '#F1F5F9', '#0F172A', 1);
+    else if (kind === 'sail') { box(bx - 0.08, h + y, bz - 0.08, bx + 0.08, h + 9 + y, bz + 0.08, '#E5E7EB'); quad([P(bx + 0.1, h + 1 + y, bz), P(bx + 0.1, h + 8.6 + y, bz), P(bx + 3.4, h + 1 + y, bz)], 'rgba(248,250,252,0.92)', '#CBD5E1'); }
+    else box(x0 + 1, h + y, bz - 0.7, x0 + 2.4, h + 0.8 + y, bz + 0.7, 'rgba(14,116,144,0.85)'); // a speedboat's windscreen
+  }
   function palm(tx, tz, h) {
     const base = P(tx, 0, tz), top = P(tx + 0.6, h, tz), s = K, t = performance.now() / 1400 + tx;
     x.fillStyle = 'rgba(25,55,30,0.22)'; x.beginPath(); x.ellipse(base[0] + s * 2, base[1], s * 3.2, s * 1.2 * sp, 0, 0, Math.PI * 2); x.fill();
@@ -2463,15 +2484,42 @@
       for (const [px, pz] of [[a + 2, b + 2], [c - 2, d - 2], [a + 2, d - 2]]) tree(px, pz, 2.6);
     },
     villas(a, b, c, d) { estate(a, b, c, d); },
-    // ---- Banana Island Marina: a boardwalk out over the water, yachts at the pontoons, a clubhouse
+    // ---- Banana Island Marina: a glass terminal with a canopy and its departures board, flags and a palm on the plaza; a
+    // basin cut into the quay with a pontoon down the middle, a beacon at its end, a superyacht, a sailboat and a yacht
     marina(a, b, c, d) {
-      flat(a, b, c, d, 0.05, '#E7E5E4', C.plotEdge);
-      box(a + 2, 0, b + 2, a + 12, 5, b + 9, '#FFFFFF', '#38BDF8', 1); box(a + 1.6, 5, b + 1.6, a + 12.4, 5.5, b + 9.4, '#0F766E'); // the clubhouse
-      const t = performance.now() / 1000;
-      flat(c - 0.5, b + 3, c + 9, b + 5, 0.3, '#A16207'); flat(c - 0.5, b + 12, c + 9, b + 14, 0.3, '#A16207'); // pontoons out over the water
-      for (const [yz, col, k] of [[b + 7.5, '#F8FAFC', 0], [b + 16.5, '#E2E8F0', 1]]) { const yx = c + 4 + Math.sin(t * 0.8 + k) * 0.2, bob = Math.sin(t * 1.3 + k) * 0.15; box(yx - 4.5, bob, yz - 1.4, yx + 4.5, 1.6 + bob, yz + 1.4, col); box(yx - 2.5, 1.6 + bob, yz - 1, yx + 2, 3 + bob, yz + 1, '#1E293B'); box(yx - 0.1, 3 + bob, yz - 0.1, yx + 0.1, 9 + bob, yz + 0.1, '#CBD5E1'); } // yachts
-      for (let k = 0; k < 4; k++) palm(a + 15 + k * 4, d - 2, 8 + (k % 2));
-      lamp(a + 14, b + 3, 6);
+      const t = performance.now() / 1000, dark = night > 0.35, W2 = c - a, bx0 = a + W2 * 0.5; // the terminal's half, then the basin
+      flat(a, b, bx0, d, 0.05, '#E7E5E4', C.plotEdge);
+      for (let px = a + 1; px < bx0 - 1; px += 1.6) flat(px, d - 4, px + 0.8, d - 0.6, 0.06, '#D6D3D1'); // the plaza's paving
+      // the basin: water cut into the quay, a timber edge round it
+      flat(bx0, b, c, d, 0.01, dark ? '#1E3A5F' : '#3A86C8');
+      for (let k = 0; k < 7; k++) { const wz = b + 2 + k * 2.6, p = P(bx0 + 2 + ((t * 0.8 + k * 1.7) % (c - bx0 - 4)), 0.02, wz), q = P(bx0 + 4 + ((t * 0.8 + k * 1.7) % (c - bx0 - 4)), 0.02, wz); x.strokeStyle = 'rgba(255,255,255,0.35)'; x.lineWidth = Math.max(1, K * 0.15); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      flat(bx0 - 0.8, b, bx0, d, 0.08, '#A16207'); flat(bx0, b, c, b + 0.8, 0.08, '#A16207'); flat(bx0, d - 0.8, c, d, 0.08, '#A16207');
+      // the terminal: glass front, white roof slab reaching out as a canopy over the doors
+      const tx0 = a + 1.5, tx1 = bx0 - 3, tz0 = b + 2, tz1 = b + 10;
+      box(tx0, 0, tz0, tx1, 6, tz1, '#F8FAFC', '#475569', 1);
+      box(tx0 + 0.6, 0.4, tz1 - 0.02, tx1 - 0.6, 5.4, tz1 + 0.1, dark ? '#FDE68A' : '#0E7490'); // the glass
+      for (let px = tx0 + 2.4; px < tx1 - 0.6; px += 2.2) box(px - 0.06, 0.4, tz1 + 0.1, px + 0.06, 5.4, tz1 + 0.16, '#0F172A');
+      box(tx0 - 0.6, 6, tz0 - 0.6, tx1 + 0.6, 6.6, tz1 + 3.4, '#FFFFFF'); box(tx0 - 0.6, 5.7, tz1 + 3, tx1 + 0.6, 6, tz1 + 3.4, '#0F766E'); // the roof and its canopy
+      for (const px of [tx0 + 1, tx1 - 1]) box(px - 0.15, 0, tz1 + 2.8, px + 0.15, 5.7, tz1 + 3.1, '#94A3B8');
+      if (K > 2.2) faceText('BANANA ISLAND MARINA', (tx0 + tx1) / 2, 6.3, tz1 + 3.42, '#0F766E', 0.62, 2, 900);
+      // the departures board by the doors: the charters, their times rolling round
+      { const bx = tx1 - 2, bz = d - 3; box(bx, 0, bz, bx + 0.3, 1.2, bz + 0.3, '#334155'); box(bx - 1.6, 1.2, bz, bx + 1.9, 4.2, bz + 0.25, '#0B1020');
+        if (K > 3) { const rows = ['HARBOUR TOUR  · NOW', 'LAGOON CRUISE · :15', 'SUNSET PARTY  · :30', 'PRIVATE       · ANY'], k0 = Math.floor(t / 3) % rows.length;
+          for (let k = 0; k < 3; k++) faceText(rows[(k0 + k) % rows.length], bx + 0.15, 3.6 - k * 0.8, bz + 0.27, k ? '#FDE68A' : '#4ADE80', 0.32, 0, 700); } }
+      // the flags, a palm, bollards along the basin
+      for (const [fx, col] of [[a + 2.5, '#008751'], [a + 4.3, '#F8FAFC'], [a + 6.1, '#0EA5E9']]) { box(fx - 0.08, 0, d - 2, fx + 0.08, 8, d - 1.84, '#CBD5E1'); const f = [0, 1, 2, 3].map((u) => P(fx + 0.1 + u * 0.5, 7.6 - Math.sin(t * 4 + u + fx) * 0.15, d - 1.92)); x.fillStyle = col; x.beginPath(); x.moveTo(f[0][0], f[0][1]); for (const q of f) x.lineTo(q[0], q[1]); for (let u = 3; u >= 0; u--) x.lineTo(f[u][0], f[u][1] + K * 1); x.closePath(); x.fill(); }
+      palm(a + 9, d - 2, 8); lamp(bx0 - 2, b + 2, 6);
+      for (let pz = b + 2.5; pz < d - 1; pz += 3.4) box(bx0 - 1.4, 0.08, pz - 0.3, bx0 - 0.8, 0.9, pz + 0.3, '#1F2937');
+      // the pontoon down the middle of the basin and its finger piers, the beacon at its end
+      const mz = (b + d) / 2;
+      flat(bx0, mz - 0.8, c - 2, mz + 0.8, 0.35, '#A16207'); for (let px = bx0 + 1; px < c - 2; px += 1.4) flat(px, mz - 0.8, px + 0.1, mz + 0.8, 0.37, 'rgba(70,40,15,0.35)');
+      box(c - 2.4, 0, mz - 0.6, c - 1.2, 5, mz + 0.6, '#F8FAFC'); box(c - 2.5, 5, mz - 0.7, c - 1.1, 5.7, mz + 0.7, '#DC2626');
+      { const on = Math.floor(t * 1.2) % 2 === 0, p = P(c - 1.8, 6.1, mz); x.fillStyle = on ? '#FDE047' : '#78350F'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill();
+        if (on && dark) glow.push(() => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 6); g.addColorStop(0, 'rgba(253,224,71,0.6)'); g.addColorStop(1, 'rgba(253,224,71,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 6, 0, Math.PI * 2); x.fill(); x.restore(); }); }
+      // the boats in their berths either side of the pontoon, bobbing
+      const bob = (k) => Math.sin(t * 1.3 + k) * 0.12;
+      marinaBoat(bx0 + 9.5, b + 4.6, 'super', bob(0), t);
+      marinaBoat(bx0 + 5.2, d - 4.4, 'sail', bob(1), t); marinaBoat(bx0 + 14.5, d - 4.4, 'yacht', bob(2), t);
     },
     // ---- the gate onto Banana Island: a gatehouse, a barrier that lifts now and then
     bigate(a, b, c, d) {
@@ -4939,18 +4987,21 @@
     // slender white pylon on the median rising to a pointed crown, two fans of stays down to both edges of the deck;
     // at night the stays and pylon run through colours in waves, lamps line the walkways and the light shimmers on the water
     { const x0 = 26 * T, x1 = 30 * T, cx = 28 * T, z0 = 9 * T + 1.5, z1 = 10 * T - 1.5, cz = (z0 + z1) / 2, PH = 34;
-      for (const px of [x0 + 4, cx - 9, cx + 9, x1 - 4]) box(px - 0.7, -3, cz - 1.6, px + 0.7, 0.4, cz + 1.6, '#94A3B8'); // the piers
+      for (const px of [x0 + 4, cx - 9, cx + 9, x1 - 4]) { for (const pz of [cz - 1.8, cz + 1.8]) cylLit(px, pz, 0.7, -3, 2.4, '#94A3B8'); box(px - 1.2, -0.6, z0 + 0.6, px + 1.2, -0.1, z1 - 0.6, '#A8A29E'); } // the piers: twin columns under a cap
+      box(x0, -1.1, z0, x1, -0.05, z0 + 0.35, '#E2E8F0'); box(x0, -1.1, z1 - 0.35, x1, -0.05, z1, '#E2E8F0'); box(x0, -0.9, z0 + 0.35, x1, -0.1, z1 - 0.35, '#64748B'); // the deck's fascia and girder
+      for (const ez of [z0 + 0.25, z1 - 0.25]) { box(x0, 0.47, ez - 0.08, x1, 1.25, ez + 0.08, '#E5E7EB'); for (let px = x0 + 1; px < x1; px += 2) box(px - 0.05, 0.47, ez - 0.06, px + 0.05, 1.2, ez + 0.06, '#CBD5E1'); } // the guardrails
       flat(x0, z0 + 0.4, x1, z0 + 1.4, 0.47, '#CBD5E1'); flat(x0, z1 - 1.4, x1, z1 - 0.4, 0.47, '#CBD5E1'); // the walkways
       flat(x0, cz - 0.35, x1, cz + 0.35, 0.47, '#9CA3AF'); // the median
       x.lineWidth = Math.max(1, K * 0.15); x.strokeStyle = 'rgba(248,250,252,0.8)'; x.setLineDash([3, 4]); x.beginPath();
       for (const z of [(z0 + 1.4 + cz - 0.35) / 2, (cz + 0.35 + z1 - 1.4) / 2]) { const p = P(x0, 0.48, z), q = P(x1, 0.48, z); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); }
       x.stroke(); x.setLineDash([]);
       // the pylon: a tapering white mast on the median, a pointed crown
-      for (let k = 0; k < 6; k++) { const y = k * (PH / 6), w = 1.1 - k * 0.12; box(cx - w, y, cz - w * 0.8, cx + w, y + PH / 6, cz + w * 0.8, '#F8FAFC'); }
+      for (let k = 0; k < 8; k++) { const y = k * (PH / 8), w = 1 - k * 0.085; box(cx - w, y, cz - w * 0.75, cx + w, y + PH / 8, cz + w * 0.75, '#F8FAFC'); box(cx - w - 0.02, y + PH / 8 - 0.12, cz - w * 0.75 - 0.02, cx + w + 0.02, y + PH / 8, cz + w * 0.75 + 0.02, '#CBD5E1'); }
+      box(cx - 0.55, PH - 1.6, cz - 0.45, cx + 0.55, PH - 0.9, cz + 0.45, '#94A3B8'); // the crown ring
       pyramid(cx - 0.4, cz - 0.3, cx + 0.4, cz + 0.3, PH, 4, '#E2E8F0');
       // the stays: two fans, each to both edges of the deck
       const stays = (lit) => {
-        const t = performance.now() / 1000; x.save(); if (lit) { x.globalCompositeOperation = 'lighter'; x.shadowBlur = 10; }
+        const t = performance.now() / 1000; x.save(); if (lit) x.shadowBlur = 3; // a soft glow, not a blaze
         // the lit pass comes after every building, so where WYRD Tower stands in front of the bridge, cut its outline out
         if (lit) { const wt = PLACES.find((p) => p[0] === 'wyrdtower'); if (wt) { const tx = (wt[1] + wt[3] / 2) * T, tz = (wt[2] + wt[4] / 2) * T; if (P(tx, 0, tz)[2] > P(cx, 0, cz)[2]) {
           const pts = []; for (const [hw, hd, y] of [[9, 6.6, 0], [6.4, 4.6, 112], [2, 2, 134]]) for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const p = P(tx + sx * hw, y, tz + sz * hd); pts.push([p[0], p[1]]); }
@@ -4959,19 +5010,19 @@
           for (const p of pts.slice().reverse()) { while (hi.length > 1 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
           const hull = lo.slice(0, -1).concat(hi.slice(0, -1)); x.beginPath(); x.rect(0, 0, W, H); x.moveTo(hull[0][0], hull[0][1]); for (const p of hull) x.lineTo(p[0], p[1]); x.closePath(); x.clip('evenodd');
         } } }
-        for (let k = 1; k <= 8; k++) for (const side of [-1, 1]) for (const ez of [z0 + 0.5, z1 - 0.5]) {
-          const ay = PH - 2 - k * 1.5, a = P(cx, ay, cz), e = P(cx + side * (2.5 + k * 2.1), 1.3, ez), hue = (t * 40 + k * 22 + (side > 0 ? 0 : 180)) % 360;
-          x.strokeStyle = lit ? `hsla(${hue},95%,62%,0.9)` : 'rgba(255,255,255,0.9)'; x.shadowColor = x.strokeStyle; x.lineWidth = lit ? 1.5 : Math.max(0.8, K * 0.1);
+        for (let k = 1; k <= 12; k++) for (const side of [-1, 1]) for (const ez of [z0 + 0.5, z1 - 0.5]) {
+          const ay = PH - 2.2 - k * 1.05, a = P(cx, ay, cz), e = P(cx + side * (2.2 + k * 1.45), 1.3, ez), hue = (t * 25 + k * 16 + (side > 0 ? 0 : 180)) % 360;
+          x.strokeStyle = lit ? `hsla(${hue},70%,62%,0.32)` : 'rgba(255,255,255,0.85)'; x.shadowColor = x.strokeStyle; x.lineWidth = lit ? 1 : Math.max(0.7, K * 0.08);
           x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(e[0], e[1]); x.stroke();
         }
         if (lit) {
           // the pylon washed in colour, a beacon on the crown, lamps along both walkways, light on the water below
           const p0 = P(cx, 0.6, cz), p1 = P(cx, PH + 3, cz), g = x.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);
-          g.addColorStop(0, `hsla(${(t * 40) % 360},95%,60%,0.85)`); g.addColorStop(1, `hsla(${(t * 40 + 140) % 360},95%,70%,0.85)`);
-          x.strokeStyle = g; x.lineWidth = Math.max(3, K * 1.6); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
+          g.addColorStop(0, `hsla(${(t * 25) % 360},70%,60%,0.28)`); g.addColorStop(1, `hsla(${(t * 25 + 140) % 360},70%,70%,0.38)`);
+          x.strokeStyle = g; x.lineWidth = Math.max(2, K * 0.9); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
           if (Math.floor(t * 1.2) % 2) { const b = P(cx, PH + 4.2, cz); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(b[0], b[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill(); }
-          for (let k = 0; k <= 16; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 2.5, 2, ez); x.fillStyle = '#FEF3C7'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); }
-          for (let k = 0; k < 10; k++) { const wx = x0 + 2 + k * 4, w = P(wx, -0.1, z1 + 2 + Math.sin(t * 2 + k) * 0.6), hue = (t * 40 + k * 30) % 360; x.fillStyle = `hsla(${hue},95%,60%,0.35)`; x.beginPath(); x.ellipse(w[0], w[1], K * 1.6, K * 0.35, 0, 0, Math.PI * 2); x.fill(); }
+          for (let k = 0; k <= 16; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 2.5, 2, ez); x.fillStyle = 'rgba(254,243,199,0.55)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.22), 0, Math.PI * 2); x.fill(); }
+          for (let k = 0; k < 10; k++) { const wx = x0 + 2 + k * 4, w = P(wx, -0.1, z1 + 2 + Math.sin(t * 2 + k) * 0.6), hue = (t * 40 + k * 30) % 360; x.fillStyle = `hsla(${hue},70%,60%,0.12)`; x.beginPath(); x.ellipse(w[0], w[1], K * 1.6, K * 0.35, 0, 0, Math.PI * 2); x.fill(); }
         } else { // the walkway lamp posts by day
           for (let k = 0; k <= 8; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 5, 0.5, ez), q = P(x0 + k * 5, 2, ez); x.strokeStyle = '#94A3B8'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
         }
@@ -6245,12 +6296,56 @@
     if (px > 70) { const half = (R.w - px) / (R.w - 70) * (R.d / 2); return Math.abs(pz - R.d / 2) < half - 1.5; }
     return true;
   }
+  // ---- the cruise's scenery: the route's landmarks sliding past on the far side as the trip goes on (the captain calls each
+  // one out), boats going the other way, gulls over the water, a sunset sky on the sunset party; a jacuzzi and life rings on
+  // deck; the route along the top
+  const CRUISE_MARKS = [['Banana Island', 'banana'], ['Lekki–Ikoyi Link Bridge', 'link'], ['the Civic Centre', 'civic'], ['Third Mainland Bridge', 'third'], ['Eko Atlantic', 'eko'], ['the Lagos lighthouse', 'light']];
+  function cruiseScenery(R, t) {
+    const total = (CHARTERS[R.charter] || [0, 0, 180])[2], left = Math.max(0, ((R.until || 0) - Date.now()) / 1000), prog = Math.min(1, Math.max(0, 1 - left / total)), dark = night > 0.45, cz = R.d / 2;
+    // the sky: a warm band low over the water at sunset (the sunset party, or the real dusk), the sun sitting on it
+    if (R.charter === 'sunset' || (night > 0.15 && night < 0.55)) { const a = P(-200, 30, -95), b = P(320, 30, -95), c2 = P(320, -2, -95), d2 = P(-200, -2, -95), g = x.createLinearGradient(a[0], a[1], d2[0], d2[1]); g.addColorStop(0, 'rgba(251,146,60,0)'); g.addColorStop(0.6, 'rgba(251,146,60,0.45)'); g.addColorStop(1, 'rgba(244,63,94,0.55)'); quad([a, b, c2, d2], g);
+      const s = P(60, 6, -94); x.fillStyle = '#FDBA74'; x.beginPath(); x.arc(s[0], s[1], K * 5, 0, Math.PI * 2); x.fill();
+      x.fillStyle = 'rgba(253,186,116,0.35)'; for (let k = 0; k < 8; k++) { const q = P(60 + Math.sin(t * 2 + k) * 2, -2, -90 + k * 9); x.fillRect(q[0] - K * (3 - k * 0.3), q[1], K * (6 - k * 0.6), Math.max(1, K * 0.3)); } } // its path on the water
+    // the landmarks, spread along the trip and sliding past as it goes
+    CRUISE_MARKS.forEach(([name, kind], k) => {
+      const mx = 40 + (k + 0.5) / CRUISE_MARKS.length * 520 - prog * 520, z0 = -52; if (mx < -140 || mx > 260) return;
+      if (kind === 'link') { box(mx - 0.6, -2, z0 - 0.6, mx + 0.6, 34, z0 + 0.6, '#E5E7EB'); x.strokeStyle = dark ? 'rgba(244,114,182,0.8)' : 'rgba(203,213,225,0.9)'; x.lineWidth = Math.max(1, K * 0.15); x.beginPath(); for (let s = 1; s <= 7; s++) for (const sd of [-1, 1]) { const p = P(mx, 34 - s * 2, z0), q = P(mx + sd * s * 7, 4, z0); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); box(mx - 60, 3, z0 - 1, mx + 60, 4, z0 + 1, '#94A3B8'); }
+      else if (kind === 'third') { box(mx - 90, 2.5, z0 - 1, mx + 90, 3.4, z0 + 1, '#94A3B8'); for (let px = mx - 88; px < mx + 90; px += 9) box(px, -2, z0 - 0.5, px + 1, 2.5, z0 + 0.5, '#64748B'); if (dark) for (let px = mx - 86; px < mx + 90; px += 6) { const p = P(px, 4, z0); x.fillStyle = '#FDE68A'; x.fillRect(p[0] - 1, p[1] - 1, 2, 2); } }
+      else if (kind === 'civic') { box(mx - 6, -2, z0 - 4, mx + 6, 22, z0 + 4, dark ? '#1E3A8A' : '#7DD3FC', dark ? '#FDE68A' : '#E0F2FE', 3); box(mx - 6.4, 22, z0 - 4.4, mx + 6.4, 23, z0 + 4.4, '#F8FAFC'); }
+      else if (kind === 'eko') { for (const [ox, h] of [[-12, 30], [-4, 44], [5, 36], [13, 26]]) box(mx + ox - 3, -2, z0 - 3, mx + ox + 3, h, z0 + 3, dark ? '#0F172A' : '#CBD5E1', dark ? '#FDE68A' : '#F1F5F9', 4); }
+      else if (kind === 'light') { box(mx - 1.2, -2, z0 - 1.2, mx + 1.2, 18, z0 + 1.2, '#F8FAFC'); for (let y = 2; y < 18; y += 5) box(mx - 1.25, y, z0 - 1.25, mx + 1.25, y + 1.6, z0 + 1.25, '#DC2626'); const p = P(mx, 19.5, z0); x.fillStyle = Math.sin(t * 3) > 0 ? '#FDE047' : '#78350F'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.6), 0, Math.PI * 2); x.fill(); }
+      else { for (let v = 0; v < 5; v++) box(mx - 20 + v * 9, -2, z0 - 3, mx - 14 + v * 9, 5 + (v % 2) * 2, z0 + 3, '#F5F5F4', '#1E293B', 1); for (let v = 0; v < 6; v++) palm(mx - 22 + v * 8, z0 + 4, 7); }
+      // the captain calls it out as it comes alongside
+      R.called = R.called || {}; if (!R.called[name] && mx < 60 && mx > 20) { R.called[name] = 1; bubbles.set('captain', { text: `On your left: ${name}.`, until: performance.now() + 5000 }); }
+    });
+    // boats going the other way, gulls wheeling overhead
+    { const fx = ((t * 18) % 420) - 160; box(fx - 7, -2, -24, fx + 7, 1.2, -19, '#FACC15'); box(fx - 4, 1.2, -23.5, fx + 4, 3.4, -19.5, '#F8FAFC', '#0F172A', 1); // a ferry
+      const sx = 260 - ((t * 34 + 90) % 460); box(sx - 2.5, -2, -12, sx + 2.5, 0.3, -10, '#DC2626'); x.strokeStyle = 'rgba(255,255,255,0.7)'; x.lineWidth = Math.max(1, K * 0.25); const w0 = P(sx + 2.5, -1.8, -11), w1 = P(sx + 14, -1.9, -11 + Math.sin(t * 3)); x.beginPath(); x.moveTo(w0[0], w0[1]); x.lineTo(w1[0], w1[1]); x.stroke(); }
+    x.strokeStyle = dark ? 'rgba(226,232,240,0.6)' : 'rgba(30,41,59,0.6)'; x.lineWidth = Math.max(1, K * 0.18);
+    for (let k = 0; k < 5; k++) { const ang = t * 0.4 + k * 1.3, p = P(40 + Math.cos(ang) * (30 + k * 6), 22 + k * 2 + Math.sin(t * 2 + k), -10 + Math.sin(ang) * 20), fl = Math.sin(t * 8 + k) * K * 0.5, s = K * 1.2; x.beginPath(); x.moveTo(p[0] - s, p[1] + fl); x.quadraticCurveTo(p[0] - s / 2, p[1] - s / 2, p[0], p[1]); x.quadraticCurveTo(p[0] + s / 2, p[1] - s / 2, p[0] + s, p[1] + fl); x.stroke(); }
+    return prog;
+  }
+  function cruiseDeck(R, t, prog) {
+    const cz = R.d / 2;
+    // the jacuzzi on the foredeck, bubbling
+    cylLit(78, cz, 3.4, 0, 1.6, '#F8FAFC'); { const p = P(78, 1.62, cz); x.fillStyle = '#38BDF8'; x.beginPath(); x.ellipse(p[0], p[1], K * 2.9, K * 2.9 * sp, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = 'rgba(255,255,255,0.8)'; for (let k = 0; k < 10; k++) { const a = k * 0.63 + t * 2, r2 = (k % 3 + 1) * 1.1, q = P(78 + Math.cos(a) * r2 * 0.8, 1.66, cz + Math.sin(a) * r2); x.beginPath(); x.arc(q[0], q[1], Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } }
+    // life rings on the rail
+    for (const [lx, lz] of [[36, 0.4], [52, 0.4], [36, R.d - 0.4]]) { const p = P(lx, 2.4, lz); x.strokeStyle = '#F97316'; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], K * 0.9, K * 0.9, 0, 0, Math.PI * 2); x.stroke(); }
+    // the route along the top, with how far along you are
+    afterCars.push(() => { const w = Math.min(320, W - 60), x0 = (W - w) / 2, y0 = 122; x.save(); x.fillStyle = 'rgba(15,23,42,0.72)'; x.beginPath(); x.roundRect(x0 - 12, y0 - 14, w + 24, 34, 14); x.fill();
+      x.strokeStyle = 'rgba(148,163,184,0.6)'; x.lineWidth = 3; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x0 + w, y0); x.stroke(); x.strokeStyle = '#38BDF8'; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x0 + w * prog, y0); x.stroke();
+      x.font = '700 9px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center';
+      CRUISE_MARKS.forEach(([name], k) => { const u = (k + 0.5) / CRUISE_MARKS.length, px = x0 + w * u; x.fillStyle = u <= prog ? '#38BDF8' : '#94A3B8'; x.beginPath(); x.arc(px, y0, 4, 0, Math.PI * 2); x.fill(); });
+      { const nx = CRUISE_MARKS.find((m, k) => (k + 0.5) / CRUISE_MARKS.length > prog); x.fillStyle = '#E2E8F0'; x.font = '700 11px "Plus Jakarta Sans", sans-serif'; x.fillText(nx ? 'Next: ' + nx[0] : 'Heading back to the marina', x0 + w / 2, y0 + 15); }
+      x.font = '16px sans-serif'; x.fillText('⛵', x0 + w * prog, y0 - 4); x.restore(); });
+  }
   function drawYachtShell(R, now) {
     const t = now / 1000, cz = R.d / 2;
     // the lagoon going by: swells sliding back, the skyline far off, the wake behind
     x.lineWidth = Math.max(1, K * 0.2);
     for (let z = -70; z < 110; z += 7) { x.strokeStyle = `rgba(255,255,255,${0.1 + ((z + 70) % 21) / 120})`; x.beginPath(); for (let k = 0; k < 9; k++) { const wx = ((k * 30 - t * 14 + z * 3) % 270 + 270) % 270 - 100, p = P(wx, -2, z), q = P(wx + 8, -2, z + Math.sin(k + z) * 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); }
     for (let i = 0; i < 16; i++) { const bx = ((i * 41 - t * 4) % 520 + 520) % 520 - 200, h = 18 + ((i * 7) % 5) * 9; box(bx, -2, -78, bx + 9, h, -72, night > 0.5 ? '#1E1B4B' : '#94A3B8', night > 0.5 ? '#FDE68A' : '#CBD5E1'); } // the Eko skyline
+    const prog = cruiseScenery(R, t);
     x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); for (const s of [-1, 1]) { const p = P(0, -1.5, cz + s * 13), q = P(-45, -2, cz + s * 26); x.moveTo(p[0], p[1]); x.quadraticCurveTo((p[0] + q[0]) / 2, (p[1] + q[1]) / 2 + Math.sin(t * 3 + s) * K, q[0], q[1]); } x.stroke(); // the wake
     // the hull: white, a navy stripe, sides you can see
     const out = [[0, 0], [70, 0], [R.w, cz], [70, R.d], [0, R.d]];
@@ -6270,6 +6365,7 @@
     { const p = P(12.3, 13.3, 17), a = t * 3; x.strokeStyle = '#1E293B'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p[0] - Math.cos(a) * K * 2, p[1] - Math.sin(a) * K * 0.5); x.lineTo(p[0] + Math.cos(a) * K * 2, p[1] + Math.sin(a) * K * 0.5); x.stroke(); }
     box(1, 0, 2, 1.3, 9, 2.3, '#9CA3AF'); { const f = [[0, 0], [1, 0.2], [2, 0], [3, 0.2], [4, 0]].map(([u, w2], k) => P(1.3 + u, 8.6 - Math.sin(t * 4 + k) * 0.25, 2.15)); const g = f.map((p) => [p[0], p[1] + K * 2.2]); for (let s = 0; s < 3; s++) { const a = Math.floor(s * 4 / 3), b = Math.floor((s + 1) * 4 / 3); x.fillStyle = s === 1 ? '#FFFFFF' : '#008751'; x.beginPath(); x.moveTo(f[a][0], f[a][1]); for (let k = a; k <= b; k++) x.lineTo(f[k][0], f[k][1]); for (let k = b; k >= a; k--) x.lineTo(g[k][0], g[k][1]); x.fill(); } } // the flag: green, white, green
     person(33, 9, '#F8FAFC', 'Captain Femi', bubbles.get('captain'), now, false, 'm,3,1,0,1');
+    cruiseDeck(R, t, prog);
     if (R.charter === 'sunset' || night > 0.4) glow.push(() => { for (let k = 0; k < 14; k++) { const u = k / 13, px = 34 + u * 58, pz = u > 0.62 ? cz + (k % 2 ? 1 : -1) * (1 - (u - 0.62) / 0.38) * cz * 0.9 : (k % 2 ? 1.2 : R.d - 1.2), p = P(px, 3.4, pz); x.fillStyle = `hsl(${(k * 40 + t * 90) % 360},95%,65%)`; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); } }); // deck lights
     // the trip: time left up top; back at the marina when it's up
     const left = Math.max(0, Math.ceil(((R.until || 0) - Date.now()) / 1000));
@@ -7052,7 +7148,7 @@
   let sector = SECTORS[0];
   { const in0 = new URLSearchParams(location.search).get('in'); if (in0) setTimeout(() => { const p = PLACES.find((v) => v[0] === in0); if (p && ENTERABLE.has(in0)) enterPlace(p); }, 1200); } // ?in=mall opens a building straight away
   { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
-  if (/^(localhost|127.0.0.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('room') === 'arena') setTimeout(() => enterRoom('arena', 'arena:preview', 'The Arena · Preview', {}), 1500); // a local preview only
+  if (/^(localhost|127.0.0.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('room')) setTimeout(() => { const r = new URLSearchParams(location.search).get('room'); if (r === 'arena') enterRoom('arena', 'arena:preview', 'The Arena · Preview', {}); if (r === 'yacht') enterRoom('yacht', 'yacht:preview', 'Lagoon cruise', { charter: 'cruise', until: Date.now() + 180000 }); }, 1500); // a local preview only
   // testing on a local copy: ?task=marshal | turnaround | atc opens that airport task with sample data (nothing is paid)
   { const t0 = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('task') : null;
     const S0 = { marshal: { type: 'marshal', title: 'Bring in the arrival', cues: ['far', 'left', 'far', 'right', 'close', 'bar'] }, turnaround: { type: 'turnaround', title: 'Turnaround on the apron', steps: ['Refuel', 'Chocks in', 'Close the doors', 'Open the doors', 'Ground power off', 'Unload the bags', 'Chocks out', 'Load the bags', 'Ground power on'] }, atc: { type: 'atc', title: 'The busy hour', items: [{ cs: 'EKO412', kind: 'arr', t: 90 }, { cs: 'WYR230', kind: 'arr', t: 40 }, { cs: 'LIA118', kind: 'dep', t: 90 }, { cs: 'ISL771', kind: 'dep', t: 150 }] } };
@@ -8654,12 +8750,23 @@
             return `<div class="hchips">${chips.map(([i, t, a], k) => `<button data-app="${a}" style="--d:${(k * 0.06).toFixed(2)}s"><i>${i}</i>${esc(t)}</button>`).join('')}</div>`; })()}
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), playing = (CITY.srcs || []).filter((s) => s.room && s.now); return playing.length || live ? `<button class="tw" data-app="${live ? 'arena' : 'music'}"><div><small>Live now</small><b>${playing.length ? `${playing.length} club${playing.length > 1 ? 's' : ''} playing · ${esc(playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(', '))}` : 'The Arena is live'}</b><span>${live && playing.length ? '● The Arena is live too' : 'Tap to listen'}</span></div><i>🎶</i></button>` : ''; })()}
-          <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><small>Earned today ${naira(me$.earnedToday || 0)}</small></button>
+          <button class="hday" id="hDay" data-app="wallet"><div class="hdTop"><div><small>Wallet</small><b>${naira(me$.naira)}</b></div><div class="hdIO" id="hdIO"></div></div><div class="hdBar"><i style="width:${Math.min(100, Math.round(100 * (me$.earnedToday || 0) / (me$.dailyCap || 35000)))}%"></i></div><small class="hdCap">Earned ${naira(me$.earnedToday || 0)} of ${naira(me$.dailyCap || 35000)} today</small><div class="hdList" id="hdList"><div class="skel"><i></i><i class="s"></i></div></div></button>
+          <div class="wrow">
             <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
+        // your day, straight from the ledger: in and out today (tax apart), the tax this week, the last three movements, what you can still send
+        Promise.all([my('receipts'), my('civic').catch(() => null)]).then(([r, cv]) => {
+          const io = $('hdIO'), ls = $('hdList'); if (!io || !ls || !Array.isArray(r)) return;
+          const today = new Date().toDateString(), tr = r.filter((e) => e.at && new Date(e.at).toDateString() === today);
+          const inT = tr.filter((e) => e.amount > 0).reduce((n, e) => n + e.amount, 0), outT = tr.filter((e) => e.amount < 0 && e.kind !== 'tax').reduce((n, e) => n - e.amount, 0), taxT = tr.filter((e) => e.kind === 'tax').reduce((n, e) => n - e.amount, 0);
+          io.innerHTML = `<span class="in">+${naira(inT)}</span><span class="out">−${naira(outT)}</span><small>today${taxT ? ` · tax ${naira(taxT)}` : ''}</small>`;
+          const cap = document.querySelector('#hDay .hdCap'); if (cap && cv) cap.textContent += ` · tax ${naira(cv.taxWeek)} this week` + (me$.send ? ` · can send ${naira(me$.send.left)}` : '');
+          const when = (at) => new Date(at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+          ls.innerHTML = r.filter((e) => e.kind !== 'tax').slice(0, 3).map((e) => `<div class="hdRow"><span>${esc(e.memo)}</span><em>${e.at ? when(e.at) : ''}</em><b class="${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</b></div>`).join('') || '<div class="hdRow"><span>Nothing yet today. Work a shift to get paid.</span></div>';
+        }).catch(() => { const ls = $('hdList'); if (ls) ls.innerHTML = ''; });
         { const wk = pbody.querySelector('.hWork'); if (wk) wk.onclick = () => go('jobs'); }
         { const av = pbody.querySelector('.hHi .av2'); if (av) av.onclick = () => openPass(); $('hBell').onclick = () => { buildShade(); shadeEl.classList.add('on'); setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); }; }
         if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
@@ -8685,7 +8792,7 @@
           <button class="wBuyFun" id="wBuy"><span class="bfIc">💸</span><span class="bfTx"><b id="bfLine">${parseLook(myLook, me$.handle).g === 'f' ? 'Fine girl 💅' : 'Fine boy 😎'}</b><small>Buy naira · bank transfer</small></span><span class="bfGo">${pi('go')}</span></button>
           <div id="wBankHold" style="display:none"><button class="wReal" id="wBank" style="margin-top:8px"><span class="ic2">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Bank account</b><small id="wBankSub">Where your real earnings are paid</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button></div>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button></div>
-          <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
+          <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3>${me$.send ? `<div class="sLeft">You can send <b>${naira(me$.send.left)}</b> more today <small>(${naira(me$.send.limit)} a day${me$.send.newAccount ? ', on your first day' : ''})</small></div>` : ''}<input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
           <div id="earnBox" style="display:none"><div class="wSec"><span>Real earnings</span></div><div id="realBox"></div><div id="wBankSlot"></div><div id="earnList"><div class="wSec"><span>Where to earn</span></div><div class="ppList">${EARN.map(([k, ic, n, pay]) => `<button class="wRow" data-earn="${k}"><span class="ic2">${ic}</span><span class="t"><b>${n}</b><small>${pay} a shift · ride there</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`).join('')}</div></div></div>
           <div class="wSec"><span>Activity</span>${spent ? `<span>Spent today ${naira(spent)}</span>` : ''}</div>
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);

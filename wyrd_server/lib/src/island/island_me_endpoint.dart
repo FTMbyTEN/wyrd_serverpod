@@ -118,6 +118,7 @@ class IslandMeEndpoint extends Endpoint {
       ..._profileJson(p),
       'ghost': p.ghost,
       'naira': c.naira,
+      'send': await (() async { final (left, limit, isNew) = await _sendRoom(session, u, p); return {'left': left, 'limit': limit, 'newAccount': isNew}; })(),
       'earnedToday': await _earnedToday(session, u),
       'dailyCap': dailyCap,
       'operator': await DroneService.isOperator(session, u),
@@ -235,7 +236,15 @@ class IslandMeEndpoint extends Endpoint {
   };
   static const dailyCap = 35000;
   /// the most one player can send to others in 24 hours
-  static const sendDaily = 20000, sendDailyNew = 2000;
+  static const sendDaily = 20000, sendDailyNew = 5000;
+
+  /// What I may still send today: (left, my daily limit, whether I'm new). A new account (its first day) sends less.
+  static Future<(int, int, bool)> _sendRoom(Session s, UuidValue u, IslandProfile me) async {
+    final newAcct = DateTime.now().toUtc().difference(me.createdAt) < const Duration(days: 1), limit = newAcct ? sendDailyNew : sendDaily;
+    final dayAgo = DateTime.now().toUtc().subtract(const Duration(hours: 24));
+    final sent = (await NairaEntry.db.find(s, where: (t) => t.authUserId.equals(u) & t.key.like('island:send:%:out') & (t.createdAt > dayAgo))).fold<int>(0, (a, e) => a - e.amount);
+    return (max(0, limit - sent), limit, newAcct);
+  }
 
   static Future<int> _earnedToday(Session s, UuidValue u) async {
     final day = DateTime.now().toUtc().add(const Duration(hours: 1));
@@ -430,10 +439,8 @@ class IslandMeEndpoint extends Endpoint {
     final me = await _profile(session, u);
     // new accounts can't send, and each sender has a daily limit, so a crowd of new accounts can't funnel naira to one
     // a new account (its first 3 days) sends a little; after that the full daily amount
-    final newAcct = DateTime.now().toUtc().difference(me.createdAt) < const Duration(days: 3), limit = newAcct ? sendDailyNew : sendDaily;
-    final dayAgo = DateTime.now().toUtc().subtract(const Duration(hours: 24));
-    final sent = (await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.key.like('island:send:%:out') & (t.createdAt > dayAgo))).fold<int>(0, (a, e) => a - e.amount);
-    if (sent + amount > limit) return _err('You can send up to ₦${_n(limit)} a day${newAcct ? ' in your first 3 days' : ''} (₦${_n(max(0, limit - sent))} left today).');
+    final (room, limit, newAcct) = await _sendRoom(session, u, me);
+    if (amount > room) return _err(room == 0 ? 'You have sent all you can today (₦${_n(limit)} a day${newAcct ? ' on your first day' : ''}). Try again tomorrow.' : 'You can send ₦${_n(room)} more today (₦${_n(limit)} a day${newAcct ? ' on your first day' : ''}).');
     await WorldAuthority.citizen(session, to.authUserId);
     final id =
         '${DateTime.now().microsecondsSinceEpoch}${_rnd.nextInt(1 << 16)}';
