@@ -1887,6 +1887,7 @@ class IslandMeEndpoint extends Endpoint {
     'loft': (name: 'Loft', price: 25000000),
     'mansion': (name: 'Mansion with BQ', price: 40000000),
     'villa': (name: 'Waterfront villa', price: 120000000),
+    'nml': (name: "No Man's Land mansion", price: 500000000),
   };
 
   /// estate -> the style of each plot, in order (plot `<estate>:<n>`). The same list as ESTATES in web/index.html.
@@ -1927,6 +1928,7 @@ class IslandMeEndpoint extends Endpoint {
     'ikoyihomes': ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'duplex', 'loft'],
     'oldikoyi': ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
     'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa', 'villa', 'loft', 'villa', 'villa', 'mansion', 'villa'],
+    'nomansland': ['nml', 'nml', 'nml', 'nml'], // No Man's Land: four mansions on the private island
     // the new estates on the reclaimed land, 12 homes each
     'atlantic': ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
     'oceancrest': ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],

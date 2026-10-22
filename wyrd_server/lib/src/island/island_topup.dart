@@ -158,7 +158,11 @@ abstract final class TopUp {
     s.log('[topup] $ref confirmed by Flutterwave: bank transfer ${d['amount']} ${d['currency']} id=${d['id']} mode=${mode(s)}', level: LogLevel.info);
     final res = await Bank.post(s, row.authUserId, key: 'topup:$ref', amount: row.naira, kind: 'topup', counter: 'city:treasury', memo: 'Bought ${_n(row.naira)} naira (Flutterwave)');
     if (res.short != null) return {'status': 'pending'};
-    await IslandTopUp.db.updateRow(s, row.copyWith(status: 'paid', flwId: '${d['id'] ?? ''}', paidAt: DateTime.now().toUtc()));
+    // what reached our balance: the charge less Flutterwave's fee (as it reports it; otherwise its NGN rate, 1.4% up to 2,000)
+    num fee0(Object? f) => f is num ? f : f is List ? f.whereType<Map>().fold<num>(0, (n, e) => n + amt(e['amount'])) : f is Map ? amt(f['amount']) : -1;
+    final reported = fee0(d['fees']), paidIn = amt(d['amount']);
+    final fee = reported >= 0 ? reported : min(2000, (paidIn * 0.014).ceil());
+    await IslandTopUp.db.updateRow(s, row.copyWith(status: 'paid', flwId: '${d['id'] ?? ''}', paidAt: DateTime.now().toUtc(), netNgn: max(0, (paidIn - fee).floor())));
     return {'status': 'paid', 'naira': row.naira};
   }
 
@@ -166,11 +170,12 @@ abstract final class TopUp {
 
   static int _n0(Object? v) => v is num ? v.toInt() : num.tryParse('$v')?.toInt() ?? 0; // a SUM comes back as text
 
-  /// Treasury 2, in kobo: the real naira players have paid in (live payments only: a v4 purchase has its own Flutterwave
-  /// account; the earlier test checkouts don't count), less every payout sent or on its way (failed and returned ones
-  /// come back). Payouts come out of it: the same Flutterwave balance players paid into.
+  /// Treasury 2, in kobo: the real naira that reached our Flutterwave balance after its collection fee (live payments
+  /// only: a v4 purchase has its own Flutterwave account; the earlier test checkouts don't count; a payment from before
+  /// the net was recorded is counted at Flutterwave's rate, 1.4% up to 2,000), less every payout sent or on its way
+  /// (failed and returned ones come back). Payouts come out of it: the same balance players paid into.
   static Future<({int inKobo, int outKobo, int inFlightKobo, int payments})> treasury2Kobo(Session s) async {
-    final t = (await s.db.unsafeQuery('SELECT COALESCE(SUM("amountNgn"), 0), COUNT(*) FROM "island_topup" WHERE "status" = \'paid\' AND "flwAccount" IS NOT NULL')).first;
+    final t = (await s.db.unsafeQuery(r'''SELECT COALESCE(SUM(COALESCE("netNgn", "amountNgn" - LEAST(CEIL("amountNgn" * 0.014), 2000))), 0), COUNT(*) FROM "island_topup" WHERE "status" = 'paid' AND "flwAccount" IS NOT NULL''')).first;
     final w = (await s.db.unsafeQuery('SELECT COALESCE(SUM("amountKobo") FILTER (WHERE "status" = \'paid\'), 0), COALESCE(SUM("amountKobo") FILTER (WHERE "status" IN (\'requested\', \'submitted\', \'pending\', \'unknown\')), 0) FROM "reward_withdrawal"')).first;
     return (inKobo: _n0(t[0]) * 100, outKobo: _n0(w[0]), inFlightKobo: _n0(w[1]), payments: _n0(t[1]));
   }

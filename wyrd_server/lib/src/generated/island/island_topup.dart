@@ -27,6 +27,7 @@ abstract class IslandTopUp
     this.flwId,
     this.flwAccount,
     this.payTo,
+    this.netNgn,
     required this.createdAt,
     this.paidAt,
   });
@@ -42,6 +43,7 @@ abstract class IslandTopUp
     String? flwId,
     String? flwAccount,
     String? payTo,
+    int? netNgn,
     required DateTime createdAt,
     DateTime? paidAt,
   }) = _IslandTopUpImpl;
@@ -60,6 +62,7 @@ abstract class IslandTopUp
       flwId: jsonSerialization['flwId'] as String?,
       flwAccount: jsonSerialization['flwAccount'] as String?,
       payTo: jsonSerialization['payTo'] as String?,
+      netNgn: jsonSerialization['netNgn'] as int?,
       createdAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -101,6 +104,9 @@ abstract class IslandTopUp
   /// where to pay it, as shown to the player (JSON: account, bank, amount, expires)
   String? payTo;
 
+  /// what actually reached our Flutterwave balance after its collection fee, in naira (null: not known)
+  int? netNgn;
+
   DateTime createdAt;
 
   DateTime? paidAt;
@@ -122,6 +128,7 @@ abstract class IslandTopUp
     String? flwId,
     String? flwAccount,
     String? payTo,
+    int? netNgn,
     DateTime? createdAt,
     DateTime? paidAt,
   });
@@ -139,6 +146,7 @@ abstract class IslandTopUp
       if (flwId != null) 'flwId': flwId,
       if (flwAccount != null) 'flwAccount': flwAccount,
       if (payTo != null) 'payTo': payTo,
+      if (netNgn != null) 'netNgn': netNgn,
       'createdAt': createdAt.toJson(),
       if (paidAt != null) 'paidAt': paidAt?.toJson(),
     };
@@ -158,6 +166,7 @@ abstract class IslandTopUp
       if (flwId != null) 'flwId': flwId,
       if (flwAccount != null) 'flwAccount': flwAccount,
       if (payTo != null) 'payTo': payTo,
+      if (netNgn != null) 'netNgn': netNgn,
       'createdAt': createdAt.toJson(),
       if (paidAt != null) 'paidAt': paidAt?.toJson(),
     };
@@ -205,6 +214,7 @@ class _IslandTopUpImpl extends IslandTopUp {
     String? flwId,
     String? flwAccount,
     String? payTo,
+    int? netNgn,
     required DateTime createdAt,
     DateTime? paidAt,
   }) : super._(
@@ -218,6 +228,7 @@ class _IslandTopUpImpl extends IslandTopUp {
          flwId: flwId,
          flwAccount: flwAccount,
          payTo: payTo,
+         netNgn: netNgn,
          createdAt: createdAt,
          paidAt: paidAt,
        );
@@ -237,6 +248,7 @@ class _IslandTopUpImpl extends IslandTopUp {
     Object? flwId = _Undefined,
     Object? flwAccount = _Undefined,
     Object? payTo = _Undefined,
+    Object? netNgn = _Undefined,
     DateTime? createdAt,
     Object? paidAt = _Undefined,
   }) {
@@ -251,6 +263,7 @@ class _IslandTopUpImpl extends IslandTopUp {
       flwId: flwId is String? ? flwId : this.flwId,
       flwAccount: flwAccount is String? ? flwAccount : this.flwAccount,
       payTo: payTo is String? ? payTo : this.payTo,
+      netNgn: netNgn is int? ? netNgn : this.netNgn,
       createdAt: createdAt ?? this.createdAt,
       paidAt: paidAt is DateTime? ? paidAt : this.paidAt,
     );
@@ -307,6 +320,11 @@ class IslandTopUpUpdateTable extends _is.UpdateTable<IslandTopUpTable> {
     value,
   );
 
+  _is.ColumnValue<int, int> netNgn(int? value) => _is.ColumnValue(
+    table.netNgn,
+    value,
+  );
+
   _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _is.ColumnValue(
         table.createdAt,
@@ -359,6 +377,10 @@ class IslandTopUpTable extends _is.Table<int?> {
       'payTo',
       this,
     );
+    netNgn = _is.ColumnInt(
+      'netNgn',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -396,6 +418,9 @@ class IslandTopUpTable extends _is.Table<int?> {
   /// where to pay it, as shown to the player (JSON: account, bank, amount, expires)
   late final _is.ColumnString payTo;
 
+  /// what actually reached our Flutterwave balance after its collection fee, in naira (null: not known)
+  late final _is.ColumnInt netNgn;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime paidAt;
@@ -412,6 +437,7 @@ class IslandTopUpTable extends _is.Table<int?> {
     flwId,
     flwAccount,
     payTo,
+    netNgn,
     createdAt,
     paidAt,
   ];

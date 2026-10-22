@@ -19,6 +19,8 @@ fields:
   flwAccount: String?
   ### where to pay it, as shown to the player (JSON: account, bank, amount, expires)
   payTo: String?
+  ### what actually reached our Flutterwave balance after its collection fee, in naira (null: not known)
+  netNgn: int?
   createdAt: DateTime
   paidAt: DateTime?
 indexes:
