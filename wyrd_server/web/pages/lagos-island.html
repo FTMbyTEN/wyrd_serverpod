@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T04:14:30.459Z">
+<meta name="li-build" content="2026-10-22T10:35:38.306Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -5552,7 +5552,7 @@
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
-    yacht: { w: 96, d: 34, floor: '#B7895C', wall: '#B7895C', trim: '#B7895C', cam: { yaw: -0.45, pitch: 0.82, zoom: 1.25 } }, // a deck at sea: no walls
+    yacht: { w: 96, d: 34, floor: '#B7895C', wall: '#B7895C', trim: '#B7895C', cam: { yaw: -0.5, pitch: 0.6, zoom: 1.3 } }, // a deck at sea: no walls
     jetcabin: { w: 60, d: 18, floor: '#CFC2A8', wall: '#F5F1E8', trim: '#B08A43', cam: { yaw: -0.5, pitch: 0.84, zoom: 1.7 } }, // a private jet in flight: windows down the wall
     beach: { w: 110, d: 72, floor: '#F3DE9C', wall: '#F3DE9C', trim: '#F3DE9C', cam: { yaw: -0.4, pitch: 0.85, zoom: 1.0 } }, // no walls: the sea at the back
     home: { w: 56, d: 40, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.78, zoom: 1.85 } }, // sized by its style on the way in
@@ -6338,7 +6338,7 @@
   // the deck: a stern you can stand at, the cabin in the way, the bow narrowing to a point
   function onDeck(px, pz) {
     const R = inside; if (px < 1.5 || pz < 1.5 || pz > R.d - 1.5) return false;
-    if (px > 5.5 && px < 30.5 && pz > 6.5 && pz < 27.5) return false; // the cabin
+    if (px > 4.5 && px < 32.6 && pz > 5.5 && pz < 28.5) return false; // the deckhouse
     if (px > 70) { const half = (R.w - px) / (R.w - 70) * (R.d / 2); return Math.abs(pz - R.d / 2) < half - 1.5; }
     return true;
   }
@@ -6354,13 +6354,13 @@
       x.fillStyle = 'rgba(253,186,116,0.35)'; for (let k = 0; k < 8; k++) { const q = P(60 + Math.sin(t * 2 + k) * 2, -2, -90 + k * 9); x.fillRect(q[0] - K * (3 - k * 0.3), q[1], K * (6 - k * 0.6), Math.max(1, K * 0.3)); } } // its path on the water
     // the landmarks, spread along the trip and sliding past as it goes
     CRUISE_MARKS.forEach(([name, kind], k) => {
-      const mx = 40 + (k + 0.5) / CRUISE_MARKS.length * 520 - prog * 520, z0 = -52; if (mx < -140 || mx > 260) return;
+      const mx = 40 + (k + 0.5) / CRUISE_MARKS.length * 520 - prog * 520, z0 = kind === 'link' || kind === 'third' ? -50 : -72; // bridges over the water, the rest on the shore if (mx < -140 || mx > 260) return;
       if (kind === 'link') { box(mx - 0.6, -2, z0 - 0.6, mx + 0.6, 34, z0 + 0.6, '#E5E7EB'); x.strokeStyle = dark ? 'rgba(244,114,182,0.8)' : 'rgba(203,213,225,0.9)'; x.lineWidth = Math.max(1, K * 0.15); x.beginPath(); for (let s = 1; s <= 7; s++) for (const sd of [-1, 1]) { const p = P(mx, 34 - s * 2, z0), q = P(mx + sd * s * 7, 4, z0); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); box(mx - 60, 3, z0 - 1, mx + 60, 4, z0 + 1, '#94A3B8'); }
       else if (kind === 'third') { box(mx - 90, 2.5, z0 - 1, mx + 90, 3.4, z0 + 1, '#94A3B8'); for (let px = mx - 88; px < mx + 90; px += 9) box(px, -2, z0 - 0.5, px + 1, 2.5, z0 + 0.5, '#64748B'); if (dark) for (let px = mx - 86; px < mx + 90; px += 6) { const p = P(px, 4, z0); x.fillStyle = '#FDE68A'; x.fillRect(p[0] - 1, p[1] - 1, 2, 2); } }
       else if (kind === 'civic') { box(mx - 6, -2, z0 - 4, mx + 6, 22, z0 + 4, dark ? '#1E3A8A' : '#7DD3FC', dark ? '#FDE68A' : '#E0F2FE', 3); box(mx - 6.4, 22, z0 - 4.4, mx + 6.4, 23, z0 + 4.4, '#F8FAFC'); }
       else if (kind === 'eko') { for (const [ox, h] of [[-12, 30], [-4, 44], [5, 36], [13, 26]]) box(mx + ox - 3, -2, z0 - 3, mx + ox + 3, h, z0 + 3, dark ? '#0F172A' : '#CBD5E1', dark ? '#FDE68A' : '#F1F5F9', 4); }
       else if (kind === 'light') { box(mx - 1.2, -2, z0 - 1.2, mx + 1.2, 18, z0 + 1.2, '#F8FAFC'); for (let y = 2; y < 18; y += 5) box(mx - 1.25, y, z0 - 1.25, mx + 1.25, y + 1.6, z0 + 1.25, '#DC2626'); const p = P(mx, 19.5, z0); x.fillStyle = Math.sin(t * 3) > 0 ? '#FDE047' : '#78350F'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.6), 0, Math.PI * 2); x.fill(); }
-      else { for (let v = 0; v < 5; v++) box(mx - 20 + v * 9, -2, z0 - 3, mx - 14 + v * 9, 5 + (v % 2) * 2, z0 + 3, '#F5F5F4', '#1E293B', 1); for (let v = 0; v < 6; v++) palm(mx - 22 + v * 8, z0 + 4, 7); }
+      else { for (let v = 0; v < 5; v++) box(mx - 20 + v * 9, -0.4, z0 - 3, mx - 14 + v * 9, 5 + (v % 2) * 2, z0 + 3, '#F5F5F4', '#1E293B', 1); for (let v = 0; v < 6; v++) palm(mx - 22 + v * 8, z0 + 4, 7); }
       // the captain calls it out as it comes alongside
       R.called = R.called || {}; if (!R.called[name] && mx < 60 && mx > 20) { R.called[name] = 1; bubbles.set('captain', { text: `On your left: ${name}.`, until: performance.now() + 5000 }); }
     });
@@ -6390,7 +6390,8 @@
     // the lagoon going by: swells sliding back, the skyline far off, the wake behind
     x.lineWidth = Math.max(1, K * 0.2);
     for (let z = -70; z < 110; z += 7) { x.strokeStyle = `rgba(255,255,255,${0.1 + ((z + 70) % 21) / 120})`; x.beginPath(); for (let k = 0; k < 9; k++) { const wx = ((k * 30 - t * 14 + z * 3) % 270 + 270) % 270 - 100, p = P(wx, -2, z), q = P(wx + 8, -2, z + Math.sin(k + z) * 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); }
-    for (let i = 0; i < 16; i++) { const bx = ((i * 41 - t * 4) % 520 + 520) % 520 - 200, h = 18 + ((i * 7) % 5) * 9; box(bx, -2, -78, bx + 9, h, -72, night > 0.5 ? '#1E1B4B' : '#94A3B8', night > 0.5 ? '#FDE68A' : '#CBD5E1'); } // the Eko skyline
+    box(-320, -2.4, -130, 560, -0.4, -66, night > 0.5 ? '#1F3B2A' : '#86B86A'); flat(-320, -67, 560, -64, -0.38, night > 0.5 ? '#6B5B3E' : '#E9D59A'); box(-320, -2.4, -64.4, 560, -0.6, -64, '#9CA3AF'); // the far shore: land, sand, the quay wall
+    for (let i = 0; i < 16; i++) { const bx = ((i * 41 - t * 4) % 520 + 520) % 520 - 200, h = 18 + ((i * 7) % 5) * 9; box(bx, -0.4, -84, bx + 9, h, -76, night > 0.5 ? '#1E1B4B' : '#94A3B8', night > 0.5 ? '#FDE68A' : '#CBD5E1'); } // the Eko skyline
     const prog = cruiseScenery(R, t);
     x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); for (const s of [-1, 1]) { const p = P(0, -1.5, cz + s * 13), q = P(-45, -2, cz + s * 26); x.moveTo(p[0], p[1]); x.quadraticCurveTo((p[0] + q[0]) / 2, (p[1] + q[1]) / 2 + Math.sin(t * 3 + s) * K, q[0], q[1]); } x.stroke(); // the wake
     // the hull: white, a navy stripe, sides you can see
@@ -6398,17 +6399,21 @@
     for (let k = 0; k < out.length; k++) {
       const [ax, az] = out[k], [bx, bz] = out[(k + 1) % out.length], nx = bz - az, nz = -(bx - ax), l = Math.hypot(nx, nz) || 1;
       if (viewDot(nx / l, 0, nz / l) <= 0) continue;
-      quad([P(ax, 0.05, az), P(bx, 0.05, bz), P(bx, -5, bz), P(ax, -5, az)], lit('#F8FAFC', nx / l, 0, nz / l));
-      quad([P(ax, -1.4, az), P(bx, -1.4, bz), P(bx, -2.2, bz), P(ax, -2.2, az)], '#1E3A8A');
+      quad([P(ax, 0.05, az), P(bx, 0.05, bz), P(bx, -2.4, bz), P(ax, -2.4, az)], lit('#F8FAFC', nx / l, 0, nz / l));
+      quad([P(ax, -2.4, az), P(bx, -2.4, bz), P(bx, -4.4, bz), P(ax, -4.4, az)], lit('#0F172A', nx / l, 0, nz / l));
+      quad([P(ax, -0.6, az), P(bx, -0.6, bz), P(bx, -0.95, bz), P(ax, -0.95, az)], '#D4AF37');
+      { const w0 = P(ax, -4.3, az), w1 = P(bx, -4.3, bz); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); x.moveTo(w0[0], w0[1] + Math.sin(t * 3 + ax) * K * 0.2); x.lineTo(w1[0], w1[1] + Math.sin(t * 3 + bx) * K * 0.2); x.stroke(); }
     }
     // the deck: teak planks, a rail round the edge
     quad(out.map(([px, pz]) => P(px, 0.05, pz)), '#B7895C');
     x.strokeStyle = 'rgba(70,40,15,0.25)'; x.lineWidth = 1; x.beginPath(); for (let z = 2; z < R.d; z += 2) { const xe = 70 + (1 - Math.abs(z - cz) / cz) * (R.w - 70), p = P(0, 0.07, z), q = P(xe, 0.07, z); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
-    x.strokeStyle = '#E5E7EB'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); out.forEach(([px, pz], k) => { const p = P(px, 3.2, pz); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }); x.closePath(); x.stroke();
+    x.strokeStyle = '#CBD5E1'; x.lineWidth = Math.max(1, K * 0.15); x.beginPath(); for (let k = 0; k < out.length; k++) { const [ax2, az2] = out[k], [bx2, bz2] = out[(k + 1) % out.length]; for (let u = 0; u < 1; u += 0.08) { const p0 = P(ax2 + (bx2 - ax2) * u, 0.05, az2 + (bz2 - az2) * u), p1 = P(ax2 + (bx2 - ax2) * u, 2.4, az2 + (bz2 - az2) * u); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); } } x.stroke(); // the rail's posts
+    x.strokeStyle = '#E5E7EB'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); out.forEach(([px, pz], k) => { const p = P(px, 2.4, pz); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }); x.closePath(); x.stroke();
     // the cabin, the flybridge with the helm, the radar turning, the flag at the stern
-    box(6, 0, 7, 30, 7, 27, '#F8FAFC', '#1E293B', 2); box(5.5, 7, 6.5, 30.5, 7.5, 27.5, '#E5E7EB');
-    box(9, 7.5, 10, 24, 8.6, 24, '#F1F5F9'); box(12, 8.6, 15.5, 12.6, 13, 18.5, '#CBD5E1');
-    { const p = P(12.3, 13.3, 17), a = t * 3; x.strokeStyle = '#1E293B'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p[0] - Math.cos(a) * K * 2, p[1] - Math.sin(a) * K * 0.5); x.lineTo(p[0] + Math.cos(a) * K * 2, p[1] + Math.sin(a) * K * 0.5); x.stroke(); }
+    box(5, 0, 6, 32, 5, 28, '#F8FAFC'); for (const [z0, z1] of [[5.9, 6.0], [28, 28.1]]) box(6, 1.4, z0, 31, 4, z1, '#0F172A'); box(31.9, 1.4, 7, 32.05, 4, 27, '#0F172A'); // the deckhouse and its tinted glass
+    box(4.6, 5, 5.6, 32.6, 5.4, 28.4, '#E5E7EB'); box(8, 5.4, 8.5, 28, 8.4, 25.5, '#F1F5F9'); for (const [z0, z1] of [[8.4, 8.5], [25.5, 25.6]]) box(9, 6, z0, 27, 7.8, z1, '#1E293B'); // the upper deck
+    box(7, 8.4, 7.5, 29, 8.9, 26.5, '#F8FAFC'); for (const pz of [8, 26]) box(18, 8.9, pz - 0.3, 18.6, 11.6, pz + 0.3, '#E5E7EB'); box(18, 11.6, 7.7, 18.6, 12.1, 26.3, '#E5E7EB'); // the hardtop and the radar arch
+    { const p = P(18.3, 12.4, 17), a = t * 3; x.strokeStyle = '#1E293B'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p[0] - Math.cos(a) * K * 2, p[1] - Math.sin(a) * K * 0.5); x.lineTo(p[0] + Math.cos(a) * K * 2, p[1] + Math.sin(a) * K * 0.5); x.stroke(); }
     box(1, 0, 2, 1.3, 9, 2.3, '#9CA3AF'); { const f = [[0, 0], [1, 0.2], [2, 0], [3, 0.2], [4, 0]].map(([u, w2], k) => P(1.3 + u, 8.6 - Math.sin(t * 4 + k) * 0.25, 2.15)); const g = f.map((p) => [p[0], p[1] + K * 2.2]); for (let s = 0; s < 3; s++) { const a = Math.floor(s * 4 / 3), b = Math.floor((s + 1) * 4 / 3); x.fillStyle = s === 1 ? '#FFFFFF' : '#008751'; x.beginPath(); x.moveTo(f[a][0], f[a][1]); for (let k = a; k <= b; k++) x.lineTo(f[k][0], f[k][1]); for (let k = b; k >= a; k--) x.lineTo(g[k][0], g[k][1]); x.fill(); } } // the flag: green, white, green
     person(33, 9, '#F8FAFC', 'Captain Femi', bubbles.get('captain'), now, false, 'm,3,1,0,1');
     cruiseDeck(R, t, prog);
