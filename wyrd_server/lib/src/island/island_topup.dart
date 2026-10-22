@@ -164,12 +164,28 @@ abstract final class TopUp {
 
   static const reserveShare = 0.5;
 
-  /// Treasury 2: what players have paid in real naira, and the half of it kept for paychecks.
+  static int _n0(Object? v) => v is num ? v.toInt() : num.tryParse('$v')?.toInt() ?? 0; // a SUM comes back as text
+
+  /// Treasury 2, in kobo: the real naira players have paid in (live payments only: a v4 purchase has its own Flutterwave
+  /// account; the earlier test checkouts don't count), less every payout sent or on its way (failed and returned ones
+  /// come back). Payouts come out of it: the same Flutterwave balance players paid into.
+  static Future<({int inKobo, int outKobo, int inFlightKobo, int payments})> treasury2Kobo(Session s) async {
+    final t = (await s.db.unsafeQuery('SELECT COALESCE(SUM("amountNgn"), 0), COUNT(*) FROM "island_topup" WHERE "status" = \'paid\' AND "flwAccount" IS NOT NULL')).first;
+    final w = (await s.db.unsafeQuery('SELECT COALESCE(SUM("amountKobo") FILTER (WHERE "status" = \'paid\'), 0), COALESCE(SUM("amountKobo") FILTER (WHERE "status" IN (\'requested\', \'submitted\', \'pending\', \'unknown\')), 0) FROM "reward_withdrawal"')).first;
+    return (inKobo: _n0(t[0]) * 100, outKobo: _n0(w[0]), inFlightKobo: _n0(w[1]), payments: _n0(t[1]));
+  }
+
+  /// Can Treasury 2 cover [amountKobo] more, after everything already paid out or on its way?
+  static Future<bool> treasury2Covers(Session s, int amountKobo) async {
+    final t = await treasury2Kobo(s);
+    return t.inKobo - t.outKobo - t.inFlightKobo >= amountKobo;
+  }
+
+  /// Treasury 2 for the console: paid in, paid out, on its way, and what's left to pay from.
   static Future<Map<String, dynamic>> treasury2(Session s) async {
-    final rows = await s.db.unsafeQuery('SELECT COALESCE(SUM("amountNgn"), 0), COUNT(*) FROM "island_topup" WHERE "status" = \'paid\'');
-    int n0(Object? v) => v is num ? v.toInt() : num.tryParse('$v')?.toInt() ?? 0; // a SUM comes back as text
-    final paid = n0(rows.first[0]), n = n0(rows.first[1]);
-    return {'mode': mode(s), 'payments': n, 'paidNgn': paid, 'reserveNgn': (paid * reserveShare).floor(), 'share': reserveShare};
+    final t = await treasury2Kobo(s), left = t.inKobo - t.outKobo - t.inFlightKobo;
+    return {'mode': mode(s), 'payments': t.payments, 'paidNgn': t.inKobo ~/ 100, 'paidOutNgn': t.outKobo ~/ 100, 'inFlightNgn': t.inFlightKobo ~/ 100, 'balanceNgn': left ~/ 100,
+      'reserveNgn': left ~/ 100, 'share': 1.0};
   }
 
   static Map<String, dynamic> _json(String b) {

@@ -212,6 +212,7 @@ void run(List<String> args) async {
     final flw = Flw4.from(pod.getPassword);
     if (flw != null) Withdrawals.provider = FlutterwavePayoutProvider(flw);
     Withdrawals.payable = IslandMeEndpoint.payableNow; // the last check before money leaves
+    Withdrawals.funded = TopUp.treasury2Covers; // payouts come out of Treasury 2
   }
 
   await pod.start();

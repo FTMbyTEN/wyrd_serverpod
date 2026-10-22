@@ -103,6 +103,8 @@ abstract final class Withdrawals {
     if (beneficiary.trim().isEmpty) throw JobRefused('Add a verified account to withdraw to.');
     // live money needs a live provider: without one a withdrawal would only sit in flight
     if (cfg.livePayoutsEnabled && provider.name == 'mock') throw JobRefused('Withdrawals are briefly unavailable. Your earnings are safe.');
+    // payouts come out of Treasury 2: it must cover this one on top of everything already on its way
+    if (cfg.livePayoutsEnabled && funded != null && !await funded!(s, amountKobo)) throw JobRefused('Withdrawals are briefly unavailable while the payout fund is topped up. Your earnings are safe; try again later.');
     final again = await RewardWithdrawal.db.findFirstRow(s, where: (t) => t.idemKey.equals(idemKey));
     if (again != null) return again.authUserId == u ? again : (throw JobRefused('Bad request key.'));
     await FundedJobs.matureDue(s, only: u);
@@ -173,6 +175,11 @@ abstract final class Withdrawals {
         s.log('[payout] island-wide daily ceiling reached (${sent ~/ 100} of ${cfg.globalDailyKobo ~/ 100} naira): ${w.ref} waits', level: LogLevel.warning);
         break;
       }
+      // Treasury 2 must still be in credit with this one counted (it is, as requested): if not, it waits
+      if (cfg.livePayoutsEnabled && funded != null && !await funded!(s, 0)) {
+        s.log('[payout] Treasury 2 cannot cover the waiting payouts: ${w.ref} waits until it is topped up', level: LogLevel.warning);
+        break;
+      }
       // still going to a verified account of theirs? (blocked or changed during the review: back to their earnings)
       if (!await stillPayable(s, w)) {
         await _move(s, w, PayoutState.failed, actor: 'system:recheck');
@@ -194,6 +201,9 @@ abstract final class Withdrawals {
   /// to the same account). Null: no check.
   static Future<bool> Function(Session s, RewardWithdrawal w)? payable;
   static Future<bool> stillPayable(Session s, RewardWithdrawal w) async => payable == null || await payable!(s, w);
+
+  /// Can the fund payouts come from (Treasury 2: what players paid in through Flutterwave) cover [amountKobo] more? Null: no check.
+  static Future<bool> Function(Session s, int amountKobo)? funded;
 
   /// Payouts sent but not settled: ask the provider (its answer, not a callback's word, moves money). Run by the tick
   /// and whenever the provider reports something.
