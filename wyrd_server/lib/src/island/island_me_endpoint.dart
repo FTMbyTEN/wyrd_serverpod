@@ -12,6 +12,7 @@ import '../world/world_authority.dart';
 import 'grid_career.dart';
 import 'island_auth_endpoint.dart';
 import 'island_endpoint.dart';
+import 'island_job_share.dart';
 import 'island_payout.dart';
 import '../rewards/funded_jobs.dart';
 import '../rewards/reward_config.dart';
@@ -102,13 +103,26 @@ class IslandMeEndpoint extends Endpoint {
   /// Who I am on the island, my naira, and whether I can check job posts. JSON.
   /// Add my real email (an account made with only a username gets asked for it the first time the phone opens).
   Future<String> setEmail(Session session, String email) async {
-    final err = await IslandAuthEndpoint.setEmail(session, _user(session), email);
+    final err = await IslandAuthEndpoint.setEmail(
+      session,
+      _user(session),
+      email,
+    );
     return err == null ? jsonEncode({'ok': true}) : _err(err);
   }
 
   /// Confirm my game ID with my email and game password before the phone opens.
-  Future<String> confirmPhone(Session session, String email, String password) async {
-    final err = await IslandAuthEndpoint.confirmPhone(session, _user(session), email, password);
+  Future<String> confirmPhone(
+    Session session,
+    String email,
+    String password,
+  ) async {
+    final err = await IslandAuthEndpoint.confirmPhone(
+      session,
+      _user(session),
+      email,
+      password,
+    );
     return err == null ? jsonEncode({'ok': true}) : _err(err);
   }
 
@@ -120,11 +134,17 @@ class IslandMeEndpoint extends Endpoint {
       ..._profileJson(p),
       'ghost': p.ghost,
       'naira': c.naira,
-      'send': await (() async { final (left, limit, isNew) = await _sendRoom(session, u, p); return {'left': left, 'limit': limit, 'newAccount': isNew}; })(),
+      'send': await (() async {
+        final (left, limit, isNew) = await _sendRoom(session, u, p);
+        return {'left': left, 'limit': limit, 'newAccount': isNew};
+      })(),
       'earnedToday': await _earnedToday(session, u),
       'dailyCap': dailyCap,
       'operator': await DroneService.isOperator(session, u),
-      'hasEmail': await IslandAuthEndpoint.hasEmail(session, u), // false: signed up with only a username; the phone asks once
+      'hasEmail': await IslandAuthEndpoint.hasEmail(
+        session,
+        u,
+      ), // false: signed up with only a username; the phone asks once
       'requests': await IslandAccess.db.count(
         session,
         where: (t) => t.ownerId.equals(u) & t.status.equals('pending'),
@@ -149,10 +169,16 @@ class IslandMeEndpoint extends Endpoint {
       // taken in any case, or too like someone else's (or a reserved name): nobody renames into another player
       final taken = await IslandProfile.db.findFirstRow(
         session,
-        where: (t) => t.handle.ilike(h.replaceAll('_', r'\_')) & t.authUserId.notEquals(u),
+        where: (t) =>
+            t.handle.ilike(h.replaceAll('_', r'\_')) &
+            t.authUserId.notEquals(u),
       );
       if (taken != null) return _err('That name is taken.');
-      if (h.toLowerCase() != p.handle.toLowerCase() && await IslandAuthEndpoint.lookalike(session, h)) return _err('That name is too close to someone else\'s. Pick one that\'s clearly yours.');
+      if (h.toLowerCase() != p.handle.toLowerCase() &&
+          await IslandAuthEndpoint.lookalike(session, h))
+        return _err(
+          'That name is too close to someone else\'s. Pick one that\'s clearly yours.',
+        );
       p = p.copyWith(handle: h);
     }
     p = p.copyWith(skills: _clean(skills, 300), openToWork: openToWork);
@@ -175,7 +201,10 @@ class IslandMeEndpoint extends Endpoint {
   /// and homes closed to visitors and knocks), still on the map as a light, homes still counted as lived in.
   Future<String> setGhost(Session session, bool on) async {
     final u = _user(session);
-    final p = await IslandProfile.db.updateRow(session, (await _profile(session, u)).copyWith(ghost: on));
+    final p = await IslandProfile.db.updateRow(
+      session,
+      (await _profile(session, u)).copyWith(ghost: on),
+    );
     IslandEndpoint.forget(u.uuid);
     return jsonEncode({'ghost': p.ghost});
   }
@@ -184,23 +213,35 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> setLook(Session session, String look) async {
     // g,skin,hair,style,bottom and, optionally, the outfit being worn (a free starter or one I've bought) and the
     // accessories worn on top, joined by + (each bought, one per slot)
-    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{0,30}))?(,([a-z0-9_+]{0,200}))?$').firstMatch(look);
+    final m = RegExp(
+      r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{0,30}))?(,([a-z0-9_+]{0,200}))?$',
+    ).firstMatch(look);
     if (m == null) return _err('Bad look.');
     final outfit = (m.group(3) ?? '').isEmpty ? null : m.group(3);
-    final accs = (m.group(5) ?? '').split('+').where((a) => a.isNotEmpty).toList();
+    final accs = (m.group(5) ?? '')
+        .split('+')
+        .where((a) => a.isNotEmpty)
+        .toList();
     if (accs.length > 5) return _err('Five accessories at most.');
     final slots = <String>{};
     for (final a in accs) {
       final slot = accessorySlot(a), o = outfitCatalog[a];
-      if (slot == null || o == null) return _err('That accessory is not in any shop.');
+      if (slot == null || o == null)
+        return _err('That accessory is not in any shop.');
       if (!slots.add(slot)) return _err('One accessory per slot.');
-      if (await IslandOutfit.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)) & t.item.equals(a)) == null) {
+      if (await IslandOutfit.db.findFirstRow(
+            session,
+            where: (t) =>
+                t.authUserId.equals(_user(session)) & t.item.equals(a),
+          ) ==
+          null) {
         return _err('Buy the ${o.name} first.');
       }
     }
     if (outfit != null) {
       final o = outfitCatalog[outfit];
-      if (o == null || outfit.startsWith('acc_')) return _err('That outfit is not in any shop.');
+      if (o == null || outfit.startsWith('acc_'))
+        return _err('That outfit is not in any shop.');
       if (o.price > 0 &&
           await IslandOutfit.db.findFirstRow(
                 session,
@@ -237,14 +278,28 @@ class IslandMeEndpoint extends Endpoint {
     'okada': (pay: 1800, minutes: 4, memo: 'Okada rides'),
   };
   static const dailyCap = 35000;
+
   /// the most one player can send to others in 24 hours
   static const sendDaily = 20000, sendDailyNew = 5000;
 
   /// What I may still send today: (left, my daily limit, whether I'm new). A new account (its first day) sends less.
-  static Future<(int, int, bool)> _sendRoom(Session s, UuidValue u, IslandProfile me) async {
-    final newAcct = DateTime.now().toUtc().difference(me.createdAt) < const Duration(days: 1), limit = newAcct ? sendDailyNew : sendDaily;
+  static Future<(int, int, bool)> _sendRoom(
+    Session s,
+    UuidValue u,
+    IslandProfile me,
+  ) async {
+    final newAcct =
+            DateTime.now().toUtc().difference(me.createdAt) <
+            const Duration(days: 1),
+        limit = newAcct ? sendDailyNew : sendDaily;
     final dayAgo = DateTime.now().toUtc().subtract(const Duration(hours: 24));
-    final sent = (await NairaEntry.db.find(s, where: (t) => t.authUserId.equals(u) & t.key.like('island:send:%:out') & (t.createdAt > dayAgo))).fold<int>(0, (a, e) => a - e.amount);
+    final sent = (await NairaEntry.db.find(
+      s,
+      where: (t) =>
+          t.authUserId.equals(u) &
+          t.key.like('island:send:%:out') &
+          (t.createdAt > dayAgo),
+    )).fold<int>(0, (a, e) => a - e.amount);
     return (max(0, limit - sent), limit, newAcct);
   }
 
@@ -285,26 +340,80 @@ class IslandMeEndpoint extends Endpoint {
     if (sh == null) return _err('Nobody is hiring for that here.');
     final closed = _shiftOpen(place);
     if (closed != null) return _err(closed);
-    if (await _earnedToday(session, u) >= dailyCap) return _err('You have worked enough for today. Rest, and come back tomorrow.');
+    if (await _earnedToday(session, u) >= dailyCap)
+      return _err(
+        'You have worked enough for today. Rest, and come back tomorrow.',
+      );
     final me = await _profile(session, u), at = IslandEndpoint.here(me.handle);
     final old = _shiftRoutes[u.uuid];
-    if (old != null && old.place == place && !old.route.done && DateTime.now().toUtc().difference(old.route.started) < const Duration(minutes: 40)) return jsonEncode({'place': place, ...old.route.json()});
-    final r = _rnd, homes = {'houses', 'shops', 'arcade', 'hotel', 'glass', 'mall', 'mosque', 'cathedral', 'hospital', 'towers'};
+    if (old != null &&
+        old.place == place &&
+        !old.route.done &&
+        DateTime.now().toUtc().difference(old.route.started) <
+            const Duration(minutes: 40))
+      return jsonEncode({'place': place, ...old.route.json()});
+    final r = _rnd,
+        homes = {
+          'houses',
+          'shops',
+          'arcade',
+          'hotel',
+          'glass',
+          'mall',
+          'mosque',
+          'cathedral',
+          'hospital',
+          'towers',
+        };
     late WorkRoute route;
     if (place == 'market') {
       final m = WorkRoute.nearestOf('market', at?.x, at?.z);
-      final c1 = WorkRoute.around(r, m, 50, 230, kinds: homes) ?? WorkRoute.around(r, m, 50, 300)!;
-      final c2 = WorkRoute.around(r, c1, 50, 230, not: {m}, kinds: homes) ?? WorkRoute.around(r, c1, 50, 300, not: {m})!;
-      route = WorkRoute([m, c1, m, c2, m], task: 'Carry the customers goods from ${islandStops[m]!.name}: to ${islandStops[c1]!.name}, back for the next load, then to ${islandStops[c2]!.name}.');
+      final c1 =
+          WorkRoute.around(r, m, 50, 230, kinds: homes) ??
+          WorkRoute.around(r, m, 50, 300)!;
+      final c2 =
+          WorkRoute.around(r, c1, 50, 230, not: {m}, kinds: homes) ??
+          WorkRoute.around(r, c1, 50, 300, not: {m})!;
+      route = WorkRoute(
+        [m, c1, m, c2, m],
+        task:
+            'Carry the customers goods from ${islandStops[m]!.name}: to ${islandStops[c1]!.name}, back for the next load, then to ${islandStops[c2]!.name}.',
+      );
     } else if (place == 'okada') {
       final park = WorkRoute.nearestOf('motorpark', null, null);
-      final pick = WorkRoute.around(r, park, 60, 260) ?? WorkRoute.around(r, park, 40, 400)!;
-      final drop = WorkRoute.around(r, pick, 150, 420, not: {park}) ?? WorkRoute.around(r, pick, 80, 600, not: {park})!;
-      route = WorkRoute([park, pick, drop], task: 'Collect your okada at ${islandStops[park]!.name}, pick up a passenger at ${islandStops[pick]!.name} and ride them to ${islandStops[drop]!.name}.');
+      final pick =
+          WorkRoute.around(r, park, 60, 260) ??
+          WorkRoute.around(r, park, 40, 400)!;
+      final drop =
+          WorkRoute.around(r, pick, 150, 420, not: {park}) ??
+          WorkRoute.around(r, pick, 80, 600, not: {park})!;
+      route = WorkRoute(
+        [park, pick, drop],
+        task:
+            'Collect your okada at ${islandStops[park]!.name}, pick up a passenger at ${islandStops[pick]!.name} and ride them to ${islandStops[drop]!.name}.',
+      );
     } else {
       final club = WorkRoute.nearestOf('club', at?.x, at?.z);
-      final shop = WorkRoute.around(r, club, 60, 420, kinds: {'arcade', 'mall', 'shops', 'market'}) ?? WorkRoute.around(r, club, 60, 800, kinds: {'arcade', 'mall', 'shops', 'market'})!;
-      route = WorkRoute([club, shop, club], task: 'Sign in at ${islandStops[club]!.name}, fetch the drinks delivery for tonight from ${islandStops[shop]!.name} and bring it back before the doors open.');
+      final shop =
+          WorkRoute.around(
+            r,
+            club,
+            60,
+            420,
+            kinds: {'arcade', 'mall', 'shops', 'market'},
+          ) ??
+          WorkRoute.around(
+            r,
+            club,
+            60,
+            800,
+            kinds: {'arcade', 'mall', 'shops', 'market'},
+          )!;
+      route = WorkRoute(
+        [club, shop, club],
+        task:
+            'Sign in at ${islandStops[club]!.name}, fetch the drinks delivery for tonight from ${islandStops[shop]!.name} and bring it back before the doors open.',
+      );
     }
     _shiftRoutes[u.uuid] = (place: place, route: route);
     return jsonEncode({'place': place, ...route.json()});
@@ -316,7 +425,11 @@ class IslandMeEndpoint extends Endpoint {
     if (cur == null) return jsonEncode({'none': true});
     final me = await _profile(session, u);
     final why = cur.route.step(IslandEndpoint.here(me.handle));
-    return jsonEncode({'place': cur.place, ...cur.route.json(), if (why != null) 'why': why});
+    return jsonEncode({
+      'place': cur.place,
+      ...cur.route.json(),
+      if (why != null) 'why': why,
+    });
   }
 
   /// Give up the shift I'm on (nothing is paid).
@@ -333,8 +446,14 @@ class IslandMeEndpoint extends Endpoint {
     final sh = shifts[place];
     if (sh == null) return _err('Nobody is hiring for that here.');
     final cur = _shiftRoutes[u.uuid];
-    if (cur == null || cur.place != place) return _err('Start the shift first: the work comes from the boss, not a tap.');
-    if (!cur.route.done) return _err('Not done yet: ${cur.route.at} of ${cur.route.stops.length} stops. Next is ${islandStops[cur.route.next]!.name}.');
+    if (cur == null || cur.place != place)
+      return _err(
+        'Start the shift first: the work comes from the boss, not a tap.',
+      );
+    if (!cur.route.done)
+      return _err(
+        'Not done yet: ${cur.route.at} of ${cur.route.stops.length} stops. Next is ${islandStops[cur.route.next]!.name}.',
+      );
     if (place == 'club') {
       final h = DateTime.now().toUtc().add(const Duration(hours: 1)).hour;
       if (h >= 6 && h < 18)
@@ -347,15 +466,29 @@ class IslandMeEndpoint extends Endpoint {
         'You\'ve worked enough for today (₦${_n(dailyCap)}). Rest, and come back tomorrow.',
       );
     final me = await _profile(session, u);
-    if (DateTime.now().toUtc().difference(cur.route.started) < Duration(minutes: sh.minutes ~/ 2)) return _err('That was quicker than the work takes. Hand it in properly in a moment.');
+    if (DateTime.now().toUtc().difference(cur.route.started) <
+        Duration(minutes: sh.minutes ~/ 2))
+      return _err(
+        'That was quicker than the work takes. Hand it in properly in a moment.',
+      );
     final pay = min(sh.pay, dailyCap - earned);
     final bucket =
         DateTime.now().millisecondsSinceEpoch ~/ (sh.minutes * 60000);
+    // 2% of the paycheck in real naira (when the fund covers it), the rest in Game Naira
+    final key = 'island:shift:${u.uuid}:$place:$bucket';
+    final cash = await JobShare.credit(
+      session,
+      u,
+      source: key,
+      workplace: place,
+      title: sh.memo,
+      paycheck: pay,
+    );
     final r = await Bank.post(
       session,
       u,
-      key: 'island:shift:${u.uuid}:$place:$bucket',
-      amount: pay,
+      key: key,
+      amount: cash > 0 ? JobShare.gameNaira(pay) : pay,
       kind: 'job',
       counter: place == 'club' ? 'city:services' : 'city:market',
       memo: sh.memo,
@@ -367,7 +500,13 @@ class IslandMeEndpoint extends Endpoint {
     IslandEndpoint.paidShift(me.handle);
     _shiftRoutes.remove(u.uuid);
     final c = await Bank.fresh(session, u);
-    return jsonEncode({'paid': pay, 'naira': c.naira, 'memo': sh.memo});
+    return jsonEncode({
+      'paid': cash > 0 ? JobShare.gameNaira(pay) : pay,
+      'cashKobo': cash,
+      'paycheck': pay,
+      'naira': c.naira,
+      'memo': sh.memo,
+    });
   });
 
   /// The Earn board, from what the server knows for me right now: each workplace's pay (and what lands after the
@@ -376,28 +515,82 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> earnBoard(Session session) async {
     final u = _user(session);
     await WorldAuthority.citizen(session, u);
-    final now = DateTime.now(), ms = now.millisecondsSinceEpoch, lagosHour = now.toUtc().add(const Duration(hours: 1)).hour;
+    final now = DateTime.now(),
+        ms = now.millisecondsSinceEpoch,
+        lagosHour = now.toUtc().add(const Duration(hours: 1)).hour;
     final earned = await _earnedToday(session, u);
     final out = <Map<String, dynamic>>[];
     for (final e in shifts.entries) {
       final win = e.value.minutes * 60000, bucket = ms ~/ win;
-      final done = await NairaEntry.db.findFirstRow(session, where: (t) => t.key.equals('island:shift:${u.uuid}:${e.key}:$bucket')) != null;
+      final done =
+          await NairaEntry.db.findFirstRow(
+            session,
+            where: (t) =>
+                t.key.equals('island:shift:${u.uuid}:${e.key}:$bucket'),
+          ) !=
+          null;
       final closed = e.key == 'club' && lagosHour >= 6 && lagosHour < 18;
       out.add({
-        'place': e.key, 'pay': e.value.pay, 'net': e.value.pay - Bank.taxOn(e.value.pay, 'job'), 'minutes': e.value.minutes, 'memo': e.value.memo,
-        'ready': !done && !closed, 'nextAt': done ? DateTime.fromMillisecondsSinceEpoch((bucket + 1) * win).toUtc().toIso8601String() : null,
-        if (e.key == 'club') 'hours': '6 pm to 6 am', if (closed) 'opensAt': '6 pm',
+        'place': e.key,
+        'pay': e.value.pay,
+        'net': e.value.pay - Bank.taxOn(e.value.pay, 'job'),
+        'minutes': e.value.minutes,
+        'memo': e.value.memo,
+        'ready': !done && !closed,
+        'nextAt': done
+            ? DateTime.fromMillisecondsSinceEpoch(
+                (bucket + 1) * win,
+              ).toUtc().toIso8601String()
+            : null,
+        if (e.key == 'club') 'hours': '6 pm to 6 am',
+        if (closed) 'opensAt': '6 pm',
       });
     }
-    final recent = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & t.kind.equals('job'), orderBy: (t) => t.id.desc(), limit: 30);
-    final jobs = await IslandJob.db.count(session, where: (t) => t.status.equals('open'));
+    final recent = await NairaEntry.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u) & t.kind.equals('job'),
+      orderBy: (t) => t.id.desc(),
+      limit: 30,
+    );
+    final jobs = await IslandJob.db.count(
+      session,
+      where: (t) => t.status.equals('open'),
+    );
     Map<String, dynamic> grid = const {};
-    try { grid = await GridCareer.all(session, u); } catch (_) {}
+    try {
+      grid = await GridCareer.all(session, u);
+    } catch (_) {}
     return jsonEncode({
-      'shifts': out, 'earnedToday': earned, 'doneForToday': earned >= dailyCap, 'taxRate': Bank.taxRate,
-      'grid': grid['tracks'] ?? {}, 'jobsOpen': jobs, if (_shiftRoutes[u.uuid] != null) 'active': {'place': _shiftRoutes[u.uuid]!.place, ..._shiftRoutes[u.uuid]!.route.json()},
-      'recent': [for (final r in recent) {'memo': r.memo, 'amount': r.amount, 'at': r.createdAt.toIso8601String()}],
+      'shifts': out,
+      'earnedToday': earned,
+      'doneForToday': earned >= dailyCap,
+      'taxRate': Bank.taxRate,
+      'grid': grid['tracks'] ?? {},
+      'jobsOpen': jobs,
+      if (_shiftRoutes[u.uuid] != null)
+        'active': {
+          'place': _shiftRoutes[u.uuid]!.place,
+          ..._shiftRoutes[u.uuid]!.route.json(),
+        },
+      'recent': [
+        for (final r in recent)
+          {
+            'memo': r.memo,
+            'amount': r.amount,
+            'at': r.createdAt.toIso8601String(),
+          },
+      ],
     });
+  }
+
+  /// The ₦ wallet: every job I've finished and the real share it earned (2% of the paycheck), with the totals.
+  Future<String> jobShares(Session session) async {
+    try {
+      return jsonEncode(await JobShare.summary(session, _user(session)));
+    } catch (e) {
+      session.log('[jobShares] $e', level: LogLevel.warning);
+      return _err('Couldn\'t load your jobs just now.');
+    }
   }
 
   /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
@@ -410,7 +603,8 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Start a shift on [track]: the server deals the tasks and keeps the answers.
-  Future<String> gridStart(Session session, String track) => _money(session, (u) async {
+  Future<String> gridStart(Session session, String track) =>
+      _money(session, (u) async {
         try {
           await WorldAuthority.citizen(session, u);
           return jsonEncode(await GridCareer.start(session, u, track));
@@ -422,54 +616,104 @@ class IslandMeEndpoint extends Endpoint {
   /// Hand in a shift: [results] is what the player did in each task, as JSON. The server replays and scores it, adds
   /// the experience, and pays by the level it keeps and the score it worked out: one paid shift every 40 minutes,
   /// within the daily cap.
-  Future<String> gridFinish(Session session, int workId, String results) => _money(session, (u) async {
-        try {
-          final (w, scores, c) = await GridCareer.finish(session, u, workId, results);
-          final score = w.score!;
-          var pay = 0;
-          String? note;
-          final earned = await _earnedToday(session, u);
-          if (earned >= dailyCap) {
-            note = 'You\'ve worked enough for today (₦${_n(dailyCap)}). The shift counts for your experience; pay starts again tomorrow.';
-          } else {
-            pay = min(GridCareer.payFor(w.level, score), dailyCap - earned);
-            final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
-            final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:${GridCareer.placeOf(w.track)}:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: GridCareer.memoOf(w.track));
-            if (r.repeat) {
-              pay = 0;
-              note = 'One paid shift every 40 minutes. This one counts for your experience.';
-            }
-          }
-          if (pay > 0) await GridCareer.setPaid(session, w.id!, pay);
-          final cash = await Bank.fresh(session, u);
-          return jsonEncode({
-            'score': score, 'scores': scores, 'paid': pay, if (note != null) 'note': note, 'naira': cash.naira, 'memo': GridCareer.memoOf(w.track),
-            'level': c.level, 'xp': c.xp, 'canExam': c.level < 5 && c.xp >= GridCareer.xpFor[c.level],
-          });
-        } on GridRefused catch (e) {
-          return _err(e.message);
+  Future<String> gridFinish(
+    Session session,
+    int workId,
+    String results,
+  ) => _money(session, (u) async {
+    try {
+      final (w, scores, c) = await GridCareer.finish(
+        session,
+        u,
+        workId,
+        results,
+      );
+      final score = w.score!;
+      var pay = 0, share = 0, paycheck = 0;
+      String? note;
+      final earned = await _earnedToday(session, u);
+      if (earned >= dailyCap) {
+        note =
+            'You\'ve worked enough for today (₦${_n(dailyCap)}). The shift counts for your experience; pay starts again tomorrow.';
+      } else {
+        pay = min(GridCareer.payFor(w.level, score), dailyCap - earned);
+        final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
+        final key =
+            'island:shift:${u.uuid}:${GridCareer.placeOf(w.track)}:$bucket';
+        paycheck =
+            pay; // 2% of it in real naira (when the fund covers it), the rest in Game Naira
+        share = await JobShare.credit(
+          session,
+          u,
+          source: key,
+          workplace: GridCareer.placeOf(w.track),
+          title: GridCareer.memoOf(w.track),
+          paycheck: pay,
+        );
+        if (share > 0) pay = JobShare.gameNaira(pay);
+        final r = await Bank.post(
+          session,
+          u,
+          key: key,
+          amount: pay,
+          kind: 'job',
+          counter: 'city:services',
+          memo: GridCareer.memoOf(w.track),
+        );
+        if (r.repeat) {
+          pay = share = paycheck = 0;
+          note =
+              'One paid shift every 40 minutes. This one counts for your experience.';
         }
+      }
+      if (pay > 0) await GridCareer.setPaid(session, w.id!, pay);
+      final cash = await Bank.fresh(session, u);
+      return jsonEncode({
+        'score': score,
+        'scores': scores,
+        'paid': pay,
+        'cashKobo': share,
+        'paycheck': paycheck,
+        if (note != null) 'note': note,
+        'naira': cash.naira,
+        'memo': GridCareer.memoOf(w.track),
+        'level': c.level,
+        'xp': c.xp,
+        'canExam': c.level < 5 && c.xp >= GridCareer.xpFor[c.level],
       });
+    } on GridRefused catch (e) {
+      return _err(e.message);
+    }
+  });
 
   /// The certification exam for the next level on [track] (needs the experience); the server sets and marks it.
   Future<String> gridExamStart(Session session, String track) async {
     try {
-      return jsonEncode(await GridCareer.examStart(session, _user(session), track));
+      return jsonEncode(
+        await GridCareer.examStart(session, _user(session), track),
+      );
     } on GridRefused catch (e) {
       return _err(e.message);
     }
   }
 
-  Future<String> gridExamAnswer(Session session, int workId, String answers) async {
+  Future<String> gridExamAnswer(
+    Session session,
+    int workId,
+    String answers,
+  ) async {
     try {
-      return jsonEncode(await GridCareer.examAnswer(session, _user(session), workId, answers));
+      return jsonEncode(
+        await GridCareer.examAnswer(session, _user(session), workId, answers),
+      );
     } on GridRefused catch (e) {
       return _err(e.message);
     }
   }
 
   /// The old shift report (the phone chose its own level and score). Kept so an old page gets an answer, not an error.
-  Future<String> gridShift(Session session, int level, int score) async => _err('Update the game: reload the page to keep working at the Grid.');
+  Future<String> gridShift(Session session, int level, int score) async =>
+      _err('Update the game: reload the page to keep working at the Grid.');
 
   static String _n(int v) => v.toString().replaceAllMapped(
     RegExp(r'\B(?=(\d{3})+(?!\d))'),
@@ -497,14 +741,22 @@ class IslandMeEndpoint extends Endpoint {
   ) => _money(session, (u) async {
     if (amount < 50 || amount > 50000)
       return _err('Send between ₦50 and ₦50,000.');
-    final to = await _byHandle(session, handle.trim().replaceFirst(RegExp(r'^@'), '')); // any capitals, with or without the @
+    final to = await _byHandle(
+      session,
+      handle.trim().replaceFirst(RegExp(r'^@'), ''),
+    ); // any capitals, with or without the @
     if (to == null) return _err('Nobody on the island by that name.');
     if (to.authUserId == u) return _err('That\'s you.');
     final me = await _profile(session, u);
     // new accounts can't send, and each sender has a daily limit, so a crowd of new accounts can't funnel naira to one
     // a new account (its first 3 days) sends a little; after that the full daily amount
     final (room, limit, newAcct) = await _sendRoom(session, u, me);
-    if (amount > room) return _err(room == 0 ? 'You have sent all you can today (₦${_n(limit)} a day${newAcct ? ' on your first day' : ''}). Try again tomorrow.' : 'You can send ₦${_n(room)} more today (₦${_n(limit)} a day${newAcct ? ' on your first day' : ''}).');
+    if (amount > room)
+      return _err(
+        room == 0
+            ? 'You have sent all you can today (₦${_n(limit)} a day${newAcct ? ' on your first day' : ''}). Try again tomorrow.'
+            : 'You can send ₦${_n(room)} more today (₦${_n(limit)} a day${newAcct ? ' on your first day' : ''}).',
+      );
     await WorldAuthority.citizen(session, to.authUserId);
     final id =
         '${DateTime.now().microsecondsSinceEpoch}${_rnd.nextInt(1 << 16)}';
@@ -518,7 +770,10 @@ class IslandMeEndpoint extends Endpoint {
       counter: 'city:services',
       memo: 'To ${to.handle}${memo.isEmpty ? '' : ': $memo'}',
     );
-    if (out.short != null) return _err('As how naw.. As how naw 😅 Your balance no reach that one. Abeg go buy NAIRA, make e no cast am lol');
+    if (out.short != null)
+      return _err(
+        'As how naw.. As how naw 😅 Your balance no reach that one. Abeg go buy NAIRA, make e no cast am lol',
+      );
     await Bank.post(
       session,
       to.authUserId,
@@ -877,16 +1132,34 @@ class IslandMeEndpoint extends Endpoint {
     if (who.length != rows.length) return _err('Someone is in the list twice.');
     final sig = '${u.uuid}|${who.join(',')}';
     final recent = _made[sig];
-    if (recent != null && DateTime.now().difference(recent.$2) < const Duration(seconds: 30)) return jsonEncode({'id': recent.$1, 'existing': true});
+    if (recent != null &&
+        DateTime.now().difference(recent.$2) < const Duration(seconds: 30))
+      return jsonEncode({'id': recent.$1, 'existing': true});
     if (rows.length == 2) {
       final other = rows.firstWhere((r) => r.authUserId != u).authUserId;
-      final mineIds = {for (final m in await IslandMember.db.find(session, where: (t) => t.authUserId.equals(u))) m.groupId};
+      final mineIds = {
+        for (final m in await IslandMember.db.find(
+          session,
+          where: (t) => t.authUserId.equals(u),
+        ))
+          m.groupId,
+      };
       if (mineIds.isNotEmpty) {
-        final both = {for (final m in await IslandMember.db.find(session, where: (t) => t.groupId.inSet(mineIds) & t.authUserId.equals(other))) m.groupId};
+        final both = {
+          for (final m in await IslandMember.db.find(
+            session,
+            where: (t) => t.groupId.inSet(mineIds) & t.authUserId.equals(other),
+          ))
+            m.groupId,
+        };
         if (both.isNotEmpty) {
-          final all = await IslandMember.db.find(session, where: (t) => t.groupId.inSet(both));
+          final all = await IslandMember.db.find(
+            session,
+            where: (t) => t.groupId.inSet(both),
+          );
           for (final gid in both) {
-            if (all.where((m) => m.groupId == gid).length == 2) return jsonEncode({'id': gid, 'existing': true});
+            if (all.where((m) => m.groupId == gid).length == 2)
+              return jsonEncode({'id': gid, 'existing': true});
           }
         }
       }
@@ -899,15 +1172,32 @@ class IslandMeEndpoint extends Endpoint {
       for (final r in rows) r.copyWith(groupId: g.id!),
     ]);
     _made[sig] = (g.id!, DateTime.now());
-    if (_made.length > 2000) _made.removeWhere((_, v) => DateTime.now().difference(v.$2) > const Duration(minutes: 1));
+    if (_made.length > 2000)
+      _made.removeWhere(
+        (_, v) => DateTime.now().difference(v.$2) > const Duration(minutes: 1),
+      );
     return jsonEncode({'id': g.id});
   }
-  static final _made = <String, (int, DateTime)>{}; // who made which chat with whom, just now (a second tap opens the same one)
-  static final _posted = <String, (int, DateTime)>{}; // a message's id by the phone's own id for it, for 10 minutes
+
+  static final _made =
+      <
+        String,
+        (int, DateTime)
+      >{}; // who made which chat with whom, just now (a second tap opens the same one)
+  static final _posted =
+      <
+        String,
+        (int, DateTime)
+      >{}; // a message's id by the phone's own id for it, for 10 minutes
 
   /// Post a message with the phone's own id for it ([cid]): sending it again (a retry after a dropped connection,
   /// a double tap) returns the first one instead of posting it twice.
-  Future<String> postOnce(Session session, int groupId, String ct, String cid) async {
+  Future<String> postOnce(
+    Session session,
+    int groupId,
+    String ct,
+    String cid,
+  ) async {
     final u = _user(session);
     if (cid.isEmpty || cid.length > 64) return _err('Bad message.');
     final k = '${u.uuid}|$cid', was = _posted[k];
@@ -915,7 +1205,11 @@ class IslandMeEndpoint extends Endpoint {
     final r = jsonDecode(await post(session, groupId, ct));
     if (r is Map && r['id'] is int) {
       _posted[k] = (r['id'] as int, DateTime.now());
-      if (_posted.length > 5000) _posted.removeWhere((_, v) => DateTime.now().difference(v.$2) > const Duration(minutes: 10));
+      if (_posted.length > 5000)
+        _posted.removeWhere(
+          (_, v) =>
+              DateTime.now().difference(v.$2) > const Duration(minutes: 10),
+        );
     }
     return jsonEncode(r);
   }
@@ -1014,34 +1308,83 @@ class IslandMeEndpoint extends Endpoint {
     try {
       seen = (jsonDecode(seenJson) as Map).cast<String, dynamic>();
     } catch (_) {}
-    final mine = await IslandMember.db.find(session, where: (t) => t.authUserId.equals(u));
+    final mine = await IslandMember.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
     if (mine.isEmpty) return '[]';
     final gids = {for (final m in mine) m.groupId};
-    final groups = {for (final g in await IslandGroup.db.find(session, where: (t) => t.id.inSet(gids))) g.id!: g};
-    final members = await IslandMember.db.find(session, where: (t) => t.groupId.inSet(gids));
+    final groups = {
+      for (final g in await IslandGroup.db.find(
+        session,
+        where: (t) => t.id.inSet(gids),
+      ))
+        g.id!: g,
+    };
+    final members = await IslandMember.db.find(
+      session,
+      where: (t) => t.groupId.inSet(gids),
+    );
     final handles = {
-      for (final p in await IslandProfile.db.find(session, where: (t) => t.authUserId.inSet({for (final m in members) m.authUserId}))) p.authUserId.uuid: p.handle,
+      for (final p in await IslandProfile.db.find(
+        session,
+        where: (t) =>
+            t.authUserId.inSet({for (final m in members) m.authUserId}),
+      ))
+        p.authUserId.uuid: p.handle,
     };
     final out = <Map<String, dynamic>>[];
-    final live = [for (final m in mine) if (groups[m.groupId] != null) m];
-    final lasts = await Future.wait([for (final m in live) IslandMessage.db.findFirstRow(session, where: (t) => t.groupId.equals(m.groupId), orderBy: (t) => t.id.desc())]);
+    final live = [
+      for (final m in mine)
+        if (groups[m.groupId] != null) m,
+    ];
+    final lasts = await Future.wait([
+      for (final m in live)
+        IslandMessage.db.findFirstRow(
+          session,
+          where: (t) => t.groupId.equals(m.groupId),
+          orderBy: (t) => t.id.desc(),
+        ),
+    ]);
     final unreads = await Future.wait([
       for (var i = 0; i < live.length; i++)
         () {
-          final s = (seen['${live[i].groupId}'] as num?)?.toInt() ?? 0, last = lasts[i];
-          return last == null || last.id! <= s ? Future.value(0) : IslandMessage.db.count(session, where: (t) => t.groupId.equals(live[i].groupId) & (t.id > s) & t.senderId.notEquals(u));
+          final s = (seen['${live[i].groupId}'] as num?)?.toInt() ?? 0,
+              last = lasts[i];
+          return last == null || last.id! <= s
+              ? Future.value(0)
+              : IslandMessage.db.count(
+                  session,
+                  where: (t) =>
+                      t.groupId.equals(live[i].groupId) &
+                      (t.id > s) &
+                      t.senderId.notEquals(u),
+                );
         }(),
     ]);
     for (var i = 0; i < live.length; i++) {
-      final m = live[i], g = groups[m.groupId]!, last = lasts[i], unread = unreads[i];
+      final m = live[i],
+          g = groups[m.groupId]!,
+          last = lasts[i],
+          unread = unreads[i];
       out.add({
         'id': g.id,
         'nameCt': g.nameCt,
         'wrappedKey': m.wrappedKey,
         'wrapperPub': m.wrapperPub,
-        'members': [for (final x in members) if (x.groupId == g.id) handles[x.authUserId.uuid] ?? '?'],
+        'members': [
+          for (final x in members)
+            if (x.groupId == g.id) handles[x.authUserId.uuid] ?? '?',
+        ],
         'last': last?.id ?? 0,
-        if (last != null) 'lastMsg': {'id': last.id, 'from': handles[last.senderId.uuid] ?? '?', 'mine': last.senderId == u, 'ct': last.ct, 'at': last.createdAt.toIso8601String()},
+        if (last != null)
+          'lastMsg': {
+            'id': last.id,
+            'from': handles[last.senderId.uuid] ?? '?',
+            'mine': last.senderId == u,
+            'ct': last.ct,
+            'at': last.createdAt.toIso8601String(),
+          },
         'unread': unread,
       });
     }
@@ -1054,8 +1397,13 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> post(Session session, int groupId, String ct) async {
     final u = _user(session);
     if (!_b64(ct, 8000)) return _err('Bad message.');
-    final now0 = DateTime.now(), times = (_sent[u.uuid] ??= [])..removeWhere((t) => now0.difference(t) > const Duration(seconds: 10));
-    if (times.length >= 20) return _err('Slow down a little: too many messages at once.');
+    final now0 = DateTime.now(),
+        times = (_sent[u.uuid] ??= [])
+          ..removeWhere(
+            (t) => now0.difference(t) > const Duration(seconds: 10),
+          );
+    if (times.length >= 20)
+      return _err('Slow down a little: too many messages at once.');
     times.add(now0);
     if (await IslandMember.db.findFirstRow(
           session,
@@ -1076,7 +1424,10 @@ class IslandMeEndpoint extends Endpoint {
     final h = (await _profile(session, u)).handle;
     _typing[groupId]?.remove(h);
     _bump(groupId);
-    for (final mb in await IslandMember.db.find(session, where: (t) => t.groupId.equals(groupId))) {
+    for (final mb in await IslandMember.db.find(
+      session,
+      where: (t) => t.groupId.equals(groupId),
+    )) {
       if (mb.authUserId != u) _ping(mb.authUserId, session);
     }
     return jsonEncode({'id': m.id});
@@ -1113,7 +1464,6 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode(out);
   }
 
-
   // ---------------- live chat: instant delivery, typing, read receipts ----------------
   // Each chat has a version that goes up whenever something happens in it (a message, someone typing, someone reading).
   // A phone with the chat open asks [live] with the version it has; the server holds the request until the version moves
@@ -1121,8 +1471,10 @@ class IslandMeEndpoint extends Endpoint {
   // memory: they're about now, and say nothing about what's in a message.
   static final _ver = <int, int>{};
   static final _waiters = <int, List<Completer<void>>>{};
-  static final _typing = <int, Map<String, DateTime>>{}; // group -> handle -> typing until
-  static final _reads = <int, Map<String, int>>{}; // group -> handle -> last message id read
+  static final _typing =
+      <int, Map<String, DateTime>>{}; // group -> handle -> typing until
+  static final _reads =
+      <int, Map<String, int>>{}; // group -> handle -> last message id read
   static void _bump(int groupId) {
     _ver[groupId] = (_ver[groupId] ?? 0) + 1;
     final ws = _waiters.remove(groupId) ?? [];
@@ -1175,8 +1527,9 @@ class IslandMeEndpoint extends Endpoint {
     final u = _user(session);
     if (!await _member(session, groupId, u)) return _err('Not your chat.');
     final me = (await _profile(session, u)).handle;
-    (_typing[groupId] ??= {})[me] =
-        DateTime.now().add(const Duration(seconds: 5));
+    (_typing[groupId] ??= {})[me] = DateTime.now().add(
+      const Duration(seconds: 5),
+    );
     _bump(groupId);
     return jsonEncode({'ok': true});
   }
@@ -1245,7 +1598,15 @@ class IslandMeEndpoint extends Endpoint {
         () {
           final mine = p.authUserId == u;
           // a ghost's BQ: lived in, but nameless and closed to everyone
-          if (p.ghost && !mine) return {'slot': p.id, 'resident': 'Private resident', 'color': p.hqColor, 'mine': false, 'may': false, 'ghost': true};
+          if (p.ghost && !mine)
+            return {
+              'slot': p.id,
+              'resident': 'Private resident',
+              'color': p.hqColor,
+              'mine': false,
+              'may': false,
+              'ghost': true,
+            };
           final may =
               mine ||
               !p.hqLocked ||
@@ -1253,7 +1614,8 @@ class IslandMeEndpoint extends Endpoint {
           final req = asked[p.authUserId.uuid];
           return {
             'slot': p.id,
-            'resident': p.handle, // HQ Row is public: each BQ's resident, shouted out on the Row's billboard
+            'resident': p
+                .handle, // HQ Row is public: each BQ's resident, shouted out on the Row's billboard
             'color': p.hqColor,
             'mine': mine,
             'may': may,
@@ -1271,13 +1633,17 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Put my announcement on the HQ Row board (an empty [text] takes it down).
   Future<String> boardPost(Session session, String text) async {
-    final u = _user(session), p = await _profile(session, u), t = _clean(text, 80), now = DateTime.now();
+    final u = _user(session),
+        p = await _profile(session, u),
+        t = _clean(text, 80),
+        now = DateTime.now();
     if (t.isEmpty) {
       _board.remove(u.uuid);
       return jsonEncode({'ok': true});
     }
     final had = _board[u.uuid];
-    if (had != null && now.difference(had.at) < const Duration(hours: 2)) return _err('One announcement every 2 hours. Yours is still up.');
+    if (had != null && now.difference(had.at) < const Duration(hours: 2))
+      return _err('One announcement every 2 hours. Yours is still up.');
     _board[u.uuid] = (by: p.ghost ? 'A neighbour' : p.handle, text: t, at: now);
     return jsonEncode({'ok': true});
   }
@@ -1285,9 +1651,20 @@ class IslandMeEndpoint extends Endpoint {
   /// What's on the HQ Row board now: residents' announcements from the last day, newest first.
   Future<String> board(Session session) async {
     final u = _user(session), now = DateTime.now();
-    _board.removeWhere((_, v) => now.difference(v.at) > const Duration(hours: 24));
-    final list = _board.entries.toList()..sort((a, b) => b.value.at.compareTo(a.value.at));
-    return jsonEncode([for (final e in list.take(12)) {'by': e.value.by, 'text': e.value.text, 'mine': e.key == u.uuid, 'at': e.value.at.toUtc().toIso8601String()}]);
+    _board.removeWhere(
+      (_, v) => now.difference(v.at) > const Duration(hours: 24),
+    );
+    final list = _board.entries.toList()
+      ..sort((a, b) => b.value.at.compareTo(a.value.at));
+    return jsonEncode([
+      for (final e in list.take(12))
+        {
+          'by': e.value.by,
+          'text': e.value.text,
+          'mine': e.key == u.uuid,
+          'at': e.value.at.toUtc().toIso8601String(),
+        },
+    ]);
   }
 
   /// Ask to enter the HQ in [slot] (from hqRow). The owner gets the request on their phone.
@@ -1658,7 +2035,10 @@ class IslandMeEndpoint extends Endpoint {
     'st_sport': (name: 'Sports set', price: 0),
     'puma_run': (name: 'Puma Running set', price: 28000),
     'nike_dri': (name: 'Nike Dri-FIT tee & shorts', price: 35000),
-    'adidas_jersey': (name: 'Adidas Green and white football kit', price: 45000),
+    'adidas_jersey': (
+      name: 'Adidas Green and white football kit',
+      price: 45000,
+    ),
     'adidas_track': (name: 'Adidas Track suit', price: 75000),
     'nike_tech': (name: 'Nike Tech Fleece tracksuit', price: 85000),
     'hm_hoodie': (name: 'H&M Hoodie & joggers', price: 30000),
@@ -1700,7 +2080,10 @@ class IslandMeEndpoint extends Endpoint {
       ? null
       : id.startsWith('acc_shades') || id.startsWith('acc_aviators')
       ? 'eyes'
-      : id.startsWith('acc_cap') || id.startsWith('acc_beanie') || id.startsWith('acc_bucket') || id.startsWith('acc_fedora')
+      : id.startsWith('acc_cap') ||
+            id.startsWith('acc_beanie') ||
+            id.startsWith('acc_bucket') ||
+            id.startsWith('acc_fedora')
       ? 'head'
       : id.startsWith('acc_chain')
       ? 'neck'
@@ -1992,15 +2375,141 @@ class IslandMeEndpoint extends Endpoint {
       'terrace',
       'terrace',
     ],
-    'ikoyihomes': ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'duplex', 'loft'],
-    'oldikoyi': ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
-    'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa', 'villa', 'loft', 'villa', 'villa', 'mansion', 'villa'],
-    'nomansland': ['nml', 'nml', 'nml', 'nml'], // No Man's Land: four mansions on the private island
+    'ikoyihomes': [
+      'loft',
+      'townhouse',
+      'loft',
+      'townhouse',
+      'loft',
+      'townhouse',
+      'townhouse',
+      'loft',
+      'townhouse',
+      'loft',
+      'townhouse',
+      'loft',
+      'townhouse',
+      'duplex',
+      'loft',
+    ],
+    'oldikoyi': [
+      'mansion',
+      'mansion',
+      'loft',
+      'mansion',
+      'townhouse',
+      'mansion',
+      'loft',
+      'mansion',
+      'mansion',
+      'mansion',
+      'townhouse',
+      'mansion',
+      'loft',
+      'mansion',
+      'mansion',
+    ],
+    'banana': [
+      'villa',
+      'villa',
+      'loft',
+      'villa',
+      'villa',
+      'villa',
+      'villa',
+      'loft',
+      'villa',
+      'villa',
+      'mansion',
+      'villa',
+    ],
+    'nomansland': [
+      'nml',
+      'nml',
+      'nml',
+      'nml',
+    ], // No Man's Land: four mansions on the private island
     // the new estates on the reclaimed land, 12 homes each
-    'atlantic': ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
-    'oceancrest': ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
-    'marinacourt': ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow', 'flat', 'terrace'],
-    'harbourview': ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa', 'duplex', 'loft', 'townhouse', 'mansion', 'loft', 'duplex', 'villa', 'townhouse', 'loft', 'mansion', 'duplex', 'villa'],
+    'atlantic': [
+      'flat',
+      'bungalow',
+      'flat',
+      'terrace',
+      'bungalow',
+      'flat',
+      'terrace',
+      'flat',
+      'bungalow',
+      'terrace',
+      'flat',
+      'bungalow',
+    ],
+    'oceancrest': [
+      'duplex',
+      'terrace',
+      'townhouse',
+      'duplex',
+      'terrace',
+      'duplex',
+      'townhouse',
+      'terrace',
+      'duplex',
+      'loft',
+      'townhouse',
+      'duplex',
+    ],
+    'marinacourt': [
+      'flat',
+      'flat',
+      'bungalow',
+      'flat',
+      'terrace',
+      'flat',
+      'bungalow',
+      'flat',
+      'flat',
+      'terrace',
+      'bungalow',
+      'flat',
+      'flat',
+      'bungalow',
+      'flat',
+      'terrace',
+      'flat',
+      'flat',
+      'bungalow',
+      'terrace',
+      'flat',
+      'bungalow',
+      'flat',
+      'terrace',
+    ],
+    'harbourview': [
+      'loft',
+      'duplex',
+      'mansion',
+      'loft',
+      'townhouse',
+      'mansion',
+      'duplex',
+      'loft',
+      'villa',
+      'mansion',
+      'townhouse',
+      'villa',
+      'duplex',
+      'loft',
+      'townhouse',
+      'mansion',
+      'loft',
+      'duplex',
+      'villa',
+      'townhouse',
+      'loft',
+      'mansion',
+      'duplex',
+      'villa',
+    ],
   };
 
   static String? _styleOf(String plot) {
@@ -2019,7 +2528,11 @@ class IslandMeEndpoint extends Endpoint {
     final u = _user(session);
     final me = await _profile(session, u);
     final rows = [
-      ...await IslandHome.db.find(session, where: (t) => t.plot.notIlike('nt%') | t.authUserId.equals(u), limit: 500),
+      ...await IslandHome.db.find(
+        session,
+        where: (t) => t.plot.notIlike('nt%') | t.authUserId.equals(u),
+        limit: 500,
+      ),
     ];
     final out = [];
     for (final h in rows) {
@@ -2031,7 +2544,14 @@ class IslandMeEndpoint extends Endpoint {
       final mine = h.authUserId == u;
       // a ghost's home: still lived in (and not for sale), but nameless and closed
       if (owner.ghost && !mine) {
-        out.add({'plot': h.plot, 'style': h.style, 'mine': false, 'may': false, 'ghost': true, 'color': owner.hqColor});
+        out.add({
+          'plot': h.plot,
+          'style': h.style,
+          'mine': false,
+          'may': false,
+          'ghost': true,
+          'color': owner.hqColor,
+        });
         continue;
       }
       final may =
@@ -2052,74 +2572,105 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Buy the home on [plot]: it's mine to furnish, and it's where my HQ settings (name, colour, who may enter) apply too.
-  Future<String> buyHome(Session session, String plot) =>
-      _money(session, (u) async {
-        final style = _styleOf(plot);
-        if (style == null) return _err('There is no home there.');
-        final h = homeStyles[style]!;
-        if (await IslandHome.db.findFirstRow(
-              session,
-              where: (t) => t.plot.equals(plot),
-            ) !=
-            null)
-          return _err('Someone already lives there.');
-        if (await IslandHome.db.count(
-              session,
-              where: (t) => t.authUserId.equals(u),
-            ) >=
-            3)
-          return _err('Three homes is the limit.');
-        // an allocated room is free: one to a citizen, and only to one with no home of their own
-        if (style == 'alloc') {
-          if (await IslandHome.db.count(session, where: (t) => t.authUserId.equals(u)) > 0)
-            return _err('Allocated rooms are for citizens with no home yet. You already have one.');
-          return jsonEncode(await _allocate(session, u, plot));
-        }
-        final c = await WorldAuthority.citizen(session, u);
-        if (c.naira < h.price)
-          return _err(
-            'As how naw.. As how naw 😅 This ${h.name} costs N${_n(h.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
-          );
-        final r = await Bank.post(
+  Future<String> buyHome(Session session, String plot) => _money(session, (
+    u,
+  ) async {
+    final style = _styleOf(plot);
+    if (style == null) return _err('There is no home there.');
+    final h = homeStyles[style]!;
+    if (await IslandHome.db.findFirstRow(
           session,
-          u,
-          key: 'island:home:$plot',
-          amount: -h.price,
-          kind: 'fee',
-          counter: 'city:market',
-          memo: 'Bought a ${h.name} ($plot)',
-        );
-        if (r.short != null) return _err('Not enough naira.');
-        await IslandHome.db.insertRow(
+          where: (t) => t.plot.equals(plot),
+        ) !=
+        null)
+      return _err('Someone already lives there.');
+    if (await IslandHome.db.count(
           session,
-          IslandHome(
-            authUserId: u,
-            plot: plot,
-            style: style,
-            price: h.price,
-            boughtAt: DateTime.now().toUtc(),
-          ),
+          where: (t) => t.authUserId.equals(u),
+        ) >=
+        3)
+      return _err('Three homes is the limit.');
+    // an allocated room is free: one to a citizen, and only to one with no home of their own
+    if (style == 'alloc') {
+      if (await IslandHome.db.count(
+            session,
+            where: (t) => t.authUserId.equals(u),
+          ) >
+          0)
+        return _err(
+          'Allocated rooms are for citizens with no home yet. You already have one.',
         );
-        final after = await Bank.fresh(session, u);
-        return jsonEncode({
-          'plot': plot,
-          'style': style,
-          'name': h.name,
-          'naira': after.naira,
-        });
-      });
-
-  static Future<Map<String, dynamic>> _allocate(Session session, UuidValue u, String plot) async {
-    await IslandHome.db.insertRow(session, IslandHome(authUserId: u, plot: plot, style: 'alloc', price: 0, boughtAt: DateTime.now().toUtc()));
+      return jsonEncode(await _allocate(session, u, plot));
+    }
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < h.price)
+      return _err(
+        'As how naw.. As how naw 😅 This ${h.name} costs N${_n(h.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:home:$plot',
+      amount: -h.price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Bought a ${h.name} ($plot)',
+    );
+    if (r.short != null) return _err('Not enough naira.');
+    await IslandHome.db.insertRow(
+      session,
+      IslandHome(
+        authUserId: u,
+        plot: plot,
+        style: style,
+        price: h.price,
+        boughtAt: DateTime.now().toUtc(),
+      ),
+    );
     final after = await Bank.fresh(session, u);
-    return {'plot': plot, 'style': 'alloc', 'name': homeStyles['alloc']!.name, 'naira': after.naira};
+    return jsonEncode({
+      'plot': plot,
+      'style': style,
+      'name': h.name,
+      'naira': after.naira,
+    });
+  });
+
+  static Future<Map<String, dynamic>> _allocate(
+    Session session,
+    UuidValue u,
+    String plot,
+  ) async {
+    await IslandHome.db.insertRow(
+      session,
+      IslandHome(
+        authUserId: u,
+        plot: plot,
+        style: 'alloc',
+        price: 0,
+        boughtAt: DateTime.now().toUtc(),
+      ),
+    );
+    final after = await Bank.fresh(session, u);
+    return {
+      'plot': plot,
+      'style': 'alloc',
+      'name': homeStyles['alloc']!.name,
+      'naira': after.naira,
+    };
   }
 
   /// The lowest free room in a New Town building, or null when it's full.
   static Future<int?> _freeRoom(Session session, String id) async {
     final b = ntBuildings[id];
     if (b == null) return null;
-    final taken = {for (final h in await IslandHome.db.find(session, where: (t) => t.plot.like('$id:%'))) h.plot};
+    final taken = {
+      for (final h in await IslandHome.db.find(
+        session,
+        where: (t) => t.plot.like('$id:%'),
+      ))
+        h.plot,
+    };
     for (var n = 0; n < b.rooms; n++) {
       if (!taken.contains('$id:$n')) return n;
     }
@@ -2128,7 +2679,8 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Take the next free room in a tower (paid) or a housing block (free, allocated): filled room by room until full.
   Future<String> takeRoom(Session session, String building) async {
-    if (!ntBuildings.containsKey(building)) return _err('There is no building there.');
+    if (!ntBuildings.containsKey(building))
+      return _err('There is no building there.');
     final n = await _freeRoom(session, building);
     if (n == null) return _err('This building is full. Every room is taken.');
     return buyHome(session, '$building:$n');
@@ -2137,7 +2689,10 @@ class IslandMeEndpoint extends Endpoint {
   /// New Town's fill: building id -> rooms taken, and the rooms that are mine.
   Future<String> towers(Session session) async {
     final u = _user(session);
-    final rows = await IslandHome.db.find(session, where: (t) => t.plot.ilike('nt%'));
+    final rows = await IslandHome.db.find(
+      session,
+      where: (t) => t.plot.ilike('nt%'),
+    );
     final taken = <String, int>{}, mine = [];
     for (final h in rows) {
       final id = h.plot.split(':').first;
@@ -2152,13 +2707,23 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> govAllocate(Session session) async {
     final u = _user(session);
     if (!await _govAdmin(session, u)) return _err('Administrators only.');
-    final housed = {for (final h in await IslandHome.db.find(session)) h.authUserId};
-    final blocks = [for (final e in ntBuildings.entries) if (!e.value.tower) e.key];
+    final housed = {
+      for (final h in await IslandHome.db.find(session)) h.authUserId,
+    };
+    final blocks = [
+      for (final e in ntBuildings.entries)
+        if (!e.value.tower) e.key,
+    ];
     var given = 0, bi = 0;
-    for (final p in await IslandProfile.db.find(session, orderBy: (t) => t.id)) {
+    for (final p in await IslandProfile.db.find(
+      session,
+      orderBy: (t) => t.id,
+    )) {
       if (p.ghost || housed.contains(p.authUserId)) continue;
       int? n;
-      while (bi < blocks.length && (n = await _freeRoom(session, blocks[bi])) == null) bi++;
+      while (bi < blocks.length &&
+          (n = await _freeRoom(session, blocks[bi])) == null)
+        bi++;
       if (n == null) break;
       await _allocate(session, p.authUserId, '${blocks[bi]}:$n');
       housed.add(p.authUserId);
@@ -2306,7 +2871,12 @@ class IslandMeEndpoint extends Endpoint {
     if (r.short != null) return _err('Not enough naira.');
     final trip = await _tripBooked(session, u, r.entry);
     final after = await Bank.fresh(session, u);
-    return jsonEncode({'kind': kind, 'name': c.name, 'naira': after.naira, if (trip != null) 'trip': trip});
+    return jsonEncode({
+      'kind': kind,
+      'name': c.name,
+      'naira': after.naira,
+      if (trip != null) 'trip': trip,
+    });
   });
 
   /// Private-jet flights out of Lagos Island Airport, by destination: what a seat costs (the flight runs in the game).
@@ -2325,17 +2895,38 @@ class IslandMeEndpoint extends Endpoint {
   /// Lagos Island Airport is closed to flights for now (nobody is charged for a seat or for fuel while it is)
   static const airportOpen = false;
 
-  Future<String> bookFlight(Session session, String dest) => _money(session, (u) async {
-    if (!airportOpen) return _err('Lagos Island Airport is closed for now. Flights will be back soon.');
+  Future<String> bookFlight(Session session, String dest) => _money(session, (
+    u,
+  ) async {
+    if (!airportOpen)
+      return _err(
+        'Lagos Island Airport is closed for now. Flights will be back soon.',
+      );
     final f = flights[dest];
     if (f == null) return _err('There\'s no flight there.');
     final w = await WorldAuthority.citizen(session, u);
-    if (w.naira < f.price) return _err('As how naw.. As how naw 😅 A seat to ${f.name} is N${_n(f.price)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol');
-    final r = await Bank.post(session, u, key: 'island:flight:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -f.price, kind: 'fee', counter: 'city:services', memo: 'Lagos Island Airport: flight to ${f.name}');
+    if (w.naira < f.price)
+      return _err(
+        'As how naw.. As how naw 😅 A seat to ${f.name} is N${_n(f.price)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:flight:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+      amount: -f.price,
+      kind: 'fee',
+      counter: 'city:services',
+      memo: 'Lagos Island Airport: flight to ${f.name}',
+    );
     if (r.short != null) return _err('Not enough naira.');
     final trip = await _tripBooked(session, u, r.entry);
     final after = await Bank.fresh(session, u);
-    return jsonEncode({'dest': dest, 'name': f.name, 'naira': after.naira, if (trip != null) 'trip': trip});
+    return jsonEncode({
+      'dest': dest,
+      'name': f.name,
+      'naira': after.naira,
+      if (trip != null) 'trip': trip,
+    });
   });
 
   /// Private jets for sale at Lagos Island Airport (one each), by kind.
@@ -2346,89 +2937,212 @@ class IslandMeEndpoint extends Endpoint {
   };
   static const jetLiveries = 10; // the game's jet colours (LIVERY on the page)
 
-  static Map<String, dynamic> _jetJson(IslandJet j) => {'model': j.model, 'name': jetCatalog[j.model]?.name ?? j.model, 'tail': j.tail, 'livery': j.livery, 'showName': j.showName, 'price': j.price};
+  static Map<String, dynamic> _jetJson(IslandJet j) => {
+    'model': j.model,
+    'name': jetCatalog[j.model]?.name ?? j.model,
+    'tail': j.tail,
+    'livery': j.livery,
+    'showName': j.showName,
+    'price': j.price,
+  };
 
   /// My jet, if I have one.
   Future<String> myJet(Session session) async {
-    final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    final j = await IslandJet.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(_user(session)),
+    );
     return jsonEncode({'jet': j == null ? null : _jetJson(j)});
   }
 
   /// Buy a jet (one each): the price comes out of my wallet; it gets its own registration and lives in a hangar.
-  Future<String> buyJet(Session session, String model, int livery) => _money(session, (u) async {
+  Future<String> buyJet(
+    Session session,
+    String model,
+    int livery,
+  ) => _money(session, (u) async {
     final m = jetCatalog[model];
     if (m == null) return _err('That jet is not for sale.');
-    if (livery < 0 || livery >= jetLiveries) return _err('Pick one of the colours.');
-    if (await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)) != null) return _err('You already have a jet in the hangar.');
+    if (livery < 0 || livery >= jetLiveries)
+      return _err('Pick one of the colours.');
+    if (await IslandJet.db.findFirstRow(
+          session,
+          where: (t) => t.authUserId.equals(u),
+        ) !=
+        null)
+      return _err('You already have a jet in the hangar.');
     final c = await WorldAuthority.citizen(session, u);
-    if (c.naira < m.price) return _err('As how naw.. As how naw 😅 A ${m.name} is N${_n(m.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol');
-    final r = await Bank.post(session, u, key: 'island:jet:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -m.price, kind: 'fee', counter: 'city:market', memo: 'Bought a ${m.name}');
+    if (c.naira < m.price)
+      return _err(
+        'As how naw.. As how naw 😅 A ${m.name} is N${_n(m.price)}. Your balance na only N${_n(c.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:jet:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+      amount: -m.price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Bought a ${m.name}',
+    );
     if (r.short != null) return _err('Not enough naira.');
     final rnd = Random.secure();
     IslandJet? j;
-    for (var k = 0; k < 8 && j == null; k++) { // a fresh registration: 5N- and three letters
-      final tail = '5N-${String.fromCharCodes([for (var i = 0; i < 3; i++) 65 + rnd.nextInt(26)])}';
+    for (var k = 0; k < 8 && j == null; k++) {
+      // a fresh registration: 5N- and three letters
+      final tail =
+          '5N-${String.fromCharCodes([for (var i = 0; i < 3; i++) 65 + rnd.nextInt(26)])}';
       try {
-        j = await IslandJet.db.insertRow(session, IslandJet(authUserId: u, model: model, tail: tail, livery: livery, price: m.price, boughtAt: DateTime.now().toUtc()));
+        j = await IslandJet.db.insertRow(
+          session,
+          IslandJet(
+            authUserId: u,
+            model: model,
+            tail: tail,
+            livery: livery,
+            price: m.price,
+            boughtAt: DateTime.now().toUtc(),
+          ),
+        );
       } catch (_) {
-        if (await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)) != null) break; // bought at the same moment elsewhere
+        if (await IslandJet.db.findFirstRow(
+              session,
+              where: (t) => t.authUserId.equals(u),
+            ) !=
+            null)
+          break; // bought at the same moment elsewhere
       }
     }
     final after = await Bank.fresh(session, u);
-    if (j == null) return _err('The registry is busy. Your naira is safe: ask an operator to finish the registration.');
+    if (j == null)
+      return _err(
+        'The registry is busy. Your naira is safe: ask an operator to finish the registration.',
+      );
     return jsonEncode({'jet': _jetJson(j), 'naira': after.naira});
   });
 
   /// Repaint my jet, or show / hide my name on its hangar.
   Future<String> setJet(Session session, int livery, bool showName) async {
-    final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    final j = await IslandJet.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(_user(session)),
+    );
     if (j == null) return _err('You don\'t have a jet.');
-    if (livery < 0 || livery >= jetLiveries) return _err('Pick one of the colours.');
-    final j2 = await IslandJet.db.updateRow(session, j.copyWith(livery: livery, showName: showName));
+    if (livery < 0 || livery >= jetLiveries)
+      return _err('Pick one of the colours.');
+    final j2 = await IslandJet.db.updateRow(
+      session,
+      j.copyWith(livery: livery, showName: showName),
+    );
     return jsonEncode({'jet': _jetJson(j2)});
   }
 
   /// Fly my own jet: no seat to buy, only the fuel and handling (a quarter of a seat's price; N2,000 round the island).
-  Future<String> flyJet(Session session, String dest) => _money(session, (u) async {
-    if (!airportOpen) return _err('Lagos Island Airport is closed for now. Flights will be back soon.');
+  Future<String> flyJet(Session session, String dest) => _money(session, (
+    u,
+  ) async {
+    if (!airportOpen)
+      return _err(
+        'Lagos Island Airport is closed for now. Flights will be back soon.',
+      );
     final f = flights[dest];
     if (f == null) return _err('There\'s no flight there.');
-    final j = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
-    if (j == null) return _err('You don\'t have a jet. Buy one, or book a seat.');
+    final j = await IslandJet.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
+    if (j == null)
+      return _err('You don\'t have a jet. Buy one, or book a seat.');
     final fee = dest == 'island' ? 2000 : f.price ~/ 4;
     final w = await WorldAuthority.citizen(session, u);
-    if (w.naira < fee) return _err('As how naw.. As how naw 😅 Fuel and handling to ${f.name} is N${_n(fee)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol');
-    final r = await Bank.post(session, u, key: 'island:jetfly:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -fee, kind: 'fee', counter: 'city:services', memo: 'Lagos Island Airport: fuel and handling for ${j.tail} to ${f.name}');
+    if (w.naira < fee)
+      return _err(
+        'As how naw.. As how naw 😅 Fuel and handling to ${f.name} is N${_n(fee)}. Your balance na only N${_n(w.naira)}, e no reach. Abeg go buy NAIRA, make e no cast am lol',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:jetfly:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+      amount: -fee,
+      kind: 'fee',
+      counter: 'city:services',
+      memo:
+          'Lagos Island Airport: fuel and handling for ${j.tail} to ${f.name}',
+    );
     if (r.short != null) return _err('Not enough naira.');
     final after = await Bank.fresh(session, u);
-    return jsonEncode({'dest': dest, 'name': f.name, 'tail': j.tail, 'fee': fee, 'naira': after.naira});
+    return jsonEncode({
+      'dest': dest,
+      'name': f.name,
+      'tail': j.tail,
+      'fee': fee,
+      'naira': after.naira,
+    });
   });
 
   // ---------------- people: public profiles, finding Lagosians, friend requests ----------------
   /// What anyone signed in may see about a Lagosian: the name, the look, since when, the HQ's name, the skills only if
   /// they're open to work, their career titles, how many friends. Never their wallet, email, messages, where they
   /// are, who their friends are or what's inside their home.
-  static const _gridTitles = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'];
-  static const _trackNames = {'control': 'Control Room Operator', 'lineman': 'Lineman', 'solar': 'Solar Technician', 'plant': 'Plant Engineer', 'marshal': 'Ground Crew', 'atc': 'Air Traffic Controller'};
+  static const _gridTitles = [
+    'Trainee',
+    'Technician',
+    'Senior',
+    'Supervisor',
+    'Chief',
+  ];
+  static const _trackNames = {
+    'control': 'Control Room Operator',
+    'lineman': 'Lineman',
+    'solar': 'Solar Technician',
+    'plant': 'Plant Engineer',
+    'marshal': 'Ground Crew',
+    'atc': 'Air Traffic Controller',
+  };
   static Future<IslandProfile?> _byHandle(Session s, String handle) =>
-      IslandProfile.db.findFirstRow(s, where: (t) => t.handle.ilike(_clean(handle, 40).replaceAll(r'\', '').replaceAll('_', r'\_').replaceAll('%', r'\%'))); // names are unique in any case
+      IslandProfile.db.findFirstRow(
+        s,
+        where: (t) => t.handle.ilike(
+          _clean(
+            handle,
+            40,
+          ).replaceAll(r'\', '').replaceAll('_', r'\_').replaceAll('%', r'\%'),
+        ),
+      ); // names are unique in any case
 
   Future<String> publicProfile(Session session, String handle) async {
     final u = _user(session);
     final p = await _byHandle(session, handle);
     if (p == null) return _err('No Lagosian by that name.');
     // a ghost shows their profile only to themselves and their friends
-    if (p.ghost && p.authUserId != u && await _rel(session, u, p.authUserId) != 'friends') return _err('No Lagosian by that name.');
-    final careers = await IslandGridCareer.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.xp > 0));
-    final friends = await IslandFriend.db.count(session, where: (t) => (t.fromUser.equals(p.authUserId) | t.toUser.equals(p.authUserId)) & t.status.equals('accepted'));
-    final jet = await IslandJet.db.findFirstRow(session, where: (t) => t.authUserId.equals(p.authUserId));
+    if (p.ghost &&
+        p.authUserId != u &&
+        await _rel(session, u, p.authUserId) != 'friends')
+      return _err('No Lagosian by that name.');
+    final careers = await IslandGridCareer.db.find(
+      session,
+      where: (t) => t.authUserId.equals(p.authUserId) & (t.xp > 0),
+    );
+    final friends = await IslandFriend.db.count(
+      session,
+      where: (t) =>
+          (t.fromUser.equals(p.authUserId) | t.toUser.equals(p.authUserId)) &
+          t.status.equals('accepted'),
+    );
+    final jet = await IslandJet.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(p.authUserId),
+    );
     return jsonEncode({
       'handle': p.handle,
       'look': p.look,
       'since': p.createdAt.toIso8601String(),
       'hq': p.hqName ?? "${p.handle}'s HQ",
       if (p.openToWork && p.skills.trim().isNotEmpty) 'skills': p.skills,
-      'careers': [for (final c in careers..sort((a, b) => b.level.compareTo(a.level))) '${_gridTitles[(c.level - 1).clamp(0, 4)]} ${_trackNames[c.track] ?? c.track}'],
+      'careers': [
+        for (final c in careers..sort((a, b) => b.level.compareTo(a.level)))
+          '${_gridTitles[(c.level - 1).clamp(0, 4)]} ${_trackNames[c.track] ?? c.track}',
+      ],
       'friends': friends,
       if (jet != null && jet.showName) 'jet': jet.tail,
       'me': p.authUserId == u,
@@ -2438,23 +3152,47 @@ class IslandMeEndpoint extends Endpoint {
 
   /// me and them: none | sent (waiting for them) | received (waiting for me) | friends
   static Future<String> _rel(Session s, UuidValue me, UuidValue them) async {
-    final rows = await IslandFriend.db.find(s, where: (t) => (t.fromUser.equals(me) & t.toUser.equals(them)) | (t.fromUser.equals(them) & t.toUser.equals(me)));
+    final rows = await IslandFriend.db.find(
+      s,
+      where: (t) =>
+          (t.fromUser.equals(me) & t.toUser.equals(them)) |
+          (t.fromUser.equals(them) & t.toUser.equals(me)),
+    );
     if (rows.any((r) => r.status == 'accepted')) return 'friends';
-    if (rows.any((r) => r.status == 'pending' && r.fromUser == me)) return 'sent';
-    if (rows.any((r) => r.status == 'pending' && r.fromUser == them)) return 'received';
+    if (rows.any((r) => r.status == 'pending' && r.fromUser == me))
+      return 'sent';
+    if (rows.any((r) => r.status == 'pending' && r.fromUser == them))
+      return 'received';
     return 'none';
   }
 
-  static Map<String, dynamic> _card(IslandProfile p) => {'handle': p.handle, 'look': p.look, 'since': p.createdAt.toIso8601String()};
+  static Map<String, dynamic> _card(IslandProfile p) => {
+    'handle': p.handle,
+    'look': p.look,
+    'since': p.createdAt.toIso8601String(),
+  };
 
   /// The newest Lagosians (to say hello to), and a search by name.
   Future<String> people(Session session, String query) async {
     final u = _user(session);
     final q = _clean(query, 30).toLowerCase();
     final rows = q.isEmpty
-        ? await IslandProfile.db.find(session, orderBy: (t) => t.createdAt.desc(), limit: 15)
-        : await IslandProfile.db.find(session, where: (t) => t.handle.ilike('%${q.replaceAll(RegExp(r'[%_\\]'), '')}%'), orderBy: (t) => t.handle, limit: 15);
-    return jsonEncode([for (final p in rows) if (p.authUserId != u && !p.ghost) _card(p)]);
+        ? await IslandProfile.db.find(
+            session,
+            orderBy: (t) => t.createdAt.desc(),
+            limit: 15,
+          )
+        : await IslandProfile.db.find(
+            session,
+            where: (t) =>
+                t.handle.ilike('%${q.replaceAll(RegExp(r'[%_\\]'), '')}%'),
+            orderBy: (t) => t.handle,
+            limit: 15,
+          );
+    return jsonEncode([
+      for (final p in rows)
+        if (p.authUserId != u && !p.ghost) _card(p),
+    ]);
   }
 
   /// Send a friend request (with an optional short hello). If they already asked me, this accepts it.
@@ -2478,15 +3216,34 @@ class IslandMeEndpoint extends Endpoint {
     final secret = (req.passwords['pushSecret'] ?? '').trim();
     if (secret.isEmpty) return;
     final last = _pushed[who.uuid];
-    if (last != null && DateTime.now().difference(last) < const Duration(seconds: 30)) return;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(seconds: 30))
+      return;
     _pushed[who.uuid] = DateTime.now();
     // its own session: the request that caused it may already have finished
     final s = await Serverpod.instance.createSession(enableLogging: false);
     try {
-      for (final sub in await IslandPushSub.db.find(s, where: (t) => t.authUserId.equals(who), limit: 5)) {
-        final r = await _pushHttp.post(Uri.parse('https://play.lagos-island.workers.dev/push'), headers: {'x-push-secret': secret, 'Content-Type': 'application/json'}, body: jsonEncode({'endpoint': sub.endpoint, 'ttl': 3600})).timeout(const Duration(seconds: 10));
+      for (final sub in await IslandPushSub.db.find(
+        s,
+        where: (t) => t.authUserId.equals(who),
+        limit: 5,
+      )) {
+        final r = await _pushHttp
+            .post(
+              Uri.parse('https://play.lagos-island.workers.dev/push'),
+              headers: {
+                'x-push-secret': secret,
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode({'endpoint': sub.endpoint, 'ttl': 3600}),
+            )
+            .timeout(const Duration(seconds: 10));
         final st = (jsonDecode(r.body) as Map)['status'];
-        if (st == 404 || st == 410) await IslandPushSub.db.deleteRow(s, sub); // the phone unsubscribed or reinstalled
+        if (st == 404 || st == 410)
+          await IslandPushSub.db.deleteRow(
+            s,
+            sub,
+          ); // the phone unsubscribed or reinstalled
       }
     } catch (e) {
       s.log('[push] ${who.uuid}: $e', level: LogLevel.warning);
@@ -2499,15 +3256,35 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> pushSubscribe(Session session, String endpoint) async {
     final u = _user(session);
     final ep = Uri.tryParse(endpoint);
-    if (ep == null || ep.scheme != 'https' || endpoint.length > 900) return _err('Bad address.');
-    final had = await IslandPushSub.db.findFirstRow(session, where: (t) => t.endpoint.equals(endpoint));
-    if (had != null && had.authUserId != u) await IslandPushSub.db.deleteRow(session, had); // the phone changed hands
+    if (ep == null || ep.scheme != 'https' || endpoint.length > 900)
+      return _err('Bad address.');
+    final had = await IslandPushSub.db.findFirstRow(
+      session,
+      where: (t) => t.endpoint.equals(endpoint),
+    );
+    if (had != null && had.authUserId != u)
+      await IslandPushSub.db.deleteRow(session, had); // the phone changed hands
     if (had == null || had.authUserId != u) {
-      if (await IslandPushSub.db.count(session, where: (t) => t.authUserId.equals(u)) >= 5) {
-        final oldest = await IslandPushSub.db.findFirstRow(session, where: (t) => t.authUserId.equals(u), orderBy: (t) => t.createdAt);
+      if (await IslandPushSub.db.count(
+            session,
+            where: (t) => t.authUserId.equals(u),
+          ) >=
+          5) {
+        final oldest = await IslandPushSub.db.findFirstRow(
+          session,
+          where: (t) => t.authUserId.equals(u),
+          orderBy: (t) => t.createdAt,
+        );
         if (oldest != null) await IslandPushSub.db.deleteRow(session, oldest);
       }
-      await IslandPushSub.db.insertRow(session, IslandPushSub(authUserId: u, endpoint: endpoint, createdAt: DateTime.now().toUtc()));
+      await IslandPushSub.db.insertRow(
+        session,
+        IslandPushSub(
+          authUserId: u,
+          endpoint: endpoint,
+          createdAt: DateTime.now().toUtc(),
+        ),
+      );
     }
     return jsonEncode({'ok': true});
   }
@@ -2525,37 +3302,99 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'ver': _uver[k] ?? 0});
   }
 
-  Future<String> friendRequest(Session session, String handle, String note) async {
+  Future<String> friendRequest(
+    Session session,
+    String handle,
+    String note,
+  ) async {
     final u = _user(session);
     final p = await _byHandle(session, handle);
     if (p == null) return _err('No Lagosian by that name.');
     if (p.authUserId == u) return _err('That\'s you.');
-    final back = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u));
-    if (p.ghost && back == null) return _err('No Lagosian by that name.'); // a ghost can't be found to be asked (they can still ask you)
-    if (back != null && back.status == 'pending') { await IslandFriend.db.updateRow(session, back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc())); _ping(p.authUserId, session); return jsonEncode({'rel': 'friends'}); }
-    if (back != null && back.status == 'accepted') return jsonEncode({'rel': 'friends'});
+    final back = await IslandFriend.db.findFirstRow(
+      session,
+      where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u),
+    );
+    if (p.ghost && back == null)
+      return _err(
+        'No Lagosian by that name.',
+      ); // a ghost can't be found to be asked (they can still ask you)
+    if (back != null && back.status == 'pending') {
+      await IslandFriend.db.updateRow(
+        session,
+        back.copyWith(status: 'accepted', decidedAt: DateTime.now().toUtc()),
+      );
+      _ping(p.authUserId, session);
+      return jsonEncode({'rel': 'friends'});
+    }
+    if (back != null && back.status == 'accepted')
+      return jsonEncode({'rel': 'friends'});
     final day = DateTime.now().toUtc().subtract(const Duration(days: 1));
-    if (await IslandFriend.db.count(session, where: (t) => t.fromUser.equals(u) & (t.createdAt > day)) >= 30) return _err('That\'s a lot of requests for one day. Try again tomorrow.');
-    final mine = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(u) & t.toUser.equals(p.authUserId));
+    if (await IslandFriend.db.count(
+          session,
+          where: (t) => t.fromUser.equals(u) & (t.createdAt > day),
+        ) >=
+        30)
+      return _err('That\'s a lot of requests for one day. Try again tomorrow.');
+    final mine = await IslandFriend.db.findFirstRow(
+      session,
+      where: (t) => t.fromUser.equals(u) & t.toUser.equals(p.authUserId),
+    );
     final n = _clean(note, 140);
     if (mine == null) {
-      await IslandFriend.db.insertRow(session, IslandFriend(fromUser: u, toUser: p.authUserId, status: 'pending', note: n.isEmpty ? null : n, createdAt: DateTime.now().toUtc()));
+      await IslandFriend.db.insertRow(
+        session,
+        IslandFriend(
+          fromUser: u,
+          toUser: p.authUserId,
+          status: 'pending',
+          note: n.isEmpty ? null : n,
+          createdAt: DateTime.now().toUtc(),
+        ),
+      );
     } else if (mine.status == 'declined') {
-      if (mine.decidedAt != null && DateTime.now().toUtc().difference(mine.decidedAt!) < const Duration(days: 7)) return _err('They said no for now. You can ask again in a week.');
-      await IslandFriend.db.updateRow(session, mine.copyWith(status: 'pending', note: n.isEmpty ? null : n, createdAt: DateTime.now().toUtc(), decidedAt: null));
+      if (mine.decidedAt != null &&
+          DateTime.now().toUtc().difference(mine.decidedAt!) <
+              const Duration(days: 7))
+        return _err('They said no for now. You can ask again in a week.');
+      await IslandFriend.db.updateRow(
+        session,
+        mine.copyWith(
+          status: 'pending',
+          note: n.isEmpty ? null : n,
+          createdAt: DateTime.now().toUtc(),
+          decidedAt: null,
+        ),
+      );
     }
     _ping(p.authUserId, session);
     return jsonEncode({'rel': mine?.status == 'accepted' ? 'friends' : 'sent'});
   }
 
   /// Accept or decline a request someone sent me.
-  Future<String> friendRespond(Session session, String handle, bool accept) async {
+  Future<String> friendRespond(
+    Session session,
+    String handle,
+    bool accept,
+  ) async {
     final u = _user(session);
     final p = await _byHandle(session, handle);
     if (p == null) return _err('No Lagosian by that name.');
-    final r = await IslandFriend.db.findFirstRow(session, where: (t) => t.fromUser.equals(p.authUserId) & t.toUser.equals(u) & t.status.equals('pending'));
+    final r = await IslandFriend.db.findFirstRow(
+      session,
+      where: (t) =>
+          t.fromUser.equals(p.authUserId) &
+          t.toUser.equals(u) &
+          t.status.equals('pending'),
+    );
     if (r == null) return _err('No request from them.');
-    await IslandFriend.db.updateRow(session, r.copyWith(status: accept ? 'accepted' : 'declined', decidedAt: DateTime.now().toUtc()));
+    await IslandFriend.db.updateRow(
+      session,
+      r.copyWith(
+        status: accept ? 'accepted' : 'declined',
+        decidedAt: DateTime.now().toUtc(),
+      ),
+    );
     if (accept) _ping(p.authUserId, session);
     return jsonEncode({'rel': accept ? 'friends' : 'none'});
   }
@@ -2565,22 +3404,53 @@ class IslandMeEndpoint extends Endpoint {
     final u = _user(session);
     final p = await _byHandle(session, handle);
     if (p == null) return _err('No Lagosian by that name.');
-    await IslandFriend.db.deleteWhere(session, where: (t) => ((t.fromUser.equals(u) & t.toUser.equals(p.authUserId)) | (t.fromUser.equals(p.authUserId) & t.toUser.equals(u))) & (t.status.equals('accepted') | (t.status.equals('pending') & t.fromUser.equals(u))));
+    await IslandFriend.db.deleteWhere(
+      session,
+      where: (t) =>
+          ((t.fromUser.equals(u) & t.toUser.equals(p.authUserId)) |
+              (t.fromUser.equals(p.authUserId) & t.toUser.equals(u))) &
+          (t.status.equals('accepted') |
+              (t.status.equals('pending') & t.fromUser.equals(u))),
+    );
     return jsonEncode({'rel': 'none'});
   }
 
   /// My friends, the requests waiting for me (with their hello), and the ones I sent.
   Future<String> friends(Session session) async {
     final u = _user(session);
-    final rows = await IslandFriend.db.find(session, where: (t) => (t.fromUser.equals(u) | t.toUser.equals(u)) & (t.status.equals('accepted') | t.status.equals('pending')));
+    final rows = await IslandFriend.db.find(
+      session,
+      where: (t) =>
+          (t.fromUser.equals(u) | t.toUser.equals(u)) &
+          (t.status.equals('accepted') | t.status.equals('pending')),
+    );
     final ids = {for (final r in rows) r.fromUser == u ? r.toUser : r.fromUser};
-    final profs = {for (final p in await IslandProfile.db.find(session, where: (t) => t.authUserId.inSet(ids))) p.authUserId: p};
-    final out = {'friends': <Map<String, dynamic>>[], 'incoming': <Map<String, dynamic>>[], 'sent': <Map<String, dynamic>>[]};
+    final profs = {
+      for (final p in await IslandProfile.db.find(
+        session,
+        where: (t) => t.authUserId.inSet(ids),
+      ))
+        p.authUserId: p,
+    };
+    final out = {
+      'friends': <Map<String, dynamic>>[],
+      'incoming': <Map<String, dynamic>>[],
+      'sent': <Map<String, dynamic>>[],
+    };
     for (final r in rows) {
       final p = profs[r.fromUser == u ? r.toUser : r.fromUser];
       if (p == null) continue;
-      final c = {..._card(p), 'at': (r.decidedAt ?? r.createdAt).toIso8601String()};
-      if (r.status == 'accepted') { out['friends']!.add(c); } else if (r.toUser == u) { out['incoming']!.add({...c, if (r.note != null) 'note': r.note}); } else { out['sent']!.add(c); }
+      final c = {
+        ..._card(p),
+        'at': (r.decidedAt ?? r.createdAt).toIso8601String(),
+      };
+      if (r.status == 'accepted') {
+        out['friends']!.add(c);
+      } else if (r.toUser == u) {
+        out['incoming']!.add({...c, if (r.note != null) 'note': r.note});
+      } else {
+        out['sent']!.add(c);
+      }
     }
     return jsonEncode(out);
   }
@@ -2674,11 +3544,18 @@ class IslandMeEndpoint extends Endpoint {
     }
     // a room's finish (room:living, room:bedroom, ...): its floor and wall colour, free to choose; not furniture
     final hex = RegExp(r'^#[0-9a-fA-F]{6}$');
-    for (final it in list.where((it) => (it['k'] as String).startsWith('room:'))) {
-      if (!RegExp(r'^room:[a-z]{2,12}$').hasMatch(it['k'] as String) || (it['f'] != null && !RegExp(r'^[a-z]{2,12}$').hasMatch('${it['f']}')) || (it['w'] != null && !hex.hasMatch('${it['w']}')))
+    for (final it in list.where(
+      (it) => (it['k'] as String).startsWith('room:'),
+    )) {
+      if (!RegExp(r'^room:[a-z]{2,12}$').hasMatch(it['k'] as String) ||
+          (it['f'] != null &&
+              !RegExp(r'^[a-z]{2,12}$').hasMatch('${it['f']}')) ||
+          (it['w'] != null && !hex.hasMatch('${it['w']}')))
         return _err('Bad room finish.');
     }
-    final finishes = list.where((it) => (it['k'] as String).startsWith('room:')).length;
+    final finishes = list
+        .where((it) => (it['k'] as String).startsWith('room:'))
+        .length;
     if (finishes > 8) return _err('Too many rooms.');
     final had = await IslandRoom.db.findFirstRow(
       session,
@@ -2726,15 +3603,40 @@ class IslandMeEndpoint extends Endpoint {
   /// Have bought furniture delivered into one of my homes (or my HQ): [layout] is that room with the new pieces in it,
   /// checked like any arrangement (only pieces I own). [mode] courier: Eko Swift Couriers bring it for N1,500;
   /// car: I take it home in my own car, free (I need a car).
-  Future<String> deliverFurniture(Session session, String key, String layout, String mode) async {
+  Future<String> deliverFurniture(
+    Session session,
+    String key,
+    String layout,
+    String mode,
+  ) async {
     final u = _user(session);
-    if (mode != 'courier' && mode != 'car') return _err('Choose a courier or your car.');
-    if (mode == 'car' && await IslandCar.db.count(session, where: (t) => t.authUserId.equals(u)) == 0) return _err('You need a car for that. Buy one at a dealer, or use Eko Swift Couriers.');
-    if (mode == 'courier' && (await WorldAuthority.citizen(session, u)).naira < courierFee) return _err('Delivery is N${_n(courierFee)}. Top up your wallet first.');
+    if (mode != 'courier' && mode != 'car')
+      return _err('Choose a courier or your car.');
+    if (mode == 'car' &&
+        await IslandCar.db.count(
+              session,
+              where: (t) => t.authUserId.equals(u),
+            ) ==
+            0)
+      return _err(
+        'You need a car for that. Buy one at a dealer, or use Eko Swift Couriers.',
+      );
+    if (mode == 'courier' &&
+        (await WorldAuthority.citizen(session, u)).naira < courierFee)
+      return _err('Delivery is N${_n(courierFee)}. Top up your wallet first.');
     final saved = await saveRoom(session, key, layout);
     if ((jsonDecode(saved) as Map)['error'] != null) return saved;
     if (mode == 'courier') {
-      await Bank.post(session, u, key: 'island:courier:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -courierFee, kind: 'fee', counter: 'city:services', memo: 'Eko Swift Couriers: delivery');
+      await Bank.post(
+        session,
+        u,
+        key:
+            'island:courier:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}',
+        amount: -courierFee,
+        kind: 'fee',
+        counter: 'city:services',
+        memo: 'Eko Swift Couriers: delivery',
+      );
     }
     final c = await WorldAuthority.citizen(session, u);
     return jsonEncode({'ok': true, 'naira': c.naira});
@@ -2748,7 +3650,11 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   /// Start checkout for a pack; [returnTo] is the game's address to come back to.
-  Future<String> topUpStart(Session session, String pack, String returnTo) async {
+  Future<String> topUpStart(
+    Session session,
+    String pack,
+    String returnTo,
+  ) async {
     final u = _user(session);
     try {
       return jsonEncode(await TopUp.start(session, u, pack, returnTo));
@@ -2775,13 +3681,39 @@ class IslandMeEndpoint extends Endpoint {
   /// My payout account (the number masked), or none.
   Future<String> payoutAccount(Session session) async {
     final u = _user(session);
-    return jsonEncode({'account': Payout.view(await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u)))});
+    return jsonEncode({
+      'account': Payout.view(
+        await IslandPayoutAccount.db.findFirstRow(
+          session,
+          where: (t) => t.authUserId.equals(u),
+        ),
+      ),
+    });
   }
 
   /// Add or replace my payout account: looked up at the bank, names compared, a code emailed.
-  Future<String> payoutAccountSet(Session session, String bankCode, String accountNumber, String legalName, String email, String dateOfBirth, String password) {
+  Future<String> payoutAccountSet(
+    Session session,
+    String bankCode,
+    String accountNumber,
+    String legalName,
+    String email,
+    String dateOfBirth,
+    String password,
+  ) {
     final u = _user(session);
-    return _payout(() => Payout.set(session, u, bankCode, accountNumber, legalName, email, dateOfBirth, password));
+    return _payout(
+      () => Payout.set(
+        session,
+        u,
+        bankCode,
+        accountNumber,
+        legalName,
+        email,
+        dateOfBirth,
+        password,
+      ),
+    );
   }
 
   /// The code from the email.
@@ -2799,24 +3731,62 @@ class IslandMeEndpoint extends Endpoint {
   /// I accept the payout terms (needed once before the first withdrawal).
   Future<String> payoutAcceptTerms(Session session) async {
     final u = _user(session);
-    final a = await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
+    final a = await IslandPayoutAccount.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
     if (a == null) return _err('Add your bank account first.');
-    final done = await IslandPayoutAccount.db.updateRow(session, a.copyWith(termsAcceptedAt: DateTime.now().toUtc()));
+    final done = await IslandPayoutAccount.db.updateRow(
+      session,
+      a.copyWith(termsAcceptedAt: DateTime.now().toUtc()),
+    );
     return jsonEncode({'account': Payout.view(done)});
   }
 
   /// Withdraw real earnings to my verified bank account: verified (name and email), 18 or older, terms accepted;
   /// the limits, the fee and the review window are the payout system's (Withdrawals.request).
-  Future<String> withdrawToBank(Session session, int amountKobo, String requestKey) async {
+  Future<String> withdrawToBank(
+    Session session,
+    int amountKobo,
+    String requestKey,
+  ) async {
     final u = _user(session);
-    final a = await IslandPayoutAccount.db.findFirstRow(session, where: (t) => t.authUserId.equals(u));
-    if (a == null || a.status != 'verified') return _err('Verify your bank account first (Wallet, then Bank account).');
-    if (a.dateOfBirth == null || Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge) return _err('You need to be ${RewardConfig.current.minAge} or older to be paid real money.');
-    if (a.termsAcceptedAt == null) return _err('Accept the payout terms first.');
-    if (a.holdUntil != null && a.holdUntil!.isAfter(DateTime.now().toUtc())) return _err('Your bank account was changed recently. For your safety, withdrawals open again 48 hours after a change.');
+    final a = await IslandPayoutAccount.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(u),
+    );
+    if (a == null || a.status != 'verified')
+      return _err(
+        'Verify your bank account first (Wallet, then Bank account).',
+      );
+    if (a.dateOfBirth == null ||
+        Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge)
+      return _err(
+        'You need to be ${RewardConfig.current.minAge} or older to be paid real money.',
+      );
+    if (a.termsAcceptedAt == null)
+      return _err('Accept the payout terms first.');
+    if (a.holdUntil != null && a.holdUntil!.isAfter(DateTime.now().toUtc()))
+      return _err(
+        'Your bank account was changed recently. For your safety, withdrawals open again 48 hours after a change.',
+      );
     try {
-      final w = await Withdrawals.request(session, u, amountKobo, 'flw:${a.bankCode}:${a.accountNumber}', requestKey);
-      return jsonEncode({'ref': w.ref, 'status': w.status, 'amountKobo': w.amountKobo, 'feeKobo': w.feeKobo, 'feePayer': w.feePayer, 'reviewHours': RewardConfig.current.reviewHours, 'to': '${a.bankName} ••${a.accountNumber.substring(6)}'});
+      final w = await Withdrawals.request(
+        session,
+        u,
+        amountKobo,
+        'flw:${a.bankCode}:${a.accountNumber}',
+        requestKey,
+      );
+      return jsonEncode({
+        'ref': w.ref,
+        'status': w.status,
+        'amountKobo': w.amountKobo,
+        'feeKobo': w.feeKobo,
+        'feePayer': w.feePayer,
+        'reviewHours': RewardConfig.current.reviewHours,
+        'to': '${a.bankName} ••${a.accountNumber.substring(6)}',
+      });
     } on JobRefused catch (e) {
       return _err(e.message);
     }
@@ -2825,34 +3795,61 @@ class IslandMeEndpoint extends Endpoint {
   /// The payout's last check before it's sent: the player's bank account is still verified, still the one it was
   /// requested to, not on hold after a change, and its owner still old enough.
   static Future<bool> payableNow(Session s, RewardWithdrawal w) async {
-    final a = await IslandPayoutAccount.db.findFirstRow(s, where: (t) => t.authUserId.equals(w.authUserId));
-    if (a == null || a.status != 'verified' || w.beneficiary != 'flw:${a.bankCode}:${a.accountNumber}') return false;
-    if (a.dateOfBirth == null || Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge) return false;
+    final a = await IslandPayoutAccount.db.findFirstRow(
+      s,
+      where: (t) => t.authUserId.equals(w.authUserId),
+    );
+    if (a == null ||
+        a.status != 'verified' ||
+        w.beneficiary != 'flw:${a.bankCode}:${a.accountNumber}')
+      return false;
+    if (a.dateOfBirth == null ||
+        Payout.ageOf(a.dateOfBirth!) < RewardConfig.current.minAge)
+      return false;
     return true;
   }
 
   /// Operators: withdrawals waiting in their review window (who, how much, when they go), to stop any that look wrong.
   Future<String> payoutQueue(Session session) async {
     final u = _user(session);
-    if (!await DroneService.isOperator(session, u)) return _err('Operators only.');
-    final rows = await RewardWithdrawal.db.find(session, where: (t) => t.status.equals(PayoutState.requested), orderBy: (t) => t.createdAt, limit: 50);
+    if (!await DroneService.isOperator(session, u))
+      return _err('Operators only.');
+    final rows = await RewardWithdrawal.db.find(
+      session,
+      where: (t) => t.status.equals(PayoutState.requested),
+      orderBy: (t) => t.createdAt,
+      limit: 50,
+    );
     final hrs = RewardConfig.current.reviewHours;
     return jsonEncode([
-      for (final w in rows) {'ref': w.ref, 'handle': (await _profile(session, w.authUserId)).handle, 'amountKobo': w.amountKobo, 'at': w.createdAt.toIso8601String(), 'goesAt': w.createdAt.add(Duration(hours: hrs)).toIso8601String()},
+      for (final w in rows)
+        {
+          'ref': w.ref,
+          'handle': (await _profile(session, w.authUserId)).handle,
+          'amountKobo': w.amountKobo,
+          'at': w.createdAt.toIso8601String(),
+          'goesAt': w.createdAt.add(Duration(hours: hrs)).toIso8601String(),
+        },
     ]);
   }
 
   /// Operators: stop a withdrawal in review (the money goes back to the player's available earnings).
   Future<String> payoutStop(Session session, String ref) async {
     final u = _user(session);
-    if (!await DroneService.isOperator(session, u)) return _err('Operators only.');
-    return jsonEncode({'stopped': await Withdrawals.stop(session, ref, 'operator:${u.uuid}')});
+    if (!await DroneService.isOperator(session, u))
+      return _err('Operators only.');
+    return jsonEncode({
+      'stopped': await Withdrawals.stop(session, ref, 'operator:${u.uuid}'),
+    });
   }
 
   /// the island's administrators: only they see the Government console (the treasury, the books)
   static const govAdmins = {'rockerfeller', 'believecaxa'};
   static Future<bool> _govAdmin(Session s, UuidValue u) async {
-    final p = await IslandProfile.db.findFirstRow(s, where: (t) => t.authUserId.equals(u));
+    final p = await IslandProfile.db.findFirstRow(
+      s,
+      where: (t) => t.authUserId.equals(u),
+    );
     return p != null && govAdmins.contains(p.handle.toLowerCase());
   }
 
@@ -2862,17 +3859,39 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> civic(Session session) async {
     final u = _user(session), p = QueryParameters.named({'u': u.uuid});
     final q = (await session.db.unsafeQuery(
-            'SELECT COALESCE(SUM(-"amount") FILTER (WHERE "kind" = \'tax\'), 0), COALESCE(SUM(-"amount") FILTER (WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'7 days\'), 0), '
-            'COALESCE(SUM(-"amount") FILTER (WHERE "counter" = \'city:courts\' AND "amount" < 0), 0), COALESCE(SUM(-"amount") FILTER (WHERE "counter" = \'city:landlord\' AND "amount" < 0), 0) '
-            'FROM "naira_entry" WHERE "authUserId" = CAST(@u AS uuid)',
-            parameters: p))
-        .first;
-    final c = await session.db.unsafeQuery('SELECT "debt" FROM "world_citizen" WHERE "authUserId" = CAST(@u AS uuid)', parameters: p);
-    final fines = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(u) & (t.counter.equals('city:courts') | t.kind.equals('credit')), orderBy: (t) => t.createdAt.desc(), limit: 8);
+      'SELECT COALESCE(SUM(-"amount") FILTER (WHERE "kind" = \'tax\'), 0), COALESCE(SUM(-"amount") FILTER (WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'7 days\'), 0), '
+      'COALESCE(SUM(-"amount") FILTER (WHERE "counter" = \'city:courts\' AND "amount" < 0), 0), COALESCE(SUM(-"amount") FILTER (WHERE "counter" = \'city:landlord\' AND "amount" < 0), 0) '
+      'FROM "naira_entry" WHERE "authUserId" = CAST(@u AS uuid)',
+      parameters: p,
+    )).first;
+    final c = await session.db.unsafeQuery(
+      'SELECT "debt" FROM "world_citizen" WHERE "authUserId" = CAST(@u AS uuid)',
+      parameters: p,
+    );
+    final fines = await NairaEntry.db.find(
+      session,
+      where: (t) =>
+          t.authUserId.equals(u) &
+          (t.counter.equals('city:courts') | t.kind.equals('credit')),
+      orderBy: (t) => t.createdAt.desc(),
+      limit: 8,
+    );
     return jsonEncode({
-      'admin': await _govAdmin(session, u), 'taxRate': Bank.taxRate,
-      'taxPaid': _i(q[0]), 'taxWeek': _i(q[1]), 'finesPaid': _i(q[2]), 'rentPaid': _i(q[3]), 'owed': c.isEmpty ? 0 : _i(c.first[0]),
-      'fines': [for (final e in fines) {'memo': e.memo, 'amount': e.amount, 'at': e.createdAt.toIso8601String()}],
+      'admin': await _govAdmin(session, u),
+      'taxRate': Bank.taxRate,
+      'taxPaid': _i(q[0]),
+      'taxWeek': _i(q[1]),
+      'finesPaid': _i(q[2]),
+      'rentPaid': _i(q[3]),
+      'owed': c.isEmpty ? 0 : _i(c.first[0]),
+      'fines': [
+        for (final e in fines)
+          {
+            'memo': e.memo,
+            'amount': e.amount,
+            'at': e.createdAt.toIso8601String(),
+          },
+      ],
     });
   }
 
@@ -2880,36 +3899,86 @@ class IslandMeEndpoint extends Endpoint {
   /// city account has taken in and paid out, the citizens and the naira in circulation, and Treasury 2 (real naira).
   Future<String> govBoard(Session session) async {
     final u = _user(session);
-    if (!await _govAdmin(session, u)) return _err('The Government console is for the island\'s administrators.');
+    if (!await _govAdmin(session, u))
+      return _err(
+        'The Government console is for the island\'s administrators.',
+      );
     final t = (await session.db.unsafeQuery(
-            'SELECT COALESCE(SUM(-"amount"), 0), COALESCE(SUM(-"amount") FILTER (WHERE "createdAt" > NOW() - INTERVAL \'1 day\'), 0), COALESCE(SUM(-"amount") FILTER (WHERE "createdAt" > NOW() - INTERVAL \'7 days\'), 0), COUNT(*), COUNT(DISTINCT "authUserId") '
-            'FROM "naira_entry" WHERE "kind" = \'tax\''))
-        .first;
+      'SELECT COALESCE(SUM(-"amount"), 0), COALESCE(SUM(-"amount") FILTER (WHERE "createdAt" > NOW() - INTERVAL \'1 day\'), 0), COALESCE(SUM(-"amount") FILTER (WHERE "createdAt" > NOW() - INTERVAL \'7 days\'), 0), COUNT(*), COUNT(DISTINCT "authUserId") '
+      'FROM "naira_entry" WHERE "kind" = \'tax\'',
+    )).first;
     final byCounter = await session.db.unsafeQuery(
-        'SELECT "counter", COALESCE(SUM(-"amount") FILTER (WHERE "amount" < 0), 0), COALESCE(SUM("amount") FILTER (WHERE "amount" > 0 AND "kind" <> \'open\'), 0) FROM "naira_entry" WHERE "kind" <> \'tax\' GROUP BY "counter" ORDER BY 1');
+      'SELECT "counter", COALESCE(SUM(-"amount") FILTER (WHERE "amount" < 0), 0), COALESCE(SUM("amount") FILTER (WHERE "amount" > 0 AND "kind" <> \'open\'), 0) FROM "naira_entry" WHERE "kind" <> \'tax\' GROUP BY "counter" ORDER BY 1',
+    );
     // every island player has a wallet: anyone missing one gets it now, so players and wallets always match
-    for (final r in await session.db.unsafeQuery('SELECT p."authUserId" FROM "island_profile" p LEFT JOIN "world_citizen" c ON c."authUserId" = p."authUserId" WHERE c."id" IS NULL')) {
-      try { await WorldAuthority.citizen(session, UuidValue.fromString('${r[0]}')); } catch (e) { session.log('[gov] wallet for ${r[0]} failed: $e', level: LogLevel.warning); }
+    for (final r in await session.db.unsafeQuery(
+      'SELECT p."authUserId" FROM "island_profile" p LEFT JOIN "world_citizen" c ON c."authUserId" = p."authUserId" WHERE c."id" IS NULL',
+    )) {
+      try {
+        await WorldAuthority.citizen(session, UuidValue.fromString('${r[0]}'));
+      } catch (e) {
+        session.log(
+          '[gov] wallet for ${r[0]} failed: $e',
+          level: LogLevel.warning,
+        );
+      }
     }
-    final cit = (await session.db.unsafeQuery('SELECT COUNT(*), COALESCE(SUM(c."naira"), 0), COALESCE(SUM(c."debt"), 0), COUNT(*) FILTER (WHERE c."debt" > 0) FROM "world_citizen" c JOIN "island_profile" p ON p."authUserId" = c."authUserId"')).first;
-    final others = _i((await session.db.unsafeQuery('SELECT COUNT(*) FROM "world_citizen" c LEFT JOIN "island_profile" p ON p."authUserId" = c."authUserId" WHERE p."id" IS NULL')).first[0]);
+    final cit = (await session.db.unsafeQuery(
+      'SELECT COUNT(*), COALESCE(SUM(c."naira"), 0), COALESCE(SUM(c."debt"), 0), COUNT(*) FILTER (WHERE c."debt" > 0) FROM "world_citizen" c JOIN "island_profile" p ON p."authUserId" = c."authUserId"',
+    )).first;
+    final others = _i(
+      (await session.db.unsafeQuery(
+        'SELECT COUNT(*) FROM "world_citizen" c LEFT JOIN "island_profile" p ON p."authUserId" = c."authUserId" WHERE p."id" IS NULL',
+      )).first[0],
+    );
     final days = await session.db.unsafeQuery(
-        'SELECT to_char(date_trunc(\'day\', "createdAt" + INTERVAL \'1 hour\'), \'YYYY-MM-DD\'), SUM(-"amount") FROM "naira_entry" WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'14 days\' GROUP BY 1 ORDER BY 1');
+      'SELECT to_char(date_trunc(\'day\', "createdAt" + INTERVAL \'1 hour\'), \'YYYY-MM-DD\'), SUM(-"amount") FROM "naira_entry" WHERE "kind" = \'tax\' AND "createdAt" > NOW() - INTERVAL \'14 days\' GROUP BY 1 ORDER BY 1',
+    );
     return jsonEncode({
-      'tax': {'total': _i(t[0]), 'today': _i(t[1]), 'week': _i(t[2]), 'entries': _i(t[3]), 'payers': _i(t[4]), 'rate': Bank.taxRate},
-      'days': [for (final d in days) {'day': d[0], 'tax': _i(d[1])}],
-      'counters': [for (final r in byCounter) {'counter': r[0], 'in': _i(r[1]), 'out': _i(r[2])}],
-      'citizens': {'count': _i(cit[0]), 'naira': _i(cit[1]), 'owed': _i(cit[2]), 'owing': _i(cit[3]), 'players': await IslandProfile.db.count(session), 'otherWyrd': others},
+      'tax': {
+        'total': _i(t[0]),
+        'today': _i(t[1]),
+        'week': _i(t[2]),
+        'entries': _i(t[3]),
+        'payers': _i(t[4]),
+        'rate': Bank.taxRate,
+      },
+      'days': [
+        for (final d in days) {'day': d[0], 'tax': _i(d[1])},
+      ],
+      'counters': [
+        for (final r in byCounter)
+          {'counter': r[0], 'in': _i(r[1]), 'out': _i(r[2])},
+      ],
+      'citizens': {
+        'count': _i(cit[0]),
+        'naira': _i(cit[1]),
+        'owed': _i(cit[2]),
+        'owing': _i(cit[3]),
+        'players': await IslandProfile.db.count(session),
+        'otherWyrd': others,
+      },
       'treasury2': await TopUp.treasury2(session),
     });
   }
 
   // ---- trip refunds (administrators): a fare or charter charged for a trip that never happened goes back, with its tax
   /// A paid trip, booked: the record that later says whether it started.
-  static Future<String?> _tripBooked(Session s, UuidValue u, NairaEntry? e) async {
+  static Future<String?> _tripBooked(
+    Session s,
+    UuidValue u,
+    NairaEntry? e,
+  ) async {
     if (e == null) return null;
     try {
-      await IslandTrip.db.insertRow(s, IslandTrip(authUserId: u, entryKey: e.key, bookedAt: DateTime.now().toUtc()));
+      await IslandTrip.db.insertRow(
+        s,
+        IslandTrip(
+          authUserId: u,
+          entryKey: e.key,
+          bookedAt: DateTime.now().toUtc(),
+        ),
+      );
     } catch (_) {}
     return e.key;
   }
@@ -2917,58 +3986,153 @@ class IslandMeEndpoint extends Endpoint {
   /// I'm on it: the trip I paid for has started (once; mine only).
   Future<String> tripStarted(Session session, String trip) async {
     final u = _user(session);
-    final t = await IslandTrip.db.findFirstRow(session, where: (x) => x.entryKey.equals(trip) & x.authUserId.equals(u));
+    final t = await IslandTrip.db.findFirstRow(
+      session,
+      where: (x) => x.entryKey.equals(trip) & x.authUserId.equals(u),
+    );
     if (t == null) return _err('No such trip.');
-    if (t.startedAt == null) await IslandTrip.db.updateRow(session, t.copyWith(startedAt: DateTime.now().toUtc()));
+    if (t.startedAt == null)
+      await IslandTrip.db.updateRow(
+        session,
+        t.copyWith(startedAt: DateTime.now().toUtc()),
+      );
     return jsonEncode({'ok': true});
   }
 
-  static bool _isTrip(NairaEntry e) => e.amount < 0 && e.kind == 'fee' && (e.memo.startsWith('Lagos Island Airport') || e.memo.startsWith('Banana Island Marina') || e.key.startsWith('island:flight:') || e.key.startsWith('island:jetfly:') || e.key.startsWith('island:yacht:'));
+  static bool _isTrip(NairaEntry e) =>
+      e.amount < 0 &&
+      e.kind == 'fee' &&
+      (e.memo.startsWith('Lagos Island Airport') ||
+          e.memo.startsWith('Banana Island Marina') ||
+          e.key.startsWith('island:flight:') ||
+          e.key.startsWith('island:jetfly:') ||
+          e.key.startsWith('island:yacht:'));
 
   /// A player's trip charges from the last 14 days (administrators only).
   Future<String> govTrips(Session session, String handle) async {
     final u = _user(session);
     if (!await _govAdmin(session, u)) return _err('Administrators only.');
-    final p = await _byHandle(session, handle.trim().replaceFirst(RegExp(r'^@'), ''));
+    final p = await _byHandle(
+      session,
+      handle.trim().replaceFirst(RegExp(r'^@'), ''),
+    );
     if (p == null) return _err('No Lagosian by that name.');
     final since = DateTime.now().toUtc().subtract(const Duration(days: 14));
-    final rows = await NairaEntry.db.find(session, where: (t) => t.authUserId.equals(p.authUserId) & (t.createdAt > since) & t.kind.equals('fee'), orderBy: (t) => t.createdAt.desc(), limit: 60);
-    final trips = rows.where(_isTrip).toList(), recs = {for (final t in await IslandTrip.db.find(session, where: (x) => x.entryKey.inSet(trips.map((e) => e.key).toSet()))) t.entryKey: t};
-    return jsonEncode({'handle': p.handle, 'trips': [for (final e in trips) {'id': e.id, 'memo': e.memo, 'amount': -e.amount, 'at': e.createdAt.toIso8601String(), 'refunded': e.status == 'reversed', 'state': recs[e.key] == null ? 'untracked' : recs[e.key]!.startedAt != null ? 'taken' : DateTime.now().toUtc().difference(e.createdAt) < const Duration(minutes: 10) ? 'booked' : 'never'}]});
+    final rows = await NairaEntry.db.find(
+      session,
+      where: (t) =>
+          t.authUserId.equals(p.authUserId) &
+          (t.createdAt > since) &
+          t.kind.equals('fee'),
+      orderBy: (t) => t.createdAt.desc(),
+      limit: 60,
+    );
+    final trips = rows.where(_isTrip).toList(),
+        recs = {
+          for (final t in await IslandTrip.db.find(
+            session,
+            where: (x) => x.entryKey.inSet(trips.map((e) => e.key).toSet()),
+          ))
+            t.entryKey: t,
+        };
+    return jsonEncode({
+      'handle': p.handle,
+      'trips': [
+        for (final e in trips)
+          {
+            'id': e.id,
+            'memo': e.memo,
+            'amount': -e.amount,
+            'at': e.createdAt.toIso8601String(),
+            'refunded': e.status == 'reversed',
+            'state': recs[e.key] == null
+                ? 'untracked'
+                : recs[e.key]!.startedAt != null
+                ? 'taken'
+                : DateTime.now().toUtc().difference(e.createdAt) <
+                      const Duration(minutes: 10)
+                ? 'booked'
+                : 'never',
+          },
+      ],
+    });
   }
 
   /// Refund one trip charge, and the tax taken with it (administrators only; once; logged).
-  Future<String> govRefund(Session session, int entryId) => _money(session, (u) async {
+  Future<String> govRefund(Session session, int entryId) => _money(session, (
+    u,
+  ) async {
     if (!await _govAdmin(session, u)) return _err('Administrators only.');
     final e = await NairaEntry.db.findById(session, entryId);
     if (e == null || !_isTrip(e)) return _err('That is not a trip charge.');
     if (e.status == 'reversed') return _err('Already refunded.');
     // only a trip the server knows was booked and never started: one that was taken, or that has no record, stays paid
-    final rec = await IslandTrip.db.findFirstRow(session, where: (x) => x.entryKey.equals(e.key));
-    if (rec == null) return _err('There is no trip record for this charge (it was before trips were tracked), so there is no proof it never happened.');
-    if (rec.startedAt != null) return _err('This trip happened: the player was on it. It cannot be refunded.');
-    if (DateTime.now().toUtc().difference(e.createdAt) < const Duration(minutes: 10)) return _err('This trip may still be starting. Try again in a few minutes.');
-    if (DateTime.now().toUtc().difference(e.createdAt) > const Duration(days: 14)) return _err('Only trips from the last 14 days can be refunded here.');
+    final rec = await IslandTrip.db.findFirstRow(
+      session,
+      where: (x) => x.entryKey.equals(e.key),
+    );
+    if (rec == null)
+      return _err(
+        'There is no trip record for this charge (it was before trips were tracked), so there is no proof it never happened.',
+      );
+    if (rec.startedAt != null)
+      return _err(
+        'This trip happened: the player was on it. It cannot be refunded.',
+      );
+    if (DateTime.now().toUtc().difference(e.createdAt) <
+        const Duration(minutes: 10))
+      return _err(
+        'This trip may still be starting. Try again in a few minutes.',
+      );
+    if (DateTime.now().toUtc().difference(e.createdAt) >
+        const Duration(days: 14))
+      return _err('Only trips from the last 14 days can be refunded here.');
     final r = await Bank.reverse(session, e.id!, 'Refund: ${e.memo}');
-    final tax = await NairaEntry.db.findFirstRow(session, where: (t) => t.key.equals('${e.key}:tax'));
-    if (tax != null && tax.status != 'reversed') await Bank.reverse(session, tax.id!, 'Refund: tax on ${e.memo}');
-    session.log('[gov] trip refund ${e.id} (${-e.amount}) for ${e.authUserId.uuid} by ${u.uuid}', level: LogLevel.warning);
-    return jsonEncode({'refunded': -e.amount + (tax == null ? 0 : -tax.amount), 'ok': r.ok});
+    final tax = await NairaEntry.db.findFirstRow(
+      session,
+      where: (t) => t.key.equals('${e.key}:tax'),
+    );
+    if (tax != null && tax.status != 'reversed')
+      await Bank.reverse(session, tax.id!, 'Refund: tax on ${e.memo}');
+    session.log(
+      '[gov] trip refund ${e.id} (${-e.amount}) for ${e.authUserId.uuid} by ${u.uuid}',
+      level: LogLevel.warning,
+    );
+    return jsonEncode({
+      'refunded': -e.amount + (tax == null ? 0 : -tax.amount),
+      'ok': r.ok,
+    });
   });
 
   /// Treasury 2 (operators only): real naira paid by players and the half reserved for paychecks.
   Future<String> treasury2(Session session) async {
     final u = _user(session);
-    if (!await DroneService.isOperator(session, u)) return _err('Operators only.');
+    if (!await DroneService.isOperator(session, u))
+      return _err('Operators only.');
     return jsonEncode(await TopUp.treasury2(session));
   }
 
   /// My naira purchases, newest first: each one's pack, price, naira and state (paid only once Flutterwave confirmed it).
   Future<String> topUpHistory(Session session) async {
     final u = _user(session);
-    final rows = await IslandTopUp.db.find(session, where: (t) => t.authUserId.equals(u), orderBy: (t) => t.createdAt.desc(), limit: 15);
+    final rows = await IslandTopUp.db.find(
+      session,
+      where: (t) => t.authUserId.equals(u),
+      orderBy: (t) => t.createdAt.desc(),
+      limit: 15,
+    );
     return jsonEncode([
-      for (final r in rows) {'ref': r.txRef, 'ngn': r.amountNgn, 'naira': r.naira, 'status': r.status, 'at': r.createdAt.toIso8601String(), if (r.status == 'pending' && r.payTo != null) 'pay': jsonDecode(r.payTo!), if (r.paidAt != null) 'paidAt': r.paidAt!.toIso8601String()},
+      for (final r in rows)
+        {
+          'ref': r.txRef,
+          'ngn': r.amountNgn,
+          'naira': r.naira,
+          'status': r.status,
+          'at': r.createdAt.toIso8601String(),
+          if (r.status == 'pending' && r.payTo != null)
+            'pay': jsonDecode(r.payTo!),
+          if (r.paidAt != null) 'paidAt': r.paidAt!.toIso8601String(),
+        },
     ]);
   }
 
@@ -2976,7 +4140,8 @@ class IslandMeEndpoint extends Endpoint {
   Future<String> topUpCheck(Session session, String ref) async {
     final u = _user(session);
     final r = await TopUp.settle(session, ref, onlyFor: u);
-    if (r['status'] == 'paid') r['balance'] = (await WorldAuthority.citizen(session, u)).naira;
+    if (r['status'] == 'paid')
+      r['balance'] = (await WorldAuthority.citizen(session, u)).naira;
     return jsonEncode(r);
   }
 

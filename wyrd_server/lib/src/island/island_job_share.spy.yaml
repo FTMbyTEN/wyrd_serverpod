@@ -1,0 +1,24 @@
+### A finished island job's real-money share: 2% of the paycheck, drawn from the Real Rewards Fund into the player's
+### pending cash. One per paid shift ([source] is the shift's payroll key). pending until the hold ends, then
+### available; unfunded when the fund couldn't cover it (the player then got the whole paycheck in Game Naira).
+class: IslandJobShare
+table: island_job_share
+fields:
+  authUserId: UuidValue
+  source: String
+  ### grid | refinery | airport | club | market | okada
+  workplace: String
+  title: String
+  ### the whole paycheck, in Game Naira
+  paycheck: int
+  cashKobo: int
+  ### pending | available | unfunded
+  status: String
+  availableAt: DateTime
+  createdAt: DateTime
+indexes:
+  island_job_share_source_idx:
+    fields: source
+    unique: true
+  island_job_share_user_idx:
+    fields: authUserId, status

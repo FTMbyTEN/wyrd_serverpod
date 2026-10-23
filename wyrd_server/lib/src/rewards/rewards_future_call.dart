@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 
+import '../island/island_job_share.dart';
 import '../mind/tick_schedule.dart';
 import 'funded_jobs.dart';
 import 'withdrawals.dart';
@@ -10,7 +11,14 @@ import 'withdrawals.dart';
 class RewardsFutureCall extends FutureCall {
   Future<void> tick(Session session) async {
     if (!TickSchedule.claim('rewards', TickSchedule.rewards)) return;
-    for (final (name, step) in [('mature', () => FundedJobs.matureDue(session)), ('expire', () => FundedJobs.expireDue(session)), ('repair', () => FundedJobs.repairGameRewards(session)), ('submit', () => Withdrawals.submitDue(session)), ('reconcile', () => Withdrawals.reconcile(session))]) {
+    for (final (name, step) in [
+      ('mature', () => FundedJobs.matureDue(session)),
+      ('shares', () => JobShare.matureDue(session)),
+      ('expire', () => FundedJobs.expireDue(session)),
+      ('repair', () => FundedJobs.repairGameRewards(session)),
+      ('submit', () => Withdrawals.submitDue(session)),
+      ('reconcile', () => Withdrawals.reconcile(session)),
+    ]) {
       try {
         final n = await step();
         if (n > 0) session.log('[rewards] $name: $n');

@@ -953,6 +953,13 @@ class EndpointIslandMe extends _isc.EndpointRef {
     {},
   );
 
+  /// The ₦ wallet: every job I've finished and the real share it earned (2% of the paycheck), with the totals.
+  _ida.Future<String> jobShares() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'jobShares',
+    {},
+  );
+
   /// The player's National Grid career, as the server keeps it: level and experience on each track, recent shifts.
   _ida.Future<String> gridCareer() => caller.callServerEndpoint<String>(
     'islandMe',

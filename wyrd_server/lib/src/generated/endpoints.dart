@@ -1724,6 +1724,16 @@ class Endpoints extends _is.EndpointDispatch {
               ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
                   .earnBoard(session),
         ),
+        'jobShares': _is.MethodConnector(
+          name: 'jobShares',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .jobShares(session),
+        ),
         'gridCareer': _is.MethodConnector(
           name: 'gridCareer',
           params: {},
