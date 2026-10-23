@@ -46,12 +46,8 @@ serverpod:
     # what actually gets served at the project's web domain; swap this back to `flutter_build`
     # in scloud.yaml if the Flutter frontend should be served instead.
     expo_build:
-      windows: >-
-        (if exist web\app rmdir /S /Q web\app)
-        & cd /D C:\Users\TEN\consciousness-bot\mobile
-        & set "EXPO_PUBLIC_WYRD_SERVERPOD_URL=https://wryd00.api.serverpod.space"
-        && npx expo export --platform web
-        && xcopy /E /I /Y dist C:\Users\TEN\wyrd_serverpod\wyrd\wyrd_server\web\app
+      # tool\expo_build.cmd finds the mobile project on either computer (see the script)
+      windows: call tool\expo_build.cmd
       posix: |
         rm -rf ~/wyrd_serverpod/wyrd/wyrd_server/web/app
         cd ~/consciousness-bot/mobile
