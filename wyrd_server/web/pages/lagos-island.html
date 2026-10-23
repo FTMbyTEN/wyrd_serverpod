@@ -7783,6 +7783,7 @@
     drawArenaRig(R, t, beat, live);
   }
   async function enterRoom(kind, key, title, extra = {}) {
+    PERF.warmUntil = performance.now() + 4000; // a room's models load now: not a reason to blur the picture
     if (inside && !extra.stairs) return;
     const keepOutside = !!extra.stairs && outside; if (extra.stairs) { inside = null; deco = null; }
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
@@ -7838,7 +7839,7 @@
     if (kind === 'club') { clubWarm(key); const s = clubSrc(key); if (s && CITY.master) { CITY.master.gain.value = Math.max(CITY.master.gain.value, 0.5); s.g.gain.value = 0.6; if (s.a.src && s.a.paused) s.a.play().catch(() => {}); } } // straight in, music on
     if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
   }
-  function leaveRoom() { if (!touring) coachHide(); closeInverter(); gpClose(); REF.hot = null; refGuideOff(); if (phone.style.display === 'block') closePhone(); actFrom = null; // walking out puts away whatever the building opened
+  function leaveRoom() { PERF.warmUntil = performance.now() + 4000; if (!touring) coachHide(); closeInverter(); gpClose(); REF.hot = null; refGuideOff(); if (phone.style.display === 'block') closePhone(); actFrom = null; // walking out puts away whatever the building opened
     if (!inside) return;
     pose = null;
     if (deco && deco.dirty) bmSave(inside);
@@ -8485,11 +8486,14 @@
     // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
     const at30 = thirty(), late = at30 ? 0.048 : 0.024; // a frame that missed its slot (60 fps: 17 ms; 30 fps: 33 ms)
     const covered = MOBILE && phoneEl0.style.display === 'block' && !inside; // frames held back on purpose don't count as slow
-    if (covered) { /* the phone's app is in front */ } else if (dt > late) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    // loading is always slow (models, clothes, textures arriving): those frames don't count, at start or after going in or out
+    const warming = t < (PERF.warmUntil ?? (PERF.warmUntil = t + 9000));
+    if (covered || warming) { /* the phone's app is in front, or it's still loading */ } else if (dt > late) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
     const floor = MOBILE ? 0.6 : PERF.mode === 'sharp' ? 0.85 : 0.6;
-    if (slow > (MOBILE ? 30 : 40) && quality > floor) { quality = Math.max(floor, quality - 0.1); slow = 0; resize(); }
-    else if (!MOBILE && PERF.mode === 'auto' && !PERF.cap30 && slow > 40 && quality <= floor) { PERF.cap30 = true; slow = 0; } // still slow at the lowest resolution: 30 fps
-    if (fast > 300 && quality < 1) { quality = Math.min(1, quality + 0.075); fast = 0; resize(); }
+    // a desktop only gives up sharpness for a slowdown that lasts (about 1.5 s of missed frames), and gets it back fast
+    if (slow > (MOBILE ? 30 : 90) && quality > floor) { quality = Math.max(floor, quality - 0.1); slow = 0; resize(); }
+    else if (!MOBILE && PERF.mode === 'auto' && !PERF.cap30 && slow > 90 && quality <= floor) { PERF.cap30 = true; slow = 0; } // still slow at the lowest resolution: 30 fps
+    if (fast > (MOBILE ? 300 : 90) && quality < 1) { quality = Math.min(1, quality + (MOBILE ? 0.075 : 0.2)); fast = 0; resize(); }
     if (!MOBILE && PERF.cap30 && quality >= 1 && fast > 280) PERF.cap30 = false;
     if (MOBILE) { const z = cam.zoom * cam.user, want = z > 2.2 ? 2.5 : z > 1.5 ? 2 : 1.5; if (want !== zoomCap) { zoomCap = want; resize(); } }
     if (playing) {
