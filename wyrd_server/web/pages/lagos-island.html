@@ -6051,6 +6051,7 @@
     for (const it of items) { if (it.who) flush3d(); it.f(); } // the 3D behind each person goes down first
     flush3d();
     for (const f of afterCars.splice(0)) f();
+    for (const g of glow.splice(0)) g(); // the room's own lights: spotlights, lasers, lanterns, glowing screens (indoors they're always on)
     if (false) { // the old light show (the shell has its own)
       x.save(); x.globalCompositeOperation = 'lighter'; const t = now / 1000;
       for (let k = 0; k < 4; k++) { const p = P(10 + k * 15, 17, 1), q = P(R.w / 2 + Math.sin(t + k) * 18, 0, R.d / 2 + Math.cos(t * 0.7 + k) * 10); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsla(${(k * 90 + t * 40) % 360},100%,65%,0.5)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0] - 30, q[1]); x.lineTo(q[0] + 30, q[1]); x.fill(); }
@@ -6133,6 +6134,18 @@
     // LED strips along the walls, low and high
     const strip = (x0, z0, x1, z1, h) => { const p = P(x0, 0.4, z0), q = P(x1, 0.4, z1); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsl(${hue},100%,60%)`); g.addColorStop(1, `hsl(${(hue + 120) % 360},100%,60%)`); x.strokeStyle = g; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); if (h) { const p2 = P(x0, h, z0), q2 = P(x1, h, z1); x.beginPath(); x.moveTo(p2[0], p2[1]); x.lineTo(q2[0], q2[1]); x.stroke(); } };
     strip(0, 0.2, R.w, 0.2, 15); strip(0.2, 0, 0.2, R.d, 15);
+    // the dance floor comes alive: LED tiles over the two halves, rings rippling out from the middle on the beat, a colour wave
+    // sweeping across (drawn last, over the floor and the crowd's feet)
+    glow.push(() => { const t2 = performance.now() / 1000, b2 = clubBeat(R.key), X0 = 32, X1 = 64, Z0 = 24, Z1 = 36, s = 2, mx = (X0 + X1) / 2, mz = (Z0 + Z1) / 2;
+      x.save(); x.globalCompositeOperation = 'lighter';
+      for (let px = X0; px < X1; px += s) for (let pz = Z0; pz < Z1; pz += s) {
+        const d = Math.hypot(px + 1 - mx, (pz + 1 - mz) * 1.6), ring = Math.max(0, Math.cos(d * 0.45 - t2 * 5)), wave = 0.5 + 0.5 * Math.sin((px - pz) * 0.25 + t2 * 2.2);
+        const a = 0.06 + ring * (0.12 + b2 * 0.3) + wave * 0.06; if (a < 0.08) continue;
+        x.fillStyle = `hsla(${(hue + d * 6 + t2 * 30) % 360},100%,60%,${a})`;
+        const q = [P(px + 0.15, 0.06, pz + 0.15), P(px + s - 0.15, 0.06, pz + 0.15), P(px + s - 0.15, 0.06, pz + s - 0.15), P(px + 0.15, 0.06, pz + s - 0.15)];
+        x.beginPath(); x.moveTo(q[0][0], q[0][1]); for (let k = 1; k < 4; k++) x.lineTo(q[k][0], q[k][1]); x.closePath(); x.fill(); }
+      const e = [P(X0, 0.07, Z0), P(X1, 0.07, Z0), P(X1, 0.07, Z1), P(X0, 0.07, Z1)]; x.strokeStyle = `hsla(${hue},100%,65%,${0.5 + b2 * 0.5})`; x.lineWidth = Math.max(1.5, K * 0.25); x.beginPath(); x.moveTo(e[0][0], e[0][1]); for (let k = 1; k < 4; k++) x.lineTo(e[k][0], e[k][1]); x.closePath(); x.stroke();
+      x.restore(); });
     shift(PL.st[0], PL.st[1], () => { // the stage, booth and DJ, where this club puts them
     // the stage and its LED wall
     box(cx - 18, 0, 1, cx + 18, 2.4, 13, '#18122B'); box(cx - 18, 2.4, 1, cx + 18, 2.7, 13, `hsl(${hue},90%,55%)`);
@@ -6198,6 +6211,21 @@
     glow.push(() => { const p = P(cx, by + 1.8, bz0 - 0.4), r = K * 2.6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(165,243,252,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     // the booth monitors either side, cones pumping with the bass
     for (const sx of [cx - 9.4, cx + 7.4]) { box(sx, 2.7, bz0, sx + 2, 7.2, bz0 + 2, '#111827'); for (const [cy2, cr] of [[4.2, 0.75], [6.3, 0.4]]) { const p = P(sx + 1, cy2, bz0 + 2.02), rr = K * cr * (1 + beat * 0.12); x.fillStyle = '#27272A'; x.beginPath(); x.arc(p[0], p[1], rr, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#52525B'; x.lineWidth = 1; x.stroke(); } }
+    // the decks' screens: a waveform scrolling past on each, the playhead in the middle
+    for (const dx of [cx - 4.2, cx + 4.2]) { const y0 = by + 0.55, z = bz0 + 0.25, s0 = P(dx - 1.6, y0, z), s1 = P(dx + 1.6, y0, z), s2 = P(dx + 1.6, y0 + 1.2, z - 0.2), s3 = P(dx - 1.6, y0 + 1.2, z - 0.2); quad([s0, s1, s2, s3], '#020617', '#334155');
+      x.save(); x.beginPath(); x.moveTo(s0[0], s0[1]); x.lineTo(s1[0], s1[1]); x.lineTo(s2[0], s2[1]); x.lineTo(s3[0], s3[1]); x.closePath(); x.clip();
+      for (let k = 0; k < 18; k++) { const u = k / 18, hgt = 0.15 + 0.35 * Math.abs(Math.sin(k * 1.7 + t * (dx < cx ? 5 : 5.4))) * (0.6 + beat), mid = y0 + 0.6, a = P(dx - 1.5 + u * 3, mid - hgt, z - 0.1), b = P(dx - 1.5 + u * 3, mid + hgt, z - 0.1); x.strokeStyle = `hsl(${(hue + 160 + k * 4) % 360},95%,65%)`; x.lineWidth = Math.max(1, K * 0.12); x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); }
+      const ph = P(dx, y0 + 0.6, z - 0.1); x.fillStyle = '#F8FAFC'; x.fillRect(ph[0] - 0.5, ph[1] - K * 0.5, 1, K); x.restore(); }
+    // a truss over the booth with four spots on it
+    box(cx - 12, 17.4, 9.6, cx + 12, 18, 10.2, '#52525B'); for (const sx of [cx - 12, cx + 11.4]) box(sx, 2.7, 9.6, sx + 0.6, 17.4, 10.2, '#3F3F46');
+    for (let k = 0; k < 4; k++) { const hx = cx - 9 + k * 6; box(hx - 0.5, 16.2, 9.4, hx + 0.5, 17.4, 10.4, '#18181B'); }
+    // lasers from the booth fanning out over the crowd, brighter on the beat; CO2 jets either side on a big drop
+    glow.push(() => { const t2 = performance.now() / 1000, b2 = clubBeat(R.key), n = 6; x.save(); x.globalCompositeOperation = 'lighter'; x.lineWidth = Math.max(1, K * 0.14);
+      for (let k = 0; k < n; k++) { const from = P(cx + (k < n / 2 ? -5 : 5), by + 1.2, bz1), sw = Math.sin(t2 * 1.3 + k * 0.9), to = P(cx + sw * 26 + (k - n / 2) * 3, 0.1, 30 + Math.cos(t2 * 0.9 + k) * 8);
+        x.strokeStyle = `hsla(${k % 2 ? 140 : (hue + 120) % 360},100%,60%,${0.25 + b2 * 0.6})`; x.beginPath(); x.moveTo(from[0], from[1]); x.lineTo(to[0], to[1]); x.stroke(); }
+      if (b2 > 0.62) for (const jx of [cx - 13, cx + 13]) { const base = P(jx, 2.7, 12), top = P(jx, 16, 12), g = x.createLinearGradient(base[0], base[1], top[0], top[1]); g.addColorStop(0, `rgba(255,255,255,${(b2 - 0.6) * 1.4})`); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(base[0] - K * 0.4, base[1]); x.lineTo(base[0] + K * 0.4, base[1]); x.lineTo(top[0] + K * 2.6, top[1]); x.lineTo(top[0] - K * 2.6, top[1]); x.fill(); }
+      for (let k = 0; k < 4; k++) { const hx = cx - 9 + k * 6, s = P(hx, 16.2, 9.9), f = P(hx + Math.sin(t2 * 0.8 + k * 1.6) * 10, 0, 26 + Math.cos(t2 * 0.6 + k) * 6), g = x.createLinearGradient(s[0], s[1], f[0], f[1]); g.addColorStop(0, `hsla(${hue + k * 25},100%,75%,0.4)`); g.addColorStop(1, 'hsla(0,0%,0%,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(s[0], s[1]); x.lineTo(f[0] - K * 3, f[1]); x.lineTo(f[0] + K * 3, f[1]); x.fill(); }
+      x.restore(); });
     });
     // two trusses of moving heads
     for (const tz of LK.theme === 'ozumba' || LK.theme === 'vein' ? [15, 44] : []) { // only Ozumba and VEIN hang these; the others have their own rigs
@@ -6217,6 +6245,13 @@
     box(0.2, 0, 12, 2.4, 14, 56, '#1A1426');
     for (let r = 0; r < 3; r++) { box(0.4, 3.5 + r * 3, 12, 1.8, 3.8 + r * 3, 56, '#F5C542'); for (let k = 0; k < 28; k++) { const z = 13 + k * 1.5, p = P(1.1, 4 + r * 3, z), q = P(1.1, 5.6 + r * 3, z); x.strokeStyle = STALLS[(k + r * 3) % STALLS.length]; x.lineWidth = Math.max(1.5, K * 0.4); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } }
     box(6, 0, 12, 8.4, 4.2, 56, '#2A1D3A'); box(5.6, 4.2, 11.6, 8.8, 4.6, 56.4, '#F5C542');
+    // the bar dressed up: a glowing strip under the counter's lip, pendants over it, a tap tower, drinks lined up on top
+    { const fx = 8.45; const q0 = P(fx, 0.3, 12), q1 = P(fx, 0.3, 56), q2 = P(fx, 0.9, 56), q3 = P(fx, 0.9, 12), g = x.createLinearGradient(q0[0], q0[1], q1[0], q1[1]); g.addColorStop(0, `hsl(${hue},100%,60%)`); g.addColorStop(1, `hsl(${(hue + 90) % 360},100%,60%)`); quad([q0, q1, q2, q3], g, null);
+      box(6.6, 4.6, 33, 7.8, 7.6, 34.2, '#A1A1AA'); for (let k = 0; k < 3; k++) box(6.9 + k * 0.4, 7.6, 33.4, 7.1 + k * 0.4, 8.6, 33.6, ['#EF4444', '#22C55E', '#FACC15'][k]); // the tap tower
+      for (let k = 0; k < 10; k++) { const gz = 15 + k * 4.2, gx = 7.2 + (k % 2) * 0.6; if (Math.abs(gz - 33.6) < 1.5) continue; cylLit(gx, gz, 0.28, 4.6, 0.9, '#E2E8F0', false); cylLit(gx, gz, 0.26, 4.6, 0.55, ['#F59E0B', '#EC4899', '#22D3EE', '#A3E635', '#F97316'][k % 5], false); }
+      for (let k = 0; k < 6; k++) { const pz = 15 + k * 7.6; box(7.15, 9.2, pz - 0.04, 7.25, 14, pz + 0.04, '#27272A'); box(6.6, 8.4, pz - 0.6, 7.8, 9.2, pz + 0.6, '#B45309'); }
+      glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; for (let k = 0; k < 6; k++) { const p = P(7.2, 8.4, 15 + k * 7.6), r = K * 3.2; const g2 = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g2.addColorStop(0, 'rgba(255,200,120,0.55)'); g2.addColorStop(1, 'rgba(255,160,60,0)'); x.fillStyle = g2; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); }
+        const a = P(fx + 0.1, 0.5, 12), b = P(fx + 0.1, 0.5, 56); x.strokeStyle = `hsla(${hue},100%,65%,0.45)`; x.lineWidth = Math.max(3, K * 0.9); x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); x.restore(); }); }
     });
     // the champagne bar, front right, in gold and white
     box(58, 0, 58, 78, 4, 60.4, '#F8FAFC'); box(57.6, 4, 57.6, 78.4, 4.4, 60.8, '#F5C542');
