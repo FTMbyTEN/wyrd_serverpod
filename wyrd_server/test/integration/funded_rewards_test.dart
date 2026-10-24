@@ -310,7 +310,10 @@ void main() {
               ).catchError((_) => <String, dynamic>{}),
           ]);
           await handIn(s, u, a.id!, delivered: true);
-          expect((await Bank.fresh(s, u)).naira, before + 29499);
+          expect(
+            (await Bank.fresh(s, u)).naira,
+            before + 29499 - Bank.taxOn(29499, 'job'),
+          ); // the game reward, less the city's 2%
           expect(
             await RewardEarning.db.count(
               s,
