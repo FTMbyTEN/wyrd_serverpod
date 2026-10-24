@@ -17,8 +17,30 @@ import 'package:wyrd_server/src/world/world_authority.dart';
 import 'test_tools/serverpod_test_tools.dart';
 
 /// Hand a gig in the way the game does: every stop on its route reached first (the game reports each one as the
-/// player gets there), then the completion.
+/// player gets there), then the completion; and, as every completion now waits for an operator, the operator
+/// confirms it ([confirm] false leaves it in review, for the tests of the review itself).
 Future<Map<String, dynamic>> handIn(
+  Session s,
+  UuidValue u,
+  int id, {
+  required bool delivered,
+  bool confirm = true,
+}) async {
+  final r = await _handIn(s, u, id, delivered: delivered);
+  if (!confirm || r['status'] != 'review') return r;
+  await RewardAdmin.decideReview(
+    s,
+    _operator,
+    id,
+    true,
+    'checked',
+  ).catchError((_) {}); // a second confirmation of the same gig changes nothing
+  return FundedJobs.complete(s, u, id, delivered: delivered);
+}
+
+final _operator = UuidValue.fromString('a0000000-0000-4000-8000-000000000001');
+
+Future<Map<String, dynamic>> _handIn(
   Session s,
   UuidValue u,
   int id, {
@@ -312,6 +334,7 @@ void main() {
             u,
             a.id!,
             delivered: true,
+            confirm: false,
           ); // instantly
           expect(r['status'], 'review');
           expect(await RewardLedger.balance(s, RewardLedger.pending(u)), 0);

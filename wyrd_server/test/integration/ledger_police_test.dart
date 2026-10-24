@@ -29,7 +29,10 @@ void main() {
         expect(paid['receipt']['amount'], -100);
         final receipts =
             jsonDecode(await endpoints.city.receipts(player)) as List;
-        expect(receipts.first['memo'], 'Danfo fare across town');
+        expect(
+          receipts.map((r) => r['memo']),
+          contains('Danfo fare across town'),
+        ); // (the city's 2% gets a receipt line of its own)
       },
     );
 
@@ -88,7 +91,9 @@ void main() {
               'code': 'RL-1',
               'place': 'Marina / Broad Street',
               'unit': 'T-47',
-              'witnesses': 1,
+              'witnesses': 3,
+              'patrol':
+                  true, // strong evidence: a patrol car saw it, and three witnesses
             }),
           ),
         );
@@ -116,7 +121,9 @@ void main() {
           'code': 'RL-1',
           'place': 'Marina / Broad Street',
           'unit': 'T-47',
-          'witnesses': 1,
+          'witnesses': 3,
+          'patrol':
+              true, // strong evidence: a patrol car saw it, and three witnesses
         }),
       );
       final before = j(await endpoints.city.wallet(driver))['naira'] as int;
