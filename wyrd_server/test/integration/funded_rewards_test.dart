@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
@@ -13,6 +15,29 @@ import 'package:wyrd_server/src/world/bank.dart';
 import 'package:wyrd_server/src/world/world_authority.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
+
+/// Hand a gig in the way the game does: every stop on its route reached first (the game reports each one as the
+/// player gets there), then the completion.
+Future<Map<String, dynamic>> handIn(
+  Session s,
+  UuidValue u,
+  int id, {
+  required bool delivered,
+}) async {
+  final a = await JobAcceptance.db.findById(s, id);
+  if (a != null) {
+    final spec = jsonDecode(a.taskSpec) as Map<String, dynamic>,
+        stops = spec['stops'] as List?;
+    if (stops != null && (spec['at'] as int) < stops.length) {
+      spec['at'] = stops.length;
+      await JobAcceptance.db.updateRow(
+        s,
+        a.copyWith(taskSpec: jsonEncode(spec)),
+      );
+    }
+  }
+  return FundedJobs.complete(s, u, id, delivered: delivered);
+}
 
 /// The funded split-paycheck system against a real PostgreSQL: reservations, races, completions, the hold,
 /// withdrawals and provider events. Sandbox settings only; no real money anywhere.
@@ -255,14 +280,14 @@ void main() {
           await age(a.id!);
           await Future.wait([
             for (var i = 0; i < 5; i++)
-              FundedJobs.complete(
+              handIn(
                 sessionBuilder.build(),
                 u,
                 a.id!,
                 delivered: true,
               ).catchError((_) => <String, dynamic>{}),
           ]);
-          await FundedJobs.complete(s, u, a.id!, delivered: true);
+          await handIn(s, u, a.id!, delivered: true);
           expect((await Bank.fresh(s, u)).naira, before + 29499);
           expect(
             await RewardEarning.db.count(
@@ -282,7 +307,7 @@ void main() {
           await fund(10000);
           final o = await offer(), u = player();
           final a = await FundedJobs.accept(s, u, o.id!, 'kr-${u.uuid}');
-          final r = await FundedJobs.complete(
+          final r = await handIn(
             s,
             u,
             a.id!,
@@ -333,7 +358,7 @@ void main() {
           await WorldAuthority.citizen(s, u);
           final a = await FundedJobs.accept(s, u, o.id!, 'k2-${u.uuid}');
           await age(a.id!);
-          await FundedJobs.complete(s, u, a.id!, delivered: true);
+          await handIn(s, u, a.id!, delivered: true);
           for (var i = 0; i < 5; i++) {
             await Bank.post(
               s,
@@ -363,7 +388,7 @@ void main() {
           final o = await offer(hold: hold, fee: 5000);
           final a = await FundedJobs.accept(s, u, o.id!, 'ke-$i-${u.uuid}');
           await age(a.id!);
-          await FundedJobs.complete(s, u, a.id!, delivered: true);
+          await handIn(s, u, a.id!, delivered: true);
         }
         return u;
       }
@@ -542,7 +567,7 @@ void main() {
           ); // a long campaign
           for (final (u, id) in players) {
             await age(id);
-            await FundedJobs.complete(s, u, id, delivered: true);
+            await handIn(s, u, id, delivered: true);
           }
           expect(await RewardLedger.balance(s, 'ngn:fund:reserved'), 0);
           expect(
@@ -637,7 +662,7 @@ void main() {
             'tick-b-${late.uuid}',
           );
           await age(a.id!);
-          await FundedJobs.complete(s, done, a.id!, delivered: true);
+          await handIn(s, done, a.id!, delivered: true);
           await s.db.unsafeExecute(
             'UPDATE "job_acceptance" SET "deadline" = now() - interval \'1 minute\' WHERE "id" = ${b.id}',
           );

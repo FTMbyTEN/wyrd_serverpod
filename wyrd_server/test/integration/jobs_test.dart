@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
+import 'package:wyrd_server/src/world/bank.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
@@ -27,7 +28,10 @@ void main() {
         await endpoints.city.jobFinish(asAda, job['id'] as String, 0, 0, 0),
       );
       expect(r['paid'], 3000);
-      expect(r['naira'], 8000);
+      expect(
+        r['naira'],
+        5000 + 3000 - Bank.taxOn(3000, 'job'),
+      ); // the pay, less the city's 2%
       // the same job can't be paid twice
       expect(
         j(

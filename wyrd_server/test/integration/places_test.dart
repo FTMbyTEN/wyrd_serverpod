@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
+import 'package:wyrd_server/src/world/bank.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
@@ -40,17 +41,23 @@ void main() {
       final ate = j(
         await endpoints.city.visit(asAda, 'food', 'amala', 'Amala Shitta'),
       );
-      expect(ate['naira'], 4500);
+      expect(
+        ate['naira'],
+        5000 - 500 - Bank.taxOn(500, 'fee'),
+      ); // the meal, and the city's 2% on it
       expect(ate['heal'], 40);
       final worked = j(
         await endpoints.city.visit(asAda, 'factory', 'shift', 'A factory'),
       );
-      expect(worked['naira'], 7000);
+      expect(
+        worked['naira'],
+        (ate['naira'] as int) + 2500 - Bank.taxOn(2500, 'job'),
+      ); // the pay, less the 2%
       final again = j(
         await endpoints.city.visit(asAda, 'factory', 'shift', 'A factory'),
       );
       expect(again['error'], contains('Not yet'));
-      expect(j(await endpoints.city.wallet(asAda))['naira'], 7000);
+      expect(j(await endpoints.city.wallet(asAda))['naira'], worked['naira']);
     });
 
     test("you can't do what isn't offered, or afford what you can't", () async {
@@ -61,11 +68,9 @@ void main() {
       final hotel = j(
         await endpoints.city.visit(asAda, 'hotel', 'sleep', 'Eko Hotel'),
       );
-      expect(hotel['naira'], 0); // ₦5,000 start, ₦5,000 night
-      expect(
-        j(await endpoints.city.visit(asAda, 'food', 'suya', 'x'))['error'],
-        contains("can't afford"),
-      );
+      // ₦5,000 to start; a ₦5,000 night plus the city's 2% is more than that
+      expect(hotel['error'], contains("can't afford"));
+      expect(j(await endpoints.city.wallet(asAda))['naira'], 5000);
     });
   });
 }

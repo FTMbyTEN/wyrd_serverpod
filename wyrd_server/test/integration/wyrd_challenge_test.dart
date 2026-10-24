@@ -1,4 +1,3 @@
-import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/generated/protocol.dart';
 

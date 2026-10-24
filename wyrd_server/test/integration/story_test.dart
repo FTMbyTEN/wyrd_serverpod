@@ -1,9 +1,14 @@
 import 'dart:convert';
 
 import 'package:test/test.dart';
+import 'package:wyrd_server/src/world/bank.dart';
 import 'package:wyrd_server/src/world/story_service.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
+
+// what a payment comes to after the city's 2%: money in arrives lighter, money out costs more
+int tax(int a) =>
+    a > 0 ? a - Bank.taxOn(a, 'mission') : -a + Bank.taxOn(a, 'fee');
 
 void main() {
   withServerpod('Given the Tomato Emergency', (sessionBuilder, endpoints) {
@@ -49,7 +54,10 @@ void main() {
           );
         }
         final r = j(await endpoints.city.storyAct(ada, 'tomato', 'sell:fair'));
-        expect(r['naira'], 5000 - 3000 + 26000);
+        expect(
+          r['naira'],
+          5000 - tax(-3000) + tax(26000),
+        ); // the levy and the sale, each with the city's 2%
         final story = j(await endpoints.city.story(ada));
         expect(story['rep']['faction']['market'], 15);
         expect(story['rep']['faction']['nurtw'], 4);
@@ -71,7 +79,7 @@ void main() {
           await endpoints.city.storyAct(ben, 'tomato', move);
         }
         final r = j(await endpoints.city.storyAct(ben, 'tomato', 'sell:hold'));
-        expect(r['naira'], 5000 - 3000 + 46000);
+        expect(r['naira'], 5000 - tax(-3000) + tax(46000));
         expect(
           j(await endpoints.city.story(ben))['rep']['faction']['market'],
           -20,
@@ -137,7 +145,16 @@ void main() {
           expect(story['missions'][m]['step'], 'done');
         }
         // ₦5,000 to start, +3,000 +8,000 +10,000 -1,500 +5,000 +2,000
-        expect(story['naira'], 31500);
+        expect(
+          story['naira'],
+          5000 +
+              tax(3000) +
+              tax(8000) +
+              tax(10000) -
+              tax(-1500) +
+              tax(5000) +
+              tax(2000),
+        );
       },
     );
 
@@ -305,7 +322,7 @@ void main() {
           isTrue,
         );
         final s = j(await endpoints.city.story(gbenga));
-        expect(s['naira'], before + 30000);
+        expect(s['naira'], before + tax(30000));
         expect(s['rep']['social']['elite'], 12);
         expect(
           j(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:test/test.dart';
+import 'package:wyrd_server/src/world/bank.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
@@ -21,7 +22,10 @@ void main() {
       () async {
         final start = j(await endpoints.city.wallet(player))['naira'] as int;
         final paid = j(await endpoints.city.pay(player, 'danfo'));
-        expect(paid['naira'], start - 100);
+        expect(
+          paid['naira'],
+          start - 100 - Bank.taxOn(100, 'fee'),
+        ); // the fare and the city's 2% on it
         expect(paid['receipt']['amount'], -100);
         final receipts =
             jsonDecode(await endpoints.city.receipts(player)) as List;

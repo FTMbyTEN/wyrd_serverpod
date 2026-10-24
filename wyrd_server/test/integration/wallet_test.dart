@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:test/test.dart';
+import 'package:wyrd_server/src/world/bank.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
@@ -33,7 +34,12 @@ void main() {
         final w = j(
           await endpoints.city.takeHome(asAda, cheap['slug'] as String, 'rent'),
         );
-        expect(w['naira'], 5000 - (cheap['rent'] as int));
+        expect(
+          w['naira'],
+          5000 -
+              (cheap['rent'] as int) -
+              Bank.taxOn(cheap['rent'] as int, 'fee'),
+        ); // the week's rent and the city's 2%
         expect((w['home'] as Map)['slug'], cheap['slug']);
         final taken = j(
           await endpoints.city.takeHome(
@@ -62,8 +68,14 @@ void main() {
     });
 
     test('fares are set by the server; unknown charges refused', () async {
-      expect(j(await endpoints.city.pay(asBola, 'maglev'))['naira'], 4800);
-      expect(j(await endpoints.city.pay(asBola, 'danfo'))['naira'], 4700);
+      final maglev =
+          j(await endpoints.city.pay(asBola, 'maglev'))['naira']
+              as int; // fares carry the city's 2% too
+      expect(maglev, 5000 - 200 - Bank.taxOn(200, 'fee'));
+      expect(
+        j(await endpoints.city.pay(asBola, 'danfo'))['naira'],
+        maglev - 100 - Bank.taxOn(100, 'fee'),
+      );
       expect(
         j(await endpoints.city.pay(asBola, 'everything'))['error'],
         isNotNull,
@@ -73,10 +85,10 @@ void main() {
     test('a street mission pays once a day', () async {
       final first = j(await endpoints.city.missionPaid(asBola, 'st-broad'));
       expect(first['paid'], 6000);
-      expect(first['naira'], 11000);
+      expect(first['naira'], 5000 + 6000 - Bank.taxOn(6000, 'mission'));
       final again = j(await endpoints.city.missionPaid(asBola, 'st-broad'));
       expect(again['paid'], 0);
-      expect(again['naira'], 11000);
+      expect(again['naira'], first['naira']);
       expect(
         j(await endpoints.city.missionPaid(asBola, 'made-up'))['error'],
         isNotNull,

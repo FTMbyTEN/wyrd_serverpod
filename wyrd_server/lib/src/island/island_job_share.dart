@@ -154,7 +154,7 @@ abstract final class JobShare {
       limit: limit,
     );
     final tot = await s.db.unsafeQuery(
-      'SELECT COUNT(*), COALESCE(SUM("paycheck"),0), COALESCE(SUM("cashKobo"),0) FROM "island_job_share" WHERE "authUserId" = CAST(@u AS uuid)',
+      'SELECT COUNT(*)::bigint, COALESCE(SUM("paycheck"),0)::bigint, COALESCE(SUM("cashKobo"),0)::bigint FROM "island_job_share" WHERE "authUserId" = CAST(@u AS uuid)',
       parameters: QueryParameters.named({'u': u.uuid}),
     );
     final cfg = RewardConfig.current;

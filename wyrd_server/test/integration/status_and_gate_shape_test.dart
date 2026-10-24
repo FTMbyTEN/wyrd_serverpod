@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:wyrd_server/src/mind/gate_shape_service.dart';
+import 'package:wyrd_server/src/mind/tick_schedule.dart';
 
 import 'test_tools/serverpod_test_tools.dart';
 
@@ -11,9 +12,9 @@ void main() {
     test('status reports the real tick intervals and no turbo', () async {
       final status = await endpoints.status.getStatus(sessionBuilder);
       expect(status.turboActive, isFalse);
-      expect(status.reasoningCycleMs, 30000);
-      expect(status.lexiconCycleMs, 30000);
-      expect(status.feedCycleMs, 60000);
+      expect(status.reasoningCycleMs, TickSchedule.reasoning.inMilliseconds);
+      expect(status.lexiconCycleMs, TickSchedule.lexicon.inMilliseconds);
+      expect(status.feedCycleMs, TickSchedule.feed.inMilliseconds);
     });
 
     test(
