@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T14:51:32.567Z">
+<meta name="li-build" content="2026-10-25T15:03:04.719Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -5075,6 +5075,8 @@
       for (let k = 0; k < 30; k++) { const R2 = rnd(k * 31 + 5); g.strokeStyle = `rgba(255,255,255,${0.08 + R2() * 0.18})`; g.lineWidth = 0.6 + R2() * 1.6; g.beginPath(); let px = R2() * 512, py = R2() * 512; g.moveTo(px, py); for (let q = 0; q < 8; q++) { px += (R2() - 0.3) * 90; py += (R2() - 0.5) * 70; g.lineTo(px, py); } g.stroke(); }
       const tex = new T3.CanvasTexture(c); tex.wrapS = tex.wrapT = T3.RepeatWrapping; tex.repeat.set(R.w / 32, R.d / 32); tex.colorSpace = T3.SRGBColorSpace;
       const fl = new T3.Mesh(new T3.PlaneGeometry(R.w, R.d), new T3.MeshStandardMaterial({ map: tex, roughness: 0.18, metalness: 0.25 })); fl.rotation.x = -Math.PI / 2; fl.position.set(R.w / 2, 0.018, R.d / 2); fl.receiveShadow = !MOBILE; grp.add(fl); }
+    if (R.kind === 'studio' && R.floor === 3) { const c = document.createElement('canvas'); c.width = 256; c.height = 112; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; const m = new T3.Mesh(new T3.PlaneGeometry(29.2, 12.4), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(75, 7.4, 1.5); grp.add(m); inn.news = { c, g: c.getContext('2d'), tex, at: 0 };
+      inn.tally = new T3.PointLight(0xff2222, 0, 30, 1.6); inn.tally.position.set(75, 12, 18); grp.add(inn.tally); inn.stageL = new T3.SpotLight(0xffffff, 0, 60, 0.6, 0.6, 1.2); inn.stageL.position.set(22, 16, 30); inn.stageL.target.position.set(22, 0, 18); grp.add(inn.stageL, inn.stageL.target); }
     if (R.kind === 'studio' && R.floor === 2) { const m = new T3.Mesh(new T3.PlaneGeometry(6, 1.2), new T3.MeshBasicMaterial({ color: 0x3f0d12, toneMapped: false })); m.position.set(17, 17, 0.66); grp.add(m); inn.onAir = m; inn.onAirL = new T3.PointLight(0xff2222, 0, 26, 1.6); inn.onAirL.position.set(17, 15, 4); grp.add(inn.onAirL); } // ON AIR, lit while recording
     if (R.kind === 'studio' && (R.floor || 1) === 1) { // the lobby's LED wall, playing in 3D
       const c = document.createElement('canvas'); c.width = 256; c.height = 128; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
@@ -5090,6 +5092,10 @@
     const inn = V3.inside; if (!inn) return; const t = now / 1000, party = partyAt(R.key);
     if (inn.led && now - inn.led.at > 80) { const { g, tex } = inn.led, h = (t * 25) % 360; inn.led.at = now; const gr = g.createLinearGradient(0, 0, 256, 128); gr.addColorStop(0, `hsl(${h},80%,50%)`); gr.addColorStop(0.5, `hsl(${(h + 60) % 360},85%,40%)`); gr.addColorStop(1, `hsl(${(h + 140) % 360},80%,45%)`); g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
       g.fillStyle = 'rgba(255,255,255,0.95)'; g.font = '900 22px sans-serif'; g.textAlign = 'center'; g.fillText('WYRD STUDIO', 128, 52); g.font = '700 12px sans-serif'; g.fillText(['TONIGHT ON 10 · ROOFTOP SESSIONS', 'FLOOR 2 · RECORDING STUDIOS', 'FLOOR 5 · COMEDY NIGHT'][Math.floor(t / 4) % 3], 128, 80); tex.needsUpdate = true; }
+    if (inn.news && now - inn.news.at > 120) { const { g, tex } = inn.news, live = (R.live || 0) > Date.now(); inn.news.at = now; const gr = g.createLinearGradient(0, 0, 256, 112); gr.addColorStop(0, '#1D4ED8'); gr.addColorStop(1, '#0EA5E9'); g.fillStyle = gr; g.fillRect(0, 0, 256, 112);
+      g.fillStyle = 'rgba(255,255,255,0.12)'; for (let k = 0; k < 6; k++) g.fillRect(((t * 30 + k * 50) % 300) - 40, 0, 18, 112); g.fillStyle = '#fff'; g.font = '900 20px sans-serif'; g.textAlign = 'center'; g.fillText('ISLAND 24', 128, 44); g.font = '700 11px sans-serif'; g.fillText(live ? '● LIVE · LAGOS TONIGHT' : 'NEWS · MUSIC · CULTURE', 128, 64);
+      g.fillStyle = '#DC2626'; g.fillRect(0, 88, 256, 24); g.fillStyle = '#fff'; g.textAlign = 'left'; g.font = '700 11px sans-serif'; g.fillText('BREAKING · WYRD Studio opens on Eko Atlantic · Third Mainland moving · NEPA brings light · ', 256 - ((t * 40) % 800), 104); tex.needsUpdate = true; }
+    if (inn.tally) { inn.tally.intensity = (R.live || 0) > Date.now() ? 120 : 0; inn.stageL.intensity = (R.shoot || 0) > Date.now() ? 2200 : 300; }
     if (inn.onAir) { const on = (R.rec || 0) > Date.now(); inn.onAir.material.color.setHex(on ? (Math.floor(t * 2) % 2 ? 0xff2a2a : 0xdc2626) : 0x3f0d12); inn.onAirL.intensity = on ? 180 : 0; }
     const D = devState(R), off = !D.lamps && R.kind !== 'studio';
     if (V3.keyL) { V3.keyL.intensity = V3.keyBase * (off && night > 0.4 ? 0.25 : 1); V3.hemiL.intensity = V3.hemiBase * (off && night > 0.4 ? 0.22 : 1); }
@@ -8437,7 +8443,9 @@
   // ---- WYRD Studio, inside: the lobby on the ground floor; the other nine floors share the shell, each in its colour,
   // until they're built out. The elevator in the middle of the back wall goes to all of them.
   const STUDIO_WALLS = { 2: [[29.7, 8, 30.3, 16], [29.7, 22, 30.3, 44], [29.7, 50, 30.3, 58], [4, 29.7, 30, 30.3], [4, 57.7, 30, 58.3], [4, 7.7, 30, 8.3], // Studio A and its live room (doors at z 16-22 and 44-50)
-    [65.7, 8, 66.3, 14], [65.7, 20, 66.3, 34], [65.7, 38, 66.3, 44], [66, 27.7, 92, 28.3], [66, 43.7, 92, 44.3], [66, 7.7, 92, 8.3]] }; // Studio B and the vocal booth (doors at z 14-20 and 34-38)
+    [65.7, 8, 66.3, 14], [65.7, 20, 66.3, 34], [65.7, 38, 66.3, 44], [66, 27.7, 92, 28.3], [66, 43.7, 92, 44.3], [66, 7.7, 92, 8.3]], // Studio B and the vocal booth (doors at z 14-20 and 34-38)
+    3: [[66, 39.7, 92, 40.3], [65.7, 40, 66.3, 46], [65.7, 52, 66.3, 58], [66, 57.7, 92, 58.3], // the edit suite (door at z 46-52)
+      [4, 45.7, 14, 46.3], [20, 45.7, 30, 46.3], [29.7, 46, 30.3, 58], [4, 57.7, 30, 58.3]] }; // makeup and wardrobe (door at x 14-20)
   const studioLayout = (n) => {
     const SEATS = /Sofa|Chair|chair|bench|stool/, K2 = (k, x0, z0, r = 0) => ({ k: 'k:' + k, x: x0, z: z0, r, ...(SEATS.test(k) && k !== 'chairDesk' ? { tint: '#EDE3D2', c: '#EDE3D2' } : {}) }), /* seats in cream, against the black marble and gold */ plants = [K2('pottedPlant', 4, 14), K2('pottedPlant', 92, 14), K2('pottedPlant', 4, 58), K2('pottedPlant', 92, 58)];
     const ring = (cx0, cz0, chair) => [K2('tableRound', cx0, cz0), K2(chair, cx0, cz0 - 4, 0), K2(chair, cx0, cz0 + 4, 2), K2(chair, cx0 - 4, cz0, 1), K2(chair, cx0 + 4, cz0, 3)];
@@ -8446,7 +8454,11 @@
       2: [K2('chairDesk', 17, 19, 0), K2('loungeSofa', 17, 11, 0), K2('speaker', 6, 24), K2('speaker', 28, 24), K2('rugRounded', 17, 46), K2('stoolBar', 12, 45), // Studio A: the producer's chair, a sofa at the back, the big monitors; the live room's rug and the drummer's stool
         K2('desk', 79, 16), K2('chairDesk', 79, 20, 0), K2('speakerSmall', 74, 15), K2('speakerSmall', 84, 15), K2('loungeChair', 88, 24, 3), K2('stoolBar', 79, 39), // Studio B and its booth
         K2('rugRounded', 48, 46), K2('loungeSofa', 48, 54, 2), K2('loungeChair', 40, 45, 1), K2('loungeChair', 56, 45, 3), K2('tableCoffeeGlass', 48, 46), K2('pottedPlant', 34, 32), K2('pottedPlant', 62, 32), K2('pottedPlant', 34, 58), K2('pottedPlant', 62, 58), K2('lampSquareFloor', 36, 54), K2('lampSquareFloor', 60, 54)], // the artists' lounge
-      3: [K2('lampSquareFloor', 12, 18), K2('lampSquareFloor', 34, 18), K2('lampSquareFloor', 23, 30), K2('chairCushion', 62, 32, 0), K2('chairCushion', 67, 32, 0), K2('televisionModern', 64, 22), K2('desk', 64, 24), K2('loungeSofa', 80, 50, 2), K2('speakerSmall', 72, 24), ...plants],
+      3: [K2('loungeSofa', 22, 18, 0), K2('lampRoundFloor', 15, 18), K2('tableCoffee', 22, 22), K2('chairCushion', 34, 44, 2), K2('chairCushion', 38, 44, 2), // the sound stage: the set (a Lagos sitting room), the director's chairs
+        K2('chairDesk', 71, 17, 0), K2('chairDesk', 79, 17, 0), // the news desk's two anchors
+        K2('desk', 79, 44), K2('chairDesk', 79, 48, 2), K2('loungeSofa', 79, 55, 2), // the edit suite
+        K2('chairModernCushion', 9, 51, 0), K2('chairModernCushion', 15, 51, 0), K2('chairModernCushion', 21, 51, 0), K2('coatRackStanding', 27, 50), K2('coatRackStanding', 27, 55), // makeup and wardrobe
+        K2('pottedPlant', 46, 58), K2('pottedPlant', 60, 58), K2('pottedPlant', 92, 62)],
       4: [K2('speaker', 8, 14), K2('speaker', 88, 14), K2('benchCushion', 20, 58, 2), K2('benchCushion', 76, 58, 2), K2('pottedPlant', 4, 40), K2('pottedPlant', 92, 40)],
       5: [...ring(20, 34, 'chairModernCushion'), ...ring(40, 46, 'chairModernCushion'), ...ring(60, 46, 'chairModernCushion'), ...ring(78, 34, 'chairModernCushion'), K2('stoolBar', 48, 13), K2('speaker', 30, 12), K2('speaker', 66, 12)],
       6: [...ring(48, 34, 'chairModernFrameCushion'), K2('speakerSmall', 42, 26), K2('speakerSmall', 54, 26), K2('loungeSofa', 18, 50, 2), K2('televisionModern', 80, 20), K2('rugRounded', 48, 34), ...plants],
@@ -8485,10 +8497,10 @@
       // gold lettering on the floor at the door
       groundText('WYRD STUDIO', cx, R.d - 6, 2.2, 'rgba(212,175,55,0.75)');
     } else { // ---- the floors to come: a clean shell in the floor's colour, its name on the wall
-      if (n !== 2) { groundText(icon + '  ' + name.toUpperCase(), cx, R.d / 2 + 6, 2.4, col); groundText(blurb, cx, R.d / 2 + 11, 1.1, 'rgba(255,255,255,0.6)');
+      if (n > 3) { groundText(icon + '  ' + name.toUpperCase(), cx, R.d / 2 + 6, 2.4, col); groundText(blurb, cx, R.d / 2 + 11, 1.1, 'rgba(255,255,255,0.6)');
       groundText('BEING BUILT · OPENING SOON', cx, R.d / 2 + 15, 1, 'rgba(255,255,255,0.45)'); } // (floor 2 is built)
       if (n === 2) drawRecording(R, now);
-      if (n === 3) { box(4, 0, 0.3, 38, 15, 1, '#16A34A'); flat(4, 1, 38, 14, 0.03, '#16A34A'); } // the green screen
+      if (n === 3) drawFilm(R, now);
       if (n === 4) { for (const [x0, x1] of [[4, 40], [56, 92]]) box(x0, 0.6, 0.3, x1, 14, 0.7, '#BAE6FD'); flat(10, 14, R.w - 10, R.d - 8, 0.032, '#3F2A1D'); } // mirrors along the back wall, a sprung wooden floor
       if (n === 5) { box(30, 0, 6, 66, 1.4, 18, '#111827'); box(29.8, 1.4, 5.8, 66.2, 1.6, 18.2, '#F59E0B'); box(14, 0, 0.3, 82, 14, 0.8, '#7F1D1D'); cylLit(48, 15, 0.1, 1.6, 5, '#9CA3AF'); sphere(48, 15, 0.4, '#111827'); } // the comedy stage, a red curtain, a mic
       if (n === 7) { box(44, 0, 12, 52, 0.8, 58, '#F8FAFC'); box(43.8, 0.8, 12, 52.2, 0.9, 58, '#A855F7'); } // the runway
@@ -8531,6 +8543,41 @@
     // the platinum and gold plaques either side of the elevator
     for (const [px, col] of [[32, '#E5E7EB'], [36, '#D4AF37'], [60, '#D4AF37'], [64, '#E5E7EB']]) { box(px - 1.6, 6, 0.2, px + 1.6, 10, 0.5, '#111827'); disk(px, 0.55, 8, 1.2, col); }
     faceText('PLATINUM', 34, 11, 0.55, '#E5E7EB', 0.3, 0); faceText('GOLD', 62, 11, 0.55, '#D4AF37', 0.3, 0);
+  }
+  // floor 3, the film and TV stage: a sound stage (a green screen cyclorama, a Lagos sitting-room set, a camera on a dolly
+  // track, a boom, lights in softboxes), a news studio (a desk, an LED backdrop, two cameras on pedestals, a
+  // teleprompter), an edit suite, and makeup and wardrobe with bulb-lit mirrors
+  function drawFilm(R, now) {
+    const t = now / 1000, shoot = (R.shoot || 0) > Date.now(), live = (R.live || 0) > Date.now(), blue = '#0EA5E9';
+    const wall = (x0, z0, x1, z1, h = 5) => { box(x0, 0, z0, x1, h, z1, '#111827'); box(x0, h, z0, x1, h + 0.25, z1, blue); };
+    // the sound stage: the green screen running down the wall and across the floor in one curve, the stage marked out
+    box(6, 0, 0.3, 40, 16, 1, '#16A34A'); box(6, 0, 1, 40, 0.8, 2.2, '#16A34A'); flat(6, 2.2, 40, 12, 0.035, '#16A34A');
+    x.save(); x.strokeStyle = 'rgba(250,204,21,0.8)'; x.lineWidth = 2; x.setLineDash([6, 6]); x.beginPath(); for (const [a, b] of [[[4, 0.04, 4], [42, 0.04, 4]], [[42, 0.04, 4], [42, 0.04, 40]], [[42, 0.04, 40], [4, 0.04, 40]]]) { const p = P(...a), q = P(...b); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); x.restore(); // the stage's taped edge
+    flat(14, 14, 30, 26, 0.04, '#7C2D12'); box(10, 0, 12, 34, 12, 12.4, '#E7D7BC'); box(16, 4, 12.42, 22, 9, 12.5, '#38BDF8'); box(24, 3, 12.42, 30, 9, 12.5, '#A16207'); // the set: a rug, a back wall with a window and a painting
+    for (const [lx, lz] of [[8, 26], [36, 26], [22, 31]]) { box(lx - 0.1, 0, lz - 0.1, lx + 0.1, 8, lz + 0.1, '#1F2937'); box(lx - 1.6, 8, lz - 0.4, lx + 1.6, 10.6, lz + 0.4, '#F8FAFC'); } // lights in softboxes
+    glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; for (const [lx, lz] of [[8, 26], [36, 26], [22, 31]]) { const p = P(lx, 9.3, lz), r = K * (shoot ? 5 : 3); const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,255,255,0.6)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); } x.restore(); });
+    box(8, 0, 33.6, 34, 0.25, 33.9, '#9CA3AF'); box(8, 0, 34.1, 34, 0.25, 34.4, '#9CA3AF'); // the dolly track
+    { const dx = 21 + (shoot ? Math.sin(t * 0.8) * 9 : 0); box(dx - 1.6, 0.25, 32.8, dx + 1.6, 1.2, 35.2, '#374151'); box(dx - 0.15, 1.2, 33.85, dx + 0.15, 4.4, 34.15, '#1F2937'); box(dx - 1, 4.4, 33, dx + 1, 5.8, 35, '#111827'); box(dx - 0.45, 4.7, 31.8, dx + 0.45, 5.5, 33, '#0B0F19'); // the camera on its dolly, its lens to the set
+      box(dx + 1, 5.2, 34.4, dx + 1.3, 5.5, 34.7, shoot ? '#EF4444' : '#3F0D12'); } // its tally light
+    box(36, 0, 30, 36.3, 10, 30.3, '#1F2937'); box(26, 10, 29.9, 36.3, 10.3, 30.2, '#374151'); box(25.4, 9.4, 29.6, 26.4, 10.4, 30.6, '#111827'); // the boom mic over the set
+    box(31, 0, 40.5, 33, 1.6, 42, '#78350F'); box(31.2, 1.6, 40.7, 32.8, 2.4, 41.8, '#111827'); box(31.2, 2.4, 40.7, 32.8, 2.7, 41.8, '#F8FAFC'); // a clapperboard on its stand
+    faceText('STAGE A', 23, 17.5, 1.05, '#BBF7D0', 0.55, 8);
+    // the news studio: a raised blue set, an LED backdrop, a curved desk, cameras on pedestals, a teleprompter
+    box(58, 0, 8, 92, 0.6, 30, '#0C4A6E'); box(60, 0.6, 0.6, 90, 14, 1.4, '#0B0F19');
+    glow.push(() => { const a0 = P(60.4, 1.2, 1.45), a1 = P(89.6, 1.2, 1.45), a2 = P(89.6, 13.6, 1.45), a3 = P(60.4, 13.6, 1.45), g = x.createLinearGradient(a3[0], a3[1], a1[0], a1[1]); g.addColorStop(0, '#1D4ED8'); g.addColorStop(1, '#0EA5E9'); quad([a0, a1, a2, a3], g, null); });
+    faceText('ISLAND 24 · NEWS', 75, 9, 1.5, '#FFFFFF', 0.7, 10);
+    box(66, 0.6, 15.5, 84, 3.6, 19.5, '#F8FAFC'); box(65.8, 3.6, 15.3, 84.2, 3.85, 19.7, '#0EA5E9'); faceText('ISLAND 24', 75, 2.2, 19.55, '#0C4A6E', 0.5, 0); // the desk
+    for (const cx2 of [68, 82]) { cylLit(cx2, 27, 0.9, 0.6, 0.5, '#374151'); box(cx2 - 0.15, 1.1, 26.85, cx2 + 0.15, 4.6, 27.15, '#1F2937'); box(cx2 - 1, 4.6, 26, cx2 + 1, 6.2, 28, '#111827'); box(cx2 - 0.9, 4.8, 24.8, cx2 + 0.9, 6.1, 26, 'rgba(186,230,253,0.5)'); box(cx2 + 0.8, 6, 27.6, cx2 + 1.1, 6.3, 27.9, live ? '#EF4444' : '#3F0D12'); } // two cameras, their teleprompter glass, their tally lights
+    box(70, 14.6, 0.6, 80, 16.2, 1, live ? '#DC2626' : '#3F0D12'); faceText(live ? '● LIVE' : 'OFF AIR', 75, 15.4, 1.05, '#FFFFFF', 0.4, 0);
+    // the edit suite: a dark room, a long desk, three screens with the timeline
+    flat(66, 40, 92, 58, 0.03, '#111827'); for (const [x0, z0, x1, z1] of STUDIO_WALLS[3].slice(0, 4)) wall(x0, z0, x1, z1);
+    for (let k = 0; k < 3; k++) { const mx = 74 + k * 5; box(mx - 2.2, 2.8, 41.6, mx + 2.2, 5.6, 41.8, '#0B0F19'); const s0 = P(mx - 2, 3, 41.82), s1 = P(mx + 2, 3, 41.82), s2 = P(mx + 2, 5.4, 41.82), s3 = P(mx - 2, 5.4, 41.82); quad([s0, s1, s2, s3], ['#1E3A8A', '#0F766E', '#7C2D12'][k], null); }
+    faceText('EDIT SUITE', 79, 3, 58.35, '#BAE6FD', 0.45, 6);
+    // makeup and wardrobe: mirrors framed in bulbs over a counter, a rail of costumes
+    flat(4, 46, 30, 58, 0.03, '#3B0764'); for (const [x0, z0, x1, z1] of STUDIO_WALLS[3].slice(4)) wall(x0, z0, x1, z1);
+    box(5, 0, 46.3, 25, 2.8, 48, '#F5F5F4'); for (let k = 0; k < 3; k++) { const mx = 9 + k * 6; box(mx - 2, 3.4, 46.3, mx + 2, 7.4, 46.5, 'rgba(224,242,254,0.95)'); for (let q = 0; q < 5; q++) sphere(mx - 2 + q, 7.7, 0.25, '#FEF3C7'); for (let q = 0; q < 4; q++) { sphere(mx - 2.25, 3.7 + q, 0.22, '#FEF3C7'); sphere(mx + 2.25, 3.7 + q, 0.22, '#FEF3C7'); } }
+    glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; for (let k = 0; k < 3; k++) { const p = P(9 + k * 6, 5.4, 46.6), r = K * 3.4; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(254,243,199,0.55)'); g.addColorStop(1, 'rgba(254,243,199,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); } x.restore(); });
+    faceText('MAKEUP & WARDROBE', 17, 3, 58.35, '#F5D0FE', 0.4, 6);
   }
   // playing the floor's instruments: a few notes on the piano, a groove on the drums, made on the spot
   function studioPlay(kind) {
@@ -9035,7 +9082,7 @@
     for (const it of R.layout || []) { if (SOLID_SKIP.has(it.k) || isRugK(it)) continue; const f = fpOf(it); if (f) out.push([f[0] + 0.4, f[1] + 0.4, f[2] - 0.4, f[3] - 0.4]); }
     out.push(...bmBlocks(R));
     if (R.kind === 'club') out.push(...(R._shell || (R._shell = v3shellSolids(R)))); // the club's bar, stage, booths and pool
-    if (R.kind === 'studio') out.push(...(STUDIO_WALLS[R.floor] || []), ...(R.floor === 2 ? [[8, 22, 26, 26], [21, 48, 27, 51], [5, 37, 11, 39.5], [9, 43, 15, 50]] : [])); // WYRD Studio's walls, the console, the piano, the amps, the drums
+    if (R.kind === 'studio') out.push(...(STUDIO_WALLS[R.floor] || []), ...(R.floor === 2 ? [[8, 22, 26, 26], [21, 48, 27, 51], [5, 37, 11, 39.5], [9, 43, 15, 50]] : R.floor === 3 ? [[58, 8, 92, 13], [66, 15.5, 84, 19.5], [8, 33.4, 34, 34.6]] : [])); // WYRD Studio's walls, the console, the piano, the amps, the drums
     if (R.kind === 'work' && WORK_ROOMS[R.place] && WORK_ROOMS[R.place].solids) out.push(...WORK_ROOMS[R.place].solids);
     R._solidSig = sig; return (R._solids = out);
   }
@@ -12303,6 +12350,11 @@
         else if (near(17, 20)) next = { label: '🎚️ Mix the track', run: () => { R.rec = Date.now() + 5000; say(['Bass up small. Vocals forward. E don dey enter!', 'Compress am, add reverb. This one go blow.', 'Mixing done. Send am to the DJ.'][Math.floor(Math.random() * 3)]); } };
         else if (near(24, 53, 4)) next = { label: '🎹 Play the piano', run: () => { studioPlay('piano'); say('🎹 A little highlife chord'); } };
         else if (near(12, 52, 4.5)) next = { label: '🥁 Play the drums', run: () => { studioPlay('drums'); say('🥁 Afrobeat groove!'); } }; }
+      if (inside.kind === 'studio' && inside.floor === 3) { const R = inside, say = (t2) => bubbles.set('me', { text: t2, until: performance.now() + 4500 }), near = (px, pz, r = 4.5) => Math.hypot(me.x - px, me.z - pz) < r;
+        if (near(21, 37, 5)) next = { label: '🎬 Action! Shoot a scene', run: () => { R.shoot = Date.now() + 10000; R.take = (R.take || 0) + 1; say(`🎬 Scene 1, take ${R.take}. And… ACTION!`); setTimeout(() => { if (inside === R) say(['"Mama Tobi, where my jollof?!"', '"You no fit marry my son!"', '"This na Lagos, everybody get hustle."'][R.take % 3]); }, 2200); } };
+        else if (near(75, 22, 5)) next = { label: '📺 Read the news', run: () => { R.live = Date.now() + 10000; say(['📺 "Good evening, Lagos. Third Mainland is moving."', '📺 "NEPA restores light to Ikoyi, cheers across the estate."', '📺 "WYRD Studio opens its doors on Eko Atlantic."'][Math.floor(Math.random() * 3)]); } };
+        else if (near(79, 47, 4)) next = { label: '🎞️ Edit the film', run: () => say(['Cut, cut, colour grade. Nollywood magic!', 'Trailer don ready. E go trend.', 'Add the soundtrack from floor 2. Perfect.'][Math.floor(Math.random() * 3)]) };
+        else if (near(15, 51, 6)) next = { label: '💄 Get camera-ready', run: () => say(['Face don beat! Ready for close-up.', 'Wardrobe: agbada for the scene. Fresh!', 'Powder small, lights go dey hit.'][Math.floor(Math.random() * 3)]) }; }
       if (me.z < inside.d - 4) inside.entered = true;
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep', lounger: 'sleep' };
       let near = null, nd = 5;
