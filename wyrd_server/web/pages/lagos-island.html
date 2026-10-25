@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T15:50:18.515Z">
+<meta name="li-build" content="2026-10-25T16:14:29.382Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4767,7 +4767,7 @@
   REC = null; // while set, the drawing kit records (build) or does nothing (skip) instead of drawing
   const V3 = { live: false, key: null, room: null, yaw: 0, pitch: 0.72, dist: 95, tx: 0, tz: 0, groups: null, extras: null, dummy: null, btn: null, t0: 0,
     pref: (() => { const q = new URLSearchParams(location.search).get('3d'); if (q === '0' || q === '1') { try { localStorage.setItem('li.3d', q); } catch {} return q === '1'; } try { return localStorage.getItem('li.3d') !== '0'; } catch { return true; } })() };
-  V3.eligible = (R) => !!(R && (R.kind === 'club' || R.kind === 'casino' || R.kind === 'hq' || R.kind === 'home' || R.kind === 'studio'));
+  V3.eligible = (R) => !!(R && (R.kind === 'club' || R.kind === 'casino' || R.kind === 'roof' || R.kind === 'hq' || R.kind === 'home' || R.kind === 'studio'));
   const v3pl = (R) => CLUB_PL[R.theme] || { st: [0, 0], bar: [0, 0] }; // where this club keeps its stage and its bar // Club Lekki and the apartments
   const v3club = (R) => R.kind === 'club';
   V3.want = (R) => V3.pref && V3.eligible(R) && G3.ok && !!G3.renderer && !deco;
@@ -4899,19 +4899,20 @@
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
     if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(WEAK ? 1024 : 2048, WEAK ? 1024 : 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
-    key.intensity = v3club(R) ? 0.7 : R.kind === 'studio' || R.kind === 'casino' ? 0.9 : night > 0.5 ? 0.45 : 1.25; const hemi = new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : R.kind === 'studio' || R.kind === 'casino' ? 0.75 : night > 0.5 ? 0.4 : 0.85); grp.add(key, key.target, hemi); V3.keyL = key; V3.hemiL = hemi; V3.keyBase = key.intensity; V3.hemiBase = hemi.intensity; // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
+    key.intensity = v3club(R) ? 0.7 : R.kind === 'roof' ? 0.5 : R.kind === 'studio' || R.kind === 'casino' ? 0.9 : night > 0.5 ? 0.45 : 1.25; const hemi = new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : R.kind === 'studio' || R.kind === 'casino' ? 0.75 : night > 0.5 ? 0.4 : 0.85); grp.add(key, key.target, hemi); V3.keyL = key; V3.hemiL = hemi; V3.keyBase = key.intensity; V3.hemiBase = hemi.intensity; // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
     G3.scene.add(grp); V3.groups = grp; V3.key = R.key;
   }
   // what the room draws, without the people: its shell and its furniture (recorded, or run only for the glows each frame)
   function v3pass(R, now) {
     flat(0, 0, R.w, R.d, 0, R.floor);
-    box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
-    box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
+    if (R.kind !== 'roof') { box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
+    box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim); } // (a rooftop has no walls)
     if (v3club(R)) drawClubShell(R, now);
     if (R.kind === 'hq') drawApartment(R);
     if (R.kind === 'home') { drawHomeShell(R); if (R.style === 'nml') nmlInterior(R, now); }
     if (R.kind === 'studio') drawStudio(R, now);
     if (R.kind === 'casino') drawCasinoShell(R, now);
+    if (R.kind === 'roof') drawRoof(R, now);
     if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     for (const it of R.layout) furnDraw(it, now);
   }
@@ -5064,12 +5065,12 @@
   // a building's walls in live 3D: the right side and the front (with the door) join the back two; any wall between you and
   // the camera fades away, as in The Sims
   function v3walls(R, grp) {
-    const T3 = G3.T;
+    const T3 = G3.T, H0 = R.kind === 'roof' ? 1.4 : 18; // a rooftop: just the parapet under the rail, open to the sky
       const wm = (op) => new T3.MeshStandardMaterial({ color: new T3.Color().setStyle(R.wall || '#134E4A'), roughness: 0.85, transparent: true, opacity: op, depthWrite: true });
       const mk = (w, h, d, x0, y0, z0, cut) => { const m = new T3.Mesh(new T3.BoxGeometry(w, h, d), wm(1)); m.position.set(x0, y0, z0); m.userData.cut = cut; m.receiveShadow = !MOBILE; grp.add(m); return m; };
-      const walls = [mk(1.2, 18, R.d + 2.4, R.w + 0.6, 9, R.d / 2, 'xr'), mk(R.w / 2 - 6, 18, 1.2, (R.w / 2 - 6) / 2, 9, R.d + 0.6, 'zf'), mk(R.w / 2 - 6, 18, 1.2, R.w - (R.w / 2 - 6) / 2, 9, R.d + 0.6, 'zf'), mk(12, 6, 1.2, R.w / 2, 15, R.d + 0.6, 'zf'),
-        mk(R.w + 2.4, 18, 1.2, R.w / 2, 9, -0.6 - 0.01, 'zb'), mk(1.2, 18, R.d + 2.4, -0.6 - 0.01, 9, R.d / 2, 'xl')];
-      const ceil = new T3.Mesh(new T3.BoxGeometry(R.w + 2.4, 0.6, 2), new T3.MeshStandardMaterial({ color: 0x0b0b12 })); ceil.position.set(R.w / 2, 18.3, -0.4); grp.add(ceil);  return walls;
+      const walls = [mk(1.2, H0, R.d + 2.4, R.w + 0.6, H0 / 2, R.d / 2, 'xr'), mk(R.w / 2 - 6, H0, 1.2, (R.w / 2 - 6) / 2, H0 / 2, R.d + 0.6, 'zf'), mk(R.w / 2 - 6, H0, 1.2, R.w - (R.w / 2 - 6) / 2, H0 / 2, R.d + 0.6, 'zf'), ...(H0 < 18 ? [] : [mk(12, 6, 1.2, R.w / 2, 15, R.d + 0.6, 'zf')]),
+        mk(R.w + 2.4, H0, 1.2, R.w / 2, H0 / 2, -0.6 - 0.01, 'zb'), mk(1.2, H0, R.d + 2.4, -0.6 - 0.01, H0 / 2, R.d / 2, 'xl')];
+      const ceil = new T3.Mesh(new T3.BoxGeometry(R.w + 2.4, 0.6, 2), new T3.MeshStandardMaterial({ color: 0x0b0b12 })); ceil.position.set(R.w / 2, 18.3, -0.4); ceil.visible = H0 >= 18; grp.add(ceil);  return walls;
   }
   function v3wallsFade(walls) {
     const cp = V3.cam.position; for (const w of walls) { const out = w.userData.cut === 'xr' ? cp.x > inside.w : w.userData.cut === 'zf' ? cp.z > inside.d : w.userData.cut === 'zb' ? cp.z < 0 : cp.x < 0; const o = out ? 0.08 : 1; w.material.opacity += (o - w.material.opacity) * 0.15; w.material.depthWrite = w.material.opacity > 0.9; w.visible = w.material.opacity > 0.02; }
@@ -5081,7 +5082,7 @@
     const sp = R.kind === 'studio' ? 24 : 32, nx = Math.max(1, Math.round(R.w / sp)), nz = Math.max(1, Math.round(R.d / sp));
     for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) { const lx = R.w * (i + 0.5) / nx, lz = R.d * (j + 0.5) / nz;
       const l = new T3.PointLight(0xffd9a0, nt ? 260 : 90, 46, 1.5); l.position.set(lx, 15, lz); if (!MOBILE && !WEAK && i === 0 && j === 0) { l.castShadow = true; l.shadow.mapSize.set(512, 512); } grp.add(l);
-      const shade = new T3.Mesh(new T3.CylinderGeometry(1.4, 2.2, 1.1, 20, 1, true), new T3.MeshStandardMaterial({ color: 0xf5e6c8, emissive: 0xffc070, emissiveIntensity: nt ? 0.9 : 0.25, side: T3.DoubleSide })); shade.position.set(lx, 16.4, lz); grp.add(shade);
+      const shade = new T3.Mesh(new T3.CylinderGeometry(1.4, 2.2, 1.1, 20, 1, true), new T3.MeshStandardMaterial({ color: 0xf5e6c8, emissive: 0xffc070, emissiveIntensity: nt ? 0.9 : 0.25, side: T3.DoubleSide })); shade.position.set(lx, 16.4, lz); shade.visible = R.kind !== 'roof'; grp.add(shade);
       const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: nt ? 0.8 : 0.25 })); s.position.set(lx, 15.6, lz); s.scale.set(7, 7, 1); grp.add(s); inn.lamps.push([l, s]); }
     { const st = new T3.SpotLight(0xffb066, 0, 140, 0.5, 0.9, 1.1); st.position.set(R.w * 0.42, 12, R.d + 12); st.target.position.set(R.w * 0.4, 0, R.d * 0.4); grp.add(st, st.target); inn.street = st; } // a street lamp outside, through the front windows
     if (R.kind === 'studio' && (R.floor || 1) !== 10) { // black marble, veined in white
@@ -5111,7 +5112,7 @@
       g.fillStyle = '#DC2626'; g.fillRect(0, 88, 256, 24); g.fillStyle = '#fff'; g.textAlign = 'left'; g.font = '700 11px sans-serif'; g.fillText('BREAKING · WYRD Studio opens on Eko Atlantic · Third Mainland moving · NEPA brings light · ', 256 - ((t * 40) % 800), 104); tex.needsUpdate = true; }
     if (inn.tally) { inn.tally.intensity = (R.live || 0) > Date.now() ? 120 : 0; inn.stageL.intensity = (R.shoot || 0) > Date.now() ? 2200 : 300; }
     if (inn.onAir) { const on = (R.rec || 0) > Date.now(); inn.onAir.material.color.setHex(on ? (Math.floor(t * 2) % 2 ? 0xff2a2a : 0xdc2626) : 0x3f0d12); inn.onAirL.intensity = on ? 180 : 0; }
-    const D = devState(R), off = !D.lamps && R.kind !== 'studio' && R.kind !== 'casino';
+    const D = devState(R), off = !D.lamps && R.kind !== 'studio' && R.kind !== 'casino' && R.kind !== 'roof';
     if (V3.keyL) { V3.keyL.intensity = V3.keyBase * (off && night > 0.4 ? 0.25 : 1); V3.hemiL.intensity = V3.hemiBase * (off && night > 0.4 ? 0.22 : 1); }
     if (inn.street) inn.street.intensity = night > 0.4 ? (off ? 1400 : 250) : 0;
     if (inn.tv) { const tv = inn.tv; tv.m.material.color.setScalar(D.tv ? 1 : 0.03); inn.tvLight.intensity = D.tv ? 70 + 30 * Math.sin(t * 3) : 0;
@@ -6592,6 +6593,7 @@
     casino: { w: 96, d: 66, floor: '#4A1212', wall: '#2A0C0C', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
     studio: { w: 96, d: 64, floor: '#EDE9E3', wall: '#111827', trim: '#D4AF37', cam: { yaw: -0.55, pitch: 0.8, zoom: 1.4 } },
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
+    roof: { w: 96, d: 64, floor: '#1C1917', wall: '#0A0A0A', trim: '#D4AF37', cam: { yaw: -0.55, pitch: 0.78, zoom: 1.4 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
     yacht: { w: 96, d: 34, floor: '#B7895C', wall: '#B7895C', trim: '#B7895C', cam: { yaw: -0.5, pitch: 0.6, zoom: 1.3 } }, // a deck at sea: no walls
@@ -6673,6 +6675,7 @@
       { k: 'k:lampSquareFloor', x: 46, z: 44 }, { k: 'k:lampSquareFloor', x: 32, z: 40 },
     ],
     arena: [],
+    roof: [],
     office: [
       { k: 'desk', x: 32, z: 12, c: '#1C1917' }, { k: 'armchair', x: 32, z: 7, c: '#111827' }, { k: 'chair', x: 28, z: 17 }, { k: 'chair', x: 36, z: 17 },
       { k: 'rug', x: 14, z: 30, c: '#1E3A8A' }, { k: 'couch2', x: 8, z: 30, r: 1, c: '#1C1917' }, { k: 'couch2', x: 20, z: 30, r: 1, c: '#1C1917' }, { k: 'coffee', x: 14, z: 30, c: '#111827' },
@@ -6769,6 +6772,7 @@
     if (R.kind === 'bunker') drawBunker(R, now);
     if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     if (R.kind === 'office') drawOffice(R, now);
+    if (R.kind === 'roof') drawRoof(R, now);
     if (R.kind === 'studio') drawStudio(R, now);
     if (R.kind === 'arena') drawStage(now);
     if (deco && R === inside) bmUnder(R);
@@ -6812,7 +6816,7 @@
     // bar in every VIP section and a sound system bigger than the room; Secrets Palace (Lekki) all royal fabrics and
     // chandeliers; VEIN (VI, by the Secrets Palace people) white with pink strip lights, a grand red-carpet staircase,
     // chandeliers, Miami-Vegas-Ibiza with performers
-    if (/quilox/i.test(n)) return { theme: 'quilox', sign: 'QUILOX', short: 'QUILOX', hue: 0, floor: '#0A0606', wall: '#120707', trim: '#D4AF37', pal: ['#7F1D1D', '#991B1B', '#B91C1C', '#450A0A'], couch: '#7F1D1D', wing: 'ROOFTOP VIP', djLook: 'm,3,1,1,0,gucci_track' };
+    if (/quilox/i.test(n)) return { theme: 'quilox', sign: 'QUILOX', short: 'QUILOX', hue: 0, floor: '#0A0606', wall: '#120707', trim: '#D4AF37', pal: ['#7F1D1D', '#991B1B', '#B91C1C', '#450A0A'], couch: '#7F1D1D', wing: 'BAMBOO BAR & SHISHA', djLook: 'm,3,1,1,0,gucci_track' };
     if (/secret/i.test(n)) return { theme: 'secret', sign: 'SECRETS PALACE', short: 'SECRETS', hue: 42, floor: '#140808', wall: '#3B0A12', trim: '#D4AF37', pal: ['#7F1D1D', '#78350F', '#581C87', '#991B1B'], couch: '#581C87', wing: 'THRONE ROOM', djLook: 'm,2,0,3,0,ralph_suit' };
     if (/vein/i.test(n)) return { theme: 'vein', sign: 'VEIN', short: 'VEIN', hue: 330, floor: '#EDE7EA', wall: '#F8FAFC', trim: '#EC4899', pal: ['#F8FAFC', '#FBCFE8', '#E5E7EB', '#F9A8D4'], couch: '#F5F5F4', wing: 'THE STAGE', djLook: 'm,4,1,0,0,offwhite_set' };
     return { theme: 'ozumba', sign: 'OZUMBA', short: 'OZUMBA', hue: 40, floor: '#0C0A09', wall: '#1C1917', trim: '#D4AF37', pal: ['#111827', '#7F1D1D', '#1C1917', '#78350F'], couch: '#1C1917', wing: 'GOLD ROOM', djLook: 'm,0,1,0,0,balenciaga_set' };
@@ -7094,7 +7098,7 @@
       box(90, my, 0.5, 96, my + 4, 2.5, '#0A0A0A'); box(89.8, my + 4, 0.3, 96.2, my + 4.3, 2.7, '#D4AF37'); // the upstairs bar
       { const g0 = P(56, my, mz1), g1 = P(97, my, mz1), g2 = P(97, my + 2.6, mz1), g3 = P(56, my + 2.6, mz1); quad([g0, g1, g2, g3], 'rgba(252,211,77,0.18)', 'rgba(212,175,55,0.9)'); }
       for (let k = 0; k < 9; k++) { const sz = mz1 + 9 - k, sy = k * (my / 9); box(52, 0, sz - 1, 56, sy + my / 9, sz, k % 2 ? '#1C1917' : '#292524'); } // the stairs up
-      neon('UPSTAIRS VIP', 76, 15, 0.15, true, '#FCD34D', 1.6);
+      neon('ALTITUDE ROOFTOP ↑', 76, 15, 0.15, true, '#FCD34D', 1.6); // the stairs go up to the rooftop lounge
       // the sound: line arrays hanging either side of the stage, curving down
       for (const sx of [cx - 24, cx + 22]) for (let k = 0; k < 6; k++) { const y1 = 17 - k * 1.25; box(sx, y1 - 1.1, 10 + k * 0.25, sx + 2.4, y1, 12.2 + k * 0.25, '#0A0A0A'); const p = P(sx + 1.2, y1 - 0.55, 12.25 + k * 0.25); x.fillStyle = 'rgba(220,38,38,' + (0.4 + beat * 0.6) + ')'; x.fillRect(p[0] - K * 0.8, p[1] - K * 0.12, K * 1.6, K * 0.24); }
       // a bar in every VIP section: a gold-topped counter beside each booth
@@ -7104,7 +7108,11 @@
         for (let k = 0; k < 12; k++) { const bx = WX + 3 + k * 3.4, bh = 4 + ((k * 7) % 5) * 1.6; quad([P(bx, 10, 0.13), P(bx + 2.4, 10, 0.13), P(bx + 2.4, 10 + bh, 0.13), P(bx, 10 + bh, 0.13)], '#111827'); for (let j = 0; j < 3; j++) { const wp = P(bx + 0.6 + (j % 2), 11 + j * 1.3, 0.14); x.fillStyle = 'rgba(254,240,170,0.8)'; x.fillRect(wp[0], wp[1], K * 0.3, K * 0.25); } } }
       flat(WX + 0.8, 0.2, R.w, FZ, 0.016, '#1C1917');
       { const g0 = P(WX + 1, 0, 2), g1 = P(R.w, 0, 2), g2 = P(R.w, 3, 2), g3 = P(WX + 1, 3, 2); quad([g0, g1, g2, g3], 'rgba(186,230,253,0.15)', 'rgba(212,175,55,0.8)'); }
-      box(R.w - 16, 0, 30, R.w - 3, 3.6, 33, '#0A0A0A'); box(R.w - 16.2, 3.6, 29.8, R.w - 2.8, 3.9, 33.2, '#D4AF37'); neon('ROOFTOP', R.w - 9.5, 14, 0.15, true, '#FCD34D', 2);
+      // the outdoor bamboo bar: a counter in bamboo poles under a thatch, and the VIP shisha lounge round low tables
+      box(R.w - 16, 0, 28, R.w - 3, 3.6, 34, '#A16207'); for (let k = 0; k < 12; k++) box(R.w - 15.6 + k * 1.1, 0, 33.9, R.w - 15.1 + k * 1.1, 3.6, 34.1, k % 2 ? '#CA8A04' : '#854D0E'); box(R.w - 16.2, 3.6, 27.8, R.w - 2.8, 3.9, 34.2, '#78350F');
+      for (const [qx, qz] of [[R.w - 16, 28], [R.w - 3, 28], [R.w - 16, 34], [R.w - 3, 34]]) box(qx - 0.25, 0, qz - 0.25, qx + 0.25, 8, qz + 0.25, '#A16207'); pyramid(R.w - 17.5, 26.5, R.w - 1.5, 35.5, 10, 2.4, '#A16207');
+      neon('BAMBOO BAR', R.w - 9.5, 14, 0.15, true, '#FCD34D', 2);
+      for (const [hx, hz] of [[WX + 8, 16], [WX + 18, 16], [WX + 28, 16]]) { cylLit(hx, hz, 1.6, 0, 1.4, '#1C1917'); cylLit(hx, hz, 0.35, 1.4, 1.6, '#D4AF37'); sphere(hx, hz, 0.3, '#F97316'); for (const [ox, oz] of [[-2.6, 0], [2.6, 0], [0, 2.6]]) box(hx + ox - 1, 0, hz + oz - 1, hx + ox + 1, 1.2, hz + oz + 1, '#7F1D1D'); } // hookahs on their low tables, cushions round them
       for (const [fx, fz] of [[WX + 12, 40], [WX + 26, 40], [WX + 19, 54]]) { cylLit(fx, fz, 1.6, 0, 1.6, '#292524'); glow.push(() => { const p = P(fx, 2.2, fz), r = K * 3 * (0.85 + Math.sin(t * 8 + fx) * 0.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,170,60,0.9)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }); }
     } else if (LK.theme === 'secret') {
       // royal: velvet drapes gathered with gold tiebacks down the walls, crystal chandeliers everywhere, the throne room
@@ -8564,6 +8572,30 @@
     for (const [px, col] of [[32, '#E5E7EB'], [36, '#D4AF37'], [60, '#D4AF37'], [64, '#E5E7EB']]) { box(px - 1.6, 6, 0.2, px + 1.6, 10, 0.5, '#111827'); disk(px, 0.55, 8, 1.2, col); }
     faceText('PLATINUM', 34, 11, 0.55, '#E5E7EB', 0.3, 0); faceText('GOLD', 62, 11, 0.55, '#D4AF37', 0.3, 0);
   }
+  const clubNeon = (txt, x0, y0, z0, alongX, col, size) => { if (REC) { if (REC.mode === 'build') V3REC.text(txt, x0, y0, z0, col, (size || 2.6) * 1.1, false, alongX ? 'z' : 'x'); return; } const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); }; // (the club's neon lettering, shared)
+  // Quilox's Altitude Rooftop Lounge: open to the sky over the lagoon, the Ikoyi lights beyond a glass rail, the long gold
+  // rooftop bar, the DJ and the over-the-roof sound, lounges, fire bowls, the VIP karaoke suites, and the restaurant
+  function drawRoof(R, now) {
+    const t = now / 1000, beat = clubBeat(R.down ? R.down.key : R.key), hue = (t * 20) % 360; const neon = clubNeon; void beat;
+    flat(0, 0, R.w, R.d, 0.012, '#292524'); x.strokeStyle = 'rgba(0,0,0,0.25)'; x.lineWidth = 1; x.beginPath(); for (let z = 2; z < R.d; z += 2) { const p = P(0, 0.02, z), q = P(R.w, 0.02, z); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); // the deck
+    { const s0 = P(0.2, 1, 0.12), s1 = P(R.w, 1, 0.12), s2 = P(R.w, 17, 0.12), s3 = P(0.2, 17, 0.12), g = x.createLinearGradient(s3[0], s3[1], s0[0], s0[1]); g.addColorStop(0, '#0B1026'); g.addColorStop(0.6, '#3B1E54'); g.addColorStop(0.61, '#0B2A44'); g.addColorStop(1, '#0B2A44'); quad([s0, s1, s2, s3], g, null); } // the night over the lagoon
+    for (let k = 0; k < 20; k++) { const bx = 4 + k * 4.6, bh = 3 + ((k * 7) % 6) * 1.4; quad([P(bx, 10, 0.13), P(bx + 3, 10, 0.13), P(bx + 3, 10 + bh, 0.13), P(bx, 10 + bh, 0.13)], '#111827'); } // the Ikoyi skyline
+    glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; for (let k = 0; k < 40; k++) { const R2 = rnd(k * 19 + 3), p = P(4 + R2() * 90, 10.5 + R2() * 9, 0.14); x.fillStyle = `rgba(253,230,138,${0.4 + 0.4 * Math.sin(t * 2 + k)})`; x.fillRect(p[0], p[1], 1.5, 1.5); } x.restore(); });
+    for (const [x0, z0, x1, z1] of [[0, 0, 0.3, R.d], [R.w - 0.3, 0, R.w, R.d], [0, R.d - 0.3, R.w / 2 - 6, R.d], [R.w / 2 + 6, R.d - 0.3, R.w, R.d]]) { box(x0, 0, z0, x1, 1.2, z1, '#0A0A0A'); box(x0, 1.2, z0, x1, 4, z1, 'rgba(186,230,253,0.18)'); box(x0, 4, z0, x1, 4.2, z1, '#D4AF37'); } // the glass rail all round
+    // the stairs down, at the back
+    for (let k = 0; k < 6; k++) box(50, 0, 1 + k * 1.6, 58, 1.8 - k * 0.3, 2.6 + k * 1.6, k % 2 ? '#1C1917' : '#292524'); neon('↓ THE CLUB', 54, 6, 0.2, true, '#FCD34D', 1.2);
+    // the rooftop bar: long, black, a gold top, backlit shelves behind it
+    box(2, 0, 4, 34, 3.6, 8, '#0A0A0A'); box(1.8, 3.6, 3.8, 34.2, 3.9, 8.2, '#D4AF37'); box(2, 4.6, 0.3, 34, 12, 1, '#1C1917');
+    for (let r = 0; r < 3; r++) for (let k = 0; k < 20; k++) box(3 + k * 1.55, 5.2 + r * 2.2, 0.6, 3.6 + k * 1.55, 6.6 + r * 2.2, 1.1, ['#15803D', '#B45309', '#F8FAFC', '#7F1D1D', '#FACC15'][(k + r * 2) % 5]);
+    neon('ALTITUDE', 18, 14.5, 1.05, true, '#FCD34D', 1.8);
+    // the DJ and the sound: a booth at the side, line arrays on poles pointing out over the roof
+    box(60, 0, 6, 74, 3.2, 10, '#0A0A0A'); box(59.8, 3.2, 5.8, 74.2, 3.5, 10.2, `hsl(${hue},90%,55%)`); for (const sx of [58, 76]) { box(sx - 0.3, 0, 8, sx + 0.3, 14, 8.6, '#1F2937'); for (let k = 0; k < 4; k++) box(sx - 1.4, 9 + k * 1.2, 7.6, sx + 1.4, 10 + k * 1.2, 9.4, '#0A0A0A'); }
+    // fire bowls, the karaoke suites (two glass rooms, a screen and mics in each), the restaurant's sign
+    for (const [fx, fz] of [[14, 30], [34, 30], [58, 40]]) { cylLit(fx, fz, 1.5, 0, 1.6, '#292524'); glow.push(() => { const p = P(fx, 2.2, fz), r = K * 3 * (0.85 + Math.sin(t * 8 + fx) * 0.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,170,60,0.85)'); g.addColorStop(1, 'rgba(255,90,20,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }); }
+    for (const [kx, kz] of [[4, 12], [4, 22]]) { box(kx, 0, kz, kx + 14, 7, kz + 0.3, 'rgba(244,114,182,0.3)'); box(kx + 14, 0, kz, kx + 14.3, 7, kz + 9, 'rgba(244,114,182,0.3)'); box(kx + 2, 2.4, kz + 0.35, kx + 8, 5.6, kz + 0.5, '#0B0F19'); box(kx + 2, 0, kz + 3, kx + 10, 1.2, kz + 6, '#7F1D1D'); cylLit(kx + 10, kz + 2, 0.08, 0, 4.4, '#9CA3AF'); }
+    neon('VIP KARAOKE', 11, 9, 12.2, false, '#F9A8D4', 1.1);
+    neon('QUILOX RESTAURANT', 80, 13, 0.2, true, '#FCD34D', 1.3); flat(66, 24, 94, 62, 0.02, '#3F2A1D');
+  }
   // floor 3, the film and TV stage: a sound stage (a green screen cyclorama, a Lagos sitting-room set, a camera on a dolly
   // track, a boom, lights in softboxes), a news studio (a desk, an LED backdrop, two cameras on pedestals, a
   // teleprompter), an edit suite, and makeup and wardrobe with bulb-lit mirrors
@@ -8824,6 +8856,10 @@
     const keepOutside = !!extra.stairs && outside; if (extra.stairs) { inside = null; deco = null; }
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
     if (kind === 'studio') R.layout = studioLayout(R.floor || 1); // each floor of WYRD Studio, furnished
+    if (kind === 'roof') { const K3 = (k, x0, z0, r = 0, c) => ({ k: 'k:' + k, x: x0, z: z0, r, ...(c ? { tint: c, c } : {}) }); // the rooftop's lounges and the restaurant's tables
+      R.layout = [K3('loungeSofaCorner', 22, 40, 0, '#7F1D1D'), K3('tableCoffeeGlassSquare', 26, 44), K3('loungeDesignSofa', 46, 46, 2, '#7F1D1D'), K3('loungeDesignSofa', 46, 36, 0, '#7F1D1D'), K3('tableCoffeeGlass', 46, 41),
+        K3('loungeChair', 36, 56, 0, '#991B1B'), K3('loungeChair', 42, 56, 0, '#991B1B'), K3('pottedPlant', 4, 30), K3('pottedPlant', 4, 60), K3('pottedPlant', 64, 30),
+        ...[[74, 30], [86, 30], [74, 44], [86, 44], [80, 56]].flatMap(([tx, tz]) => [K3('tableRound', tx, tz), K3('chairModernFrameCushion', tx, tz - 4, 0, '#F5F0E6'), K3('chairModernFrameCushion', tx, tz + 4, 2, '#F5F0E6')])]; }
     if (kind === 'dealer' && extra.dealer === 'lekkiluxury') { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
     if (kind === 'yacht') { // the party boat: a DJ and a dance floor where the loungers were; the captain says hello
       if (extra.charter === 'sunset') R.layout = R.layout.filter((it) => it.k !== 'lounger').concat([{ k: 'djbooth', x: 64, z: 17, r: 1 }, { k: 'dance', x: 52, z: 17 }, { k: 'speaker', x: 66, z: 9 }, { k: 'speaker', x: 66, z: 25 }]);
@@ -12365,6 +12401,8 @@
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
       // (the door no longer takes you out: Leave does)
+      if (inside.kind === 'club' && inside.theme === 'quilox' && me.x > 49 && me.x < 59 && me.z > 16 && me.z < 24) next = { label: '⬆ Up to the Altitude Rooftop Lounge', run: () => { const down = { key: inside.key, title: inside.title }; enterRoom('roof', inside.key + ':roof', 'Quilox · Altitude Rooftop Lounge', { stairs: true, down }).then(() => { if (inside && inside.kind === 'roof') { me.x = 54; me.z = 14; } }); } };
+      if (inside.kind === 'roof' && me.x > 49 && me.x < 59 && me.z < 13 && inside.down) { const dn = inside.down; next = { label: '⬇ Down to the club', run: () => enterRoom('club', dn.key, dn.title, { stairs: true }).then(() => { if (inside && inside.kind === 'club') { me.x = 54; me.z = 21; } }) }; }
       if (inside.kind === 'studio' && Math.abs(me.x - inside.w / 2) < 7 && me.z < 11) { next = { label: '🛗 Take the elevator', run: () => liftOpen() }; }
       if (inside.kind === 'studio' && inside.floor === 2) { const R = inside, say = (t2) => bubbles.set('me', { text: t2, until: performance.now() + 4500 }), near = (px, pz, r = 4.5) => Math.hypot(me.x - px, me.z - pz) < r;
         if (near(79, 38.5)) next = { label: '🎙️ Record a verse', run: () => { R.rec = Date.now() + 9000; say(['🎤 "Lagos to the world, we no dey sleep o!"', '🎤 "From Island to Mainland, my name dey ring"', '🎤 "Owo ti de, the money don land"', '🎤 "Third Mainland, we ride am with style"'][Math.floor(Math.random() * 4)]); } };
