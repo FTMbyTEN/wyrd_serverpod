@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T01:05:18.845Z">
+<meta name="li-build" content="2026-10-25T01:12:47.331Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1966,7 +1966,7 @@
   addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); APP.prompt = e; appBtn(); });
   // each new version: a device that has the game downloads everything it needs in the background (models, textures,
   // three.js), once, a little after it starts, so rooms and the live 3D open smoothly and work offline
-  if (canSW && navigator.serviceWorker.controller && VER.now !== 'dev' && store.get('li.cachedV') !== VER.now) setTimeout(() => appDownload(null).then(() => store.set('li.cachedV', VER.now)).catch(() => {}), 20000);
+  setTimeout(() => { try { if (canSW && navigator.serviceWorker.controller && VER.now !== 'dev' && store.get('li.cachedV') !== VER.now) appDownload(null).then(() => store.set('li.cachedV', VER.now)).catch(() => {}); } catch {} }, 20000); // (later: the game's storage is set up further down)
   addEventListener('appinstalled', () => { APP.installed = true; APP.prompt = null; appBtn(); notify('Lagos Island is installed. Open it from your home screen.', 'island'); });
   // download everything into the device's cache, with progress on the button
   async function appDownload(btn) {
