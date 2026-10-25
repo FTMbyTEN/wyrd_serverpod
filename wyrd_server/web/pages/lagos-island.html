@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T16:35:17.640Z">
+<meta name="li-build" content="2026-10-25T16:48:01.618Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -6265,12 +6265,12 @@
     return { g: p[0] === 'f' || p[0] === 'm' ? p[0] : (h % 2 ? 'f' : 'm'), skin: +p[1] >= 0 && p[1] !== '' ? +p[1] % SKINS.length : h % SKINS.length, hair: +p[2] >= 0 && p[2] !== '' ? +p[2] % HAIRS.length : h % HAIRS.length, style: +p[3] >= 0 && p[3] !== '' ? +p[3] % 4 : h % 4, bottom: +p[4] >= 0 && p[4] !== '' ? +p[4] % BOTTOMS.length : h % BOTTOMS.length, outfit: p[5] || '', acc: String(p[6] || '').split('+').filter((a, k, all) => ACCS[a] && all.findIndex((b) => ACCS[b] && ACCS[b].slot === ACCS[a].slot) === k) };
   }
   function person(px, pz, color, name, bubble, now, mine, look) {
-    const base = P(px, 0, pz), by0 = base[1], s = Math.max(0.75, K / 4.6) * (inside ? 1.12 : 1) * 0.92;
+    const sy = standAt(px, pz), base = P(px, sy, pz), by0 = base[1], s = Math.max(0.75, K / 4.6) * (inside ? 1.12 : 1) * 0.92;
     if (base[0] < -60 || base[0] > W + 60 || base[1] < -140 || base[1] > H + 60) return;
     const [lk, ps, th] = String(look || '').split('|'), pose = ps ? ps.split(',')[0] || null : null, thought = mine ? (THOUGHT ? thoughtIcons(THOUGHT) : '') : hexThought(th);
     const L = parseLook(lk, name), fem = L.g === 'f', seated = pose === 'sit', asleep = pose === 'sleep';
     const seatY = ps ? Number(ps.split(',')[1]) || 2.2 : 0, seatPx = seated ? by0 - P(px, seatY, pz)[1] : 0;
-    if (person3d(px, pz, color, name, now, L, pose, seatY, 0, ps ? +ps.split(',')[2] || 0 : 0)) { personTags(px, pz, name, bubble, now, mine, base, s, P(px, seated ? seatY + 5.5 : 7.6, pz)[1], thought, pose); return; } // the 3D person, then their name and what they said
+    if (person3d(px, pz, color, name, now, L, pose, seatY, sy, ps ? +ps.split(',')[2] || 0 : 0)) { personTags(px, pz, name, bubble, now, mine, base, s, P(px, (seated ? seatY + 5.5 : 7.6) + sy, pz)[1], thought, pose); return; } // the 3D person, then their name and what they said
     // the gait: phase advances with distance; which way the figure faces on screen
     const g = gaits.get(name) || { x: px, z: pz, at: 0, ph: 0, face: 1 }, moved = Math.hypot(px - g.x, pz - g.z);
     if (moved > 0.05) { const a = P(g.x, 0, g.z), b = P(px, 0, pz); if (Math.abs(b[0] - a[0]) > 0.3) g.face = b[0] > a[0] ? 1 : -1; g.at = now; g.ph += moved * 0.75; g.x = px; g.z = pz; }
@@ -7091,14 +7091,12 @@
       const c = P(hx, hy - 1, hz); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], K * rr * 3); g.addColorStop(0, 'rgba(255,236,190,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], K * rr * 3, 0, Math.PI * 2); x.fill(); x.restore();
     };
     if (LK.theme === 'quilox') {
-      // the second level: a mezzanine across the back right with its own VIP booths and bar, glass rail, stairs up
-      const my = 9, mz1 = 9;
-      box(70, my - 0.6, 0, 97, my, mz1, '#120707'); for (const px of [71, 84, 96]) box(px - 0.4, 0, mz1 - 0.8, px + 0.4, my - 0.6, mz1, '#D4AF37'); // (beside the stage, clear of its LED wall)
-      for (let k = 0; k < 2; k++) { const bx = 74 + k * 8; box(bx - 3, my, 1, bx + 3, my + 2, 4, '#991B1B'); box(bx - 1.2, my, 4.5, bx + 1.2, my + 1.4, 6.5, '#0A0A0A'); }
-      box(90, my, 0.5, 96, my + 4, 2.5, '#0A0A0A'); box(89.8, my + 4, 0.3, 96.2, my + 4.3, 2.7, '#D4AF37'); // the upstairs bar
-      { const g0 = P(70, my, mz1), g1 = P(97, my, mz1), g2 = P(97, my + 2.6, mz1), g3 = P(70, my + 2.6, mz1); quad([g0, g1, g2, g3], 'rgba(252,211,77,0.18)', 'rgba(212,175,55,0.9)'); }
-      for (let k = 0; k < 9; k++) { const sz = mz1 + 9 - k, sy = k * (my / 9); box(80, 0, sz - 1, 84, sy + my / 9, sz, k % 2 ? '#57534E' : '#78716C'); box(79.7, sy + my / 9, sz - 1, 84.3, sy + my / 9 + 0.12, sz, '#D4AF37'); } // the stairs up, gold-edged steps
-      neon('ALTITUDE ROOFTOP ↑', 83, 15, 0.15, true, '#FCD34D', 1.6); flat(79, 18, 85, 23, 0.04, '#991B1B'); // a red carpet at the foot of the stairs // the stairs go up to the rooftop lounge
+      // the raised VIP section at the back right (a step up, its own booths), and the stairs up to the rooftop: gold-edged steps from the dance floor all the way up
+      box(86, 0, 0, 97, 1.2, 9, '#120707'); box(86, 1.2, 0, 97, 1.35, 9, '#D4AF37'); for (const bx of [89, 94]) { box(bx - 2, 1.35, 1, bx + 2, 3.2, 3.6, '#991B1B'); box(bx - 1, 1.35, 4.4, bx + 1, 2.6, 6, '#0A0A0A'); }
+      for (let k = 0; k < 12; k++) { const z1 = 18 - k * 1.5, top = (k + 1) * 1.5; box(QX.s0, 0, z1 - 1.5, QX.s1, top, z1, k % 2 ? '#57534E' : '#78716C'); box(QX.s0 - 0.3, top, z1 - 1.5, QX.s1 + 0.3, top + 0.12, z1, '#D4AF37'); }
+      box(QX.s0 - 0.5, 0, 0, QX.s0 - 0.3, QX.deckY + 3, 18, 'rgba(186,230,253,0.25)'); box(QX.s1 + 0.3, 0, 0, QX.s1 + 0.5, QX.deckY + 3, 18, 'rgba(186,230,253,0.25)'); // glass balustrades either side
+      neon('ALTITUDE ROOFTOP ↑', 82, 15.5, 0.15, true, '#FCD34D', 1.4); flat(79, 18, 85, 23, 0.04, '#991B1B');
+      drawQuiloxDeck(now, neon);
       // the sound: line arrays hanging either side of the stage, curving down
       for (const sx of [cx - 24, cx + 22]) for (let k = 0; k < 6; k++) { const y1 = 17 - k * 1.25; box(sx, y1 - 1.1, 10 + k * 0.25, sx + 2.4, y1, 12.2 + k * 0.25, '#0A0A0A'); const p = P(sx + 1.2, y1 - 0.55, 12.25 + k * 0.25); x.fillStyle = 'rgba(220,38,38,' + (0.4 + beat * 0.6) + ')'; x.fillRect(p[0] - K * 0.8, p[1] - K * 0.12, K * 1.6, K * 0.24); }
       // a bar in every VIP section: a gold-topped counter beside each booth
@@ -8573,6 +8571,21 @@
     faceText('PLATINUM', 34, 11, 0.55, '#E5E7EB', 0.3, 0); faceText('GOLD', 62, 11, 0.55, '#D4AF37', 0.3, 0);
   }
   const clubNeon = (txt, x0, y0, z0, alongX, col, size) => { if (REC) { if (REC.mode === 'build') V3REC.text(txt, x0, y0, z0, col, (size || 2.6) * 1.1, false, alongX ? 'z' : 'x'); return; } const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); }; // (the club's neon lettering, shared)
+  // the Altitude Rooftop Lounge, on top of Quilox: a deck at the height of the roof behind the club's back wall, open to the
+  // sky: the long gold bar, the DJ with its line arrays, lounges and fire bowls, the karaoke suites, the restaurant's tables
+  function drawQuiloxDeck(now, neon) {
+    const Y = QX.deckY, t = now / 1000, [x0, x1, z0] = [QX.d0, QX.d1, QX.dz];
+    box(x0, Y - 0.6, z0, x1, Y, 0, '#292524'); box(x0, 0, z0, x1, Y - 0.6, z0 + 0.6, '#0F0A0A'); // the deck, on its wall
+    for (const [a0, b0, a1, b1] of [[x0, z0, x0 + 0.3, 0], [x1 - 0.3, z0, x1, 0], [x0, z0, x1, z0 + 0.3]]) { box(a0, Y, b0, a1, Y + 1.2, b1, '#0A0A0A'); box(a0, Y + 1.2, b0, a1, Y + 3.6, b1, 'rgba(186,230,253,0.2)'); box(a0, Y + 3.6, b0, a1, Y + 3.8, b1, '#D4AF37'); } // the glass rail
+    box(x0 + 0.3, Y, -0.3, QX.s0 - 0.5, Y + 3.6, 0, 'rgba(186,230,253,0.2)'); box(QX.s1 + 0.5, Y, -0.3, x1 - 0.3, Y + 3.6, 0, 'rgba(186,230,253,0.2)'); // and along the front edge, either side of the stairs
+    box(24, Y, z0 + 2, 56, Y + 3.6, z0 + 6, '#0A0A0A'); box(23.8, Y + 3.6, z0 + 1.8, 56.2, Y + 3.9, z0 + 6.2, '#D4AF37'); box(24, Y + 4.6, z0 + 0.6, 56, Y + 11, z0 + 1.2, '#1C1917'); // the rooftop bar and its shelves
+    for (let r = 0; r < 2; r++) for (let k = 0; k < 18; k++) box(25 + k * 1.7, Y + 5.2 + r * 2.4, z0 + 1.25, 25.6 + k * 1.7, Y + 6.6 + r * 2.4, z0 + 1.7, ['#15803D', '#B45309', '#F8FAFC', '#7F1D1D', '#FACC15'][(k + r * 2) % 5]);
+    neon('ALTITUDE', 40, Y + 12.5, z0 + 1.25, true, '#FCD34D', 1.8);
+    box(62, Y, z0 + 2, 76, Y + 3.2, z0 + 6, '#0A0A0A'); box(61.8, Y + 3.2, z0 + 1.8, 76.2, Y + 3.5, z0 + 6.2, '#DC2626'); for (const sx of [60, 78]) { box(sx - 0.3, Y, z0 + 4, sx + 0.3, Y + 12, z0 + 4.6, '#1F2937'); for (let k = 0; k < 4; k++) box(sx - 1.4, Y + 7 + k * 1.2, z0 + 3.6, sx + 1.4, Y + 8 + k * 1.2, z0 + 5.4, '#0A0A0A'); } // the DJ and the sound over the roof
+    for (const [kx, kz] of [[86, z0 + 2], [86, z0 + 13]]) { box(kx, Y, kz, kx + 9.4, Y + 6, kz + 0.3, 'rgba(244,114,182,0.3)'); box(kx, Y, kz, kx + 0.3, Y + 6, kz + 9, 'rgba(244,114,182,0.3)'); box(kx + 1.5, Y + 2, kz + 0.35, kx + 7, Y + 5, kz + 0.5, '#0B0F19'); box(kx + 1.5, Y, kz + 3, kx + 8, Y + 1.2, kz + 6, '#7F1D1D'); } // the VIP karaoke suites
+    neon('VIP KARAOKE', 90, Y + 7.5, z0 + 2.3, true, '#F9A8D4', 1.1); neon('QUILOX RESTAURANT', 38, Y + 7, z0 + 14, true, '#FCD34D', 1.2);
+    for (const [fx, fz] of [[30, -8], [70, -8], [56, -20]]) { cylLit(fx, fz, 1.3, Y, 1.4, '#292524'); glow.push(() => { const p = P(fx, Y + 2, fz), r = K * 2.6 * (0.85 + Math.sin(t * 8 + fx) * 0.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,170,60,0.85)'); g.addColorStop(1, 'rgba(255,90,20,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }); }
+  }
   // Quilox's Altitude Rooftop Lounge: open to the sky over the lagoon, the Ikoyi lights beyond a glass rail, the long gold
   // rooftop bar, the DJ and the over-the-roof sound, lounges, fire bowls, the VIP karaoke suites, and the restaurant
   function drawRoof(R, now) {
@@ -8894,7 +8907,10 @@
           else if (it.k === 'podium' && plan.pod[p]) [it.x, it.z] = plan.pod[p++];
           else if (it.k === 'stool' && it.x < 12) { it.x += plan.bar[0]; it.z += plan.bar[1]; }
         }
-        while (plan.dance[d]) { const [dx, dz] = plan.dance[d++]; R.layout.push({ k: 'dance', x: dx, z: dz }); } } // a bigger floor than the classic two halves
+        while (plan.dance[d]) { const [dx, dz] = plan.dance[d++]; R.layout.push({ k: 'dance', x: dx, z: dz }); }
+        if (look.theme === 'quilox') { const up = (k, x0, z0, r = 0, c) => ({ k: 'k:' + k, x: x0, z: z0, r, y: 18, ...(c ? { tint: c, c } : {}) }); // the rooftop deck's lounges and the restaurant's tables
+          R.layout.push(up('loungeChair', 30, -14, 0, '#991B1B'), up('loungeChair', 36, -14, 0, '#991B1B'), up('tableCoffeeGlass', 33, -10), up('loungeChair', 64, -14, 0, '#991B1B'), up('loungeChair', 70, -14, 0, '#991B1B'), up('tableCoffeeGlass', 67, -10), up('pottedPlant', 23, -4), up('pottedPlant', 93, -4),
+            ...[[30, -24], [42, -24], [54, -26]].flatMap(([tx, tz]) => [up('tableRound', tx, tz), up('chairModernFrameCushion', tx - 3.6, tz, 1, '#F5F0E6'), up('chairModernFrameCushion', tx + 3.6, tz, 3, '#F5F0E6')])); } } // a bigger floor than the classic two halves
     }
     if (!extra.tour && signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
@@ -9143,7 +9159,14 @@
     if (R.kind === 'work' && WORK_ROOMS[R.place] && WORK_ROOMS[R.place].solids) out.push(...WORK_ROOMS[R.place].solids);
     R._solidSig = sig; return (R._solids = out);
   }
+  // Quilox, stacked: the stairs climb from the dance floor to the Altitude Rooftop deck on top of the club at the back
+  const QX = { s0: 80, s1: 84, deckY: 18, d0: 20, d1: 96, dz: -34, blocks: [[24, -32, 56, -28], [62, -32, 76, -28], [86, -32, 95.4, -23], [86, -21, 95.4, -12]] };
+  const quiloxHere = () => !!(inside && inside.kind === 'club' && inside.theme === 'quilox');
+  const onQStairs = (px, pz) => px > QX.s0 + 0.4 && px < QX.s1 - 0.4 && pz > -0.5 && pz < 19.6; // (reaching just past the bottom step, so you walk straight on)
+  function standAt(px, pz) { // how high someone stands: the floor, a step, or the rooftop
+    if (!quiloxHere()) return 0; if (onQStairs(px, pz)) return Math.max(0, Math.min(QX.deckY, 18 - pz)); return pz < 0 ? QX.deckY : 0; }
   function walkable(px, pz) {
+    if (quiloxHere()) { if (onQStairs(px, pz)) return true; if (pz <= 0) return pz > QX.dz + 1.5 && px > QX.d0 + 1.5 && px < QX.d1 - 1.5 && ![...QX.blocks, ...(inside.layout || []).filter((it) => it.y >= 18 && !isRugK(it)).map(fpOf).filter(Boolean)].some((b) => px > b[0] - 0.9 && px < b[2] + 0.9 && pz > b[1] - 0.9 && pz < b[3] + 0.9); } // (the deck's own bar, DJ, suites and furniture) // on the stairs, or up on the deck
     if (inside && inside.kind === 'yacht') return onDeck(px, pz);
     if (inside && roomSolids(inside).some((b) => px > b[0] - 0.9 && px < b[2] + 0.9 && pz > b[1] - 0.9 && pz < b[3] + 0.9)) return false; // you walk round things, not through them
     if (inside && (inside.kind === 'hq' || inside.kind === 'home') && BAYS[inside.kind === 'hq' ? 'bq' : inside.style] && pz > inside.d - 1.5) return px > 1.5 && px < inside.w - 1.5 && pz < inside.d + 18.5 && (pz > inside.d + 1.4 || Math.abs(px - inside.w / 2) < 5); // out through the front door into the yard, the wall either side of it
@@ -12401,7 +12424,7 @@
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
       // (the door no longer takes you out: Leave does)
-      if (inside.kind === 'club' && inside.theme === 'quilox' && me.x > 77 && me.x < 87 && me.z > 17 && me.z < 26) next = { label: '⬆ Up to the Altitude Rooftop Lounge', run: () => { const down = { key: inside.key, title: inside.title }; enterRoom('roof', inside.key + ':roof', 'Quilox · Altitude Rooftop Lounge', { stairs: true, down }).then(() => { if (inside && inside.kind === 'roof') { me.x = 54; me.z = 14; } }); } };
+      if (false) next = { label: '⬆ Up to the Altitude Rooftop Lounge', run: () => { const down = { key: inside.key, title: inside.title }; enterRoom('roof', inside.key + ':roof', 'Quilox · Altitude Rooftop Lounge', { stairs: true, down }).then(() => { if (inside && inside.kind === 'roof') { me.x = 54; me.z = 14; } }); } };
       if (inside.kind === 'roof' && me.x > 49 && me.x < 59 && me.z < 13 && inside.down) { const dn = inside.down; next = { label: '⬇ Down to the club', run: () => enterRoom('club', dn.key, dn.title, { stairs: true }).then(() => { if (inside && inside.kind === 'club') { me.x = 82; me.z = 22; } }) }; }
       if (inside.kind === 'studio' && Math.abs(me.x - inside.w / 2) < 7 && me.z < 11) { next = { label: '🛗 Take the elevator', run: () => liftOpen() }; }
       if (inside.kind === 'studio' && inside.floor === 2) { const R = inside, say = (t2) => bubbles.set('me', { text: t2, until: performance.now() + 4500 }), near = (px, pz, r = 4.5) => Math.hypot(me.x - px, me.z - pz) < r;
