@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T16:14:29.382Z">
+<meta name="li-build" content="2026-10-25T16:35:17.640Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -7093,12 +7093,12 @@
     if (LK.theme === 'quilox') {
       // the second level: a mezzanine across the back right with its own VIP booths and bar, glass rail, stairs up
       const my = 9, mz1 = 9;
-      box(56, my - 0.6, 0, 97, my, mz1, '#120707'); for (const px of [58, 72, 86, 96]) box(px - 0.4, 0, mz1 - 0.8, px + 0.4, my - 0.6, mz1, '#D4AF37');
-      for (let k = 0; k < 3; k++) { const bx = 62 + k * 11; box(bx - 3, my, 1, bx + 3, my + 2, 4, '#991B1B'); box(bx - 1.2, my, 4.5, bx + 1.2, my + 1.4, 6.5, '#0A0A0A'); }
+      box(70, my - 0.6, 0, 97, my, mz1, '#120707'); for (const px of [71, 84, 96]) box(px - 0.4, 0, mz1 - 0.8, px + 0.4, my - 0.6, mz1, '#D4AF37'); // (beside the stage, clear of its LED wall)
+      for (let k = 0; k < 2; k++) { const bx = 74 + k * 8; box(bx - 3, my, 1, bx + 3, my + 2, 4, '#991B1B'); box(bx - 1.2, my, 4.5, bx + 1.2, my + 1.4, 6.5, '#0A0A0A'); }
       box(90, my, 0.5, 96, my + 4, 2.5, '#0A0A0A'); box(89.8, my + 4, 0.3, 96.2, my + 4.3, 2.7, '#D4AF37'); // the upstairs bar
-      { const g0 = P(56, my, mz1), g1 = P(97, my, mz1), g2 = P(97, my + 2.6, mz1), g3 = P(56, my + 2.6, mz1); quad([g0, g1, g2, g3], 'rgba(252,211,77,0.18)', 'rgba(212,175,55,0.9)'); }
-      for (let k = 0; k < 9; k++) { const sz = mz1 + 9 - k, sy = k * (my / 9); box(52, 0, sz - 1, 56, sy + my / 9, sz, k % 2 ? '#1C1917' : '#292524'); } // the stairs up
-      neon('ALTITUDE ROOFTOP ↑', 76, 15, 0.15, true, '#FCD34D', 1.6); // the stairs go up to the rooftop lounge
+      { const g0 = P(70, my, mz1), g1 = P(97, my, mz1), g2 = P(97, my + 2.6, mz1), g3 = P(70, my + 2.6, mz1); quad([g0, g1, g2, g3], 'rgba(252,211,77,0.18)', 'rgba(212,175,55,0.9)'); }
+      for (let k = 0; k < 9; k++) { const sz = mz1 + 9 - k, sy = k * (my / 9); box(80, 0, sz - 1, 84, sy + my / 9, sz, k % 2 ? '#57534E' : '#78716C'); box(79.7, sy + my / 9, sz - 1, 84.3, sy + my / 9 + 0.12, sz, '#D4AF37'); } // the stairs up, gold-edged steps
+      neon('ALTITUDE ROOFTOP ↑', 83, 15, 0.15, true, '#FCD34D', 1.6); flat(79, 18, 85, 23, 0.04, '#991B1B'); // a red carpet at the foot of the stairs // the stairs go up to the rooftop lounge
       // the sound: line arrays hanging either side of the stage, curving down
       for (const sx of [cx - 24, cx + 22]) for (let k = 0; k < 6; k++) { const y1 = 17 - k * 1.25; box(sx, y1 - 1.1, 10 + k * 0.25, sx + 2.4, y1, 12.2 + k * 0.25, '#0A0A0A'); const p = P(sx + 1.2, y1 - 0.55, 12.25 + k * 0.25); x.fillStyle = 'rgba(220,38,38,' + (0.4 + beat * 0.6) + ')'; x.fillRect(p[0] - K * 0.8, p[1] - K * 0.12, K * 1.6, K * 0.24); }
       // a bar in every VIP section: a gold-topped counter beside each booth
@@ -12401,8 +12401,8 @@
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
       // (the door no longer takes you out: Leave does)
-      if (inside.kind === 'club' && inside.theme === 'quilox' && me.x > 49 && me.x < 59 && me.z > 16 && me.z < 24) next = { label: '⬆ Up to the Altitude Rooftop Lounge', run: () => { const down = { key: inside.key, title: inside.title }; enterRoom('roof', inside.key + ':roof', 'Quilox · Altitude Rooftop Lounge', { stairs: true, down }).then(() => { if (inside && inside.kind === 'roof') { me.x = 54; me.z = 14; } }); } };
-      if (inside.kind === 'roof' && me.x > 49 && me.x < 59 && me.z < 13 && inside.down) { const dn = inside.down; next = { label: '⬇ Down to the club', run: () => enterRoom('club', dn.key, dn.title, { stairs: true }).then(() => { if (inside && inside.kind === 'club') { me.x = 54; me.z = 21; } }) }; }
+      if (inside.kind === 'club' && inside.theme === 'quilox' && me.x > 77 && me.x < 87 && me.z > 17 && me.z < 26) next = { label: '⬆ Up to the Altitude Rooftop Lounge', run: () => { const down = { key: inside.key, title: inside.title }; enterRoom('roof', inside.key + ':roof', 'Quilox · Altitude Rooftop Lounge', { stairs: true, down }).then(() => { if (inside && inside.kind === 'roof') { me.x = 54; me.z = 14; } }); } };
+      if (inside.kind === 'roof' && me.x > 49 && me.x < 59 && me.z < 13 && inside.down) { const dn = inside.down; next = { label: '⬇ Down to the club', run: () => enterRoom('club', dn.key, dn.title, { stairs: true }).then(() => { if (inside && inside.kind === 'club') { me.x = 82; me.z = 22; } }) }; }
       if (inside.kind === 'studio' && Math.abs(me.x - inside.w / 2) < 7 && me.z < 11) { next = { label: '🛗 Take the elevator', run: () => liftOpen() }; }
       if (inside.kind === 'studio' && inside.floor === 2) { const R = inside, say = (t2) => bubbles.set('me', { text: t2, until: performance.now() + 4500 }), near = (px, pz, r = 4.5) => Math.hypot(me.x - px, me.z - pz) < r;
         if (near(79, 38.5)) next = { label: '🎙️ Record a verse', run: () => { R.rec = Date.now() + 9000; say(['🎤 "Lagos to the world, we no dey sleep o!"', '🎤 "From Island to Mainland, my name dey ring"', '🎤 "Owo ti de, the money don land"', '🎤 "Third Mainland, we ride am with style"'][Math.floor(Math.random() * 4)]); } };
