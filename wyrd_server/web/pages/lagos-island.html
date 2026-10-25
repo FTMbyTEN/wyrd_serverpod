@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T13:05:03.856Z">
+<meta name="li-build" content="2026-10-25T13:17:49.834Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1353,6 +1353,7 @@
   #topR .tdj .tdjx:hover { background: #EF4444 !important; } #topR .tdj .tdjx::after { display: none; }
   /* every item the same: 40 px tall, icon then figure then word, centred on one line, the same type throughout */
   #top.pill { align-items: center !important; } #topR { align-items: center !important; height: 40px; }
+  #top.pill { width: auto !important; max-width: calc(100vw - 16px); left: 50% !important; right: auto !important; transform: translateX(-50%) !important; padding: 5px 8px !important; } #topR { margin-left: 4px !important; } /* the bar hugs what's in it */
   #online, #tWx, #topR button.thome, #topR button.tgov { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 10px !important; font: 600 12.5px 'Plus Jakarta Sans', sans-serif !important; color: #64748B !important; line-height: 1 !important; }
   #online b, #tWx b, .thome b, .tgov b { font: 800 13.5px 'Plus Jakarta Sans', sans-serif !important; color: #0F172A !important; font-variant-numeric: tabular-nums; }
   #online { color: #16A34A !important; } #online i { margin: 0 2px 0 0 !important; }
@@ -1396,7 +1397,11 @@
   #hud .bar i::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgba(0,0,0,.35) calc(25% - 1px) 25%); pointer-events: none; }
   #hud .pic::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; background: conic-gradient(#22C55E var(--hp, 90%), rgba(255,255,255,.15) 0); -webkit-mask: radial-gradient(circle, transparent 36px, #000 37px); mask: radial-gradient(circle, transparent 36px, #000 37px); z-index: -1; }
   #hud .who { font-size: 14px; font-weight: 800; margin-bottom: 3px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
-  #hud .loc { display: inline-flex; align-items: center; gap: 4px; max-width: 170px; margin: 1px 0 3px; padding: 3px 9px 3px 6px; border-radius: 999px; background: rgba(255,255,255,.92); color: #0F172A; font: 800 10.5px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  #hud .lrow { display: flex; align-items: center; gap: 6px; margin: 1px 0 3px; }
+  #hud .home { width: 24px; height: 24px; flex: none; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #fff; background: linear-gradient(135deg, #38BDF8, #6366F1); box-shadow: 0 3px 10px rgba(56,189,248,.55), inset 0 1px 0 rgba(255,255,255,.4); transition: transform .15s; }
+  #hud .home:hover { transform: scale(1.1); } #hud .home:active { transform: scale(.92); } #hud .home svg { width: 14px; height: 14px; } #hud .home.at { background: linear-gradient(135deg, #22C55E, #0EA5E9); }
+  #hud .bars { padding: 6px 8px 5px; margin-left: -4px; border-radius: 14px; background: linear-gradient(135deg, rgba(15,23,42,.35), rgba(15,23,42,.12)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  #hud .loc { display: inline-flex; align-items: center; gap: 4px; max-width: 150px; margin: 0; padding: 3px 9px 3px 6px; border-radius: 999px; background: rgba(255,255,255,.92); color: #0F172A; font: 800 10.5px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
   #hud .loc svg { width: 11px; height: 11px; flex: none; color: #EF4444; }
   #where { display: none !important; } /* where you are: shown in the HUD */
   #hud .bar { display: grid; grid-template-columns: 20px 104px auto; align-items: center; gap: 7px; margin-top: 4px; }
@@ -1543,7 +1548,7 @@
 <div id="clubList" role="dialog"></div>
 <div id="sleepVeil"><span>😴 Sleeping… your health is coming back</span></div>
 <div id="pplAct" class="fan" aria-label="Someone close"><div id="paMain" class="ca" role="button" title="Someone close"></div><div class="ca opt" data-a="wave" role="button">👋<small>Wave</small></div><div class="ca opt" data-a="msg" role="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg><small>Message</small></div><div class="ca opt" data-a="add" role="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M19 8v6M16 11h6"/></svg><small>Add friend</small></div></div>
-<div id="hud" aria-label="You"><div class="pic"><div class="fig"><img alt=""></div></div><div class="info"><div class="who"></div><div class="loc"></div><div class="bars"></div></div></div>
+<div id="hud" aria-label="You"><div class="pic"><div class="fig"><img alt=""></div></div><div class="info"><div class="who"></div><div class="lrow"><div class="loc"></div><button class="home" aria-label="Go home" title="Go home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button></div><div class="bars"></div></div></div>
 <div id="leave" class="btn" role="button" aria-label="Leave the building">🚪<small>Leave</small></div>
 <div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ltop"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lwx" id="lockw"></div></div><div class="lnotes" id="lockn"></div><div class="lbot"><button class="lq" data-lq="ride" aria-label="Ride">🛵</button><button class="lq" data-lq="music" aria-label="Music">🎧</button><div class="lu">Tap to unlock</div><button class="lq" data-lq="wyrd" aria-label="Ask WYRD">✨</button></div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
 <div id="hello">
@@ -5504,7 +5509,7 @@
       flat(a + 5.4, d - 3.3, c - 0.9, d - 0.7, 0.06, '#9CA3AF', '#D1D5DB'); groundText('P', c - 1.6, d - 1.2, 0.9, 'rgba(255,255,255,0.8)');
       if (hq && hq.mine) { const c2 = parkOrder(myCarsL)[0]; if (c2) drawCar((a + 5.4 + c - 0.9) / 2, d - 2, c2.model, c2.color, 0, 0.6); }
     });
-    if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
+    if (hq && hq.mine) ownerGem((a + c) / 2, (b + d) / 2, 22);
     if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
     { const occ = !!hq || k < (housingBqs ?? 0); gateLight(a + 2, d - 0.9, occ); if (occ) litWindows(a, b, c, d, 4); } // assigned or not, at a glance
   }
@@ -5700,6 +5705,19 @@
     const est = ESTATE_OF[p[5]], n = (j - p[2]) * p[3] + (i - p[1]);
     return { plot: est + ':' + n, style: ESTATES[est][n], est, name: p[5] };
   }
+  // your home's marker: a soft blue diamond hovering over it, turning slowly, bobbing, with a halo and a faint beam down
+  const gemQ = []; // drawn over the map, after night falls on it, so it always glows
+  function ownerGem(gx, gz, gy) {
+    if (REC) return; const t = performance.now() / 1000, y = gy + Math.sin(t * 1.6) * 0.8, c = P(gx, y, gz), g0 = P(gx, 0, gz), r = Math.max(10, K * 3.2), h = r * 1.5, tw = Math.cos(t * 1.2);
+    gemQ.push(() => { x.save(); x.globalCompositeOperation = 'lighter';
+      let g = x.createLinearGradient(c[0], c[1], g0[0], g0[1]); g.addColorStop(0, 'rgba(96,165,250,0.28)'); g.addColorStop(1, 'rgba(96,165,250,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(c[0] - r * 0.35, c[1]); x.lineTo(c[0] + r * 0.35, c[1]); x.lineTo(g0[0] + r * 0.9, g0[1]); x.lineTo(g0[0] - r * 0.9, g0[1]); x.fill(); // the beam
+      g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], r * 3.2); g.addColorStop(0, 'rgba(147,197,253,0.55)'); g.addColorStop(1, 'rgba(59,130,246,0)'); x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], r * 3.2, 0, Math.PI * 2); x.fill(); x.restore(); // the halo
+      x.save(); x.shadowColor = '#60A5FA'; x.shadowBlur = 18; const w = r * (0.55 + 0.45 * Math.abs(tw)), top = [c[0], c[1] - h], bot = [c[0], c[1] + h * 0.9], L = [c[0] - w, c[1] - h * 0.15], Rr = [c[0] + w, c[1] - h * 0.15], m = [c[0] + w * 0.35 * Math.sign(tw || 1), c[1] - h * 0.15];
+      const face = (pts, col) => { x.fillStyle = col; x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const q of pts.slice(1)) x.lineTo(q[0], q[1]); x.closePath(); x.fill(); };
+      face([top, L, m], '#BFDBFE'); face([top, m, Rr], '#60A5FA'); face([bot, L, m], '#3B82F6'); face([bot, m, Rr], '#1D4ED8'); x.shadowBlur = 0; // four facets, light from the top left
+      x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); x.moveTo(top[0], top[1]); x.lineTo(m[0], m[1]); x.lineTo(bot[0], bot[1]); x.moveTo(L[0], L[1]); x.lineTo(Rr[0], Rr[1]); x.stroke();
+      x.fillStyle = 'rgba(255,255,255,0.9)'; x.beginPath(); x.arc(top[0] - w * 0.3, top[1] + h * 0.45, Math.max(1, r * 0.12), 0, Math.PI * 2); x.fill(); x.restore(); }); // a glint
+  }
   function ownerFlag(fx, fz, col) { const p = P(fx, 0, fz), tp = P(fx, 11, fz); x.strokeStyle = '#6B7280'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(tp[0], tp[1]); x.stroke(); x.fillStyle = col; x.fillRect(tp[0], tp[1], K * 2.6, K * 1.6); }
   // a Lagos compound: a low wall round the plot, a gate in the front, the house inside
   function compound(a, b, c, d, mine, house) {
@@ -5741,7 +5759,7 @@
     });
     { flat(a + 0.8, d - 3.1, c - 0.8, d - 0.5, 0.06, '#9CA3AF', '#D1D5DB'); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); const p = P((a + c) / 2, 0.07, d - 3), q = P((a + c) / 2, 0.07, d - 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); // the parking pad, two bays
       if (h && h.mine && h.style !== 'loft') parkOrder(myCarsL).slice(0, 2).forEach((c2, k) => drawCar(a + (c - a) * (k ? 0.73 : 0.27), d - 1.8, c2.model, c2.color, 0, 0.62)); }
-    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); gateLight(c - 0.9, d - 1, true); litWindows(a, b, c, d, 8); }
+    if (h) { ownerGem((a + c) / 2, (b + d) / 2, 26); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); gateLight(c - 0.9, d - 1, true); litWindows(a, b, c, d, 8); }
     else { box(c - 2.4, 0, d - 1.8, c - 2.2, 2.6, d - 1.6, '#78350F'); quad([P(c - 3.6, 1.6, d - 1.55), P(c - 1, 1.6, d - 1.55), P(c - 1, 2.8, d - 1.55), P(c - 3.6, 2.8, d - 1.55)], '#DC2626'); if (K > 3) faceText('FOR SALE', c - 2.3, 2.2, d - 1.5, '#FFFFFF', 0.55, 0); }
   }
   // an estate: its plots far to near, each in its style
@@ -6056,6 +6074,7 @@
       x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
       for (const g of glow) g();
     }
+    for (const f of gemQ.splice(0)) f(); // your home's diamond
     drawMapLabels(); // the districts' and estates' names
     drawWeather(now); // clouds, rain, lightning, fog, haze, over the town and under the pins
     gridJobDraw(); // where your grid shift sends you
@@ -8797,6 +8816,7 @@
   function walkable(px, pz) {
     if (inside && inside.kind === 'yacht') return onDeck(px, pz);
     if (inside && roomSolids(inside).some((b) => px > b[0] - 0.9 && px < b[2] + 0.9 && pz > b[1] - 0.9 && pz < b[3] + 0.9)) return false; // you walk round things, not through them
+    if (inside && (inside.kind === 'hq' || inside.kind === 'home') && BAYS[inside.kind === 'hq' ? 'bq' : inside.style] && pz > inside.d - 1.5) return px > 1.5 && px < inside.w - 1.5 && pz < inside.d + 18.5 && (pz > inside.d + 1.4 || Math.abs(px - inside.w / 2) < 5); // out through the front door into the yard, the wall either side of it
     if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && (pz < 23 || px < ARENA_SIDE + 1 || px > inside.w - ARENA_SIDE - 1 || (pz > inside.d - ARENA_SIDE - 1 && Math.abs(px - inside.w / 2) > ARENA_GATE - 1.5)));
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
@@ -8816,7 +8836,7 @@
   const DRINK = { want: false }, BARTENDER = { z: 34 };
   const VITALS = (() => { try { const v = JSON.parse(store.get('li.vitals') || 'null'); if (v && v.hp > 0) return v; } catch {} return { hp: 90 }; })();
   const barOpen = () => nightNow() > 0.5;
-  if (location.hostname === 'localhost') window.__li = { enterRoom: (...a) => enterRoom(...a), go: (...a) => go(...a), setMe: (v) => { me$ = v; }, openPhone: (...a) => openPhone(...a), get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
+  if (location.hostname === 'localhost') window.__li = { gem: (...a) => ownerGem(...a), get cam() { return cam; }, enterRoom: (...a) => enterRoom(...a), go: (...a) => go(...a), setMe: (v) => { me$ = v; }, openPhone: (...a) => openPhone(...a), get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
   const barOff = (R) => { const P0 = CLUB_PL[(R.look || clubLook(R.title)).theme]; return P0 ? P0.bar : [0, 0]; }; // where a club's bar is
   // what you're thinking: set on your phone, shown over you to everyone (sent as hex inside your look, the only text the island carries)
   let THOUGHT = store.get('li.thought') || '';
@@ -12039,7 +12059,7 @@
     // at a building's door: within reach of the middle of its front (not anywhere round it, so walking past on a road doesn't keep asking)
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
-      if (me.z > inside.d - 2.2 && !deco && inside.entered) { leaveRoom(); return; }
+      // (the door no longer takes you out: Leave does)
       if (me.z < inside.d - 4) inside.entered = true;
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep', lounger: 'sleep' };
       let near = null, nd = 5;
@@ -12131,6 +12151,12 @@
   // the HUD: your 3D likeness, and bars for your health, your wealth and what you've taken on (green when it's good, red when not)
   { const hud = document.getElementById('hud'), img = hud.querySelector('img'); let shotKey = '';
     try { hud.classList.toggle('mini', store.get('li.hudMini') === '1'); } catch {}
+    hud.querySelector('.home').onclick = async (e) => { e.stopPropagation(); e.currentTarget.blur(); // straight home: out of wherever you are, into your BQ
+      if (inside && inside.kind === 'hq' && inside.mine) return tickerSay('🏠 You\'re home');
+      if (!signedIn()) return tickerSay('Sign in to go home');
+      try { if (inside) leaveRoom(); await loadHqRow(); const k = hqSlots.findIndex((v) => v.mine), hq = hqSlots[k], lot = [...hqIndex].find(([, v]) => v === k);
+        if (!hq || !lot) return tickerSay('Your HQ isn\'t on the map yet'); const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); }
+      catch { tickerSay('Can\'t reach the island right now'); } };
     hud.onclick = () => { hud.classList.toggle('mini'); store.set('li.hudMini', hud.classList.contains('mini') ? '1' : '0'); };
     const bar = (icon, v, label) => `<div class="bar"><span>${icon}</span><i><b class="${v >= 0.5 ? 'ok' : 'low'}" style="width:${Math.round(Math.max(0.06, Math.min(1, v)) * 100)}%"></b></i><em>${label}</em></div>`;
     const tick = () => {
@@ -12141,7 +12167,7 @@
       const sh = typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks, done = sh ? sh.filter((v) => v.done).length : 0;
       const cap = (me$ && me$.dailyCap) || 10000, earned = (me$ && me$.earnedToday) || 0, resp = sh ? done / Math.max(1, sh.length) : Math.min(1, earned / cap);
       const mood = pose && pose.kind === 'dance' ? '💃 Dancing' : pose && pose.kind === 'drink' ? '🍸 Having a drink' : pose && pose.kind === 'sleep' ? '😴 Asleep' : pose && pose.kind === 'sit' ? '🪑 Relaxing' : VITALS.hp < 35 ? '🤒 Tired' : inside && inside.kind === 'club' ? '🎉 Partying' : '🙂 Fine';
-      hud.querySelector('.who').innerHTML = `${esc(myName || 'You')}<b>${mood}</b>`; hudLoc(); hud.querySelector('.pic').style.setProperty('--hp', Math.round(VITALS.hp) + '%');
+      hud.querySelector('.who').innerHTML = `${esc(myName || 'You')}<b>${mood}</b>`; hudLoc(); hud.querySelector('.pic').style.setProperty('--hp', Math.round(VITALS.hp) + '%'); hud.querySelector('.home').classList.toggle('at', !!(inside && inside.kind === 'hq' && inside.mine));
       hud.querySelector('.bars').innerHTML = bar('❤️', VITALS.hp / 100, Math.round(VITALS.hp) + '%') + bar('💰', wealth, me$ ? naira(n) : 'Sign in') + bar('📋', resp, sh ? `Shift ${done}/${sh.length}` : `Today ${Math.round(resp * 100)}%`);
       const key = parseLook(myLook, myName || 'me').outfit + '|' + myLook; if (key !== shotKey && typeof fitShot === 'function') { const u = fitShot(parseLook(myLook, myName || 'me').outfit); if (u) { img.src = u; shotKey = key; } } };
     const loc = hud.querySelector('.loc'); let locTxt = ''; const hudLoc = () => { const t = (document.getElementById('where').textContent || '').replace(/^📍\s*/, '').trim() || 'Lagos Island'; if (t !== locTxt) { locTxt = t; loc.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>' + esc(t); } };
