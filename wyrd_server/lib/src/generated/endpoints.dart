@@ -2686,6 +2686,31 @@ class Endpoints extends _is.EndpointDispatch {
                     params['item'],
                   ),
         ),
+        'buyDrink': _is.MethodConnector(
+          name: 'buyDrink',
+          params: {
+            'item': _is.ParameterDescription(
+              name: 'item',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'order': _is.ParameterDescription(
+              name: 'order',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .buyDrink(
+                    session,
+                    params['item'],
+                    params['order'],
+                  ),
+        ),
         'myOutfits': _is.MethodConnector(
           name: 'myOutfits',
           params: {},

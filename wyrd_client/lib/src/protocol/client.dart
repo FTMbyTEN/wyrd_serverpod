@@ -1434,6 +1434,19 @@ class EndpointIslandMe extends _isc.EndpointRef {
         {'item': item},
       );
 
+  /// Buy a drink at a club bar ([order] is a one-off id from the game, so a retry can't charge twice).
+  _ida.Future<String> buyDrink(
+    String item,
+    String order,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'buyDrink',
+    {
+      'item': item,
+      'order': order,
+    },
+  );
+
   /// The outfits in my wardrobe (the free starters are everyone's and aren't listed).
   _ida.Future<String> myOutfits() => caller.callServerEndpoint<String>(
     'islandMe',

@@ -2133,6 +2133,38 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'item': item, 'name': o.name, 'naira': after.naira});
   });
 
+  /// The drinks at a club bar, by id: [name, price in G₦].
+  static const drinkMenu = {
+    'champagne': ['Champagne', 15000],
+    'cognac': ['Cognac', 8000],
+    'cocktail': ['Cocktail', 4000],
+    'wine': ['Red wine', 3500],
+    'beer': ['Cold beer', 1500],
+    'mocktail': ['Mocktail', 1200],
+  };
+
+  /// Buy a drink at a club bar ([order] is a one-off id from the game, so a retry can't charge twice).
+  Future<String> buyDrink(Session session, String item, String order) => _money(session, (u) async {
+    final d = drinkMenu[item];
+    if (d == null) return _err("That's not on the menu.");
+    if (!RegExp(r'^[a-z0-9]{6,32}$').hasMatch(order)) return _err('Try again.');
+    final name = d[0] as String, price = d[1] as int;
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < price) return _err('The $name is N${_n(price)}. Your balance na only N${_n(c.naira)}, e no reach.');
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:drink:${u.uuid}:$order',
+      amount: -price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Drink at the bar: $name',
+    );
+    if (r.short != null) return _err('Not enough naira.');
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'item': item, 'name': name, 'price': price, 'naira': after.naira});
+  });
+
   /// The outfits in my wardrobe (the free starters are everyone's and aren't listed).
   Future<String> myOutfits(Session session) async {
     final rows = await IslandOutfit.db.find(
