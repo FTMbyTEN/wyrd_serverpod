@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T14:37:28.506Z">
+<meta name="li-build" content="2026-10-25T14:51:32.567Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -5075,6 +5075,7 @@
       for (let k = 0; k < 30; k++) { const R2 = rnd(k * 31 + 5); g.strokeStyle = `rgba(255,255,255,${0.08 + R2() * 0.18})`; g.lineWidth = 0.6 + R2() * 1.6; g.beginPath(); let px = R2() * 512, py = R2() * 512; g.moveTo(px, py); for (let q = 0; q < 8; q++) { px += (R2() - 0.3) * 90; py += (R2() - 0.5) * 70; g.lineTo(px, py); } g.stroke(); }
       const tex = new T3.CanvasTexture(c); tex.wrapS = tex.wrapT = T3.RepeatWrapping; tex.repeat.set(R.w / 32, R.d / 32); tex.colorSpace = T3.SRGBColorSpace;
       const fl = new T3.Mesh(new T3.PlaneGeometry(R.w, R.d), new T3.MeshStandardMaterial({ map: tex, roughness: 0.18, metalness: 0.25 })); fl.rotation.x = -Math.PI / 2; fl.position.set(R.w / 2, 0.018, R.d / 2); fl.receiveShadow = !MOBILE; grp.add(fl); }
+    if (R.kind === 'studio' && R.floor === 2) { const m = new T3.Mesh(new T3.PlaneGeometry(6, 1.2), new T3.MeshBasicMaterial({ color: 0x3f0d12, toneMapped: false })); m.position.set(17, 17, 0.66); grp.add(m); inn.onAir = m; inn.onAirL = new T3.PointLight(0xff2222, 0, 26, 1.6); inn.onAirL.position.set(17, 15, 4); grp.add(inn.onAirL); } // ON AIR, lit while recording
     if (R.kind === 'studio' && (R.floor || 1) === 1) { // the lobby's LED wall, playing in 3D
       const c = document.createElement('canvas'); c.width = 256; c.height = 128; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
       const m = new T3.Mesh(new T3.PlaneGeometry(23.2, 11.2), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(78, 8, 1.08); grp.add(m); inn.led = { c, g: c.getContext('2d'), tex, at: 0 }; }
@@ -5089,6 +5090,7 @@
     const inn = V3.inside; if (!inn) return; const t = now / 1000, party = partyAt(R.key);
     if (inn.led && now - inn.led.at > 80) { const { g, tex } = inn.led, h = (t * 25) % 360; inn.led.at = now; const gr = g.createLinearGradient(0, 0, 256, 128); gr.addColorStop(0, `hsl(${h},80%,50%)`); gr.addColorStop(0.5, `hsl(${(h + 60) % 360},85%,40%)`); gr.addColorStop(1, `hsl(${(h + 140) % 360},80%,45%)`); g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
       g.fillStyle = 'rgba(255,255,255,0.95)'; g.font = '900 22px sans-serif'; g.textAlign = 'center'; g.fillText('WYRD STUDIO', 128, 52); g.font = '700 12px sans-serif'; g.fillText(['TONIGHT ON 10 · ROOFTOP SESSIONS', 'FLOOR 2 · RECORDING STUDIOS', 'FLOOR 5 · COMEDY NIGHT'][Math.floor(t / 4) % 3], 128, 80); tex.needsUpdate = true; }
+    if (inn.onAir) { const on = (R.rec || 0) > Date.now(); inn.onAir.material.color.setHex(on ? (Math.floor(t * 2) % 2 ? 0xff2a2a : 0xdc2626) : 0x3f0d12); inn.onAirL.intensity = on ? 180 : 0; }
     const D = devState(R), off = !D.lamps && R.kind !== 'studio';
     if (V3.keyL) { V3.keyL.intensity = V3.keyBase * (off && night > 0.4 ? 0.25 : 1); V3.hemiL.intensity = V3.hemiBase * (off && night > 0.4 ? 0.22 : 1); }
     if (inn.street) inn.street.intensity = night > 0.4 ? (off ? 1400 : 250) : 0;
@@ -8434,12 +8436,16 @@
   }
   // ---- WYRD Studio, inside: the lobby on the ground floor; the other nine floors share the shell, each in its colour,
   // until they're built out. The elevator in the middle of the back wall goes to all of them.
+  const STUDIO_WALLS = { 2: [[29.7, 8, 30.3, 16], [29.7, 22, 30.3, 44], [29.7, 50, 30.3, 58], [4, 29.7, 30, 30.3], [4, 57.7, 30, 58.3], [4, 7.7, 30, 8.3], // Studio A and its live room (doors at z 16-22 and 44-50)
+    [65.7, 8, 66.3, 14], [65.7, 20, 66.3, 34], [65.7, 38, 66.3, 44], [66, 27.7, 92, 28.3], [66, 43.7, 92, 44.3], [66, 7.7, 92, 8.3]] }; // Studio B and the vocal booth (doors at z 14-20 and 34-38)
   const studioLayout = (n) => {
     const SEATS = /Sofa|Chair|chair|bench|stool/, K2 = (k, x0, z0, r = 0) => ({ k: 'k:' + k, x: x0, z: z0, r, ...(SEATS.test(k) && k !== 'chairDesk' ? { tint: '#EDE3D2', c: '#EDE3D2' } : {}) }), /* seats in cream, against the black marble and gold */ plants = [K2('pottedPlant', 4, 14), K2('pottedPlant', 92, 14), K2('pottedPlant', 4, 58), K2('pottedPlant', 92, 58)];
     const ring = (cx0, cz0, chair) => [K2('tableRound', cx0, cz0), K2(chair, cx0, cz0 - 4, 0), K2(chair, cx0, cz0 + 4, 2), K2(chair, cx0 - 4, cz0, 1), K2(chair, cx0 + 4, cz0, 3)];
     return ({
       1: [K2('rugRounded', 14, 38), K2('loungeDesignSofa', 14, 31, 0), K2('loungeDesignSofa', 14, 45, 2), K2('tableCoffeeGlass', 14, 38), K2('loungeChair', 26, 38, 3), K2('lampSquareFloor', 4, 31), K2('lampSquareFloor', 4, 45), K2('benchCushion', 78, 34, 2), K2('chairModernFrameCushion', 70, 30, 0), K2('chairModernFrameCushion', 74, 30, 0), ...plants],
-      2: [K2('desk', 26, 16), K2('speaker', 19, 16), K2('speaker', 33, 16), K2('chairDesk', 26, 21, 2), K2('televisionModern', 26, 14.6), K2('rugRounded', 26, 42), K2('loungeSofa', 26, 46, 2), K2('tableCoffeeGlassSquare', 26, 40), K2('loungeChair', 16, 40, 1), ...plants],
+      2: [K2('chairDesk', 17, 19, 0), K2('loungeSofa', 17, 11, 0), K2('speaker', 6, 24), K2('speaker', 28, 24), K2('rugRounded', 17, 46), K2('stoolBar', 12, 45), // Studio A: the producer's chair, a sofa at the back, the big monitors; the live room's rug and the drummer's stool
+        K2('desk', 79, 16), K2('chairDesk', 79, 20, 0), K2('speakerSmall', 74, 15), K2('speakerSmall', 84, 15), K2('loungeChair', 88, 24, 3), K2('stoolBar', 79, 39), // Studio B and its booth
+        K2('rugRounded', 48, 46), K2('loungeSofa', 48, 54, 2), K2('loungeChair', 40, 45, 1), K2('loungeChair', 56, 45, 3), K2('tableCoffeeGlass', 48, 46), K2('pottedPlant', 34, 32), K2('pottedPlant', 62, 32), K2('pottedPlant', 34, 58), K2('pottedPlant', 62, 58), K2('lampSquareFloor', 36, 54), K2('lampSquareFloor', 60, 54)], // the artists' lounge
       3: [K2('lampSquareFloor', 12, 18), K2('lampSquareFloor', 34, 18), K2('lampSquareFloor', 23, 30), K2('chairCushion', 62, 32, 0), K2('chairCushion', 67, 32, 0), K2('televisionModern', 64, 22), K2('desk', 64, 24), K2('loungeSofa', 80, 50, 2), K2('speakerSmall', 72, 24), ...plants],
       4: [K2('speaker', 8, 14), K2('speaker', 88, 14), K2('benchCushion', 20, 58, 2), K2('benchCushion', 76, 58, 2), K2('pottedPlant', 4, 40), K2('pottedPlant', 92, 40)],
       5: [...ring(20, 34, 'chairModernCushion'), ...ring(40, 46, 'chairModernCushion'), ...ring(60, 46, 'chairModernCushion'), ...ring(78, 34, 'chairModernCushion'), K2('stoolBar', 48, 13), K2('speaker', 30, 12), K2('speaker', 66, 12)],
@@ -8479,9 +8485,9 @@
       // gold lettering on the floor at the door
       groundText('WYRD STUDIO', cx, R.d - 6, 2.2, 'rgba(212,175,55,0.75)');
     } else { // ---- the floors to come: a clean shell in the floor's colour, its name on the wall
-      groundText(icon + '  ' + name.toUpperCase(), cx, R.d / 2 + 6, 2.4, col); groundText(blurb, cx, R.d / 2 + 11, 1.1, 'rgba(255,255,255,0.6)');
-      groundText('BEING BUILT · OPENING SOON', cx, R.d / 2 + 15, 1, 'rgba(255,255,255,0.45)');
-      if (n === 2) { box(58, 0, 12, 82, 12, 12.4, 'rgba(186,230,253,0.35)'); box(58, 0, 30, 82, 12, 30.4, 'rgba(186,230,253,0.35)'); box(81.6, 0, 12, 82, 12, 30.4, 'rgba(186,230,253,0.35)'); box(58, 0, 12, 58.4, 12, 24, 'rgba(186,230,253,0.35)'); flat(58, 12, 82, 30, 0.03, '#1F2937'); cylLit(70, 21, 0.12, 0, 5.4, '#9CA3AF'); sphere(70, 21, 0.5, '#111827'); faceText('VOCAL BOOTH', 70, 10, 30.45, '#E0F2FE', 0.4, 4); } // a glass vocal booth with a mic
+      if (n !== 2) { groundText(icon + '  ' + name.toUpperCase(), cx, R.d / 2 + 6, 2.4, col); groundText(blurb, cx, R.d / 2 + 11, 1.1, 'rgba(255,255,255,0.6)');
+      groundText('BEING BUILT · OPENING SOON', cx, R.d / 2 + 15, 1, 'rgba(255,255,255,0.45)'); } // (floor 2 is built)
+      if (n === 2) drawRecording(R, now);
       if (n === 3) { box(4, 0, 0.3, 38, 15, 1, '#16A34A'); flat(4, 1, 38, 14, 0.03, '#16A34A'); } // the green screen
       if (n === 4) { for (const [x0, x1] of [[4, 40], [56, 92]]) box(x0, 0.6, 0.3, x1, 14, 0.7, '#BAE6FD'); flat(10, 14, R.w - 10, R.d - 8, 0.032, '#3F2A1D'); } // mirrors along the back wall, a sprung wooden floor
       if (n === 5) { box(30, 0, 6, 66, 1.4, 18, '#111827'); box(29.8, 1.4, 5.8, 66.2, 1.6, 18.2, '#F59E0B'); box(14, 0, 0.3, 82, 14, 0.8, '#7F1D1D'); cylLit(48, 15, 0.1, 1.6, 5, '#9CA3AF'); sphere(48, 15, 0.4, '#111827'); } // the comedy stage, a red curtain, a mic
@@ -8489,6 +8495,51 @@
       if (n === 8) { box(8, 2, 0.3, 88, 12, 0.8, '#0B0F19'); for (let k = 0; k < 4; k++) box(10 + k * 20, 3, 0.85, 26 + k * 20, 11, 0.9, ['#22C55E', '#0EA5E9', '#A855F7', '#F43F5E'][k]); } // the stream wall
       if (n === 10) { flat(0, 20, R.w, R.d, 0.02, '#0F172A'); box(cx - 16, 0, 26, cx + 16, 2, 40, '#111827'); faceText('ROOFTOP SESSIONS', cx, 1, 40.05, '#F97316', 0.5, 8); } // the rooftop: a stage under the sky
     }
+  }
+  // floor 2, the recording studios: Studio A (a big control room behind glass, its live room with drums, a piano, amps), Studio
+  // B (a smaller control room and its vocal booth), the artists' lounge between them with platinum plaques by the elevator
+  function drawRecording(R, now) {
+    const t = now / 1000, rec = (R.rec || 0) > Date.now(), purple = '#8B5CF6';
+    const wall = (x0, z0, x1, z1, h = 5) => { box(x0, 0, z0, x1, h, z1, '#1F1B2E'); box(x0, h, z0, x1, h + 0.25, z1, purple); }; // acoustic walls, cut low so you see in
+    const glass = (x0, z0, x1, z1) => { box(x0, 0, z0, x1, 1.2, z1, '#1F1B2E'); box(x0, 1.2, z0, x1, 9, z1, 'rgba(186,230,253,0.28)'); box(x0, 9, z0, x1, 9.25, z1, purple); };
+    // the floors inside the rooms: dark oak in the studios, carpet in the booth
+    flat(4, 8, 30, 30, 0.03, '#2A1E16'); flat(4, 30, 30, 58, 0.03, '#3B2A1E'); flat(66, 8, 92, 28, 0.03, '#2A1E16'); flat(66, 28, 92, 44, 0.03, '#312E81');
+    for (const [x0, z0, x1, z1] of STUDIO_WALLS[2]) { const along = x1 - x0 > z1 - z0; if ((z0 === 29.7 && x0 === 4) || (z0 === 27.7 && x0 === 66)) glass(x0, z0, x1, z1); else wall(x0, z0, x1, z1); }
+    // acoustic panels on the back and side walls of the studios, in the floor's purple and grey
+    for (let k = 0; k < 5; k++) { box(5 + k * 5, 6, 0.2, 8.6 + k * 5, 13, 0.7, k % 2 ? '#4C1D95' : '#374151'); box(69 + k * 4.6, 6, 0.2, 72.4 + k * 4.6, 13, 0.7, k % 2 ? '#374151' : '#4C1D95'); }
+    for (let k = 0; k < 5; k++) box(0.2, 1.5, 33 + k * 5, 0.7, 7, 36.4 + k * 5, k % 2 ? '#4C1D95' : '#374151');
+    faceText('STUDIO A', 17, 15, 0.75, '#E9D5FF', 0.55, 8); faceText('STUDIO B', 80.5, 15, 0.75, '#E9D5FF', 0.55, 8);
+    // ON AIR: red and glowing while someone's recording
+    box(14, 16.4, 0.2, 20, 17.6, 0.6, rec ? '#DC2626' : '#3F0D12'); faceText('ON AIR', 17, 17, 0.65, rec ? '#FFFFFF' : '#7F1D1D', 0.35, 0);
+    if (rec) glow.push(() => { const p = P(17, 17, 0.7), r = K * 4; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(239,68,68,0.7)'); g.addColorStop(1, 'rgba(239,68,68,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
+    // Studio A's console: a long desk, a sloped bank of faders and knobs with lit meters, a screen in the middle
+    box(8, 0, 22, 26, 2.6, 26, '#111827'); box(7.8, 2.6, 21.8, 26.2, 2.8, 26.2, '#374151');
+    for (let k = 0; k < 24; k++) { const fx = 8.6 + k * 0.72, lvl = 0.5 + 0.5 * Math.abs(Math.sin(t * 3 + k * 0.6)); box(fx, 2.8, 23, fx + 0.35, 2.95, 25.2, '#1F2937'); box(fx + 0.05, 2.95, 23.4 + (k % 5) * 0.3, fx + 0.3, 3.2, 23.7 + (k % 5) * 0.3, '#E5E7EB'); box(fx + 0.05, 2.95, 21.95, fx + 0.3, 3.0 + lvl * 0.25, 22.15, lvl > 0.85 ? '#EF4444' : lvl > 0.65 ? '#FACC15' : '#22C55E'); }
+    box(15, 2.8, 25.4, 19, 5.6, 25.6, '#0B0F19'); { const s0 = P(15.2, 3, 25.62), s1 = P(18.8, 3, 25.62), s2 = P(18.8, 5.4, 25.62), s3 = P(15.2, 5.4, 25.62); quad([s0, s1, s2, s3], '#1E1B4B', null); } // the screen: the session
+    // the live room: a drum kit, a grand-ish piano, guitar amps, mic stands, a rug
+    { const dx = 12, dz = 47; cylLit(dx, dz + 2, 1.3, 0, 2.4, '#7C2D12'); disk(dx, dz + 2, 2.42, 1.2, '#F5F5F4'); for (const [ox, oz, r0] of [[-1.8, 0, 0.8], [1.8, 0, 0.8], [-0.8, -1.4, 0.6], [0.8, -1.4, 0.6]]) cylLit(dx + ox, dz + oz, r0, 1.8, 0.7, '#7C2D12'); // kick, toms, snare
+      for (const [ox, oz] of [[-2.8, -1], [2.8, -1], [0, -3]]) { box(dx + ox - 0.05, 0, dz + oz - 0.05, dx + ox + 0.05, 4.2, dz + oz + 0.05, '#9CA3AF'); disk(dx + ox, dz + oz, 4.25, 1.3, '#D4AF37'); } } // cymbals in brass
+    box(21, 0, 48, 27, 2.8, 51, '#0B0B0E'); box(21, 2.8, 48, 27, 4.6, 48.6, '#0B0B0E'); flat(21.2, 48.6, 26.8, 49.8, 2.85, '#F8FAFC'); for (let k = 0; k < 14; k++) box(21.4 + k * 0.4, 2.86, 48.6, 21.6 + k * 0.4, 2.95, 49.3, '#111827'); // the piano: lid, keys
+    for (const [ax, az] of [[5, 37], [8.2, 37]]) { box(ax, 0, az, ax + 3, 3.4, az + 2.4, '#1F2937'); box(ax + 0.2, 0.4, az + 2.42, ax + 2.8, 3, az + 2.45, '#57534E'); } // the amps
+    for (const [mx, mz] of [[18, 40], [22, 44]]) { cylLit(mx, mz, 0.1, 0, 5, '#9CA3AF'); sphere(mx, mz, 0.35, '#111827'); }
+    faceText('LIVE ROOM', 17, 3, 58.35, '#E9D5FF', 0.45, 6);
+    // Studio B: its desk has two screens and a keyboard; the booth: a mic with its pop shield, foam on the walls, a stool
+    box(73.5, 2.8, 15.2, 77.5, 5.4, 15.4, '#0B0F19'); box(80.5, 2.8, 15.2, 84.5, 5.4, 15.4, '#0B0F19'); box(74, 2.8, 17, 84, 3, 18.2, '#F8FAFC');
+    for (let k = 0; k < 6; k++) box(66.4 + (k % 3) * 8.6, 2, 28.4 + Math.floor(k / 3) * 15.2, 74 + (k % 3) * 8.6, 8, 28.8 + Math.floor(k / 3) * 15.2, '#4C1D95');
+    cylLit(79, 36, 0.1, 0, 5.4, '#9CA3AF'); sphere(79, 36, 0.4, '#E5E7EB'); disk(79, 36.8, 5.4, 0.7, 'rgba(17,24,39,0.6)'); // the mic, the pop shield
+    faceText('VOCAL BOOTH', 79, 3, 44.35, '#E9D5FF', 0.45, 6);
+    // the platinum and gold plaques either side of the elevator
+    for (const [px, col] of [[32, '#E5E7EB'], [36, '#D4AF37'], [60, '#D4AF37'], [64, '#E5E7EB']]) { box(px - 1.6, 6, 0.2, px + 1.6, 10, 0.5, '#111827'); disk(px, 0.55, 8, 1.2, col); }
+    faceText('PLATINUM', 34, 11, 0.55, '#E5E7EB', 0.3, 0); faceText('GOLD', 62, 11, 0.55, '#D4AF37', 0.3, 0);
+  }
+  // playing the floor's instruments: a few notes on the piano, a groove on the drums, made on the spot
+  function studioPlay(kind) {
+    const ac = audioCtx(); if (!ac) return; const t0 = ac.currentTime + 0.05, out = ac.createGain(); out.gain.value = 0.25; out.connect(ac.destination);
+    const note = (f, at, len, type = 'triangle', vol = 0.5) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol, at + 0.01); g.gain.exponentialRampToValueAtTime(0.001, at + len); o.connect(g); g.connect(out); o.start(at); o.stop(at + len + 0.05); };
+    if (kind === 'piano') [[261.6, 0], [329.6, 0.25], [392, 0.5], [523.3, 0.75], [440, 1.1], [349.2, 1.35], [392, 1.6], [261.6, 1.95]].forEach(([f, at]) => { note(f, t0 + at, 1.2); note(f * 2, t0 + at, 0.6, 'sine', 0.15); });
+    if (kind === 'drums') for (let b = 0; b < 8; b++) { const at = t0 + b * 0.25; if (b % 4 === 0 || b === 6) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(140, at); o.frequency.exponentialRampToValueAtTime(40, at + 0.2); g.gain.setValueAtTime(0.9, at); g.gain.exponentialRampToValueAtTime(0.001, at + 0.25); o.connect(g); g.connect(out); o.start(at); o.stop(at + 0.3); }
+      if (b % 4 === 2) { const n2 = ac.createBufferSource(), buf = ac.createBuffer(1, ac.sampleRate * 0.2, ac.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length); n2.buffer = buf; const g = ac.createGain(); g.gain.value = 0.5; n2.connect(g); g.connect(out); n2.start(at); }
+      note(8000, at, 0.05, 'square', 0.04); }
   }
   // the elevator: a panel of the ten floors; the doors close, the floor counts, the doors open on the new floor
   function liftOpen() {
@@ -8984,6 +9035,7 @@
     for (const it of R.layout || []) { if (SOLID_SKIP.has(it.k) || isRugK(it)) continue; const f = fpOf(it); if (f) out.push([f[0] + 0.4, f[1] + 0.4, f[2] - 0.4, f[3] - 0.4]); }
     out.push(...bmBlocks(R));
     if (R.kind === 'club') out.push(...(R._shell || (R._shell = v3shellSolids(R)))); // the club's bar, stage, booths and pool
+    if (R.kind === 'studio') out.push(...(STUDIO_WALLS[R.floor] || []), ...(R.floor === 2 ? [[8, 22, 26, 26], [21, 48, 27, 51], [5, 37, 11, 39.5], [9, 43, 15, 50]] : [])); // WYRD Studio's walls, the console, the piano, the amps, the drums
     if (R.kind === 'work' && WORK_ROOMS[R.place] && WORK_ROOMS[R.place].solids) out.push(...WORK_ROOMS[R.place].solids);
     R._solidSig = sig; return (R._solids = out);
   }
@@ -12246,6 +12298,11 @@
     if (inside) {
       // (the door no longer takes you out: Leave does)
       if (inside.kind === 'studio' && Math.abs(me.x - inside.w / 2) < 7 && me.z < 11) { next = { label: '🛗 Take the elevator', run: () => liftOpen() }; }
+      if (inside.kind === 'studio' && inside.floor === 2) { const R = inside, say = (t2) => bubbles.set('me', { text: t2, until: performance.now() + 4500 }), near = (px, pz, r = 4.5) => Math.hypot(me.x - px, me.z - pz) < r;
+        if (near(79, 38.5)) next = { label: '🎙️ Record a verse', run: () => { R.rec = Date.now() + 9000; say(['🎤 "Lagos to the world, we no dey sleep o!"', '🎤 "From Island to Mainland, my name dey ring"', '🎤 "Owo ti de, the money don land"', '🎤 "Third Mainland, we ride am with style"'][Math.floor(Math.random() * 4)]); } };
+        else if (near(17, 20)) next = { label: '🎚️ Mix the track', run: () => { R.rec = Date.now() + 5000; say(['Bass up small. Vocals forward. E don dey enter!', 'Compress am, add reverb. This one go blow.', 'Mixing done. Send am to the DJ.'][Math.floor(Math.random() * 3)]); } };
+        else if (near(24, 53, 4)) next = { label: '🎹 Play the piano', run: () => { studioPlay('piano'); say('🎹 A little highlife chord'); } };
+        else if (near(12, 52, 4.5)) next = { label: '🥁 Play the drums', run: () => { studioPlay('drums'); say('🥁 Afrobeat groove!'); } }; }
       if (me.z < inside.d - 4) inside.entered = true;
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep', lounger: 'sleep' };
       let near = null, nd = 5;
@@ -12267,7 +12324,7 @@
       if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 See the ${c.v[0]}`, run: () => openShowcase(c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose && pose.kind !== 'dance' && pose.kind !== 'drink') next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
-      else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y, r: st.r || 0 }; me.x = pose.x; me.z = pose.z; } };
+      else if (near && !(inside.kind === 'studio' && next)) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y, r: st.r || 0 }; me.x = pose.x; me.z = pose.z; } };
       else if (!(inside.kind === 'studio' && next)) next = null;
     }
     else if (door('studio')) next = { label: '🎬 Enter WYRD Studio', run: () => enterRoom('studio', 'place:studio:1', 'WYRD Studio · Lobby', { floor: 1 }) };
