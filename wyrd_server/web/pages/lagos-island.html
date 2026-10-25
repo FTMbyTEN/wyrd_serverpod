@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T15:03:04.719Z">
+<meta name="li-build" content="2026-10-25T15:11:14.090Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1530,16 +1530,28 @@
   #launch .lbar { background: rgba(255,255,255,.25) !important; height: 5px !important; } #launch .lbar i { background: linear-gradient(90deg, #22C55E, #0EA5E9, #6366F1) !important; box-shadow: 0 0 12px rgba(34,197,94,.7) !important; }
   #launch .lbadge { background: linear-gradient(135deg, #22C55E, #0EA5E9 55%, #6366F1) !important; box-shadow: 0 18px 40px -10px rgba(14,165,233,.7) !important; } #launch .lring { border-color: rgba(255,255,255,.8) !important; }
   #launch .lnew { position: absolute; left: 50%; top: calc(18px + env(safe-area-inset-top)); transform: translateX(-50%); max-width: 90vw; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,.55); box-shadow: 0 6px 16px rgba(12,74,110,.18); color: #0C4A6E; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; animation: lFade .6s ease-out 2.4s forwards; backdrop-filter: blur(6px); }
+  /* the intro, alive: clouds drifting across, birds over the lagoon, a boat sailing past, a glint across the name */
+  #launch .lcloud { position: absolute; height: 6vmin; border-radius: 6vmin; background: rgba(255,255,255,.85); filter: blur(1px); opacity: 0; animation: lFade 1s ease-out .9s forwards, lDrift 26s linear infinite; }
+  #launch .lcloud::before, #launch .lcloud::after { content: ''; position: absolute; background: inherit; border-radius: 50%; } #launch .lcloud::before { width: 45%; height: 160%; left: 15%; bottom: 20%; } #launch .lcloud::after { width: 35%; height: 130%; right: 18%; bottom: 25%; }
+  #launch .k1 { width: 22vmin; top: 14%; left: -25vmin; } #launch .k2 { width: 16vmin; top: 24%; left: -18vmin; animation-duration: 1s, 34s; animation-delay: .9s, -12s; opacity: .7; } #launch .k3 { width: 26vmin; top: 8%; left: -30vmin; animation-duration: 1s, 40s; animation-delay: .9s, -24s; }
+  @keyframes lDrift { to { transform: translateX(140vw); } }
+  #launch .lbirds { position: absolute; top: 30%; left: -10%; width: 14vmin; height: 6vmin; opacity: 0; animation: lFade .8s ease-out 1.8s forwards, lFly 14s linear 1.8s infinite; } #launch .lbirds i { position: absolute; width: 2.4vmin; height: 1vmin; border: .35vmin solid #0C4A6E; border-color: #0C4A6E transparent transparent; border-radius: 50% 50% 0 0; animation: lFlap .5s ease-in-out infinite alternate; }
+  #launch .lbirds i:nth-child(1) { left: 0; top: 2vmin; } #launch .lbirds i:nth-child(2) { left: 3.6vmin; top: 0; animation-delay: -.2s; } #launch .lbirds i:nth-child(3) { left: 7vmin; top: 2.6vmin; animation-delay: -.35s; }
+  @keyframes lFly { to { transform: translate(125vw, -6vh); } } @keyframes lFlap { to { transform: scaleY(.4) translateY(.4vmin); } }
+  #launch .lboat { position: absolute; top: 18%; left: -14vmin; width: 12vmin; animation: lSail 18s linear 1.6s infinite; } #launch .lboat svg { width: 100%; display: block; animation: lBob 2.2s ease-in-out infinite; } @keyframes lSail { to { transform: translateX(120vw); } } @keyframes lBob { 50% { transform: translateY(.6vmin) rotate(-2deg); } }
+  #launch .lname { position: relative; } #launch .lname::after { content: ''; position: absolute; inset: -10% 0; background: linear-gradient(100deg, transparent 35%, rgba(255,255,255,.75) 50%, transparent 65%); background-size: 250% 100%; mix-blend-mode: overlay; animation: lShine 3.2s ease-in-out 2.4s infinite; pointer-events: none; } @keyframes lShine { from { background-position: 130% 0; } to { background-position: -30% 0; } }
+  #launch .lbadge { animation-name: lBadge, lFloat !important; animation-duration: .6s, 3.4s !important; animation-iteration-count: 1, infinite !important; animation-direction: normal, alternate !important; } @keyframes lFloat { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+  #launch.out .lcloud, #launch.out .lbirds, #launch.out .lboat { opacity: 0 !important; transition: opacity .3s; }
   #launch.out .lsun, #launch.out .lstars, #launch.out .lwater, #launch.out .lnew { opacity: 0 !important; transition: opacity .4s; }
   @media (prefers-reduced-motion: reduce) { #launch *, #launch { animation-duration: .01s !important; animation-delay: 0s !important; } }
 </style>
 <div id="launch" role="img" aria-label="Lagos Island is loading">
-  <div class="lstreak"></div><div class="lsky"></div><div class="lstars"></div><div class="lsun"></div>
+  <div class="lstreak"></div><div class="lsky"></div><div class="lstars"></div><div class="lsun"></div><div class="lcloud k1"></div><div class="lcloud k2"></div><div class="lcloud k3"></div><div class="lbirds"><i></i><i></i><i></i></div>
   <div class="lcl c1"></div><div class="lcl c2"></div><div class="lcl c3"></div><div class="lcl c4"></div><div class="lcl c5"></div>
   <div class="lcore"><div class="lbadge"><span class="lring"></span><span class="lring r2"></span><svg viewBox="0 0 24 24"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></div>
     <div class="ltag">WYRD OS</div><div class="lname" id="lname">LAGOS ISLAND</div><div class="lsub">Ikoyi · VI · Eko Atlantic · Lekki · Ajah</div></div>
   <div class="lcity"><svg viewBox="0 0 400 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path fill="rgba(30,58,138,.13)" d="M0 100V78h14v-8h10v10h8V62h12v18h6V54l8-6 8 6v26h10V70h14v10h8V40h4v-8h4v8h4v40h10V66h16v14h6V58h12v22h10V30l6-10 6 10v50h8V72h12v8h6V50h14v30h8V64h10v16h10V46h4V36h6v10h4v34h8V68h14v12h6V58h10v22h10V74h16v6h10V60h12v20h8V70h18v30z"/><path fill="rgba(30,58,138,.2)" d="M0 100V88h30v-6h20v6h40v-10h18v10h50v-4h30v4h40v-8h22v8h50v-6h26v6h74v12z"/><rect x="346" y="40" width="3" height="40" fill="rgba(239,68,68,.45)"/><path class="fl" d="M347.5 40c-3-4-1-8 0-11 1 3 3 7 0 11z" fill="#F97316"/></svg></div>
-  <div class="lwater"></div>
+  <div class="lwater"><div class="lboat"><svg viewBox="0 0 60 30" aria-hidden="true"><path d="M8 20h44l-6 7H14z" fill="#F8FAFC"/><path d="M28 3v17M28 4l14 14H28z" fill="#E0F2FE" stroke="#0C4A6E" stroke-width="1.2"/><path d="M8 20h44" stroke="#0EA5E9" stroke-width="2"/></svg></div></div>
   <div class="lnew">✨ New: live 3D homes · a bigger BQ · sleep in your bed · the library · WYRD Studio</div>
   <div class="ltip" id="ltip"><span></span></div>
   <div class="lbar"><i id="lbari"></i></div><div class="lpct" id="lpct">LOADING 0%</div><div class="lskip">Tap to skip</div><div class="lflash"></div>
