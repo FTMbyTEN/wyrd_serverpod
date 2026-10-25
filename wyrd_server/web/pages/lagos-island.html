@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T13:17:49.834Z">
+<meta name="li-build" content="2026-10-25T13:42:44.559Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -311,7 +311,9 @@
   .app i { width: 60px !important; height: 60px !important; font-size: 28px !important; transition: transform .15s, filter .15s; }
   .app:hover i { transform: translateY(-2px); }
   .dock { margin-top: 20px !important; padding: 12px 8px !important; }
-  #pbody:has(> .dock) { display: flex; flex-direction: column; } #pbody > .dock { margin-top: auto !important; }
+  #pbody:has(> .dock) { display: flex; flex-direction: column; } #pbody > .dock:not(.top) { margin-top: auto !important; }
+  #pbody > .dock.top { margin: 12px 0 6px !important; padding: 12px 6px !important; order: 0; } #pbody > .dock.top .app { font-size: 10.5px !important; font-weight: 800; } /* Link, Wallet, WYRD and Work: first, under your thought */
+  #pbody[data-app="home"] .hsec { margin-top: 14px; } #pbody[data-app="home"] .apps { row-gap: 14px; }
   /* the nav: three keys over a home bar */
   #pnav { position: relative; display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 4px 16px 22px !important; padding: 4px !important; }
   #pnav button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 0 !important; font-size: 12px !important; transition: background .15s, color .15s; }
@@ -1353,7 +1355,8 @@
   #topR .tdj .tdjx:hover { background: #EF4444 !important; } #topR .tdj .tdjx::after { display: none; }
   /* every item the same: 40 px tall, icon then figure then word, centred on one line, the same type throughout */
   #top.pill { align-items: center !important; } #topR { align-items: center !important; height: 40px; }
-  #top.pill { width: auto !important; max-width: calc(100vw - 16px); left: 50% !important; right: auto !important; transform: translateX(-50%) !important; padding: 5px 8px !important; } #topR { margin-left: 4px !important; } /* the bar hugs what's in it */
+  #top.pill { width: max-content; max-width: calc(100vw - 16px); left: 50% !important; right: auto !important; transform: translateX(-50%) !important; padding: 5px 8px !important; } #topR { margin-left: 4px !important; flex: none !important; width: auto !important; min-width: 0 !important; } /* the bar hugs what's in it */
+  #top.pill { transition: width .45s cubic-bezier(.3,1.4,.5,1), padding .3s; } #top.pill > * { transition: opacity .3s; }
   #online, #tWx, #topR button.thome, #topR button.tgov { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 10px !important; font: 600 12.5px 'Plus Jakarta Sans', sans-serif !important; color: #64748B !important; line-height: 1 !important; }
   #online b, #tWx b, .thome b, .tgov b { font: 800 13.5px 'Plus Jakarta Sans', sans-serif !important; color: #0F172A !important; font-variant-numeric: tabular-nums; }
   #online { color: #16A34A !important; } #online i { margin: 0 2px 0 0 !important; }
@@ -1422,10 +1425,25 @@
   #sleepVeil span { padding: 8px 16px; border-radius: 999px; background: rgba(30,27,75,.75); color: #E0E7FF; font: 700 13px 'Plus Jakarta Sans', sans-serif; }
   #clubAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; }
   .touch #clubAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); }
-  #clubAct .ca, #pplAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; color: #fff; background: linear-gradient(145deg, rgba(55,48,70,.82), rgba(18,16,26,.88)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
+  #clubAct .ca, #pplAct .ca, #homeAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; color: #fff; background: linear-gradient(145deg, rgba(55,48,70,.82), rgba(18,16,26,.88)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
   #clubAct .ca svg { width: 26px; height: 26px; } #clubAct .opt svg { width: 22px; height: 22px; }
   #clubAct .opt[data-a=dance] { color: #F9A8D4; } #clubAct .opt[data-a=drink] { color: #FCD34D; } #clubAct .opt[data-a=list] { color: #7DD3FC; }
   #pplAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; } .touch #pplAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); } body.clubFan #pplAct { bottom: calc(266px + env(safe-area-inset-bottom)); } .touch.clubFan #pplAct, body.touch.clubFan #pplAct { bottom: calc(366px + env(safe-area-inset-bottom)); }
+  body.phoneOn #v3btn, body.phoneOn #clubAct, body.phoneOn #pplAct, body.phoneOn #homeAct { display: none !important; } /* the phone in front: the 3D switch and the fans step aside */
+  .hqHero { position: relative; margin: 6px 0 10px; padding: 14px; border-radius: 22px; color: #fff; background: radial-gradient(120% 120% at 100% 0%, rgba(96,165,250,.55), transparent 55%), linear-gradient(140deg, #0F172A, #1E3A8A); box-shadow: 0 14px 30px -12px rgba(30,58,138,.7); }
+  .hqTop { display: flex; gap: 12px; align-items: center; } .hqTop small { display: block; font: 800 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .4px; color: #93C5FD; } .hqTop b { display: block; font: 800 19px 'Plus Jakarta Sans', sans-serif; } .hqTop em { display: block; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; font-style: normal; color: rgba(255,255,255,.7); }
+  .hqGem { width: 26px; height: 38px; flex: none; background: linear-gradient(160deg, #DBEAFE, #60A5FA 45%, #1D4ED8); clip-path: polygon(50% 0, 100% 42%, 50% 100%, 0 42%); filter: drop-shadow(0 0 10px #60A5FA); animation: hqGem 2.6s ease-in-out infinite; } @keyframes hqGem { 50% { transform: translateY(-4px); } }
+  .hqPlan { position: relative; height: 128px; margin: 12px 0 10px; border-radius: 14px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); overflow: hidden; }
+  .hqPlan i { position: absolute; display: grid; place-items: center; align-content: center; gap: 1px; font: 800 9.5px 'Plus Jakarta Sans', sans-serif; font-style: normal; color: rgba(255,255,255,.85); background: rgba(147,197,253,.12); box-shadow: inset 0 0 0 1px rgba(147,197,253,.4); border-radius: 6px; } .hqPlan i span { font-size: 15px; }
+  .hqPlan u { position: absolute; left: 50%; bottom: -2px; transform: translateX(-50%); text-decoration: none; font-size: 13px; }
+  .hqGo { width: 100%; padding: 11px; border: 0; border-radius: 14px; background: #fff; color: #1E3A8A; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+  .hqQa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; } .hqQa button { display: grid; justify-items: center; gap: 4px; padding: 10px 4px; border: 0; border-radius: 16px; background: rgba(99,102,241,.1); color: inherit; font: 800 11.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; } .hqQa button i { font-style: normal; font-size: 20px; }
+  #homeAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; } .touch #homeAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); }
+  #homeAct #haMain { background: linear-gradient(145deg, #38BDF8, #6366F1); } #homeAct .ca svg { width: 24px; height: 24px; } #homeAct .opt svg { width: 21px; height: 21px; }
+  #homeAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; opacity: 0; pointer-events: none; transform: scale(.4); } #homeAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+  #homeAct.open .opt { opacity: 1; pointer-events: auto; } #homeAct.open #haMain { transform: rotate(-12deg) scale(1.06); }
+  #homeAct.open .opt[data-a=arrange] { transform: translate(20px, -74px); color: #86EFAC; } #homeAct.open .opt[data-a=party] { transform: translate(76px, 0); color: #F9A8D4; } #homeAct.open .opt[data-a=ward] { transform: translate(20px, 74px); color: #FCD34D; }
+  body.homeFan #pplAct { bottom: calc(266px + env(safe-area-inset-bottom)); } body.touch.homeFan #pplAct { bottom: calc(366px + env(safe-area-inset-bottom)); }
   #pplAct #paMain { font: 900 20px 'Plus Jakarta Sans', sans-serif; background: linear-gradient(145deg, #0EA5E9, #6366F1); } #pplAct #paMain::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid rgba(14,165,233,.6); animation: paP 1.8s ease-out infinite; } @keyframes paP { to { transform: scale(1.35); opacity: 0; } }
   #pplAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; font-size: 20px; opacity: 0; pointer-events: none; transform: scale(.4); } #pplAct .opt svg { width: 22px; height: 22px; } #pplAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
   #pplAct.open .opt { opacity: 1; pointer-events: auto; } #pplAct.open .opt[data-a=wave] { transform: translate(20px, -74px); } #pplAct.open .opt[data-a=msg] { transform: translate(76px, 0); color: #7DD3FC; } #pplAct.open .opt[data-a=add] { transform: translate(20px, 74px); color: #86EFAC; }
@@ -1490,14 +1508,33 @@
   @keyframes lCoreOut { to { transform: translate(-50%, -50%) scale(2.6); opacity: 0; filter: blur(8px); } }
   @keyframes lPartL { to { transform: translateX(-80vw) scale(1.3); opacity: 0; } } @keyframes lPartR { to { transform: translateX(80vw) scale(1.3); opacity: 0; } } @keyframes lPartD { to { transform: translateY(60vh) scale(1.3); opacity: 0; } }
   @keyframes lSkyOut { to { opacity: 0; transform: scale(1.4); } } @keyframes lFlash { 0% { opacity: .0; } 30% { opacity: .55; } 100% { opacity: 0; } }
+  /* the launcher, at dusk over the lagoon: a warm sky, the first stars, the sun going down behind the skyline, the water
+     catching it, the name in gold */
+  #launch .lsky { background: linear-gradient(180deg, #0B1033 0%, #2E1A5C 32%, #9D3C6B 55%, #F97316 72%, #FDBA74 80%, #1E293B 81%, #0F172A 100%) !important; inset: 0 !important; }
+  #launch .lstars { position: absolute; inset: 0 0 45% 0; opacity: 0; animation: lFade 1.2s ease-out 1s forwards; background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 28% 8%, #fff, transparent), radial-gradient(1.5px 1.5px at 44% 22%, #fff, transparent), radial-gradient(1px 1px at 63% 12%, #fff, transparent), radial-gradient(1.5px 1.5px at 78% 26%, #fff, transparent), radial-gradient(1px 1px at 90% 10%, #fff, transparent), radial-gradient(1px 1px at 6% 34%, #fff, transparent), radial-gradient(1.2px 1.2px at 54% 6%, #fff, transparent); }
+  #launch .lsun { position: absolute; left: 50%; top: 70%; width: 30vmin; height: 30vmin; margin: -15vmin 0 0 -15vmin; border-radius: 50%; background: radial-gradient(circle, #FFF7ED 0%, #FDBA74 35%, rgba(249,115,22,.45) 55%, transparent 70%); opacity: 0; animation: lSun 1.4s ease-out .8s forwards; }
+  @keyframes lSun { from { opacity: 0; transform: translateY(40px) scale(.8); } to { opacity: 1; transform: none; } }
+  #launch .lcl { opacity: .0 !important; display: none; }
+  #launch .lcity { height: 24vh !important; bottom: 18vh !important; } #launch .lcity path { fill: #0B1028 !important; }
+  #launch .lwater { position: absolute; left: 0; right: 0; bottom: 0; height: 19vh; background: linear-gradient(180deg, #1E1B4B, #0B1028); overflow: hidden; opacity: 0; animation: lFade 1s ease-out 1.6s forwards; }
+  #launch .lwater::before { content: ''; position: absolute; left: 50%; top: 0; width: 22vmin; height: 100%; transform: translateX(-50%); background: repeating-linear-gradient(180deg, rgba(253,186,116,.75) 0 3px, transparent 3px 9px); filter: blur(1px); mask: linear-gradient(180deg, #000, transparent); -webkit-mask: linear-gradient(180deg, #000, transparent); animation: lShim 2.4s ease-in-out infinite; }
+  @keyframes lShim { 50% { transform: translateX(-50%) scaleX(1.25); opacity: .7; } }
+  #launch .lname span { background: linear-gradient(180deg, #FFFFFF, #FDE68A 55%, #F59E0B) !important; -webkit-background-clip: text !important; background-clip: text !important; filter: drop-shadow(0 4px 18px rgba(249,115,22,.55)); }
+  #launch .ltag { color: #FDBA74 !important; } #launch .lsub { color: rgba(255,255,255,.75) !important; } #launch .lpct { color: rgba(255,255,255,.7) !important; } #launch .ltip { color: rgba(255,255,255,.85) !important; } #launch .lskip { background: rgba(255,255,255,.12) !important; color: #fff !important; }
+  #launch .lbar { background: rgba(255,255,255,.15) !important; height: 5px !important; } #launch .lbar i { background: linear-gradient(90deg, #F59E0B, #F472B6, #818CF8) !important; box-shadow: 0 0 14px rgba(249,115,22,.8) !important; }
+  #launch .lbadge { background: linear-gradient(135deg, #F59E0B, #DB2777 55%, #6366F1) !important; box-shadow: 0 18px 40px -10px rgba(219,39,119,.7) !important; } #launch .lring { border-color: rgba(253,186,116,.75) !important; }
+  #launch .lnew { position: absolute; left: 50%; top: calc(18px + env(safe-area-inset-top)); transform: translateX(-50%); max-width: 90vw; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); color: #FDE68A; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; animation: lFade .6s ease-out 2.4s forwards; backdrop-filter: blur(6px); }
+  #launch.out .lsun, #launch.out .lstars, #launch.out .lwater, #launch.out .lnew { opacity: 0 !important; transition: opacity .4s; }
   @media (prefers-reduced-motion: reduce) { #launch *, #launch { animation-duration: .01s !important; animation-delay: 0s !important; } }
 </style>
 <div id="launch" role="img" aria-label="Lagos Island is loading">
-  <div class="lstreak"></div><div class="lsky"></div>
+  <div class="lstreak"></div><div class="lsky"></div><div class="lstars"></div><div class="lsun"></div>
   <div class="lcl c1"></div><div class="lcl c2"></div><div class="lcl c3"></div><div class="lcl c4"></div><div class="lcl c5"></div>
   <div class="lcore"><div class="lbadge"><span class="lring"></span><span class="lring r2"></span><svg viewBox="0 0 24 24"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></div>
     <div class="ltag">WYRD OS</div><div class="lname" id="lname">LAGOS ISLAND</div><div class="lsub">Ikoyi · VI · Eko Atlantic · Lekki · Ajah</div></div>
   <div class="lcity"><svg viewBox="0 0 400 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path fill="rgba(30,58,138,.13)" d="M0 100V78h14v-8h10v10h8V62h12v18h6V54l8-6 8 6v26h10V70h14v10h8V40h4v-8h4v8h4v40h10V66h16v14h6V58h12v22h10V30l6-10 6 10v50h8V72h12v8h6V50h14v30h8V64h10v16h10V46h4V36h6v10h4v34h8V68h14v12h6V58h10v22h10V74h16v6h10V60h12v20h8V70h18v30z"/><path fill="rgba(30,58,138,.2)" d="M0 100V88h30v-6h20v6h40v-10h18v10h50v-4h30v4h40v-8h22v8h50v-6h26v6h74v12z"/><rect x="346" y="40" width="3" height="40" fill="rgba(239,68,68,.45)"/><path class="fl" d="M347.5 40c-3-4-1-8 0-11 1 3 3 7 0 11z" fill="#F97316"/></svg></div>
+  <div class="lwater"></div>
+  <div class="lnew">✨ New: live 3D homes · a bigger BQ · sleep in your bed · the library · WYRD Studio</div>
   <div class="ltip" id="ltip"><span></span></div>
   <div class="lbar"><i id="lbari"></i></div><div class="lpct" id="lpct">LOADING 0%</div><div class="lskip">Tap to skip</div><div class="lflash"></div>
 </div>
@@ -1546,6 +1583,7 @@
 <button id="act"></button>
 <div id="clubAct" aria-label="Club actions"><div id="caMain" class="ca" role="button" title="Things to do"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></div><div class="ca opt" data-a="dance" role="button" title="Dance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M8 9l4-1 3 3 3 1"/><path d="M12 8l-1 6 3 3v4"/><path d="M11 14l-3 3-2 4"/></svg><small>Dance</small></div><div class="ca opt" data-a="drink" role="button" title="Drink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 8z"/><path d="M12 12v8"/><path d="M8 20h8"/><path d="M15 4l2-2"/></svg><small>Drink</small></div><div class="ca opt" data-a="list" role="button" title="Who's here"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.3 5 2.6 5 5.8"/></svg><small>Who's here</small></div></div>
 <div id="clubList" role="dialog"></div>
+<div id="homeAct" aria-label="Your home"><div id="haMain" class="ca" role="button" title="Customise your home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></div><div class="ca opt" data-a="arrange" role="button" title="Arrange furniture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M2 12h20v5H2z"/><path d="M5 17v2M19 17v2"/></svg><small>Arrange</small></div><div class="ca opt" data-a="party" role="button" title="Throw a party"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l5-14 9 9z"/><path d="M14 4l.5 2M19 6l-1.5 1.5M20 11l-2-.5"/></svg><small>Party</small></div><div class="ca opt" data-a="ward" role="button" title="Wardrobe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 1 2 2c-1 0-2 .7-2 1.6V9"/><path d="M12 9l-9 7.5a1 1 0 0 0 .7 1.5h16.6a1 1 0 0 0 .7-1.5z"/></svg><small>Wardrobe</small></div></div>
 <div id="sleepVeil"><span>😴 Sleeping… your health is coming back</span></div>
 <div id="pplAct" class="fan" aria-label="Someone close"><div id="paMain" class="ca" role="button" title="Someone close"></div><div class="ca opt" data-a="wave" role="button">👋<small>Wave</small></div><div class="ca opt" data-a="msg" role="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg><small>Message</small></div><div class="ca opt" data-a="add" role="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M19 8v6M16 11h6"/></svg><small>Add friend</small></div></div>
 <div id="hud" aria-label="You"><div class="pic"><div class="fig"><img alt=""></div></div><div class="info"><div class="who"></div><div class="lrow"><div class="loc"></div><button class="home" aria-label="Go home" title="Go home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button></div><div class="bars"></div></div></div>
@@ -1716,6 +1754,7 @@
       hotel: 'M3 20V6M3 13h18v7M21 13a3 3 0 0 0-3-3h-7v3M7 10a1.5 1.5 0 1 0 0 .01',
       beach: 'M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9zM12 12v7M12 19a2 2 0 0 0 4 0M2 21h20',
       wyrdtower: 'M12 2v3M9 21l2-16h2l2 16M7 21h10M10.3 12h3.4M10.8 8h2.4M5 6a9 9 0 0 0 0 8M19 6a9 9 0 0 1 0 8',
+      studio: 'M7 21V5l5-3 5 3v16M5 21h14M10 8h4M10 12h4M10 16h4',
       gallery: 'M12 3a9 9 0 1 0 0 18c1 0 2-.8 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.4-4-8-9-8zM7.5 11h.01M10 7h.01M15 7h.01',
       club: 'M12 2v3M12 5a7 7 0 1 0 0 14 7 7 0 1 0 0-14M5 12h14M12 5c-2 2-3 4.5-3 7s1 5 3 7M12 5c2 2 3 4.5 3 7s-1 5-3 7',
       airport: 'M10 3.5c0-1 2-1 2 0v5.5l8 4.5v2l-8-2.5v4.5l2.5 2v1.5L12 20l-2.5.5V19l2.5-2v-4.5L4 15v-2l6-4.5z',
@@ -1736,8 +1775,10 @@
     g.save(); g.translate(cx - size / 2, cy - size / 2); g.scale(size / 24, size / 24); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(p); g.restore();
   }
   // each landmark's colour, for its pin
-  const PIN_COL = { grid: '#CA8A04', bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
+  const PIN_COL = { studio: '#DB2777', grid: '#CA8A04', bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
   // the landmarks: [type, i, j, wi, dj, name, emoji]
+  // WYRD Studio: ten floors, each for its own craft (the app's design comes later)
+  const STUDIO_FLOORS = [['🎤', 'Lobby and red carpet', 'Premieres, award nights, the press wall', '#F43F5E'], ['🎧', 'Recording studios', 'Booths, a live room, mixing and mastering', '#8B5CF6'], ['🎬', 'Film and TV stage', 'Sound stages, green screen, an edit suite', '#0EA5E9'], ['💃', 'Dance studio', 'Mirrors, sprung floors, choreographers', '#EC4899'], ['😂', 'Comedy club', 'Stand-up nights and open mics', '#F59E0B'], ['🎙️', 'Podcast and radio', 'Soundproof pods, a live radio desk', '#14B8A6'], ['📸', 'Fashion and photo', 'Shoots, a runway, styling', '#A855F7'], ['🎮', 'Gaming and streaming', 'Stream rooms, an esports arena', '#22C55E'], ['🛋️', 'Artist lounge', 'Green rooms, managers, deals', '#EAB308'], ['🌇', 'Rooftop stage', 'Shows under the stars over the lagoon', '#F97316']];
   const PLACES = [
     // Lagos Island
     ['mosque', 5, 7, 3, 3, 'Lagos Central Mosque', '🕌'],
@@ -1773,6 +1814,7 @@
     ['hotel', 16, 14, 3, 2, 'Federal Palace Hotel', '🏨'],
     ['beach', 20, 20, 3, 3, 'Bar Beach', '🏖️'],
     ['beach', 24, 20, 4, 3, 'Kuramo Beach', '🏖️'],
+    ['studio', 13, 22, 3, 3, 'WYRD Studio', '🎬'], // ten floors for the island's entertainers, by Eko Atlantic
     ['wyrdtower', 27, 11, 2, 2, 'WYRD Tower', '⚛️'], // alone on its rock in the lagoon, beside the Link Bridge: strength in solitude
     // Eko Atlantic
     ['skyline', 15, 26, 4, 2, 'Eko Atlantic City', '🏙️'],
@@ -3392,6 +3434,23 @@
     },
     // ---- WYRD Tower: the tallest glass on the island, twisting as it rises (each floor band turned a little more and a
     // little narrower), LED edges spiralling up its corners, an open crown and a spire, the atom turning above
+    studio(a, b, c, d) {
+      const cx = (a + c) / 2, cz = (b + d) / 2, t = performance.now() / 1000, FH = 7.2, hw = (c - a) / 2 - 4, hd = (d - b) / 2 - 4;
+      flat(a + 0.6, b + 0.6, c - 0.6, d - 0.6, 0.04, '#E7E5E4', '#D6D3D1'); // the plaza
+      flat(cx - 3, cz + hd, cx + 3, d - 0.6, 0.06, '#B91C1C'); // the red carpet to the door
+      box(cx - hw - 1.4, 0, cz - hd - 1.4, cx + hw + 1.4, 5, cz + hd + 1.4, '#1F2937'); box(cx - hw - 1.8, 5, cz - hd - 1.8, cx + hw + 1.8, 5.6, cz + hd + 1.8, '#D4AF37'); // the podium, gold-trimmed
+      for (let k = 0; k < 10; k++) { const [, , , col] = STUDIO_FLOORS[k], y0 = 5.6 + k * FH, sh = 1 - k * 0.025, w = hw * sh, dd = hd * sh;
+        box(cx - w, y0, cz - dd, cx + w, y0 + FH - 0.6, cz + dd, '#1E293B', shadeHex(col, 0.55), 1); // the glass of the floor
+        box(cx - w - 0.15, y0 + FH - 0.6, cz - dd - 0.15, cx + w + 0.15, y0 + FH, cz + dd + 0.15, col); } // its colour band
+      const top = 5.6 + 10 * FH;
+      box(cx - hw * 0.7, top, cz - hd * 0.7, cx + hw * 0.7, top + 6, cz + hd * 0.7, '#0F172A'); // the crown
+      faceText('WYRD STUDIO', cx, top + 3, cz + hd * 0.7 + 0.05, '#FDE68A', 0.75, 12);
+      box(cx - 0.3, top + 6, cz - 0.3, cx + 0.3, top + 26, cz + 0.3, '#E5E7EB'); // the spire
+      glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; // floors lit in their colours, a beacon at the tip
+        for (let k = 0; k < 10; k++) { const col = STUDIO_FLOORS[k][3], y = 5.6 + k * FH + FH - 0.3, sh = 1 - k * 0.025, p0 = P(cx - hw * sh, y, cz + hd * sh), p1 = P(cx + hw * sh, y, cz + hd * sh), pulse = 0.55 + 0.45 * Math.sin(t * 2 + k * 0.7);
+          x.strokeStyle = col; x.globalAlpha = 0.5 + 0.5 * pulse * night; x.shadowColor = col; x.shadowBlur = 12; x.lineWidth = Math.max(2, K * 0.5); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+        x.globalAlpha = 1; const b0 = P(cx, top + 26, cz), r = K * (2.4 + Math.sin(t * 3)); const g = x.createRadialGradient(b0[0], b0[1], 0, b0[0], b0[1], r * 3); g.addColorStop(0, 'rgba(244,114,182,0.9)'); g.addColorStop(1, 'rgba(244,114,182,0)'); x.fillStyle = g; x.beginPath(); x.arc(b0[0], b0[1], r * 3, 0, Math.PI * 2); x.fill(); x.restore(); });
+    },
     wyrdtower(a, b, c, d) {
       const cx = (a + c) / 2, cz = (b + d) / 2, t = performance.now() / 1000;
       // the lagoon round it: the whole pool beside the Link Bridge cut back to open water, a stone quay on its edges
@@ -3570,8 +3629,8 @@
       if (c - a > 120) {
         // the fuel farm by the tower: three white tanks on a bunded pad
         flat(c - 30, d - 19, c - 13, d - 9, 0.07, '#A8A29E'); for (let k = 0; k < 3; k++) { cylLit(c - 26 + k * 5.4, d - 14, 2.2, 0, 4.2, '#F8FAFC'); box(c - 27 + k * 5.4, 3, d - 11.9, c - 25 + k * 5.4, 3.6, d - 11.8, '#16A34A'); }
-        // baggage tugs pulling their carts across the apron
-        for (let k = 0; k < 3; k++) { const u = ((t * 0.04 + k / 3) % 1), bx = tA + u * 80, bz = d - 23 - k * 1.6; box(bx, 0.3, bz - 0.6, bx + 1.6, 1.4, bz + 0.6, '#F59E0B'); for (let q = 1; q <= 3; q++) box(bx - q * 2, 0.3, bz - 0.55, bx - q * 2 + 1.6, 1.1, bz + 0.55, ['#94A3B8', '#1D4ED8', '#94A3B8'][q - 1]); }
+        // (the baggage tugs are gone: the apron stays still)
+        if (false) for (let k = 0; k < 3; k++) { const u = ((t * 0.04 + k / 3) % 1), bx = tA + u * 80, bz = d - 23 - k * 1.6; box(bx, 0.3, bz - 0.6, bx + 1.6, 1.4, bz + 0.6, '#F59E0B'); for (let q = 1; q <= 3; q++) box(bx - q * 2, 0.3, bz - 0.55, bx - q * 2 + 1.6, 1.1, bz + 0.55, ['#94A3B8', '#1D4ED8', '#94A3B8'][q - 1]); }
         // the traffic, on one 60-second clock so the runway is never used by two at once. Each plane follows a path and
         // faces the way it is moving (its heading comes from where it goes next), so it can't fly backwards.
         //  arrival:   in from the east over the water, down on runway 27, the roll-out, round on the runway, back along
@@ -4298,7 +4357,7 @@
       }
       return false;
     }
-    G3.queue.push({ cx: it.x, cz: it.z, model: it.k, ang: (it.r || 0) * Math.PI / 2, sc: 1 }); return true;
+    G3.queue.push({ cx: it.x, cz: it.z, model: it.k, ang: (it.r || 0) * Math.PI / 2, sc: it.sc || 1, y: it.y || 0 }); return true;
   }
   // ---- people: real 3D bodies (Quaternius Universal Base Characters, CC0) with hair, animated by the Universal Animation
   // Library (CC0), wearing outfits painted onto the body by a small shader: a top (with sleeves), trousers or a skirt or
@@ -4820,8 +4879,8 @@
     else { V3.extras = null; V3.stage = null; V3.candles = []; V3.inside = v3home(R, grp); }
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
-    if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(2048, 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
-    key.intensity = v3club(R) ? 0.7 : night > 0.5 ? 0.45 : 1.25; grp.add(key, key.target, new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : night > 0.5 ? 0.4 : 0.85)); // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
+    if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(WEAK ? 1024 : 2048, WEAK ? 1024 : 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
+    key.intensity = v3club(R) ? 0.7 : night > 0.5 ? 0.45 : 1.25; const hemi = new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : night > 0.5 ? 0.4 : 0.85); grp.add(key, key.target, hemi); V3.keyL = key; V3.hemiL = hemi; V3.keyBase = key.intensity; V3.hemiBase = hemi.intensity; // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
     G3.scene.add(grp); V3.groups = grp; V3.key = R.key;
   }
   // what the room draws, without the people: its shell and its furniture (recorded, or run only for the glows each frame)
@@ -5000,15 +5059,29 @@
     const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,230,180,1)'); gr.addColorStop(0.3, 'rgba(255,200,130,0.45)'); gr.addColorStop(1, 'rgba(255,170,90,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); const tex = new T3.CanvasTexture(c);
     const nx = Math.max(1, Math.round(R.w / 32)), nz = Math.max(1, Math.round(R.d / 32));
     for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) { const lx = R.w * (i + 0.5) / nx, lz = R.d * (j + 0.5) / nz;
-      const l = new T3.PointLight(0xffd9a0, nt ? 260 : 90, 46, 1.5); l.position.set(lx, 15, lz); if (!MOBILE && i === 0 && j === 0) { l.castShadow = true; l.shadow.mapSize.set(1024, 1024); } grp.add(l);
+      const l = new T3.PointLight(0xffd9a0, nt ? 260 : 90, 46, 1.5); l.position.set(lx, 15, lz); if (!MOBILE && !WEAK && i === 0 && j === 0) { l.castShadow = true; l.shadow.mapSize.set(512, 512); } grp.add(l);
       const shade = new T3.Mesh(new T3.CylinderGeometry(1.4, 2.2, 1.1, 20, 1, true), new T3.MeshStandardMaterial({ color: 0xf5e6c8, emissive: 0xffc070, emissiveIntensity: nt ? 0.9 : 0.25, side: T3.DoubleSide })); shade.position.set(lx, 16.4, lz); grp.add(shade);
       const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: nt ? 0.8 : 0.25 })); s.position.set(lx, 15.6, lz); s.scale.set(7, 7, 1); grp.add(s); inn.lamps.push([l, s]); }
+    { const st = new T3.SpotLight(0xffb066, 0, 140, 0.5, 0.9, 1.1); st.position.set(R.w * 0.42, 12, R.d + 12); st.target.position.set(R.w * 0.4, 0, R.d * 0.4); grp.add(st, st.target); inn.street = st; } // a street lamp outside, through the front windows
+    if (R.kind === 'hq') { // the TV: a real screen, showing what's on
+      const c = document.createElement('canvas'); c.width = 256; c.height = 144; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
+      const m = new T3.Mesh(new T3.PlaneGeometry(10.4, 5.8), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(55, 6.1, 26.12); grp.add(m); inn.tv = { c, g: c.getContext('2d'), tex, m, at: 0 };
+      inn.tvLight = new T3.PointLight(0x88aaff, 0, 30, 1.6); inn.tvLight.position.set(55, 6, 30); grp.add(inn.tvLight); }
     if (!nt) { const sun = new T3.SpotLight(0xfff4d6, 900, 120, 0.6, 0.8, 1.2); sun.position.set(R.w * 0.3, 30, -10); sun.target.position.set(R.w * 0.45, 0, R.d * 0.45); grp.add(sun, sun.target); } // daylight in through the back window
     return inn;
   }
   function v3homeLive(R, now) {
     const inn = V3.inside; if (!inn) return; const t = now / 1000, party = partyAt(R.key);
-    inn.lamps.forEach(([l, s], k) => { const base = night > 0.5 ? 260 : 90; if (party) { l.color.setHSL(((t * 40 + k * 90) % 360) / 360, 0.9, 0.6); l.intensity = base * 1.3; } else { l.color.setHex(0xffd9a0); l.intensity = base * (1 + 0.02 * Math.sin(t * 2 + k)); } s.material.color.copy(l.color); });
+    const D = devState(R), off = !D.lamps;
+    if (V3.keyL) { V3.keyL.intensity = V3.keyBase * (off && night > 0.4 ? 0.25 : 1); V3.hemiL.intensity = V3.hemiBase * (off && night > 0.4 ? 0.22 : 1); }
+    if (inn.street) inn.street.intensity = night > 0.4 ? (off ? 1400 : 250) : 0;
+    if (inn.tv) { const tv = inn.tv; tv.m.material.color.setScalar(D.tv ? 1 : 0.03); inn.tvLight.intensity = D.tv ? 70 + 30 * Math.sin(t * 3) : 0;
+      if (D.tv && now - tv.at > 90) { tv.at = now; const g = tv.g, W2 = 256, H2 = 144, ch = Math.floor(t / 12) % 3; // three channels, turning over every 12 seconds
+        if (ch === 0) { const gr = g.createLinearGradient(0, 0, 0, H2); gr.addColorStop(0, '#F97316'); gr.addColorStop(0.55, '#FDE68A'); gr.addColorStop(0.56, '#0E7490'); gr.addColorStop(1, '#083344'); g.fillStyle = gr; g.fillRect(0, 0, W2, H2); g.fillStyle = '#FEF3C7'; g.beginPath(); g.arc(128, 78 - Math.sin(t * 0.2) * 6, 18, 0, Math.PI * 2); g.fill(); g.fillStyle = '#0B0F19'; for (let k = 0; k < 9; k++) g.fillRect(10 + k * 28, 70 - (k * 37 % 30), 18, 30 + (k * 37 % 30)); }
+        else if (ch === 1) { g.fillStyle = '#7C2D12'; g.fillRect(0, 0, W2, H2); for (let k = 0; k < 2; k++) { const px = 80 + k * 90 + Math.sin(t * 1.5 + k) * 6; g.fillStyle = k ? '#FCD34D' : '#F472B6'; g.fillRect(px - 14, 40, 28, 70); g.fillStyle = '#7C4A2D'; g.beginPath(); g.arc(px, 30, 13, 0, Math.PI * 2); g.fill(); } g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(0, 116, W2, 28); g.fillStyle = '#fff'; g.font = '700 13px sans-serif'; g.fillText('"You no go chop that money!"', 30, 134); }
+        else { g.fillStyle = '#0B1E4A'; g.fillRect(0, 0, W2, H2); g.fillStyle = '#1D4ED8'; g.fillRect(14, 18, 110, 80); g.fillStyle = '#E2E8F0'; g.font = '800 14px sans-serif'; g.fillText('ISLAND NEWS', 140, 40); g.font = '600 11px sans-serif'; g.fillText('Live from Marina', 140, 58); g.fillStyle = '#DC2626'; g.fillRect(0, 112, W2, 32); g.fillStyle = '#fff'; g.font = '700 12px sans-serif'; g.fillText('BREAKING · Third Mainland Bridge traffic moving · NEPA restores light to Ikoyi · ', 260 - ((t * 40) % 760), 132); }
+        g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '800 10px sans-serif'; g.fillText(['AFRO TV', 'NOLLY+', 'ISLAND 24'][ch], 8, 12); tv.tex.needsUpdate = true; } }
+    inn.lamps.forEach(([l, s], k) => { const base = (night > 0.5 ? 260 : 90) * (off ? 0 : 1); s.visible = !off; if (party) { l.color.setHSL(((t * 40 + k * 90) % 360) / 360, 0.9, 0.6); l.intensity = base * 1.3; } else { l.color.setHex(0xffd9a0); l.intensity = base * (1 + 0.02 * Math.sin(t * 2 + k)); } s.material.color.copy(l.color); });
     v3wallsFade(inn.walls);
   }
   function v3insideLive(R, now) {
@@ -5708,10 +5781,10 @@
   // your home's marker: a soft blue diamond hovering over it, turning slowly, bobbing, with a halo and a faint beam down
   const gemQ = []; // drawn over the map, after night falls on it, so it always glows
   function ownerGem(gx, gz, gy) {
-    if (REC) return; const t = performance.now() / 1000, y = gy + Math.sin(t * 1.6) * 0.8, c = P(gx, y, gz), g0 = P(gx, 0, gz), r = Math.max(10, K * 3.2), h = r * 1.5, tw = Math.cos(t * 1.2);
+    if (REC) return; const t = performance.now() / 1000, y = gy + Math.sin(t * 1.6) * 0.8, c = P(gx, y, gz), g0 = P(gx, 0, gz), r = Math.max(5, K * 1.6), h = r * 1.5, tw = Math.cos(t * 1.2);
     gemQ.push(() => { x.save(); x.globalCompositeOperation = 'lighter';
       let g = x.createLinearGradient(c[0], c[1], g0[0], g0[1]); g.addColorStop(0, 'rgba(96,165,250,0.28)'); g.addColorStop(1, 'rgba(96,165,250,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(c[0] - r * 0.35, c[1]); x.lineTo(c[0] + r * 0.35, c[1]); x.lineTo(g0[0] + r * 0.9, g0[1]); x.lineTo(g0[0] - r * 0.9, g0[1]); x.fill(); // the beam
-      g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], r * 3.2); g.addColorStop(0, 'rgba(147,197,253,0.55)'); g.addColorStop(1, 'rgba(59,130,246,0)'); x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], r * 3.2, 0, Math.PI * 2); x.fill(); x.restore(); // the halo
+      g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], r * 3.2); g.addColorStop(0, 'rgba(147,197,253,0.45)'); g.addColorStop(1, 'rgba(59,130,246,0)'); x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], r * 3.2, 0, Math.PI * 2); x.fill(); x.restore(); // the halo
       x.save(); x.shadowColor = '#60A5FA'; x.shadowBlur = 18; const w = r * (0.55 + 0.45 * Math.abs(tw)), top = [c[0], c[1] - h], bot = [c[0], c[1] + h * 0.9], L = [c[0] - w, c[1] - h * 0.15], Rr = [c[0] + w, c[1] - h * 0.15], m = [c[0] + w * 0.35 * Math.sign(tw || 1), c[1] - h * 0.15];
       const face = (pts, col) => { x.fillStyle = col; x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const q of pts.slice(1)) x.lineTo(q[0], q[1]); x.closePath(); x.fill(); };
       face([top, L, m], '#BFDBFE'); face([top, m, Rr], '#60A5FA'); face([bot, L, m], '#3B82F6'); face([bot, m, Rr], '#1D4ED8'); x.shadowBlur = 0; // four facets, light from the top left
@@ -5836,7 +5909,7 @@
   }
   if (/^(localhost|127.)/.test(location.hostname)) Object.assign(window, { __nt: NT, __at: at, __places: PLACES, __cam: cam, __open: openPhone, __render: render, __bAt: (x2, y2) => buildingAt(x2, y2), __tap: (x2, y2) => tapAt(x2, y2), __P: (a2, b2, c2) => P(a2, b2, c2) });
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { grid: 36, bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { studio: 120, grid: 36, bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -6446,7 +6519,7 @@
     ['rugDoormat', 'Doormat', 'Decor', 'rug', 3, 2, 2000], ['trashcan', 'Bin', 'Decor', 'plant', 1.6, 1.6, 2500], ['plantSmall1', 'Small plant', 'Decor', 'plant', 1.4, 1.4, 3500], ['plantSmall3', 'Cactus', 'Decor', 'plant', 1.4, 1.4, 4000],
     ['pottedPlant', 'Potted palm', 'Decor', 'plant', 2.6, 2.6, 9000], ['rugRectangle', 'Rug', 'Decor', 'rug', 9, 6, 10000], ['rugSquare', 'Square rug', 'Decor', 'rug', 6, 6, 18000], ['rugRound', 'Round rug', 'Decor', 'rug', 7, 7, 30000], ['rugRounded', 'Wool rug', 'Decor', 'rug', 10, 7, 55000],
     ['coatRackStanding', 'Coat stand', 'Decor', 'lamp', 1.8, 1.8, 9000], ['bench', 'Bench', 'Decor', 'chair', 6, 2.4, 15000], ['benchCushion', 'Cushioned bench', 'Decor', 'chair', 6, 2.4, 32000],
-    ['lampRoundFloor', 'Floor lamp', 'Decor', 'lamp', 2, 2, 14000], ['lampSquareFloor', 'Designer floor lamp', 'Decor', 'lamp', 2, 2, 72000],
+    ['lampRoundFloor', 'Floor lamp', 'Decor', 'lamp', 2, 2, 14000], ['laptop', 'Laptop', 'Office', 'plant', 2, 1.4, 250000], ['lampSquareFloor', 'Designer floor lamp', 'Decor', 'lamp', 2, 2, 72000],
     ['loungeChair', 'Armchair', 'Living', 'armchair', 4, 4, 18000], ['loungeSofa', 'Two-seater sofa', 'Living', 'sofa', 7, 3.6, 45000], ['loungeChairRelax', 'Recliner', 'Living', 'armchair', 4.4, 5, 65000],
     ['loungeSofaLong', 'Three-seater sofa', 'Living', 'sofa', 9, 3.6, 120000], ['loungeDesignChair', 'Designer armchair', 'Living', 'armchair', 4, 4, 240000], ['loungeSofaOttoman', 'Sofa and ottoman', 'Living', 'sofa', 9, 6, 280000],
     ['loungeSofaCorner', 'Corner sofa', 'Living', 'sofa', 9, 9, 420000], ['loungeDesignSofa', 'Designer sofa', 'Living', 'sofa', 9, 4, 750000], ['loungeDesignSofaCorner', 'Designer corner suite', 'Living', 'sofa', 10, 10, 1500000],
@@ -8004,7 +8077,7 @@
     townhouse: { k: [16, 20], b: [13, 11], bed: [15, 14], cab: '#14532D', top: '#E7E5E4', acc: '#B45309', stairs: 1, study: 1 },
     loft:      { k: [16, 24], b: [14, 12], bed: [18, 16], cab: '#1F2937', top: '#A8A29E', acc: '#F97316', island: 1 },
     mansion:   { k: [20, 26], b: [16, 14], bed: [20, 18], cab: '#FFFDF8', top: '#D6D3D1', acc: '#D4AF37', stairs: 2, bar: 1, island: 1 },
-    bq:        { k: [18, 30], b: [30, 24], bed: [30, 29.4], cab: '#F5F0E6', top: '#3F3F46', acc: '#B08A43', island: 1 }, // your free BQ on HQ Row
+    bq:        { k: [18, 30], b: [30, 24], bed: [40, 35.4], cab: '#F5F0E6', top: '#3F3F46', acc: '#B08A43', island: 1 }, // your free BQ on HQ Row
     villa:     { k: [22, 26], b: [18, 14], bed: [22, 18], cab: '#F8FAFC', top: '#0F172A', acc: '#38BDF8', bar: 1, island: 1, pool: 1 },
     nml:       { k: [26, 32], b: [22, 16], bed: [30, 22], cab: '#0B0B0B', top: '#F5F5F4', acc: '#D4AF37', bar: 1, island: 1, pool: 1 }, // a No Man's Land mansion
   };
@@ -8293,7 +8366,7 @@
   const BQ_ROOMS = {
     living: { name: 'Living room', r: [0, 14, 84, 76], f: 'matte', w: '#F7F3EC' },
     kitchen: { name: 'Kitchen', r: [14, 0, 60, 14], f: 'tiles', w: '#F7F3EC' },
-    bedroom: { name: 'Bedroom', r: [0, 40.6, 30, 70], f: 'carpet', w: '#E0F2FE' },
+    bedroom: { name: 'Bedroom', r: [0, 34.6, 40, 70], f: 'carpet', w: '#E0F2FE' },
     study: { name: 'Library', r: [80, 42.6, 112, 70], f: 'oak', w: '#DCFCE7' },
     bath: { name: 'Bathroom', r: [82, 0, 112, 24], f: 'tiles', w: '#E0F2FE' },
   };
@@ -8312,12 +8385,12 @@
     R.bedFloor = (FLOORS[roomFin(R, 'bedroom').f] || FLOORS.carpet)[1];
     const wall = (x0, z0, x1, z1, col) => { box(x0, 0, z0, x1, 3.6, z1, col); box(x0, 3.6, z0, x1, 3.8, z1, shadeHex(col, 0.8)); }; // cut away low, so you see in
     const bw = roomFin(R, 'bedroom').w, sw = roomFin(R, 'study').w;
-    wall(0, 40, 30, 40.6, bw); wall(29.4, 40.6, 30, 62, bw); // the bedroom: its door at the front, by the living room
+    wall(0, 34, 40, 34.6, bw); wall(39.4, 34.6, 40, 62, bw); // the bedroom: its door at the front, by the living room
     wall(80, 42, 112, 42.6, sw); wall(79.4, 42, 80, 62, sw); // the library, the same on the other side
     wall(82, 24, 112, 24.6, roomFin(R, 'bath').w); wall(81.4, 0, 82, 16, roomFin(R, 'bath').w); // the bathroom: tiled walls round it, its door by the living room
     // a band of each room's colour on the back and side walls it touches
     const band = (pts, col) => quad(pts.map(([px, py, pz]) => P(px, py, pz)), col);
-    band([[0.06, 0.7, 40.6], [0.06, 0.7, 70], [0.06, 13, 70], [0.06, 13, 40.6]], bw);
+    band([[0.06, 0.7, 34.6], [0.06, 0.7, 70], [0.06, 13, 70], [0.06, 13, 34.6]], bw);
     band([[14, 0.7, 0.06], [60, 0.7, 0.06], [60, 3.2, 0.06], [14, 3.2, 0.06]], roomFin(R, 'living').w);
     // the library: bookcases floor to ceiling on two walls with a rolling ladder, a reading chair and lamp on a round rug, a
     // writing desk with a laptop and a green banker's lamp, a globe
@@ -8325,16 +8398,18 @@
       const shelf = (along, f0, f1, at, dir) => { // a bookcase: its carcass, shelves every 2.4, rows of book spines
         if (along === 'z') { box(dir > 0 ? at : at - 1.6, 0, f0, dir > 0 ? at + 1.6 : at, 15, f1, '#3F2A1D'); for (let y = 1.2; y < 15; y += 2.4) { box(dir > 0 ? at + 1.6 : at - 1.7, y, f0 + 0.2, dir > 0 ? at + 1.7 : at - 1.6, y + 0.18, f1 - 0.2, '#A16207'); for (let z = f0 + 0.4, k = 0; z < f1 - 0.6; k++) { const w = 0.35 + ((k * 7 + y * 3) % 4) * 0.1, h = 1.4 + ((k * 5 + y) % 3) * 0.25, lean = k % 11 === 5; box(dir > 0 ? at + 1.7 : at - 2.2, y + 0.18, z, dir > 0 ? at + 2.2 : at - 1.7, y + 0.18 + (lean ? h * 0.8 : h), z + w, BK[(k * 3 + Math.round(y)) % BK.length]); z += w + 0.05; } } }
         else { box(f0, 0, at, f1, 15, at + 1.6, '#3F2A1D'); for (let y = 1.2; y < 15; y += 2.4) { box(f0 + 0.2, y, at + 1.6, f1 - 0.2, y + 0.18, at + 1.7, '#A16207'); for (let px = f0 + 0.4, k = 0; px < f1 - 0.6; k++) { const w = 0.35 + ((k * 7 + y * 3) % 4) * 0.1, h = 1.4 + ((k * 5 + y) % 3) * 0.25; box(px, y + 0.18, at + 1.7, px + w, y + 0.18 + h, at + 2.2, BK[(k * 3 + Math.round(y)) % BK.length]); px += w + 0.05; } } } };
-      shelf('z', 44, 68, 112, -1); shelf('x', 84, 108, 42.6, 1);
+      const real = (k, px, pz, r, y, sc) => furn3d({ k: 'k:' + k, x: px, z: pz, r, y, sc });
+      let rz = true; for (let z = 46; z <= 66; z += 4) rz = real('bookcaseOpen', 110.6, z, 3, 0, 1) && rz; for (let px = 86; px <= 106; px += 4) rz = real('bookcaseOpen', px, 44.2, 0, 0, 1) && rz;
+      if (!rz) { shelf('z', 44, 68, 112, -1); shelf('x', 84, 108, 42.6, 1); }
       box(107.6, 0, 50, 107.8, 14, 50.2, '#78350F'); box(107.6, 0, 52.4, 107.8, 14, 52.6, '#78350F'); for (let y = 1.5; y < 14; y += 1.6) box(107.55, y, 50, 107.85, y + 0.15, 52.6, '#92400E'); // the rolling ladder
       flat(86, 54, 100, 66, 0.03, '#7C2D12'); flat(87, 55, 99, 65, 0.035, '#B45309'); flat(89, 57, 97, 63, 0.04, '#FDE68A'); // the rug
-      box(89, 0, 58, 94, 2, 63, '#7C2D12'); box(89, 2, 62, 94, 6, 63, '#7C2D12'); box(89, 2, 58, 89.8, 3.4, 63, '#7C2D12'); box(93.2, 2, 58, 94, 3.4, 63, '#7C2D12'); box(89.8, 2, 58.2, 93.2, 2.5, 62, '#9A3412'); // the reading chair
-      box(96, 0, 60, 96.3, 9, 60.3, '#1F2937'); cylLit(96.15, 60.15, 1.1, 9, 1.3, '#FDE68A'); // the floor lamp
+      if (!real('loungeChairRelax', 91.5, 60.5, 2, 0, 1)) { box(89, 0, 58, 94, 2, 63, '#7C2D12'); box(89, 2, 62, 94, 6, 63, '#7C2D12'); box(89, 2, 58, 89.8, 3.4, 63, '#7C2D12'); box(93.2, 2, 58, 94, 3.4, 63, '#7C2D12'); box(89.8, 2, 58.2, 93.2, 2.5, 62, '#9A3412'); } // the reading chair
+      if (!real('lampRoundFloor', 96.2, 60.2, 0, 0, 1.4)) { box(96, 0, 60, 96.3, 9, 60.3, '#1F2937'); cylLit(96.15, 60.15, 1.1, 9, 1.3, '#FDE68A'); } // the floor lamp
       if (night > 0.4) glow.push(() => { const l = P(96.15, 9.5, 60.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(l[0], l[1], 0, l[0], l[1], K * 6); g.addColorStop(0, 'rgba(255,210,140,0.55)'); g.addColorStop(1, 'rgba(255,170,80,0)'); x.fillStyle = g; x.beginPath(); x.arc(l[0], l[1], K * 6, 0, Math.PI * 2); x.fill(); x.restore(); });
-      box(84, 0, 46, 96, 2.8, 50, '#5C3A1B'); box(83.7, 2.8, 45.7, 96.3, 3.05, 50.3, '#78350F'); // the writing desk
-      box(88, 3.05, 47, 91, 3.2, 48.8, '#1F2937'); quad([P(88.1, 3.2, 47), P(90.9, 3.2, 47), P(90.9, 5.1, 46.8), P(88.1, 5.1, 46.8)], night > 0.5 ? '#38BDF8' : '#334155', '#111827'); // the laptop
+      if (!real('desk', 90, 48, 0, 0, 1.6)) { box(84, 0, 46, 96, 2.8, 50, '#5C3A1B'); box(83.7, 2.8, 45.7, 96.3, 3.05, 50.3, '#78350F'); } // the writing desk
+      if (!real('laptop', 89.5, 48, 0, 3.0, 1.2)) { box(88, 3.05, 47, 91, 3.2, 48.8, '#1F2937'); quad([P(88.1, 3.2, 47), P(90.9, 3.2, 47), P(90.9, 5.1, 46.8), P(88.1, 5.1, 46.8)], night > 0.5 ? '#38BDF8' : '#334155', '#111827'); } // the laptop: it runs WYRD OS
       box(93.2, 3.05, 47.2, 93.5, 4.6, 47.5, '#B45309'); box(92.4, 4.6, 46.9, 94.3, 5.3, 47.8, '#15803D'); // the banker's lamp
-      box(88.5, 0, 51, 91.5, 2, 53.5, '#111827'); box(88.5, 2, 53.1, 91.5, 4.8, 53.5, '#111827'); // the desk chair
+      if (!real('chairDesk', 90, 52.5, 2, 0, 1.2)) { box(88.5, 0, 51, 91.5, 2, 53.5, '#111827'); box(88.5, 2, 53.1, 91.5, 4.8, 53.5, '#111827'); } // the desk chair
       cylLit(101, 47, 0.25, 0, 2.6, '#A16207'); sphere(101, 47, 1.2, '#2563EB'); }
   }
   function drawApartment(R) {
@@ -8375,12 +8450,16 @@
       box(30.6 + ox, 2.2, cz - 0.15, 31.4 + ox, 2.8, cz + 0.15, '#111827'); box(25.5 + ox, 2.8, cz - 0.15, 36.5 + ox, 9.4, cz + 0.05, '#0B0F19'); // the TV
       { const s0 = P(25.9 + ox, 3.2, cz + 0.07), s1 = P(36.1 + ox, 3.2, cz + 0.07), s2 = P(36.1 + ox, 9, cz + 0.07), s3 = P(25.9 + ox, 9, cz + 0.07), hue = (t * 12) % 360, g = x.createLinearGradient(s3[0], s3[1], s1[0], s1[1]); g.addColorStop(0, `hsl(${hue},70%,45%)`); g.addColorStop(1, `hsl(${(hue + 60) % 360},75%,30%)`); quad([s0, s1, s2, s3], devState(R).tv ? g : '#05070D'); if (devState(R).tv) glow.push(() => { const p = P(31, 6, cz + 2), gg = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 9); gg.addColorStop(0, `hsla(${hue},80%,60%,0.35)`); gg.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = gg; x.beginPath(); x.arc(p[0], p[1], K * 9, 0, Math.PI * 2); x.fill(); x.restore(); }); }
       for (const px of [21.5 + ox, 40.5 + ox]) { cylLit(px, cz, 0.9, 0, 1.6, '#E7E5E4'); for (let k = 0; k < 5; k++) { const an = k * 1.26 + 0.4, p0 = P(px, 1.6, cz), p1 = P(px + Math.cos(an) * 1.6, 4.4 + (k % 2) * 1.2, cz + Math.sin(an) * 0.8); x.strokeStyle = k % 2 ? '#15803D' : '#22C55E'; x.lineWidth = Math.max(1.5, K * 0.5); x.lineCap = 'round'; x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); } } // plants
-      box(0, 13, 25, 1.3, 15.2, 31, '#F8FAFC'); box(1.3, 13.3, 25.4, 1.35, 13.6, 30.6, '#CBD5E1'); { const l = P(1.36, 14.6, 30.2); x.fillStyle = '#22C55E'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } // the split AC
+      box(0, 13, 20, 1.3, 15.2, 26, '#F8FAFC'); box(1.3, 13.3, 20.4, 1.35, 13.6, 25.6, '#CBD5E1'); { const l = P(1.36, 14.6, 25.2); x.fillStyle = '#22C55E'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } // the split AC
       { const hub = [55, 16.5, 37]; box(hub[0] - 0.12, hub[1], hub[2] - 0.12, hub[0] + 0.12, 18, hub[2] + 0.12, '#A8A29E'); const h = P(...hub); x.save(); x.lineCap = 'round'; x.strokeStyle = '#78350F'; x.lineWidth = Math.max(2, K * 0.7);
         for (let k = 0; k < 3; k++) { const an = (devState(R).fan ? t * 5 : 0.4) + k * Math.PI * 2 / 3, e = P(hub[0] + Math.cos(an) * 4.2, hub[1], hub[2] + Math.sin(an) * 4.2); x.beginPath(); x.moveTo(h[0], h[1]); x.lineTo(e[0], e[1]); x.stroke(); }
         x.fillStyle = '#D6D3D1'; x.beginPath(); x.arc(h[0], h[1], Math.max(2, K * 0.6), 0, Math.PI * 2); x.fill(); x.restore(); } // the ceiling fan
       box(20, 0, R.d - 3.6, 23, 3.4, R.d - 2.2, '#1F2937'); box(23.4, 0, R.d - 3.4, 26, 2.2, R.d - 2.4, '#334155'); { const l = P(21.5, 2.6, R.d - 2.18); x.fillStyle = Math.floor(t) % 2 ? '#22C55E' : '#166534'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.2), 0, Math.PI * 2); x.fill(); } // the inverter and battery
       if (dark) glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; x.lineCap = 'round'; x.strokeStyle = 'rgba(255,190,110,0.5)'; x.shadowColor = '#FDBA74'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); const a0 = P(0.2, 17.6, R.d), a1 = P(0.2, 17.6, 0.2), a2 = P(R.w, 17.6, 0.2); x.moveTo(a0[0], a0[1]); x.lineTo(a1[0], a1[1]); x.lineTo(a2[0], a2[1]); x.stroke(); x.restore(); }); }
+    if (night > 0.4 && !devState(R).lamps) glow.unshift(() => { x.save(); x.fillStyle = 'rgba(2,6,23,0.62)'; x.fillRect(0, 0, W, H); x.globalCompositeOperation = 'lighter'; // lights off: dark, but for the street lamps outside
+      for (const [wx, wz, sx, sz] of [[R.w * 0.25, R.d, 0, -1], [R.w * 0.75, R.d, 0, -1], [0, 25, 1, 0]]) { const a0 = P(wx - (sz ? 3 : 0), 12, wz - (sx ? 3 : 0)), a1 = P(wx + (sz ? 3 : 0), 12, wz + (sx ? 3 : 0)), f0 = P(wx - (sz ? 6 : -sx * 16), 0.05, wz + (sz ? sz * 18 : -4)), f1 = P(wx + (sz ? 6 : sx * 16), 0.05, wz + (sz ? sz * 18 : 4));
+        const g = x.createLinearGradient(a0[0], a0[1], (f0[0] + f1[0]) / 2, (f0[1] + f1[1]) / 2); g.addColorStop(0, 'rgba(255,176,90,0.32)'); g.addColorStop(1, 'rgba(255,176,90,0)'); x.fillStyle = g; x.beginPath(); x.moveTo(a0[0], a0[1]); x.lineTo(a1[0], a1[1]); x.lineTo(f1[0], f1[1]); x.lineTo(f0[0], f0[1]); x.fill(); }
+      x.restore(); });
     devFx(R);
     // by the door: a shoe rack and a mirror on a stand
     box(R.w / 2 + 6, 0, R.d - 2.2, R.w / 2 + 9, 1.4, R.d - 1.2, '#78350F'); for (let k = 0; k < 3; k++) box(R.w / 2 + 6.3 + k * 0.9, 1.4, R.d - 2, R.w / 2 + 6.9 + k * 0.9, 1.8, R.d - 1.4, ['#111827', '#F8FAFC', '#B91C1C'][k]);
@@ -8606,14 +8685,14 @@
   const decoEl = document.getElementById('deco'), askEl = document.getElementById('ask');
   function setDeco() {
     askEl.style.display = 'none'; // talking to WYRD is in the WYRD app
+    const ha = document.getElementById('homeAct'); ha.style.display = 'none'; document.body.classList.remove('homeFan');
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
     if (!deco) {
-      decoEl.classList.remove('bm');
-      decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>' + (isHome() ? `<button class="dbtn" id="dParty">🎉 ${partyAt(inside.key) ? 'Your party' : 'Throw a party'}</button><button class="dbtn" id="dWard">👔 Wardrobe</button>` : '');
-      document.getElementById('dOn').onclick = () => { deco = { pick: null, carry: null, drag: null, undo: [], redo: [], dirty: false, tab: 'All' }; setDeco(); };
-      if (isHome()) document.getElementById('dParty').onclick = () => { partyDraft.key = inside.key; openPhone('parties', { key: inside.key }); };
-      if (isHome()) document.getElementById('dWard').onclick = () => openPhone('fashion', { tab: 'wardrobe' }); // change into anything you own
+      decoEl.classList.remove('bm'); decoEl.style.display = 'none'; decoEl.innerHTML = ''; // customising your home: the fan by the door
+      const ha = document.getElementById('homeAct'); ha.style.display = 'block'; ha.classList.remove('open'); document.body.classList.add('homeFan');
+      ha.querySelectorAll('[data-a=party], [data-a=ward]').forEach((b) => (b.style.display = isHome() ? '' : 'none'));
+      ha.querySelector('[data-a=party] small').textContent = partyAt(inside.key) ? 'Your party' : 'Party';
       return;
     }
     decoEl.classList.add('bm'); decoEl.innerHTML = bmTray(); bmWire();
@@ -8635,12 +8714,14 @@
   const hit2 = (a, b) => a[0] < b[2] - 0.05 && a[2] > b[0] + 0.05 && a[1] < b[3] - 0.05 && a[3] > b[1] + 0.05;
   function bmBlocks(R) { // the low walls and built-ins nothing stands in (the BQ's; a bought home has its own fit-out)
     if (R.kind !== 'hq') return [];
-    return [[0, 26, 18, 26.6], [17.4, 26.6, 18, 40], [58, 30, 76, 30.6], [57.4, 30, 58, 40], [19, 0, 40, 3.2], [61.4, 0, 76, 12.6], [0, 33, 2.6, 46], [19.6, R.d - 3.8, 26.4, R.d]];
+    return [[0, 34, 40, 34.6], [39.4, 34.6, 40, 62], [80, 42, 112, 42.6], [79.4, 42, 80, 62], [82, 24, 112, 24.6], [81.4, 0, 82, 16], // the partitions (the BQ grew to 112 by 76)
+      [17, 0, 52, 3.2], [23.4, 9.7, 42.6, 13.3], [82, 0, 112, 24], [0, 35, 2.6, 69], [47.5, 25, 62.5, 27], [108.6, 44, 112, 68], [84, 42.6, 108, 46], [83.7, 45.7, 96.3, 50.3], [19.6, R.d - 3.8, 26.4, R.d]]; // the kitchen, its island, the bathroom, the wardrobe, the TV, the library's shelves and desk, the inverter
   }
   function bmFits(R, it) {
     const f = fpOf(it); if (!f) return false;
     if (f[0] < 0.5 || f[1] < 0.5 || f[2] > R.w - 0.5 || f[3] > R.d - 0.5) return false;
     if (f[3] > R.d - 3 && f[0] < R.w / 2 + 3 && f[2] > R.w / 2 - 3) return false; // the doorway stays clear
+    if (deco && deco.free) return true; // move objects (the Sims cheat): anything goes, anywhere inside
     if (!isRugK(it)) for (const b of bmBlocks(R)) if (hit2(f, b)) return false;
     for (const o of R.layout) { if (o === it || isRugK(o) !== isRugK(it)) continue; const g = fpOf(o); if (g && hit2(f, g)) return false; }
     return true;
@@ -8740,12 +8821,12 @@
         ${deco.carry ? '<button class="dbtn" id="bmX">✕ Cancel</button>' : `<button class="dbtn" id="bmCopy" title="Copy">⧉ Copy</button><button class="dbtn" id="bmDel" title="Put away (Del)">${isHome() && STORE[ctx.k] ? '📦 Put away' : '🗑 Remove'}</button>`}</div>` : '<div class="bmCtx"><small>Pick a piece below, or drag one in the room to move it.</small></div>';
     return `${head}<div class="bmTabs">${tabs.map((tb) => `<button data-tab="${tb}" class="${tb === tab ? 'on' : ''}">${tb === 'All' ? '✨' : ROOM_ICON[tb] || ''} ${tb}</button>`).join('')}</div>
       <div class="dscroll">${list.length ? list.map(([k, f]) => `<button class="ditem${deco.carry && deco.carry.it.k === k ? ' on' : ''}" data-k="${k}">${STORE[k] ? `<img src="${FURN_BASE}thumbs/${STORE[k].m}.png" alt="">` : `<span>${f[1]}</span>`}${esc(f[0])}${left ? `<em>×${left[k]}</em>` : ''}</button>`).join('') : `<span class="dl">${left ? 'Nothing left to place here. Get more at the Eko Home Store.' : 'Nothing here.'}</span>`}</div>
-      <div class="bmTools"><button class="dbtn" id="bmU" ${deco.undo.length ? '' : 'disabled'} title="Undo (Ctrl+Z)">↶ Undo</button><button class="dbtn" id="bmRe" ${deco.redo.length ? '' : 'disabled'} title="Redo (Ctrl+Y)">↷ Redo</button>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="bmDone">${deco.dirty ? '✓ Save and close' : '✓ Done'}</button></div>`;
+      <div class="bmTools"><button class="dbtn" id="bmU" ${deco.undo.length ? '' : 'disabled'} title="Undo (Ctrl+Z)">↶ Undo</button><button class="dbtn" id="bmRe" ${deco.redo.length ? '' : 'disabled'} title="Redo (Ctrl+Y)">↷ Redo</button><button class="dbtn${deco.free ? ' main' : ''}" id="bmFree" title="Move objects: place anything anywhere, even overlapping">${deco.free ? '🔓 Free placement on' : '🔒 Free placement'}</button>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="bmDone">${deco.dirty ? '✓ Save and close' : '✓ Done'}</button></div>`;
   }
   function bmWire() {
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
     on('bmL', () => bmRotate(-1)); on('bmR', () => bmRotate(1)); on('bmX', () => { deco.carry = null; setDeco(); }); on('bmCopy', bmCopy); on('bmDel', bmAway);
-    on('bmU', bmUndo); on('bmRe', bmRedo); on('dShop', () => openPhone('store'));
+    on('bmU', bmUndo); on('bmRe', bmRedo); on('bmFree', () => { deco.free = !deco.free; bmSay(deco.free ? '🔓 Free placement: put anything anywhere' : '🔒 Pieces keep to their own space again'); setDeco(); }); on('dShop', () => openPhone('store'));
     on('bmDone', async () => { if (deco.dirty && !(await bmSave())) return; bmSay('Saved. Looking good.'); deco = null; setDeco(); });
     decoEl.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { deco.tab = b.dataset.tab; setDeco(); }));
     decoEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => bmTake(b.dataset.k)));
@@ -8836,7 +8917,7 @@
   const DRINK = { want: false }, BARTENDER = { z: 34 };
   const VITALS = (() => { try { const v = JSON.parse(store.get('li.vitals') || 'null'); if (v && v.hp > 0) return v; } catch {} return { hp: 90 }; })();
   const barOpen = () => nightNow() > 0.5;
-  if (location.hostname === 'localhost') window.__li = { gem: (...a) => ownerGem(...a), get cam() { return cam; }, enterRoom: (...a) => enterRoom(...a), go: (...a) => go(...a), setMe: (v) => { me$ = v; }, openPhone: (...a) => openPhone(...a), get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
+  if (location.hostname === 'localhost') window.__li = { at: (i, j) => at(i, j), PLACES, T, gem: (...a) => ownerGem(...a), get cam() { return cam; }, enterRoom: (...a) => enterRoom(...a), go: (...a) => go(...a), setMe: (v) => { me$ = v; }, openPhone: (...a) => openPhone(...a), get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
   const barOff = (R) => { const P0 = CLUB_PL[(R.look || clubLook(R.title)).theme]; return P0 ? P0.bar : [0, 0]; }; // where a club's bar is
   // what you're thinking: set on your phone, shown over you to everyone (sent as hex inside your look, the only text the island carries)
   let THOUGHT = store.get('li.thought') || '';
@@ -9460,11 +9541,11 @@
     else if ((el.dataset.k || '').startsWith('radio:')) { el.dataset.k = ''; el.classList.remove('on'); }
   }
   const APPS = [
-    ['radio', '📻', 'Radio'], ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['earn', '₦', '₦'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
+    ['studio', '🎬', 'WYRD Studio'], ['radio', '📻', 'Radio'], ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Work'], ['earn', '₦', '₦'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
     ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['airport', '✈️', 'Airport'], ['refinery', '🛢️', 'Refinery'], ['people', '👥', 'People'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Game work · pays G₦', ['grid', 'refinery', 'airport']], ['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'radio', 'arena', 'parties', 'casino']], ['You', ['people', 'gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Home and style', ['hq', 'homes', 'store', 'fashion']], ['Get around', ['ride', 'garage']], ['Out tonight', ['studio', 'music', 'radio', 'arena', 'parties', 'casino']], ['People and the city', ['people', 'gov']], ['You', ['me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -10177,6 +10258,7 @@
     const sug = w4Suggest().slice(0, 4);
     return sug.length ? `<div class="w4hd"><span>✨ WYRD: ways to earn right now</span></div><div class="w4sug">${sug.map((v, k) => `<button data-w4s="${k}"><span class="w4i">${v.i}</span><span><b>${esc(v.t)}</b><span>${esc(v.s)}</span></span></button>`).join('')}</div>` : '';
   }
+  document.addEventListener('click', (e) => { const t = e.target.closest && e.target.closest('#pbody[data-app="jobs"] .app[data-app]'); if (t) go(t.dataset.app); }); // Work's game shifts
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('#pbody[data-app="jobs"] [data-w4s]'); if (!b) return; const v = w4Suggest().slice(0, 4)[+b.dataset.w4s]; if (v && v.run) v.run(); }); // (in Work)
   function w4Wire() {
     const sug = w4Suggest().slice(0, 4);
@@ -10561,15 +10643,11 @@
               <svg class="hcity" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V44h10v-6h8v8h6V34h9v12h5V30l6-5 6 5v16h7V40h10v6h6V22h3v-6h3v6h3v24h7V38h12v8h5V32h9v14h7V16l5-8 5 8v30h6V42h9v4h5V28h10v18h6V36h8v10h7V26h3v-6h5v6h3v20h6V38h10v8h5V32h8v14h7V42h12v4h7V34h9v12h6V40h12v20z"/><rect x="262" y="20" width="2" height="26" fill="#EF4444"/><path class="hfl" d="M263 20c-2.4-3-.8-6 0-8 .8 2 2.4 5 0 8z"/></svg></div>`; })()}
           <button class="nb" id="hBell" aria-label="Notifications">${pi('inbox')}${unseen ? '<i></i>' : ''}</button></div>
           <div class="hThink"><span>💭</span><input id="hThinkIn" maxlength="40" placeholder="What are you thinking? (shown as icons)" value="${esc(THOUGHT)}"><button id="hThinkGo">${THOUGHT ? 'Update' : 'Share'}</button>${THOUGHT ? '<button id="hThinkX" aria-label="Clear">✕</button>' : ''}</div>
+          <div class="dock top">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && a[0] !== 'earn' && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
-          ${w4Home()}
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw${s && !MP.a.paused ? ' on' : ''}"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '<i class="eq"><b></b><b></b><b></b><b></b></i>' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div>${s ? '<i class="mwp"><b id="mwBar"></b></i>' : ''}</div>`; })()}
           ${(() => { const live = arenaLive(), playing = (CITY.srcs || []).filter((s) => s.room && s.now); return playing.length || live ? `<button class="tw" data-app="${live ? 'arena' : 'music'}"><div><small>Live now</small><b>${playing.length ? `${playing.length} club${playing.length > 1 ? 's' : ''} playing · ${esc(playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(', '))}` : 'The Arena is live'}</b><span>${live && playing.length ? '● The Arena is live too' : 'Tap to listen'}</span></div><i>🎶</i></button>` : ''; })()}
-          <button class="hday" id="hDay" data-app="wallet"><div class="hdTop"><div><small>Wallet</small><b>${naira(me$.naira)}</b></div><div class="hdIO" id="hdIO"></div></div><div class="hdBar"><i style="width:${Math.min(100, Math.round(100 * (me$.earnedToday || 0) / (me$.dailyCap || 35000)))}%"></i></div><small class="hdCap">Earned ${naira(me$.earnedToday || 0)} of ${naira(me$.dailyCap || 35000)} today</small><div class="hdList" id="hdList"><div class="skel"><i></i><i class="s"></i></div></div></button>
-          <div class="wrow">
-            <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
-          ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
-          <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
+          ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
         // your day, straight from the ledger: in and out today (tax apart), the tax this week, the last three movements, what you can still send
         Promise.all([my('receipts'), my('civic').catch(() => null)]).then(([r, cv]) => {
@@ -10840,7 +10918,7 @@
         // filters (all, your matches, applied), cards with the company's avatar, a match ring, skill tags; Apply opens a note
         const shown = list.filter((j) => jobsTab === 'applied' ? j.applied : jobsTab === 'match' ? j.match != null && j.match >= 50 : true);
         const matches = list.filter((j) => j.match != null && j.match >= 50).length, applied = list.filter((j) => j.applied).length;
-        show(`<div class="ppTop"><div><h2>Jobs</h2><small>Real employers, checked before they show</small></div></div>${w4Earn()}
+        show(`<div class="ppTop"><div><h2>Work</h2><small>Shifts that pay G₦, and real employers</small></div></div>${w4Earn()}<div class="hsec" style="margin-top:10px">Game work · pays G₦</div><div class="apps">${['grid', 'refinery', 'airport'].map((k) => { const a = APPS.find((v) => v[0] === k); return a ? `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || a[1]}</i>${a[2]}</button>` : ''; }).join('')}</div><div class="hsec">Jobs with employers</div>
           <div class="jbHero"><small>${me$.openToWork ? 'Open to work' : 'Not looking'}</small><b>${list.length} job${list.length === 1 ? '' : 's'} open</b><span>${matches} match your skills · ${applied} applied</span>
             <div class="row"><button id="jPost">${pi('add')}Post</button><button id="jMine">${pi('inbox')}My posts</button><button id="jProf">${pi('tools')}Skills</button>${me$.operator ? `<button id="jQueue">${pi('check')}Check</button>` : `<button id="jHelp">${pi('spark')}Ask</button>`}</div></div>
           <div class="ppSeg" style="margin-top:12px">${[['all', 'All', list.length], ['match', 'Matches', matches], ['applied', 'Applied', applied]].map(([k, n, c]) => `<button data-jt="${k}" class="${jobsTab === k ? 'on' : ''}">${n}${c ? ' · ' + c : ''}</button>`).join('')}</div>
@@ -11061,12 +11139,14 @@
         const reqs = await my('hqRequests');
         // your BQ in its colour up top, who's at the door, quick ways home, then its settings (they apply to every home you own)
         show(`${ahead('hq', 'My HQ', 'Your BQ on HQ Row · and every home you buy')}
-          <div class="hero" style="--ac:${esc(h.color)}"><div class="hl">${h.locked ? '🔒 Invite only' : '🔓 Open door'}</div><div class="hv" style="font-size:20px">🏠 ${esc(h.name)}</div><small>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</small></div>
-          <div class="qa" style="--ac:#FF4FD8"><button id="hGo"><i>🚪</i>Go home</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hShop"><i>🛋️</i>Furnish</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
+          <div class="hqHero"><div class="hqTop"><span class="hqGem"></span><div><small>${h.locked ? '🔒 Invite only' : '🔓 Open door'} · HQ Row</small><b>${esc(h.name)}</b><em>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</em></div></div>
+            <div class="hqPlan" aria-label="Your BQ's plan">${[['kitchen', '🍳', 14, 0, 46, 14], ['bath', '🛁', 82, 0, 30, 24], ['living', '🛋️', 40, 14, 42, 62], ['bedroom', '🛏️', 0, 34.6, 40, 35.4], ['study', '📚', 80, 42.6, 32, 27.4]].map(([k, i, x0, z0, w0, d0]) => `<i style="left:${(x0 / 112 * 100).toFixed(1)}%;top:${(z0 / 76 * 100).toFixed(1)}%;width:${(w0 / 112 * 100).toFixed(1)}%;height:${(d0 / 76 * 100).toFixed(1)}%"><span>${i}</span>${BQ_ROOMS[k].name}</i>`).join('')}<u>🚪</u></div>
+            <button class="hqGo" id="hGo">🏠 Go in</button></div>
+          <div class="hqQa"><button id="hArr"><i>🛋️</i>Arrange</button><button id="hParty"><i>🎉</i>Party</button><button id="hWard"><i>👔</i>Wardrobe</button><button id="hShop"><i>🛒</i>Furnish</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
           <div class="pcard" id="hRooms"><h3>🛋️ Your rooms</h3><small class="dim">Loading…</small></div>
           <div class="pcard"><h3>📣 HQ Row board</h3><small class="dim">Your announcement on the big screen for 24 hours (one every 2 hours).</small><input id="hAnn" maxlength="80" placeholder="e.g. Owambe at mine tonight, everybody come!"><div class="row4"><button class="pbtn" id="hAnnGo">Announce it</button><button class="pbtn alt" id="hBoard">🎉 Host a party</button></div><div class="err" id="hAnnErr"></div></div>
           ${reqs.length ? `<div class="rsec">🔔 AT YOUR DOOR</div><div class="lst">${reqs.map((r) => `<div class="li">${avatar(r.handle)}<span class="lt"><b>${esc(r.handle)}</b><small>wants to come in</small></span><button class="pbtn" data-allow="${r.id}" style="margin:0 4px 0 0">Let in</button><button class="pbtn alt" data-deny="${r.id}" style="margin:0">No</button></div>`).join('')}</div>` : ''}
-          <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your flag and your door)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
+          <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your door and your gate)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
         $('hHomes').onclick = () => go('homes'); $('hShop').onclick = () => go('store'); $('hEdit').onclick = () => { const s = $('hSet'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; };
         pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
         $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
@@ -11082,7 +11162,18 @@
             $('hRoomsGo').onclick = async () => { try { await my('saveRoom', { key, layout: JSON.stringify([...all.filter((it) => !String(it.k).startsWith('room:')), ...roomItems(rooms)]) }); if (inside && inside.key === key) inside.rooms = { ...rooms }; tickerSay('🛋️ Rooms saved'); } catch (e) { $('hRoomsErr').textContent = e.message; } }; };
           draw(); } catch (e) { box2.innerHTML = '<h3>🛋️ Your rooms</h3><small class="dim">' + esc(e.message) + '</small>'; } })();
         $('hAnnGo').onclick = async () => { const t = $('hAnn').value.trim(); if (!t) return; $('hAnnErr').textContent = ''; try { await my('boardPost', { text: t }); hqBoard.posts = await myNet('board', {}); $('hAnn').value = ''; tickerSay('📣 On the HQ Row board now'); } catch (e) { $('hAnnErr').textContent = e.message; } };
-        $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
+        const goIn = async (then) => { closePhone(); if (!(inside && inside.kind === 'hq' && inside.mine)) document.querySelector('#hud .home').click(); if (then) setTimeout(then, inside ? 0 : 1800); }; // straight into your BQ (the HUD's Home does the walking)
+        $('hGo').onclick = () => goIn();
+        $('hArr').onclick = () => goIn(() => { if (inside && inside.mine) { deco = { pick: null, carry: null, drag: null, undo: [], redo: [], dirty: false, tab: 'All' }; setDeco(); } });
+        $('hParty').onclick = () => go('parties'); $('hWard').onclick = () => go('fashion', { tab: 'wardrobe' });
+        return;
+      }
+      if (app === 'studio') { // the full app comes later: for now, the building and its ten floors
+        show(`${ahead('studio', 'WYRD Studio', 'Ten floors for the island\'s entertainers · Eko Atlantic')}
+          <div class="hqHero" style="background:radial-gradient(120% 120% at 100% 0%, rgba(244,114,182,.55), transparent 55%), linear-gradient(140deg, #0F172A, #4C1D95)"><div class="hqTop"><span style="font-size:30px">🎬</span><div><small>OPENING SOON</small><b>WYRD Studio</b><em>Music, film, dance, comedy, fashion, streaming: one tower</em></div></div></div>
+          ${STUDIO_FLOORS.map((f, k) => [f, k + 1]).reverse().map(([[i, n, d, col], fl]) => `<div class="jc" style="display:flex;gap:10px;align-items:center;border-left:4px solid ${col}"><b style="font-size:13px;min-width:24px;color:${col}">${fl === 1 ? 'G' : fl}</b><span style="font-size:22px">${i}</span><span><b>${n}</b><br><small class="dim">${d}</small></span></div>`).join('')}
+          <button class="pbtn" id="stGo" style="margin-top:10px">📍 Show me the building</button>`);
+        $('stGo').onclick = () => { const p = PLACES.find((v) => v[0] === 'studio'); closePhone(); if (p) { me.x = (p[1] + p[3] / 2) * T; me.z = (p[2] + p[4]) * T + 2; cam.follow = true; } };
         return;
       }
       if (app === 'arena') {
@@ -12084,6 +12175,7 @@
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y, r: st.r || 0 }; me.x = pose.x; me.z = pose.z; } };
       else next = null;
     }
+    else if (door('studio')) next = { label: '🎬 WYRD Studio: opening soon', run: () => openPhone('studio') };
     else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
     else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); clubWarm('place:club:' + p[1]); next = { label: '🎶 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
@@ -12132,6 +12224,17 @@
   const leaveBtn = document.getElementById('leave');
   leaveBtn.onclick = () => { pose = null; leaveRoom(); };
   setInterval(() => { leaveBtn.style.display = inside ? 'grid' : 'none'; }, 300);
+  // the bottom bar: measured to what's in it, so it stretches out when something joins it and springs back after
+  { const bar = document.getElementById('top'); let last = 0;
+    setInterval(() => { if (!bar || !bar.getClientRects().length) return; const was = bar.style.getPropertyValue('width'); bar.style.transition = 'none'; bar.style.setProperty('width', 'max-content', 'important'); const w = Math.min(innerWidth - 16, Math.ceil(bar.offsetWidth)); bar.style.setProperty('width', was || 'max-content', 'important'); void bar.offsetWidth; bar.style.transition = '';
+      if (Math.abs(w - last) > 1) { last = w; bar.style.setProperty('width', w + 'px', 'important'); } }, 250); }
+  // your home's fan: arrange the furniture, throw a party, open the wardrobe
+  { const ha = document.getElementById('homeAct');
+    document.getElementById('haMain').onclick = (e) => { e.currentTarget.blur(); ha.classList.toggle('open'); };
+    ha.querySelectorAll('.opt').forEach((b) => (b.onclick = () => { b.blur(); ha.classList.remove('open'); const a = b.dataset.a; if (!inside || !inside.mine) return;
+      if (a === 'arrange') { deco = { pick: null, carry: null, drag: null, undo: [], redo: [], dirty: false, tab: 'All' }; setDeco(); }
+      if (a === 'party') { partyDraft.key = inside.key; openPhone('parties', { key: inside.key }); }
+      if (a === 'ward') openPhone('fashion', { tab: 'wardrobe' }); })); }
   // someone close: their initial on a button by the door that fans out wave, message and add friend
   { const pa = document.getElementById('pplAct'), main = document.getElementById('paMain');
     setInterval(() => { let best = null, bd = NEAR_R; if (typeof others !== 'undefined') for (const o of others.values()) { const d = Math.hypot(o.x - me.x, o.z - me.z); if (d < bd) { bd = d; best = o; } }
@@ -12171,7 +12274,7 @@
       hud.querySelector('.bars').innerHTML = bar('❤️', VITALS.hp / 100, Math.round(VITALS.hp) + '%') + bar('💰', wealth, me$ ? naira(n) : 'Sign in') + bar('📋', resp, sh ? `Shift ${done}/${sh.length}` : `Today ${Math.round(resp * 100)}%`);
       const key = parseLook(myLook, myName || 'me').outfit + '|' + myLook; if (key !== shotKey && typeof fitShot === 'function') { const u = fitShot(parseLook(myLook, myName || 'me').outfit); if (u) { img.src = u; shotKey = key; } } };
     const loc = hud.querySelector('.loc'); let locTxt = ''; const hudLoc = () => { const t = (document.getElementById('where').textContent || '').replace(/^📍\s*/, '').trim() || 'Lagos Island'; if (t !== locTxt) { locTxt = t; loc.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>' + esc(t); } };
-    setInterval(hudLoc, 500); setInterval(() => document.getElementById('sleepVeil').classList.toggle('on', !!(pose && pose.kind === 'sleep' && inside)), 300); setInterval(() => hud.classList.toggle('away', document.getElementById('phone').style.display === 'block'), 120); setTimeout(tick, 0); setInterval(tick, 10000); let lastPose = ''; setInterval(() => { const k = pose ? pose.kind : ''; if (k !== lastPose) { lastPose = k; tick(); } }, 400); setInterval(() => { if (!shotKey) tick(); }, 1500); }
+    setInterval(hudLoc, 500); setInterval(() => document.getElementById('sleepVeil').classList.toggle('on', !!(pose && pose.kind === 'sleep' && inside)), 300); setInterval(() => { const on = document.getElementById('phone').style.display === 'block'; hud.classList.toggle('away', on); document.body.classList.toggle('phoneOn', on); }, 120); setTimeout(tick, 0); setInterval(tick, 10000); let lastPose = ''; setInterval(() => { const k = pose ? pose.kind : ''; if (k !== lastPose) { lastPose = k; tick(); } }, 400); setInterval(() => { if (!shotKey) tick(); }, 1500); }
   // in a club: a button by the door that fans out three things to do, dance, drink, or see who's here (you stand still
   // until you choose to dance)
   { const ca = document.getElementById('clubAct'), cl = document.getElementById('clubList'), esc = (t) => String(t).replace(/[&<>"]/g, (c) => '&#' + c.charCodeAt(0) + ';');
@@ -12581,7 +12684,7 @@
   // where each one is in this home: the BQ's fittings, the fitted kitchen and bathroom every home has, then what you've placed
   function roomDevices(R) {
     const out = [], F = FITOUT[R.kind === 'hq' ? 'bq' : R.style];
-    if (R.kind === 'hq') out.push({ k: 'tv', x: 55, z: 28, name: 'TV' }, { k: 'fan', x: 55, z: 37, name: 'ceiling fan' }, { k: 'ac', x: 3, z: 28, name: 'AC' }, { k: 'inverter', x: 21.5, z: R.d - 1, name: 'inverter' });
+    if (R.kind === 'hq') out.push({ k: 'tv', x: 55, z: 28, name: 'TV' }, { k: 'fan', x: 55, z: 37, name: 'ceiling fan' }, { k: 'ac', x: 3, z: 23, name: 'AC' }, { k: 'laptop', x: 89.5, z: 51, name: 'laptop' }, { k: 'inverter', x: 21.5, z: R.d - 1, name: 'inverter' });
     if (F) { const [kx, kl] = F.k; out.push({ k: 'toilet', x: R.w - F.b[0] + 6.5, z: 4.6, name: 'toilet' }, { k: 'basin', x: R.w - F.b[0] + 2.5, z: 3.6, name: 'basin' }, { k: 'cooker', x: kx + kl * 0.65, z: 4.5, name: 'cooker' }, { k: 'fridge', x: kx + kl + 2, z: 5, name: 'fridge' }, { k: 'shower', x: R.w - 3, z: F.b[1] + 1.5, name: 'bathroom' }); }
     for (const it of R.layout || []) { const kd = kindOf(it); if (['tv', 'lamp', 'speaker', 'fridge'].includes(kd)) out.push({ k: kd, x: it.x, z: it.z, name: (STORE[it.k] ? STORE[it.k].name : kd).toLowerCase(), it }); }
     return out;
@@ -12595,6 +12698,7 @@
       case 'fan': return tog('fan', '🌀 Switch the fan on', '🌀 Switch the fan off');
       case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say(['18°C. Ah! Na so London be?', 'AC don rush. Lagos heat, you don lose.', 'Cold everywhere. Just pray NEPA no carry light now now.'][Math.floor(Math.random() * 3)]); }; return a; }
       case 'inverter': return { label: '🔋 Check the inverter', run: () => openInverter(R) };
+      case 'laptop': return { label: '💻 Use the laptop', run: () => { say('WYRD OS, on the big screen.'); openPhone(); } }; // the laptop runs WYRD OS
       case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Calm down! Good jollof no dey rush. Ghana people rush their own, see wetin happen.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof don enter fire. Smell go reach your neighbour, dem go suddenly remember your name.'); setTimeout(() => { if (inside === R) say('Jollof ready! Party jollof, bottom pot burn small. That one na the best part.'); }, 20000); } };
       case 'fridge': return { label: '🧊 Open the fridge', run: () => say(SNACKS[Math.floor(Math.random() * SNACKS.length)]) };
       case 'shower': return { label: '🚿 Freshen up', run: () => { if (!nepaAt(lagosMs() - 3600e3)) return say('NEPA don carry light, pumping machine don off. Bucket bath it is. Cold water, sharp sharp!'); D.fresh = Date.now() + 5000; say('You don baff! You dey smell like money now.'); } };
