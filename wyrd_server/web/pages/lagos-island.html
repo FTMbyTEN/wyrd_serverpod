@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T13:51:59.882Z">
+<meta name="li-build" content="2026-10-25T14:21:26.066Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1438,6 +1438,12 @@
   .hqPlan u { position: absolute; left: 50%; bottom: -2px; transform: translateX(-50%); text-decoration: none; font-size: 13px; }
   .hqGo { width: 100%; padding: 11px; border: 0; border-radius: 14px; background: #fff; color: #1E3A8A; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
   .hqQa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; } .hqQa button { display: grid; justify-items: center; gap: 4px; padding: 10px 4px; border: 0; border-radius: 16px; background: rgba(99,102,241,.1); color: inherit; font: 800 11.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; } .hqQa button i { font-style: normal; font-size: 20px; }
+  #lift { position: fixed; left: 50%; top: 50%; z-index: 62; width: min(340px, calc(100vw - 24px)); padding: 14px; border-radius: 24px; color: #fff; background: linear-gradient(160deg, rgba(17,24,39,.94), rgba(30,27,75,.94)); box-shadow: 0 24px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(212,175,55,.35); transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .25s, opacity .2s; backdrop-filter: blur(10px); }
+  #lift.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; } .lfHd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font: 800 15px 'Plus Jakarta Sans', sans-serif; } .lfX { border: 0; background: rgba(255,255,255,.1); color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+  .lfGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .lfGrid button { display: grid; grid-template-columns: 30px 22px 1fr; align-items: center; gap: 6px; padding: 9px 10px; border: 0; border-radius: 14px; text-align: left; color: #fff; background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); cursor: pointer; font: 700 11px 'Plus Jakarta Sans', sans-serif; }
+  .lfGrid button em { font: 900 14px 'Plus Jakarta Sans', sans-serif; font-style: normal; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--c); color: var(--c); } .lfGrid button.on { background: color-mix(in srgb, var(--c) 30%, transparent); } .lfGrid button.on em { background: var(--c); color: #111827; }
+  #liftVeil { position: fixed; inset: 0; z-index: 63; pointer-events: none; } #liftVeil i { position: absolute; top: 0; bottom: 0; width: 50%; background: linear-gradient(90deg, #9CA3AF, #E5E7EB 40%, #9CA3AF); transition: transform .5s cubic-bezier(.6,0,.3,1); } #liftVeil .l { left: 0; transform: translateX(-100%); } #liftVeil .r { right: 0; transform: translateX(100%); }
+  #liftVeil.on i { transform: none; } #liftVeil b { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); padding: 8px 18px; border-radius: 12px; background: #0B0F19; color: #FDE68A; font: 900 30px 'Plus Jakarta Sans', sans-serif; opacity: 0; transition: opacity .3s; box-shadow: 0 0 20px rgba(253,230,138,.4); } #liftVeil.on b { opacity: 1; }
   #homeAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; } .touch #homeAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); }
   #homeAct #haMain { background: linear-gradient(145deg, #38BDF8, #6366F1); } #homeAct .ca svg { width: 24px; height: 24px; } #homeAct .opt svg { width: 21px; height: 21px; }
   #homeAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; opacity: 0; pointer-events: none; transform: scale(.4); } #homeAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
@@ -4749,7 +4755,7 @@
   REC = null; // while set, the drawing kit records (build) or does nothing (skip) instead of drawing
   const V3 = { live: false, key: null, room: null, yaw: 0, pitch: 0.72, dist: 95, tx: 0, tz: 0, groups: null, extras: null, dummy: null, btn: null, t0: 0,
     pref: (() => { const q = new URLSearchParams(location.search).get('3d'); if (q === '0' || q === '1') { try { localStorage.setItem('li.3d', q); } catch {} return q === '1'; } try { return localStorage.getItem('li.3d') !== '0'; } catch { return true; } })() };
-  V3.eligible = (R) => !!(R && ((R.kind === 'club' && R.theme === 'lekki') || R.kind === 'hq' || R.kind === 'home')); // Club Lekki and the apartments
+  V3.eligible = (R) => !!(R && ((R.kind === 'club' && R.theme === 'lekki') || R.kind === 'hq' || R.kind === 'home' || R.kind === 'studio')); // Club Lekki and the apartments
   const v3club = (R) => R.kind === 'club';
   V3.want = (R) => V3.pref && V3.eligible(R) && G3.ok && !!G3.renderer && !deco;
   // the projection while live: world to screen through the 3D camera (so everything drawn in 2D lands in the right place)
@@ -4796,7 +4802,7 @@
     palm(tx, tz, h) { V3REC.cyl(tx, tz, 0.35, 0, h, '#8B5E3C'); for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, b = v3bucket('#2F855A'), c = [tx, h, tz], e = [tx + Math.cos(a) * 3.6, h - 1.6, tz + Math.sin(a) * 3.6], s = [tx + Math.cos(a + 0.4) * 1.4, h + 0.3, tz + Math.sin(a + 0.4) * 1.4]; v3tri(b, c, s, e, [0, 1, 0]); v3tri(b, c, e, s, [0, 1, 0]); } },
     tree(tx, tz, r, col) { const c = col || '#3F8F4F'; V3REC.cyl(tx, tz, r * 0.16, 0, r * 1.25, '#7A4E2D'); V3REC.cyl(tx, tz, r * 0.24, 0, r * 0.18, '#5C3A1B'); // a trunk, flared at the foot
       V3REC.sphere(tx, r * 1.45, tz, r * 0.95, shadeHex(c, 0.85)); V3REC.sphere(tx + r * 0.45, r * 1.7, tz - r * 0.2, r * 0.7, c); V3REC.sphere(tx - r * 0.4, r * 1.65, tz + r * 0.3, r * 0.65, shadeHex(c, 1.12)); V3REC.sphere(tx + r * 0.05, r * 2.1, tz + r * 0.05, r * 0.55, shadeHex(c, 1.25)); }, // a crown in clumps, lit from above
-    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; if (!ground && py > 2.4 && !(side === 'x' ? px < 1 : pz < 1)) return; /* lettering on an inner wall that comes down to the knee in 3D would float: only the outer walls keep theirs */ const o = REC.off || [0, 0]; REC.labels.push({ txt: String(txt), px: px + o[0], py, pz: pz + o[1], col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
+    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; if (!ground && py > 2.4 && !(side === 'x' ? px < 1.8 : pz < 1.8)) return; /* lettering on an inner wall that comes down to the knee in 3D would float: only the outer walls keep theirs */ const o = REC.off || [0, 0]; REC.labels.push({ txt: String(txt), px: px + o[0], py, pz: pz + o[1], col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
     rope(x0, y0, z0, x1, y1, z1, col) { const n = 8; let px = x0, py = y0, pz = z0; for (let i = 1; i <= n; i++) { const u = i / n, qx = x0 + (x1 - x0) * u, qz = z0 + (z1 - z0) * u, qy = y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * 0.7; V3REC.box(Math.min(px, qx) - 0.09, Math.min(py, qy) - 0.09, Math.min(pz, qz) - 0.09, Math.max(px, qx) + 0.09, Math.max(py, qy) + 0.09, Math.max(pz, qz) + 0.09, col); px = qx; py = qy; pz = qz; } },
   };
   // a label as a textured plane (on a wall facing +z, or flat on the floor)
@@ -4880,7 +4886,7 @@
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
     if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(WEAK ? 1024 : 2048, WEAK ? 1024 : 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
-    key.intensity = v3club(R) ? 0.7 : night > 0.5 ? 0.45 : 1.25; const hemi = new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : night > 0.5 ? 0.4 : 0.85); grp.add(key, key.target, hemi); V3.keyL = key; V3.hemiL = hemi; V3.keyBase = key.intensity; V3.hemiBase = hemi.intensity; // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
+    key.intensity = v3club(R) ? 0.7 : R.kind === 'studio' ? 0.9 : night > 0.5 ? 0.45 : 1.25; const hemi = new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : R.kind === 'studio' ? 0.75 : night > 0.5 ? 0.4 : 0.85); grp.add(key, key.target, hemi); V3.keyL = key; V3.hemiL = hemi; V3.keyBase = key.intensity; V3.hemiBase = hemi.intensity; // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
     G3.scene.add(grp); V3.groups = grp; V3.key = R.key;
   }
   // what the room draws, without the people: its shell and its furniture (recorded, or run only for the glows each frame)
@@ -4891,6 +4897,7 @@
     if (v3club(R)) drawClubShell(R, now);
     if (R.kind === 'hq') drawApartment(R);
     if (R.kind === 'home') { drawHomeShell(R); if (R.style === 'nml') nmlInterior(R, now); }
+    if (R.kind === 'studio') drawStudio(R, now);
     if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     for (const it of R.layout) furnDraw(it, now);
   }
@@ -5057,12 +5064,15 @@
   function v3home(R, grp) {
     const T3 = G3.T, inn = { walls: v3walls(R, grp), lamps: [] }, nt = night > 0.5;
     const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,230,180,1)'); gr.addColorStop(0.3, 'rgba(255,200,130,0.45)'); gr.addColorStop(1, 'rgba(255,170,90,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); const tex = new T3.CanvasTexture(c);
-    const nx = Math.max(1, Math.round(R.w / 32)), nz = Math.max(1, Math.round(R.d / 32));
+    const sp = R.kind === 'studio' ? 24 : 32, nx = Math.max(1, Math.round(R.w / sp)), nz = Math.max(1, Math.round(R.d / sp));
     for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) { const lx = R.w * (i + 0.5) / nx, lz = R.d * (j + 0.5) / nz;
       const l = new T3.PointLight(0xffd9a0, nt ? 260 : 90, 46, 1.5); l.position.set(lx, 15, lz); if (!MOBILE && !WEAK && i === 0 && j === 0) { l.castShadow = true; l.shadow.mapSize.set(512, 512); } grp.add(l);
       const shade = new T3.Mesh(new T3.CylinderGeometry(1.4, 2.2, 1.1, 20, 1, true), new T3.MeshStandardMaterial({ color: 0xf5e6c8, emissive: 0xffc070, emissiveIntensity: nt ? 0.9 : 0.25, side: T3.DoubleSide })); shade.position.set(lx, 16.4, lz); grp.add(shade);
       const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: nt ? 0.8 : 0.25 })); s.position.set(lx, 15.6, lz); s.scale.set(7, 7, 1); grp.add(s); inn.lamps.push([l, s]); }
     { const st = new T3.SpotLight(0xffb066, 0, 140, 0.5, 0.9, 1.1); st.position.set(R.w * 0.42, 12, R.d + 12); st.target.position.set(R.w * 0.4, 0, R.d * 0.4); grp.add(st, st.target); inn.street = st; } // a street lamp outside, through the front windows
+    if (R.kind === 'studio' && (R.floor || 1) === 1) { // the lobby's LED wall, playing in 3D
+      const c = document.createElement('canvas'); c.width = 256; c.height = 128; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
+      const m = new T3.Mesh(new T3.PlaneGeometry(23.2, 11.2), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(78, 8, 1.08); grp.add(m); inn.led = { c, g: c.getContext('2d'), tex, at: 0 }; }
     if (R.kind === 'hq') { // the TV: a real screen, showing what's on
       const c = document.createElement('canvas'); c.width = 256; c.height = 144; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
       const m = new T3.Mesh(new T3.PlaneGeometry(10.4, 5.8), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(55, 6.1, 26.12); grp.add(m); inn.tv = { c, g: c.getContext('2d'), tex, m, at: 0 };
@@ -5072,7 +5082,9 @@
   }
   function v3homeLive(R, now) {
     const inn = V3.inside; if (!inn) return; const t = now / 1000, party = partyAt(R.key);
-    const D = devState(R), off = !D.lamps;
+    if (inn.led && now - inn.led.at > 80) { const { g, tex } = inn.led, h = (t * 25) % 360; inn.led.at = now; const gr = g.createLinearGradient(0, 0, 256, 128); gr.addColorStop(0, `hsl(${h},80%,50%)`); gr.addColorStop(0.5, `hsl(${(h + 60) % 360},85%,40%)`); gr.addColorStop(1, `hsl(${(h + 140) % 360},80%,45%)`); g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
+      g.fillStyle = 'rgba(255,255,255,0.95)'; g.font = '900 22px sans-serif'; g.textAlign = 'center'; g.fillText('WYRD STUDIO', 128, 52); g.font = '700 12px sans-serif'; g.fillText(['TONIGHT ON 10 · ROOFTOP SESSIONS', 'FLOOR 2 · RECORDING STUDIOS', 'FLOOR 5 · COMEDY NIGHT'][Math.floor(t / 4) % 3], 128, 80); tex.needsUpdate = true; }
+    const D = devState(R), off = !D.lamps && R.kind !== 'studio';
     if (V3.keyL) { V3.keyL.intensity = V3.keyBase * (off && night > 0.4 ? 0.25 : 1); V3.hemiL.intensity = V3.hemiBase * (off && night > 0.4 ? 0.22 : 1); }
     if (inn.street) inn.street.intensity = night > 0.4 ? (off ? 1400 : 250) : 0;
     if (inn.tv) { const tv = inn.tv; tv.m.material.color.setScalar(D.tv ? 1 : 0.03); inn.tvLight.intensity = D.tv ? 70 + 30 * Math.sin(t * 3) : 0;
@@ -6551,6 +6563,7 @@
     hq: { w: 112, d: 76, floor: '#161618', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.64, zoom: 1.5 } },
     club: { w: 140, d: 92, floor: '#0E0B18', wall: '#120E1F', trim: '#A855F7', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.95 } },
     casino: { w: 96, d: 66, floor: '#4A1212', wall: '#2A0C0C', trim: '#F5C542', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.15 } },
+    studio: { w: 96, d: 64, floor: '#EDE9E3', wall: '#111827', trim: '#D4AF37', cam: { yaw: -0.55, pitch: 0.8, zoom: 1.4 } },
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
@@ -6622,6 +6635,7 @@
       { k: 'bar', x: 46, z: 58 }, { k: 'stool', x: 40, z: 55 }, { k: 'stool', x: 46, z: 55 }, { k: 'stool', x: 52, z: 55 },
       { k: 'plant', x: 93, z: 63 }, { k: 'plant', x: 3, z: 63 },
     ],
+    studio: [],
     tower: [
       // the lobby: reception, a designer lounge, a workspace, a café bar, WYRD at the centre on its plinth (store pieces, in 3D)
       { k: 'reception', x: 20, z: 10 },
@@ -6728,6 +6742,7 @@
     if (R.kind === 'bunker') drawBunker(R, now);
     if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     if (R.kind === 'office') drawOffice(R, now);
+    if (R.kind === 'studio') drawStudio(R, now);
     if (R.kind === 'arena') drawStage(now);
     if (deco && R === inside) bmUnder(R);
     const items = [];
@@ -8412,6 +8427,60 @@
       if (!real('chairDesk', 90, 52.5, 2, 0, 1.2)) { box(88.5, 0, 51, 91.5, 2, 53.5, '#111827'); box(88.5, 2, 53.1, 91.5, 4.8, 53.5, '#111827'); } // the desk chair
       cylLit(101, 47, 0.25, 0, 2.6, '#A16207'); sphere(101, 47, 1.2, '#2563EB'); }
   }
+  // ---- WYRD Studio, inside: the lobby on the ground floor; the other nine floors share the shell, each in its colour,
+  // until they're built out. The elevator in the middle of the back wall goes to all of them.
+  function drawStudio(R, now) {
+    const n = R.floor || 1, [icon, name, blurb, col] = STUDIO_FLOORS[n - 1], t = now / 1000, cx = R.w / 2;
+    // the floor: polished stone, a band of the floor's colour round the walls
+    flat(0, 0, R.w, R.d, 0.012, n === 10 ? '#1E293B' : '#E7E2D9');
+    x.strokeStyle = 'rgba(120,113,108,0.18)'; x.lineWidth = 1; x.beginPath(); for (let i = 8; i < R.w; i += 8) { const p = P(i, 0.02, 0), q = P(i, 0.02, R.d); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } for (let j = 8; j < R.d; j += 8) { const p = P(0, 0.02, j), q = P(R.w, 0.02, j); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+    box(0, 0.7, 0.05, R.w, 1.1, 0.3, col); box(0.05, 0.7, 0, 0.3, 1.1, R.d, col);
+    // the elevator: a steel frame, two doors, the floor number lit over it, a call panel
+    box(cx - 7, 0, 0, cx + 7, 15, 1.4, '#1F2937'); box(cx - 5.6, 0, 1.4, cx - 0.05, 12, 1.5, '#CBD5E1'); box(cx + 0.05, 0, 1.4, cx + 5.6, 12, 1.5, '#CBD5E1');
+    box(cx - 2.2, 12.6, 1.4, cx + 2.2, 14.4, 1.5, '#0B0F19'); faceText(n === 1 ? 'G' : String(n), cx, 13.5, 1.56, col, 0.6, 8);
+    box(cx + 6.4, 5, 1.4, cx + 7.2, 7.6, 1.6, '#9CA3AF'); flat(cx - 6, 1.6, cx + 6, 6, 0.03, '#0B0F19'); // the call panel, the landing mat
+    faceText(icon + ' ' + name.toUpperCase(), cx, 16.2, 0.2, '#F8FAFC', 0.5, 6);
+    glow.push(() => { const p = P(cx, 13.5, 1.6), r = K * 3; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, col + 'aa'); g.addColorStop(1, col + '00'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
+    if (n === 1) { // ---- the lobby and red carpet
+      flat(cx - 4, 10, cx + 4, R.d, 0.04, '#B91C1C'); flat(cx - 4.4, 10, cx - 4, R.d, 0.045, '#D4AF37'); flat(cx + 4, 10, cx + 4.4, R.d, 0.045, '#D4AF37'); // the carpet, gold-edged, door to elevator
+      for (let z = 14; z < R.d - 4; z += 6) for (const sx of [cx - 6, cx + 6]) { cylLit(sx, z, 0.25, 0, 3.4, '#D4AF37'); sphere(sx, z, 0.35, '#FDE68A'); } // brass posts
+      for (let z = 14; z < R.d - 10; z += 6) for (const sx of [cx - 6, cx + 6]) box(sx - 0.08, 2.6, z, sx + 0.08, 2.9, z + 6, '#7F1D1D'); // velvet ropes
+      // the press wall: the step-and-repeat for photos, logos in rows
+      box(6, 0, 0.2, 30, 13, 1, '#F8FAFC'); for (let r = 0; r < 3; r++) for (let k = 0; k < 3; k++) faceText('WYRD STUDIO', 10 + k * 8, 3 + r * 4, 1.05, ['#111827', '#DB2777', '#111827'][(r + k) % 3], 0.32, 0);
+      flat(6, 1, 30, 9, 0.035, '#111827'); box(9, 0, 9, 9.3, 4, 9.3, '#9CA3AF'); box(26.7, 0, 9, 27, 4, 9.3, '#9CA3AF'); // a black step for the photos, the photographers' lights
+      // the LED wall: what's on in the building, moving
+      box(66, 2, 0.2, 90, 14, 1, '#0B0F19'); glow.push(() => { const a0 = P(66.4, 2.4, 1.05), a1 = P(89.6, 2.4, 1.05), a2 = P(89.6, 13.6, 1.05), a3 = P(66.4, 13.6, 1.05), g = x.createLinearGradient(a3[0], a3[1], a1[0], a1[1]), h = (t * 25) % 360; g.addColorStop(0, `hsl(${h},80%,55%)`); g.addColorStop(0.5, `hsl(${(h + 60) % 360},85%,45%)`); g.addColorStop(1, `hsl(${(h + 140) % 360},80%,50%)`); quad([a0, a1, a2, a3], g, null); });
+      faceText('TONIGHT ON 10: ROOFTOP SESSIONS', 78, 8, 1.1, '#FFFFFF', 0.45, 6);
+      // the reception: a white desk, gold top, a screen, flowers
+      box(62, 0, 22, 82, 3.6, 26, '#F8FAFC'); box(61.6, 3.6, 21.6, 82.4, 3.9, 26.4, '#D4AF37'); faceText('RECEPTION', 72, 2, 26.45, '#111827', 0.45, 0);
+      box(70, 3.9, 22.4, 74, 6.4, 22.6, '#0B0F19'); cylLit(78, 23.5, 0.6, 3.9, 1.2, '#E5E7EB'); sphere(78, 23.5, 1, '#F472B6');
+      // a lounge: two sofas round a low table, plants, a lamp
+      for (const [sx, sz] of [[12, 30], [12, 42]]) { box(sx - 6, 0.4, sz - 2, sx + 6, 1.8, sz + 2, '#1F2937'); box(sx - 6, 1.8, sz + (sz < 36 ? -2 : 1.2), sx + 6, 4.2, sz + (sz < 36 ? -1.2 : 2), '#111827'); }
+      box(8, 0, 34.5, 16, 1.6, 37.5, '#D4AF37'); box(8.3, 1.6, 34.8, 15.7, 1.75, 37.2, '#F5F5F4');
+      for (const [px, pz] of [[3, 20], [3, 55], [92, 40], [92, 55]]) { cylLit(px, pz, 1, 0, 2, '#E7E5E4'); sphere(px, pz, 2, '#15803D'); }
+      // gold lettering on the floor at the door
+      groundText('WYRD STUDIO', cx, R.d - 6, 2.2, 'rgba(212,175,55,0.75)');
+    } else { // ---- the floors to come: a clean shell in the floor's colour, its name on the wall
+      flat(10, 14, R.w - 10, R.d - 8, 0.03, shadeHex(col, 0.35) + '33'); groundText(icon + '  ' + name.toUpperCase(), cx, R.d / 2 + 6, 2.4, col); groundText(blurb, cx, R.d / 2 + 11, 1.1, 'rgba(255,255,255,0.6)');
+      groundText('BEING BUILT · OPENING SOON', cx, R.d / 2 + 15, 1, 'rgba(255,255,255,0.45)');
+      for (const [px, pz] of [[6, 10], [R.w - 6, 10]]) { cylLit(px, pz, 1, 0, 2, '#E7E5E4'); sphere(px, pz, 2, '#15803D'); }
+      if (n === 10) { flat(0, 20, R.w, R.d, 0.02, '#0F172A'); box(cx - 16, 0, 26, cx + 16, 2, 40, '#111827'); faceText('ROOFTOP SESSIONS', cx, 1, 40.05, '#F97316', 0.5, 8); } // the rooftop: a stage under the sky
+    }
+  }
+  // the elevator: a panel of the ten floors; the doors close, the floor counts, the doors open on the new floor
+  function liftOpen() {
+    let el = document.getElementById('lift'); if (!el) { el = document.createElement('div'); el.id = 'lift'; document.body.append(el); }
+    const here = inside && inside.floor || 1;
+    el.innerHTML = `<div class="lfHd"><b>🛗 WYRD Studio</b><button class="lfX" aria-label="Close">✕</button></div><div class="lfGrid">${STUDIO_FLOORS.map(([i, n, , c], k) => `<button data-f="${k + 1}" class="${k + 1 === here ? 'on' : ''}" style="--c:${c}"><em>${k ? k + 1 : 'G'}</em><span>${i}</span><small>${n}</small></button>`).reverse().join('')}</div>`;
+    el.classList.add('on'); el.querySelector('.lfX').onclick = () => el.classList.remove('on');
+    el.querySelectorAll('[data-f]').forEach((b) => (b.onclick = () => { const f = +b.dataset.f; el.classList.remove('on'); if (f !== here) liftRide(here, f); }));
+  }
+  function liftRide(from, to) {
+    let v = document.getElementById('liftVeil'); if (!v) { v = document.createElement('div'); v.id = 'liftVeil'; v.innerHTML = '<i class="l"></i><i class="r"></i><b></b>'; document.body.append(v); }
+    const num = v.querySelector('b'); v.classList.add('on'); let f = from; num.textContent = from === 1 ? 'G' : from;
+    setTimeout(() => { const step = setInterval(() => { f += Math.sign(to - f); num.textContent = f === 1 ? 'G' : f; if (f === to) { clearInterval(step);
+      const [, name] = STUDIO_FLOORS[to - 1]; enterRoom('studio', 'place:studio:' + to, 'WYRD Studio · ' + name, { stairs: true, floor: to }).then(() => { me.x = inside.w / 2; me.z = 9; setTimeout(() => v.classList.remove('on'), 350); }); } }, 260); }, 550);
+  }
   function drawApartment(R) {
     const zone = (x0, z0, x1, z1, base, line, step, diag) => {
       flat(x0, z0, x1, z1, 0.02, base);
@@ -9048,7 +9117,7 @@
     if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
-  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer', 'homestore', 'mall', 'shops', 'arcade', ...Object.keys(WORK_ROOMS)]); // every commercial building opens
+  const ENTERABLE = new Set(['studio', 'club', 'casino', 'wyrdtower', 'arena', 'dealer', 'homestore', 'mall', 'shops', 'arcade', ...Object.keys(WORK_ROOMS)]); // every commercial building opens
   // what each place offers when you tap its tag: a question, and what happens if you say yes (null: coming soon)
   const OFFERS = {
     airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets every minute, or once round the island.', (p) => { at$(p); openPhone('airport'); }],
@@ -9102,6 +9171,7 @@
     if (p[0] === 'arena') { at$(p); return openPhone('arena'); }
     at$(p);
     if (p[0] === 'wyrdtower') return enterRoom('tower', 'place:tower', 'WYRD Tower');
+    if (p[0] === 'studio') return enterRoom('studio', 'place:studio:1', 'WYRD Studio · Lobby', { floor: 1 });
     if (p[0] === 'casino') return enterRoom('casino', 'place:casino', 'Island Casino');
     if (p[0] === 'dealer') { const dl = /lekki/i.test(p[5]) ? 'lekkiluxury' : 'polanco'; return enterRoom('dealer', 'place:dealer:' + dl, p[5], { dealer: dl }); }
     if (p[0] === 'homestore') return enterRoom('store', 'place:homestore', p[5]);
@@ -12151,6 +12221,7 @@
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
       // (the door no longer takes you out: Leave does)
+      if (inside.kind === 'studio' && Math.abs(me.x - inside.w / 2) < 7 && me.z < 11) { next = { label: '🛗 Take the elevator', run: () => liftOpen() }; }
       if (me.z < inside.d - 4) inside.entered = true;
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep', lounger: 'sleep' };
       let near = null, nd = 5;
@@ -12173,9 +12244,9 @@
       if (next) { /* a car to buy comes first */ } else if (pose && pose.kind !== 'dance' && pose.kind !== 'drink') next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y, r: st.r || 0 }; me.x = pose.x; me.z = pose.z; } };
-      else next = null;
+      else if (!(inside.kind === 'studio' && next)) next = null;
     }
-    else if (door('studio')) next = { label: '🎬 WYRD Studio: opening soon', run: () => openPhone('studio') };
+    else if (door('studio')) next = { label: '🎬 Enter WYRD Studio', run: () => enterRoom('studio', 'place:studio:1', 'WYRD Studio · Lobby', { floor: 1 }) };
     else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
     else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); clubWarm('place:club:' + p[1]); next = { label: '🎶 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
