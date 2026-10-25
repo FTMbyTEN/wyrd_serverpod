@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-25T15:35:37.292Z">
+<meta name="li-build" content="2026-10-25T15:50:18.515Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4837,8 +4837,8 @@
       const m = new T3.Mesh(new T3.PlaneGeometry(40, 14), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(cx, 10, 0.25 + sz); grp.add(m); ex.led = { c, g: c.getContext('2d'), tex }; }
     { const c = document.createElement('canvas'); c.width = 512; c.height = 128; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
       const m = new T3.Mesh(new T3.PlaneGeometry(R.w - 2, 17), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(R.w / 2, 9, 0.12); m.renderOrder = -1; m.visible = lekki; grp.add(m); ex.sea = { c, g: c.getContext('2d'), tex, at: 0 }; }
-    { const n = 16 * 6, geo = new T3.BoxGeometry(1.8, 0.08, 1.8), mat = new T3.MeshBasicMaterial({ toneMapped: false }), im = new T3.InstancedMesh(geo, mat, n), o = new T3.Object3D(); let k = 0;
-      const [dx0, dz0] = v3dance(R); for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { o.position.set(dx0 + 1 + i * 2, 0.05, dz0 + 1 + j * 2); o.updateMatrix(); im.setMatrixAt(k++, o.matrix); }
+    { const DD = v3dance(R), n = Math.round((DD[2] - DD[0]) / 2) * Math.round((DD[3] - DD[1]) / 2), geo = new T3.BoxGeometry(1.8, 0.08, 1.8), mat = new T3.MeshBasicMaterial({ toneMapped: false }), im = new T3.InstancedMesh(geo, mat, n), o = new T3.Object3D(); let k = 0;
+      const [dx0, dz0, dx1, dz1] = v3dance(R), NX = Math.round((dx1 - dx0) / 2), NZ = Math.round((dz1 - dz0) / 2); ex.fn = [NX, NZ]; for (let i = 0; i < NX; i++) for (let j = 0; j < NZ; j++) { o.position.set(dx0 + 1 + i * 2, 0.05, dz0 + 1 + j * 2); o.updateMatrix(); im.setMatrixAt(k++, o.matrix); }
       im.instanceColor = new T3.InstancedBufferAttribute(new Float32Array(n * 3), 3); grp.add(im); ex.floor = im; }
     ex.lights = [0, 1].map((k) => { const l = new T3.PointLight(0x22d3ee, 260, 70, 1.6); l.position.set(30 + k * 40, 14, 26); grp.add(l); return l; });
     { // a soft halo round each light, so the lights read as lights (a bright core fading out, drawn additively)
@@ -4867,7 +4867,7 @@
       if (nt) { g.fillStyle = '#FEF9C3'; g.beginPath(); g.arc(c.width * 0.72, H2 * 0.25, 9, 0, Math.PI * 2); g.fill(); for (let k = 0; k < 40; k++) { const R2 = rnd(k * 7 + 3); g.fillStyle = `rgba(255,255,255,${0.4 + 0.5 * Math.abs(Math.sin(t * 1.5 + k))})`; g.fillRect(R2() * c.width, R2() * H2 * 0.5, 1.5, 1.5); } }
       g.strokeStyle = nt ? 'rgba(165,243,252,0.4)' : 'rgba(255,255,255,0.6)'; for (let r = 0; r < 4; r++) { const y = H2 * (0.64 + r * 0.06), sh = (t * 20 * (1 + r * 0.3)) % 40; g.beginPath(); for (let px = -40 + sh; px < c.width; px += 40) { g.moveTo(px, y); g.lineTo(px + 18, y + 1); } g.stroke(); }
       tex.needsUpdate = true; }
-    { const im = ex.floor; let k = 0; for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { const d = Math.hypot(i - 7.5, (j - 2.5) * 1.6), ring = Math.max(0, Math.cos(d * 0.9 - t * 5)), w = 0.5 + 0.5 * Math.sin((i - j) * 0.5 + t * 2.2); col.setHSL(((hue + d * 12 + t * 30) % 360) / 360, 1, 0.12 + ring * (0.25 + beat * 0.3) + w * 0.08); im.setColorAt(k++, col); } im.instanceColor.needsUpdate = true; }
+    { const im = ex.floor, [NX, NZ] = ex.fn || [16, 6]; let k = 0; for (let i = 0; i < NX; i++) for (let j = 0; j < NZ; j++) { const d = Math.hypot(i - (NX - 1) / 2, (j - (NZ - 1) / 2) * 1.6), ring = Math.max(0, Math.cos(d * 0.9 - t * 5)), w = 0.5 + 0.5 * Math.sin((i - j) * 0.5 + t * 2.2); col.setHSL(((hue + d * 12 + t * 30) % 360) / 360, 1, 0.12 + ring * (0.25 + beat * 0.3) + w * 0.08); im.setColorAt(k++, col); } im.instanceColor.needsUpdate = true; }
     ex.lights.forEach((l, k) => { l.color.setHSL(((hue + k * 40) % 360) / 360, 1, 0.55); l.intensity = 160 + beat * 520 + Math.sin(t * 3 + k) * 40; });
     ex.halos.forEach((s, k) => { s.material.color.copy(ex.lights[k].color); const sc = 9 + beat * 9 + Math.sin(t * 3 + k) * 1.2; s.scale.set(sc, sc, 1); s.material.opacity = 0.55 + beat * 0.4; });
     ex.warm.forEach(([s, sc], k) => { const f = sc * (0.9 + 0.12 * Math.sin(t * 9 + k * 1.7) + 0.06 * Math.sin(t * 23 + k)); s.scale.set(f, f, 1); });
@@ -7028,6 +7028,12 @@
       x.strokeStyle = 'rgba(255,255,255,0.45)'; x.beginPath(); for (let k = 0; k < 8; k++) { const pz = pz0 + 3 + k * 4.8, ph = Math.sin(t * 2 + k) * 1.2; const p = P(px0 + 1 + ph, 0.05, pz), q = P(px1 - 1 + ph, 0.05, pz); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
       for (let k = 0; k < 5; k++) { const lz = 12 + k * 8; box(px0 - 6, 0, lz, px0 - 2, 0.9, lz + 2.2, '#F8FAFC'); box(px0 - 6, 0.9, lz, px0 - 5, 2.2, lz + 2.2, '#F8FAFC'); }
       for (const [px, pz] of [[WX + 5, 4], [R.w - 4, 58], [WX + 5, 58]]) palm(px, pz, 13);
+      for (const cz of [7, 18.5, 38]) { const c0 = WX + 2, c1 = WX + 10, z0 = cz, z1 = cz + 8; // a cabana, in the gaps between the lounges
+        flat(c0, z0, c1, z1, 0.03, '#E7D7BC'); for (const [qx, qz] of [[c0, z0], [c1, z0], [c0, z1], [c1, z1]]) box(qx - 0.15, 0, qz - 0.15, qx + 0.15, 8, qz + 0.15, '#F8FAFC');
+        box(c0 - 0.4, 8, z0 - 0.4, c1 + 0.4, 8.5, z1 + 0.4, '#F8FAFC'); box(c0 + 1, 8.5, z0 + 1, c1 - 1, 9.1, z1 - 1, '#E2E8F0');
+        box(c0 - 0.05, 0.2, z0 + 0.3, c0 + 0.05, 7.8, z0 + 2.6, 'rgba(255,255,255,0.55)'); box(c0 - 0.05, 0.2, z1 - 2.6, c0 + 0.05, 7.8, z1 - 0.3, 'rgba(255,255,255,0.55)'); box(c0 + 0.3, 0.2, z0 - 0.05, c1 - 0.3, 7.8, z0 + 0.05, 'rgba(255,255,255,0.45)'); // sheer curtains, tied back at the front
+        box(c0 + 1.5, 0, z0 + 1.5, c1 - 1.5, 1.4, z1 - 1.5, '#F5F5F4'); box(c0 + 1.5, 1.4, z0 + 1.5, c1 - 1.5, 3, z0 + 2.4, '#F5F5F4'); for (let k = 0; k < 3; k++) box(c0 + 2 + k * 1.9, 1.4, z0 + 2.4, c0 + 3.6 + k * 1.9, 2.1, z0 + 3.6, ['#0E7490', '#F43F5E', '#F59E0B'][k]); // the daybed and its cushions
+        cylLit(c0 + 1, z1 - 1, 0.5, 0, 1.4, '#A16207'); }
       for (let k = 0; k < 6; k++) { const tx2 = WX + 8 + k * 5.5; box(tx2 - 0.08, 0, 2, tx2 + 0.08, 3.4, 2.2, '#78350F'); }
       glow.push(() => { for (let k = 0; k < 6; k++) { const p = P(WX + 8 + k * 5.5, 3.6, 2.1), r = K * 2.4 * (0.85 + Math.sin(t * 9 + k) * 0.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,200,90,0.8)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); } });
     } else if (LK.theme === 'ozumba' || LK.theme === 'secret') {
@@ -8842,7 +8848,7 @@
       // the furniture follows the club's plan (see drawClubShell's PL): the stage's speakers move with the stage, the dance
       // floor goes where that club dances, the podiums and bar stools where they fit
       const plan = { lekki: { st: [24, 0], bar: [0, 6], dance: [[52, 30], [68, 30]], pod: [[50, 22], [86, 22], [50, 42], [86, 42]] },
-        quilox: { st: [0, 18], bar: [0, 0], dance: [[38, 48], [58, 48]], pod: [[24, 24], [72, 24], [24, 50], [72, 50]] },
+        quilox: { st: [0, 18], bar: [0, 0], dance: [[38, 37], [58, 37], [38, 49], [58, 49]], pod: [[24, 24], [72, 24], [24, 50], [72, 50]] },
         secret: { st: [-16, 0], bar: [0, 8], dance: [[48, 32], [64, 32]], pod: [[44, 22], [76, 22], [44, 44], [76, 44]] },
         vein: { st: [0, 8], bar: [0, 0], dance: [[40, 34], [56, 34]], pod: [[30, 24], [66, 24], [30, 46], [66, 46]] } }[look.theme];
       if (plan) { let d = 0, p = 0;
@@ -8851,7 +8857,8 @@
           else if (it.k === 'dance' && plan.dance[d]) [it.x, it.z] = plan.dance[d++];
           else if (it.k === 'podium' && plan.pod[p]) [it.x, it.z] = plan.pod[p++];
           else if (it.k === 'stool' && it.x < 12) { it.x += plan.bar[0]; it.z += plan.bar[1]; }
-        } }
+        }
+        while (plan.dance[d]) { const [dx, dz] = plan.dance[d++]; R.layout.push({ k: 'dance', x: dx, z: dz }); } } // a bigger floor than the classic two halves
     }
     if (!extra.tour && signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
