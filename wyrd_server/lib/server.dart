@@ -97,6 +97,11 @@ void run(List<String> args) async {
     ),
     '/lagos-island/map.json',
   );
+  // the game's build stamp: an open game checks it and offers the update when a newer one is out
+  pod.webServer.addRoute(
+    StaticRoute.file(File(Uri(path: 'web/pages/version.json').toFilePath())),
+    '/lagos-island/version.json',
+  );
   // Lagos Island's weather: the airport's observation, the model between reports; one reading for every player
   pod.webServer.addRoute(IslandWeatherRoute(), '/lagos-island/weather');
   // Flutterwave's payment webhook for buying naira (it only prompts a check with Flutterwave; see TopUp.settle).
