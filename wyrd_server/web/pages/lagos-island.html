@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-22T13:23:52.170Z">
+<meta name="li-build" content="2026-10-25T00:55:54.014Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1964,6 +1964,9 @@
   const canSW = 'serviceWorker' in navigator && !location.pathname.startsWith('/lagos-island') && /^https:|^http:\/\/localhost/.test(location.origin);
   if (canSW) navigator.serviceWorker.register('sw.js').catch(() => {});
   addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); APP.prompt = e; appBtn(); });
+  // each new version: a device that has the game downloads everything it needs in the background (models, textures,
+  // three.js), once, a little after it starts, so rooms and the live 3D open smoothly and work offline
+  if (canSW && navigator.serviceWorker.controller && VER.now !== 'dev' && store.get('li.cachedV') !== VER.now) setTimeout(() => appDownload(null).then(() => store.set('li.cachedV', VER.now)).catch(() => {}), 20000);
   addEventListener('appinstalled', () => { APP.installed = true; APP.prompt = null; appBtn(); notify('Lagos Island is installed. Open it from your home screen.', 'island'); });
   // download everything into the device's cache, with progress on the button
   async function appDownload(btn) {
@@ -4655,7 +4658,8 @@
   REC = null; // while set, the drawing kit records (build) or does nothing (skip) instead of drawing
   const V3 = { live: false, key: null, room: null, yaw: 0, pitch: 0.72, dist: 95, tx: 0, tz: 0, groups: null, extras: null, dummy: null, btn: null, t0: 0,
     pref: (() => { const q = new URLSearchParams(location.search).get('3d'); if (q === '0' || q === '1') { try { localStorage.setItem('li.3d', q); } catch {} return q === '1'; } try { return localStorage.getItem('li.3d') !== '0'; } catch { return true; } })() };
-  V3.eligible = (R) => !!(R && R.kind === 'club' && R.theme === 'lekki'); // the pilot room
+  V3.eligible = (R) => !!(R && ((R.kind === 'club' && R.theme === 'lekki') || R.kind === 'hq' || R.kind === 'home')); // Club Lekki and the apartments
+  const v3club = (R) => R.kind === 'club';
   V3.want = (R) => V3.pref && V3.eligible(R) && G3.ok && !!G3.renderer && !deco;
   // the projection while live: world to screen through the 3D camera (so everything drawn in 2D lands in the right place)
   V3.v = null;
@@ -4743,6 +4747,7 @@
     return ex;
   }
   function v3live(R, now) { // the parts that move, each frame
+    if (!v3club(R)) return v3homeLive(R, now);
     const ex = V3.extras, t = now / 1000, beat = clubBeat(R.key), hue = 165 + Math.sin(t * 0.6) * 35, T3 = G3.T, col = new T3.Color();
     { const { g, c, tex } = ex.led; for (let i = 0; i < 20; i++) for (let j = 0; j < 7; j++) { const w = Math.sin(i * 0.5 + t * 3) * 0.5 + Math.cos(j * 0.9 - t * 2) * 0.5; g.fillStyle = `hsl(${hue + ((i * 7 + j * 11) % 44) - 22},95%,${45 + w * 20 + beat * 25}%)`; g.fillRect(i * 12.8 + 1, j * 13.7 + 1, 11, 11.5); } tex.needsUpdate = true; }
     if (now - ex.sea.at > 120) { ex.sea.at = now; const { g, c, tex } = ex.sea, nt = night > 0.5, H2 = c.height;
@@ -4777,12 +4782,13 @@
     }
     for (const L of REC.labels) grp.add(v3label(L));
     REC = null;
-    V3.extras = v3extras(R, grp);
-    V3.env = null; V3.inside = v3inside(R, grp); V3.stage = v3stage(R, grp); V3.candles = v3candles(R, grp); V3.moodNow = null; // inside the building only: no beach round it
+    V3.env = null; V3.moodNow = null;
+    if (v3club(R)) { V3.extras = v3extras(R, grp); V3.inside = v3inside(R, grp); V3.stage = v3stage(R, grp); V3.candles = v3candles(R, grp); } // inside the building only: no beach round it
+    else { V3.extras = null; V3.stage = null; V3.candles = []; V3.inside = v3home(R, grp); }
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
     if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(2048, 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
-    key.intensity = 0.7; grp.add(key, key.target, new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, 0.32)); // a darker base: the club's own lights make the colour
+    key.intensity = v3club(R) ? 0.7 : night > 0.5 ? 0.45 : 1.25; grp.add(key, key.target, new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, v3club(R) ? 0.32 : night > 0.5 ? 0.4 : 0.85)); // a club: a darker base (its own lights make the colour); a home: daylight, or lamps at night
     G3.scene.add(grp); V3.groups = grp; V3.key = R.key;
   }
   // what the room draws, without the people: its shell and its furniture (recorded, or run only for the glows each frame)
@@ -4790,7 +4796,10 @@
     flat(0, 0, R.w, R.d, 0, R.floor);
     box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
     box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
-    drawClubShell(R, now);
+    if (v3club(R)) drawClubShell(R, now);
+    if (R.kind === 'hq') drawApartment(R);
+    if (R.kind === 'home') { drawHomeShell(R); if (R.style === 'nml') nmlInterior(R, now); }
+    if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     for (const it of R.layout) furnDraw(it, now);
   }
   function v3enter() {
@@ -4844,6 +4853,7 @@
     void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
     v3live(R, now);
     const r = G3.renderer; if (G3.w !== W || G3.h !== H || G3.dpr !== DPR) { r.setPixelRatio(DPR); r.setSize(W, H, false); G3.w = W; G3.h = H; G3.dpr = DPR; }
+    G3.renderer.toneMappingExposure = v3club(R) ? G3.renderer.toneMappingExposure : 1.15;
     r.setClearColor(night > 0.5 ? 0x070b1a : 0x0f172a, 1); r.clear(); r.render(G3.scene, cam3);
   }
   // a laptop's trackpad or a mouse in live 3D: two fingers swipe to turn and tilt, a pinch (ctrl) or a wheel notch zooms,
@@ -4935,13 +4945,38 @@
       inn.beams = [0, 1, 2, 3].map((k) => { const geo = new T3.ConeGeometry(4, 18, 16, 1, true); geo.translate(0, -9, 0); const m = new T3.Mesh(geo, beamMat.clone()); m.position.set(cx - 9 + k * 6, 16.4, 9.9); grp.add(m); return m; });
       const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(200,220,255,0.35)'); gr.addColorStop(1, 'rgba(200,220,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); const tex = new T3.CanvasTexture(c);
       inn.haze = [0, 1, 2, 3, 4].map((k) => { const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.35, toneMapped: false })); s.position.set(cx - 14 + k * 7, 4, 16 + (k % 2) * 4); s.scale.set(16, 8, 1); grp.add(s); return s; }); }
-    { // the building's walls: the right side and the front (with the door) join the back two; any wall between you and the camera fades
+    inn.walls = v3walls(R, grp);
+    return inn;
+  }
+  // a building's walls in live 3D: the right side and the front (with the door) join the back two; any wall between you and
+  // the camera fades away, as in The Sims
+  function v3walls(R, grp) {
+    const T3 = G3.T;
       const wm = (op) => new T3.MeshStandardMaterial({ color: new T3.Color().setStyle(R.wall || '#134E4A'), roughness: 0.85, transparent: true, opacity: op, depthWrite: true });
       const mk = (w, h, d, x0, y0, z0, cut) => { const m = new T3.Mesh(new T3.BoxGeometry(w, h, d), wm(1)); m.position.set(x0, y0, z0); m.userData.cut = cut; m.receiveShadow = !MOBILE; grp.add(m); return m; };
-      inn.walls = [mk(1.2, 18, R.d + 2.4, R.w + 0.6, 9, R.d / 2, 'xr'), mk(R.w / 2 - 6, 18, 1.2, (R.w / 2 - 6) / 2, 9, R.d + 0.6, 'zf'), mk(R.w / 2 - 6, 18, 1.2, R.w - (R.w / 2 - 6) / 2, 9, R.d + 0.6, 'zf'), mk(12, 6, 1.2, R.w / 2, 15, R.d + 0.6, 'zf'),
+      const walls = [mk(1.2, 18, R.d + 2.4, R.w + 0.6, 9, R.d / 2, 'xr'), mk(R.w / 2 - 6, 18, 1.2, (R.w / 2 - 6) / 2, 9, R.d + 0.6, 'zf'), mk(R.w / 2 - 6, 18, 1.2, R.w - (R.w / 2 - 6) / 2, 9, R.d + 0.6, 'zf'), mk(12, 6, 1.2, R.w / 2, 15, R.d + 0.6, 'zf'),
         mk(R.w + 2.4, 18, 1.2, R.w / 2, 9, -0.6 - 0.01, 'zb'), mk(1.2, 18, R.d + 2.4, -0.6 - 0.01, 9, R.d / 2, 'xl')];
-      const ceil = new T3.Mesh(new T3.BoxGeometry(R.w + 2.4, 0.6, 2), new T3.MeshStandardMaterial({ color: 0x0b0b12 })); ceil.position.set(R.w / 2, 18.3, -0.4); grp.add(ceil); }
+      const ceil = new T3.Mesh(new T3.BoxGeometry(R.w + 2.4, 0.6, 2), new T3.MeshStandardMaterial({ color: 0x0b0b12 })); ceil.position.set(R.w / 2, 18.3, -0.4); grp.add(ceil);  return walls;
+  }
+  function v3wallsFade(walls) {
+    const cp = V3.cam.position; for (const w of walls) { const out = w.userData.cut === 'xr' ? cp.x > inside.w : w.userData.cut === 'zf' ? cp.z > inside.d : w.userData.cut === 'zb' ? cp.z < 0 : cp.x < 0; const o = out ? 0.08 : 1; w.material.opacity += (o - w.material.opacity) * 0.15; w.material.depthWrite = w.material.opacity > 0.9; w.visible = w.material.opacity > 0.02; }
+  }
+  // an apartment in live 3D: its walls, warm ceiling lights (lamps glowing at night), daylight through the window by day
+  function v3home(R, grp) {
+    const T3 = G3.T, inn = { walls: v3walls(R, grp), lamps: [] }, nt = night > 0.5;
+    const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,230,180,1)'); gr.addColorStop(0.3, 'rgba(255,200,130,0.45)'); gr.addColorStop(1, 'rgba(255,170,90,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); const tex = new T3.CanvasTexture(c);
+    const nx = Math.max(1, Math.round(R.w / 32)), nz = Math.max(1, Math.round(R.d / 32));
+    for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) { const lx = R.w * (i + 0.5) / nx, lz = R.d * (j + 0.5) / nz;
+      const l = new T3.PointLight(0xffd9a0, nt ? 260 : 90, 46, 1.5); l.position.set(lx, 15, lz); if (!MOBILE && i === 0 && j === 0) { l.castShadow = true; l.shadow.mapSize.set(1024, 1024); } grp.add(l);
+      const shade = new T3.Mesh(new T3.CylinderGeometry(1.4, 2.2, 1.1, 20, 1, true), new T3.MeshStandardMaterial({ color: 0xf5e6c8, emissive: 0xffc070, emissiveIntensity: nt ? 0.9 : 0.25, side: T3.DoubleSide })); shade.position.set(lx, 16.4, lz); grp.add(shade);
+      const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false, opacity: nt ? 0.8 : 0.25 })); s.position.set(lx, 15.6, lz); s.scale.set(7, 7, 1); grp.add(s); inn.lamps.push([l, s]); }
+    if (!nt) { const sun = new T3.SpotLight(0xfff4d6, 900, 120, 0.6, 0.8, 1.2); sun.position.set(R.w * 0.3, 30, -10); sun.target.position.set(R.w * 0.45, 0, R.d * 0.45); grp.add(sun, sun.target); } // daylight in through the back window
     return inn;
+  }
+  function v3homeLive(R, now) {
+    const inn = V3.inside; if (!inn) return; const t = now / 1000, party = partyAt(R.key);
+    inn.lamps.forEach(([l, s], k) => { const base = night > 0.5 ? 260 : 90; if (party) { l.color.setHSL(((t * 40 + k * 90) % 360) / 360, 0.9, 0.6); l.intensity = base * 1.3; } else { l.color.setHex(0xffd9a0); l.intensity = base * (1 + 0.02 * Math.sin(t * 2 + k)); } s.material.color.copy(l.color); });
+    v3wallsFade(inn.walls);
   }
   function v3insideLive(R, now) {
     const inn = V3.inside; if (!inn) return; const t = now / 1000, beat = clubBeat(R.key), hue = 165 + Math.sin(t * 0.6) * 35;
@@ -4950,8 +4985,7 @@
     inn.screens.forEach((s, k) => s.material.color.setHSL(((hue + 160 + k * 20) % 360) / 360, 0.9, 0.45 + 0.15 * Math.abs(Math.sin(t * 5 + k))));
     inn.beams.forEach((b, k) => { b.rotation.z = Math.sin(t * 0.8 + k * 1.6) * 0.55; b.rotation.x = Math.cos(t * 0.6 + k) * 0.35; b.material.color.setHSL(((hue + k * 25) % 360) / 360, 1, 0.7); b.material.opacity = 0.07 + beat * 0.18; });
     inn.haze.forEach((s, k) => { s.material.opacity = 0.18 + 0.12 * Math.sin(t * 0.5 + k) + beat * 0.15; s.position.x += Math.sin(t * 0.2 + k) * 0.01; });
-    const cp = V3.cam.position; // a wall fades when the camera is on its outside
-    for (const w of inn.walls) { const out = w.userData.cut === 'xr' ? cp.x > R.w : w.userData.cut === 'zf' ? cp.z > R.d : w.userData.cut === 'zb' ? cp.z < 0 : cp.x < 0; const o = out ? 0.08 : 1; w.material.opacity += (o - w.material.opacity) * 0.15; w.material.depthWrite = w.material.opacity > 0.9; w.visible = w.material.opacity > 0.02; }
+    v3wallsFade(inn.walls);
   }
   // the DJ booth, the bar and the club's lights, in live 3D (where this club has them: its stage and bar are shifted)
   function v3stage(R, grp) {
@@ -8732,7 +8766,7 @@
   const DRINK = { want: false }, BARTENDER = { z: 34 };
   const VITALS = (() => { try { const v = JSON.parse(store.get('li.vitals') || 'null'); if (v && v.hp > 0) return v; } catch {} return { hp: 90 }; })();
   const barOpen = () => nightNow() > 0.5;
-  if (location.hostname === 'localhost') window.__li = { get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
+  if (location.hostname === 'localhost') window.__li = { enterRoom: (...a) => enterRoom(...a), get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
   const barOff = (R) => { const P0 = CLUB_PL[(R.look || clubLook(R.title)).theme]; return P0 ? P0.bar : [0, 0]; }; // where a club's bar is
   // what you're thinking: set on your phone, shown over you to everyone (sent as hex inside your look, the only text the island carries)
   let THOUGHT = store.get('li.thought') || '';
