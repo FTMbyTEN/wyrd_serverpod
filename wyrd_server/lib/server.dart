@@ -32,6 +32,8 @@ final _islandMime = <String, MimeType>{
   'bin': MimeType('application', 'octet-stream'),
   'png': MimeType('image', 'png'),
   'jpg': MimeType('image', 'jpeg'),
+  'js': MimeType('text', 'javascript'),
+  'json': MimeType('application', 'json'),
   'jpeg': MimeType('image', 'jpeg'),
   'webp': MimeType('image', 'webp'),
 };
@@ -107,8 +109,10 @@ void run(List<String> args) async {
   // Flutterwave's payment webhook for buying naira (it only prompts a check with Flutterwave; see TopUp.settle).
   pod.webServer.addRoute(FlutterwaveWebhookRoute(), '/lagos-island/flutterwave');
   // Lagos Island's 3D models: every car (CC BY, credited in the game) and every piece of furniture in the Eko
-  // Home Store (Kenney, CC0) with its store thumbnail, the accessories (Sketchfab, CC BY) and the private jet. Whatever is in these folders is served.
-  for (final dir in ['cars', 'furniture', 'furniture/thumbs', 'people', 'people/acc', 'people/wear', 'jets']) {
+  // Home Store (Kenney, CC0) with its store thumbnail, the accessories (Sketchfab, CC BY) and the private jet; the real
+  // Lagos map (OpenStreetMap, ODbL: the board and its chunks of streets and buildings) and the surfaces' textures (Poly
+  // Haven, CC0). Whatever is in these folders is served.
+  for (final dir in ['cars', 'furniture', 'furniture/thumbs', 'people', 'people/acc', 'people/wear', 'jets', 'map', 'map/world', 'textures']) {
     final d = Directory(Uri(path: 'web/pages/$dir').toFilePath());
     if (!d.existsSync()) continue;
     for (final f in d.listSync().whereType<File>()) {
