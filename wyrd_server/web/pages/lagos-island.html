@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-27T11:43:17.359Z">
+<meta name="li-build" content="2026-10-27T13:09:00.389Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1207,7 +1207,7 @@
   @media (min-width: 900px) and (pointer: fine) { #tApp, .touch #tApp { width: auto !important; padding: 0 16px 0 12px !important; gap: 8px; border-radius: 999px !important; } #tApp em { display: inline; } }
   body.ovl #tApp, body.ovl #tFs, body.ovl #tAppTip { display: none !important; }
   body.ovl #hud, body.phoneOn #hud { opacity: 0 !important; scale: .4; pointer-events: none !important; }
-  #minimap, #mmLab { transition: opacity .25s, scale .35s cubic-bezier(.3,1.6,.5,1); } body.ovl #minimap, body.ovl #mmLab, body.phoneOn #minimap, body.phoneOn #mmLab { opacity: 0 !important; scale: .4; pointer-events: none !important; }
+  #minimap, #mmLab { transition: opacity .25s, scale .35s cubic-bezier(.3,1.6,.5,1); } body.ovl #minimap, body.ovl #mmLab, body.phoneOn #minimap, body.phoneOn #mmLab, body.ovl #vcBtn, body.phoneOn #vcBtn { opacity: 0 !important; scale: .4; pointer-events: none !important; }
   #tAppTip, .touch #tAppTip { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(156px + env(safe-area-inset-top)) !important; }
   #tAppTip::after { left: auto !important; right: 12px; bottom: auto !important; top: -8px; border: 8px solid transparent !important; border-top: 0 !important; border-bottom-color: #0F172A !important; }
   #dlv { position: fixed; inset: 0; z-index: 72; display: grid; place-items: end center; background: rgba(2,6,23,.4); padding: 0 8px calc(8px + env(safe-area-inset-bottom)); font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -1686,9 +1686,10 @@
   // ?real=1: Lagos as it is, from OpenStreetMap (tools/osm2board.py): every road, bridge and creek on 100 m tiles, the
   // districts where they really are, every place on its real site (the made-up ones on new land at the city's edge)
   const REAL = window.LAGOS_BOARD || null;
-  if (REAL && REAL.rle) { const un = (rows) => rows.map((r) => r.split(',').map((s2) => s2[0].repeat(parseInt(s2.slice(1), 16))).join('')); REAL.rows = un(REAL.rle); REAL.bmask = un(REAL.brle || []); REAL.rmask = un(REAL.rrle || []); REAL.hmask = un(REAL.hrle || []); }
+  if (REAL && REAL.rle) { const un = (rows) => rows.map((r) => r.split(',').map((s2) => s2[0].repeat(parseInt(s2.slice(1), 16))).join('')); REAL.rows = un(REAL.rle); REAL.bmask = un(REAL.brle || []); REAL.rmask = un(REAL.rrle || []); REAL.hmask = un(REAL.hrle || []); REAL.tmask = un(REAL.trle || []); }
   const realBld = (i, j) => !!(REAL && REAL.bmask && REAL.bmask[j] && REAL.bmask[j][i] === '1'); // (a real building stands on this tile)
   const realRoad = (i, j) => !!(REAL && REAL.rmask && REAL.rmask[j] && REAL.rmask[j][i] === '1'); // (a street or its pavement reaches into this tile)
+  const realTall = (i, j) => (REAL && REAL.tmask && REAL.tmask[j] && +REAL.tmask[j][i]) || 0; // (a real tall building stands here: 1 a block, 2 a tower, drawn as the island's own)
   const realHouse = (i, j) => !!(REAL && REAL.hmask && REAL.hmask[j] && REAL.hmask[j][i] === '1'); // (a real low house stands here: drawn as one of the island's modelled houses)
   const BOARD = REAL ? { w: REAL.w, h: REAL.h } : { w: 96, h: 48 };
   if (REAL) { const cr = document.createElement('div'); cr.textContent = REAL.attribution; cr.style.cssText = 'position:fixed;right:6px;bottom:2px;z-index:5;font:600 9px system-ui,sans-serif;color:rgba(255,255,255,0.75);text-shadow:0 1px 2px rgba(0,0,0,0.6);pointer-events:none'; document.body.append(cr); } // (the map's credit, as its licence asks)
@@ -4882,7 +4883,10 @@
     const lying = pose === 'sleep' || (p.lie || 0) > 0.02; // going to sleep or waking: no walking about while it happens
     const dx = p.x == null || lying ? 0 : px - p.x, dz = p.z == null || lying ? 0 : pz - p.z, dt = p.t ? Math.min(0.1, (now - p.t) / 1000) : 0, speed = dt ? Math.hypot(dx, dz) / dt : 0;
     p.spd = (p.spd || 0) + (Math.min(60, speed) - (p.spd || 0)) * Math.min(1, dt * 8); // smoothed, so one uneven frame can't flick the walk to a jog
+    const ang0 = p.ang;
     if (Math.hypot(dx, dz) > 0.02) { const want = Math.atan2(dx, dz); let d = want - (p.ang ?? want); d = Math.atan2(Math.sin(d), Math.cos(d)); p.ang = (p.ang ?? want) + d * Math.min(1, dt * 14); } // turns into a new heading, not snapping
+    { let turn = ang0 == null || !dt ? 0 : p.ang - ang0; turn = Math.atan2(Math.sin(turn), Math.cos(turn)) / Math.max(dt, 1e-3); const fast = Math.min(1, p.spd / 25); // a body with weight: leaning into the turn, forward into a run
+      p.bank = (p.bank || 0) + (Math.max(-0.18, Math.min(0.18, -turn * 0.035 * fast)) - (p.bank || 0)) * Math.min(1, dt * 7); p.tilt = (p.tilt || 0) + (Math.min(0.13, p.spd * 0.0045) * (lying ? 0 : 1) - (p.tilt || 0)) * Math.min(1, dt * 5); }
     p.x = px; p.z = pz; p.t = now;
     // what they're doing
     const inWater = inside && inside.kind === 'beach' && pz < SHORE - 3, partying = inside && (inside.kind === 'club' || partyAt(inside.key));
@@ -4900,7 +4904,7 @@
       p.root.position.set(p.lx + Math.sin(yaw) * off, Math.min(by, by * e * 2) + (p.lie > 0.98 ? Math.sin(now / 900) * 0.04 : 0), p.lz + Math.cos(yaw) * off);
       if (p.acts[p.cur]) p.acts[p.cur].timeScale = p.lie > 0.6 ? 0.45 : 1;
       if (p.lie < 0.01) { p.root.rotation.x = 0; p.lx = null; } }
-    else { p.lx = null; p.root.rotation.x = 0; p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY + (V3_LIVE && !inside && V3.ws > 1 ? w3ground(px, pz) : 0), pz); /* (in the 3D streets: on the road, the pavement, the bridge deck) */ p.root.rotation.y = p.ang; }
+    else { p.lx = null; p.root.rotation.x = 0; p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY + (V3_LIVE && !inside && V3.ws > 1 ? w3ground(px, pz) : 0), pz); /* (in the 3D streets: on the road, the pavement, the bridge deck) */ p.root.rotation.order = 'YXZ'; p.root.rotation.y = p.ang; p.root.rotation.x = pose === 'sit' ? 0 : p.tilt || 0; p.root.rotation.z = pose === 'sit' ? 0 : p.bank || 0; }
     { const ws = V3_LIVE && !inside ? V3.ws || 1 : 1; if (ws !== 1) p.root.position.multiplyScalar(ws); p.root.scale.setScalar(ws !== 1 ? 0.52 : (inside && inside.ps) || 1); } /* (in the streets: a person 1.8 m against 3 m storeys) */
     // dressed for the day
     if (p.dress) {
@@ -4910,6 +4914,62 @@
     }
     G3.queue.push({ obj: p.root }); flush3d();
     return true;
+  }
+  // a car's moving parts, fitted to its model: four wheels (tyre, spoked alloy, brake disc and caliper) that roll at
+  // the road's speed, the front pair turning with the steering; the body on its springs (rolling into corners, diving
+  // under braking, squatting as it pulls away); brake lights, and head and tail lights after dark. The models are one
+  // solid mesh each, so the wheels are built to sit over the model's own
+  function carRig(o, model) {
+    if (o.userData.rig) return o.userData.rig; const T3 = G3.T, body = o.children[0], pb = new T3.Box3().setFromObject(G3.protos[model]);
+    const Lx = pb.max.x - pb.min.x, Hy = pb.max.y - pb.min.y, Wz = pb.max.z - pb.min.z, cz = (pb.max.z + pb.min.z) / 2, r = Hy * 0.21, tw = Wz * 0.12;
+    const M = V3.carMats || (V3.carMats = { tyre: new T3.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.92 }), rim: new T3.MeshStandardMaterial({ color: 0xC9CDD3, metalness: 0.9, roughness: 0.28 }), disc: new T3.MeshStandardMaterial({ color: 0x6B6F75, metalness: 0.7, roughness: 0.45 }), cal: new T3.MeshStandardMaterial({ color: 0xB91C1C, roughness: 0.5 }),
+      brake: new T3.MeshStandardMaterial({ color: 0x7F1D1D, emissive: 0xFF1A1A, emissiveIntensity: 0 }), head: new T3.MeshStandardMaterial({ color: 0xE5E7EB, emissive: 0xFFF4D6, emissiveIntensity: 0 }) });
+    const wheel = (x, side, front) => { const steer = new T3.Group(), spin = new T3.Group(); steer.position.set(x, pb.min.y + r, cz + side * (Wz / 2 - tw / 2 - Wz * 0.01)); steer.add(spin); o.add(steer);
+      const cyl = (rad, w, mat, z = 0, seg = 26) => { const m = new T3.Mesh(new T3.CylinderGeometry(rad, rad, w, seg), mat); m.rotation.x = Math.PI / 2; m.position.z = z; m.castShadow = true; return m; };
+      spin.add(cyl(r, tw, M.tyre)); spin.add(cyl(r * 0.66, tw * 1.04, M.rim)); spin.add(cyl(r * 0.5, tw * 0.3, M.disc, -side * tw * 0.2));
+      for (let k = 0; k < 5; k++) { const sp = new T3.Mesh(new T3.BoxGeometry(r * 1.18, r * 0.15, tw * 0.22), M.rim); sp.rotation.z = k * Math.PI * 2 / 5; sp.position.z = side * tw * 0.42; spin.add(sp); } // the spokes, on the outer face
+      spin.add(cyl(r * 0.16, tw * 1.12, M.disc, side * tw * 0.04, 12)); // the hub
+      const cal = new T3.Mesh(new T3.BoxGeometry(r * 0.32, r * 0.42, tw * 0.3), M.cal); cal.position.set(-r * 0.32, r * 0.18, -side * tw * 0.15); steer.add(cal); // the caliper, which doesn't turn with the wheel
+      return { steer, spin }; };
+    const fx = pb.max.x - Lx * 0.2, rx = pb.min.x + Lx * 0.21;
+    const lights = (x, mat, w) => { for (const side of [-1, 1]) { const m = new T3.Mesh(new T3.BoxGeometry(Lx * 0.012, Hy * 0.06, Wz * w), mat); m.position.set(x, pb.min.y + Hy * 0.5, cz + side * Wz * 0.33); body.add(m); } };
+    const brake = M.brake.clone(), head = M.head.clone(); lights(pb.min.x + Lx * 0.004, brake, 0.16); lights(pb.max.x - Lx * 0.004, head, 0.18);
+    // the cabin, seen through the glass and from the driver's seat: two seats in front, a bench behind, the dashboard and
+    // its screen, the centre console, and a steering wheel on its column, on the left (Nigeria drives on the right)
+    let wheelS = null;
+    { const IN = V3.cabMats || (V3.cabMats = { seat: new T3.MeshStandardMaterial({ color: 0x2A2420, roughness: 0.75 }), dash: new T3.MeshStandardMaterial({ color: 0x1C1D21, roughness: 0.6 }), scr: new T3.MeshStandardMaterial({ color: 0x0B1220, emissive: 0x38BDF8, emissiveIntensity: 0.6 }), trim: new T3.MeshStandardMaterial({ color: 0x8A8F96, metalness: 0.8, roughness: 0.3 }) });
+      const fl = pb.min.y + Hy * 0.3, cxs = pb.min.x + Lx * 0.47, put = (g, mat, x, y, z, rx = 0) => { const m = new T3.Mesh(g, mat); m.position.set(x, y, z); m.rotation.z = rx; body.add(m); return m; };
+      for (const side of [-1, 1]) { const zs = cz + side * Wz * 0.2; put(new T3.BoxGeometry(Lx * 0.1, Hy * 0.07, Wz * 0.2), IN.seat, cxs, fl, zs); put(new T3.BoxGeometry(Lx * 0.03, Hy * 0.24, Wz * 0.2), IN.seat, cxs - Lx * 0.055, fl + Hy * 0.12, zs, -0.18); put(new T3.BoxGeometry(Lx * 0.025, Hy * 0.06, Wz * 0.12), IN.seat, cxs - Lx * 0.062, fl + Hy * 0.27, zs, -0.18); }
+      put(new T3.BoxGeometry(Lx * 0.12, Hy * 0.08, Wz * 0.62), IN.seat, cxs - Lx * 0.2, fl, cz); // the bench behind
+      put(new T3.BoxGeometry(Lx * 0.07, Hy * 0.14, Wz * 0.78), IN.dash, cxs + Lx * 0.15, fl + Hy * 0.15, cz); put(new T3.BoxGeometry(Lx * 0.012, Hy * 0.06, Wz * 0.16), IN.scr, cxs + Lx * 0.118, fl + Hy * 0.2, cz); // the dashboard, its screen
+      put(new T3.BoxGeometry(Lx * 0.16, Hy * 0.07, Wz * 0.08), IN.dash, cxs + Lx * 0.05, fl + Hy * 0.02, cz); // the console
+      wheelS = new T3.Group(); wheelS.position.set(cxs + Lx * 0.1, fl + Hy * 0.2, cz - Wz * 0.2); wheelS.rotation.z = -0.35; body.add(wheelS); const rim = new T3.Mesh(new T3.TorusGeometry(Wz * 0.075, Wz * 0.011, 8, 22), IN.dash); rim.rotation.y = Math.PI / 2; wheelS.add(rim);
+      for (let k = 0; k < 3; k++) { const sp = new T3.Mesh(new T3.BoxGeometry(Wz * 0.005, Wz * 0.012, Wz * 0.07), IN.trim); sp.rotation.x = k * Math.PI * 2 / 3; sp.position.set(0, Math.cos(k * Math.PI * 2 / 3) * Wz * 0.035, Math.sin(k * Math.PI * 2 / 3) * Wz * 0.035); wheelS.add(sp); } } // (its rim and three spokes)
+    const wheels = [wheel(fx, -1, true), wheel(fx, 1, true), wheel(rx, -1), wheel(rx, 1)];
+    o.traverse((m) => { if (m.isMesh && m.parent !== body && !body.getObjectById(m.id)) m.userData.part = true; }); // (the wheels and lights keep their own colours whatever the paint)
+    body.traverse((m) => { if (m.isMesh && (m.material === brake || m.material === head)) m.userData.part = true; });
+    body.traverse((m) => { if (m.isMesh && Object.values(V3.cabMats || {}).includes(m.material)) m.userData.part = true; }); // (the cabin keeps its own colours too)
+    return (o.userData.rig = { r, wheels, body, brake, head, wheelS });
+  }
+  // the bodywork's paint: a colour laid over the model's own light paintwork only, so the glass, the tyres, the lights
+  // and the dark trim keep theirs (the models are one textured mesh, so it's done by what each pixel looks like)
+  function carPaint(o, rig, col) {
+    if (o.userData.paint === (col || null)) return; o.userData.paint = col || null; const T3 = G3.T;
+    rig.body.traverse((m) => { if (!m.isMesh || !m.material || m.userData.part) return;
+      if (!m.userData.pu) { m.material = m.material.clone(); const pu = m.userData.pu = { uPaint: { value: new T3.Color() }, uPaintOn: { value: 0 } };
+        m.material.onBeforeCompile = (sh) => { Object.assign(sh.uniforms, pu); sh.fragmentShader = 'uniform vec3 uPaint;\nuniform float uPaintOn;\n' + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n{ float pl = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114)), pmx = max(max(diffuseColor.r, diffuseColor.g), diffuseColor.b), pmn = min(min(diffuseColor.r, diffuseColor.g), diffuseColor.b); float pmask = uPaintOn * smoothstep(0.34, 0.52, pl) * (1.0 - smoothstep(0.08, 0.22, pmx - pmn)); diffuseColor.rgb = mix(diffuseColor.rgb, uPaint * (0.3 + pl * 0.95), pmask); }'); };
+        m.material.needsUpdate = true; }
+      m.userData.pu.uPaintOn.value = col ? 1 : 0; if (col) m.userData.pu.uPaint.value.set(col); });
+  }
+  function carPose(o, q, now) {
+    const rig = carRig(o, q.model), d = V3.drive && V3.drive.q === q ? V3.drive : null, dt = Math.min(0.1, (now - (q.wt || now)) / 1000); q.wt = now;
+    const v = d ? d.v : 0; q.spin = (q.spin || 0) + v * dt / (rig.r * (q.sc || 1)); // (the wheels roll exactly as far as the car goes)
+    const steer = d ? -(d.steer || 0) * 0.5 : 0; rig.wheels.forEach((w, k) => { w.spin.rotation.z = -q.spin; if (k < 2) w.steer.rotation.y += (steer - w.steer.rotation.y) * Math.min(1, dt * 12); });
+    const acc = d ? (v - (q.lastV ?? v)) / Math.max(dt, 1e-3) : 0; q.lastV = v; // the body on its springs
+    const wantRoll = d ? Math.max(-0.07, Math.min(0.07, -(d.steer || 0) * Math.abs(v) * 0.004)) : 0, wantPitch = d ? Math.max(-0.045, Math.min(0.045, -acc * 0.0035)) : 0;
+    rig.body.rotation.x += (wantRoll - rig.body.rotation.x) * Math.min(1, dt * 5); rig.body.rotation.z += (wantPitch - rig.body.rotation.z) * Math.min(1, dt * 6);
+    carPaint(o, rig, q.paint); if (rig.wheelS) rig.wheelS.rotation.x += ((d ? -(d.steer || 0) * 2.2 : 0) - rig.wheelS.rotation.x) * Math.min(1, dt * 10); // (the steering wheel turns with you)
+    const nt = night > 0.5, braking = !!(d && d.braking); rig.brake.emissiveIntensity = braking ? 2.4 : nt && d ? 0.7 : 0; rig.head.emissiveIntensity = nt && d ? 2.2 : 0;
   }
   // render the queued models with the game's camera and lay them into the picture (called between people, so they stay in front)
   function flush3d() {
@@ -4931,8 +4991,9 @@
       if (!list[k]) { const root = new THREE.Group(); root.add(G3.protos[q.model].clone(true)); list[k] = root; G3.scene.add(root); }
       const o = list[k]; used[q.model]++; q.o = o; // (which model stands for it this frame)
       const ws = V3_LIVE ? V3.ws || 1 : 1; o.visible = true; o.position.set(q.cx * ws, ((q.y || 0) + (ws > 1 && !inside ? w3ground(q.cx, q.cz) : 0)) * ws, q.cz * ws); o.rotation.set(0, -q.ang, q.pitch || 0); o.scale.setScalar(q.sc * ws);
+      if (V3_LIVE && ws > 1 && !inside) try { carPose(o, q, performance.now()); } catch {} // (out in the 3D streets: its wheels, springs and lights)
       if ((q.tint || null) !== (o.userData.tint || null)) {
-        o.traverse((m) => { if (!m.isMesh || !m.material || !m.material.color) return; if (!m.userData.own) { m.material = m.material.clone(); m.userData.own = true; m.userData.base = m.material.color.clone(); } const bc = m.userData.base, lum = 0.3 * bc.r + 0.59 * bc.g + 0.11 * bc.b; if (q.tintAll) { if (m.userData.map === undefined) m.userData.map = m.material.map || null; m.material.map = q.tint ? null : m.userData.map; m.material.needsUpdate = true; } m.material.color.copy(q.tint && (q.tintAll || lum > 0.6) ? new THREE.Color(q.tint) : bc); });
+        o.traverse((m) => { if (!m.isMesh || !m.material || !m.material.color || m.userData.part) return; if (!m.userData.own) { m.material = m.material.clone(); m.userData.own = true; m.userData.base = m.material.color.clone(); } const bc = m.userData.base, lum = 0.3 * bc.r + 0.59 * bc.g + 0.11 * bc.b; if (q.tintAll) { if (m.userData.map === undefined) m.userData.map = m.material.map || null; m.material.map = q.tint ? null : m.userData.map; m.material.needsUpdate = true; } m.material.color.copy(q.tint && (q.tintAll || lum > 0.6) ? new THREE.Color(q.tint) : bc); });
         o.userData.tint = q.tint || null;
       }
     }
@@ -6603,7 +6664,7 @@
     if (REAL && (realBld(i, j) || realRoad(i, j))) continue; // (a real building stands here, or a street runs through)
     if (REAL && sec && sec.fill === 'city' && v > 0.3) continue; // (New Town's made-up towers spread out on the real map's smaller tiles)
     if (sec && sec.fill) { if (sec.fill !== 'none') lots.push({ i, j, kind: sec.fill }); continue; }
-    if (REAL) { if (realHouse(i, j)) lots.push({ i, j, kind: 'house' }); else if (v < 0.22) lots.push({ i, j, kind: t === SAND ? 'palm' : 'trees' }); continue; } // (open ground on the real map: only the real buildings stand on it; a tree here and there)
+    if (REAL) { const tm = realTall(i, j); if (tm) lots.push({ i, j, kind: 'rtall', t: tm }); else if (realHouse(i, j)) lots.push({ i, j, kind: 'house' }); else if (v < 0.22) lots.push({ i, j, kind: t === SAND ? 'palm' : 'trees' }); continue; } // (open ground on the real map: only the real buildings stand on it; a tree here and there)
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   { const hq = new Map(); for (const l of lots) if (l.kind === 'hq') hq.set(l.i + ',' + l.j, l);
@@ -6772,7 +6833,7 @@
   function myRidePark() {
     const s2 = realRoadNear(me.x, me.z); if (!s2) return false; const side = s2.w / 4, nx = -Math.sin(s2.ang), nz = Math.cos(s2.ang);
     if (!G3.protos.porsche911) G3.vehicle('porsche911');
-    const q = V3.myRide || (V3.myRide = { model: 'porsche911', sc: 0.95, tint: '#1F6B3A', tintAll: true, mine: true, name: "Ten's Porsche 911" }); q.cx = s2.x + nx * side; q.cz = s2.z + nz * side; q.ang = s2.ang;
+    const q = V3.myRide || (V3.myRide = { model: 'porsche911', sc: 0.95, paint: '#1F6B3A', mine: true, name: "Ten's Porsche 911" }); q.cx = s2.x + nx * side; q.cz = s2.z + nz * side; q.ang = s2.ang;
     if (V3.wcars && !V3.wcars.includes(q)) V3.wcars.push(q); return true;
   }
   // ---- the minimap: a round map in the corner that turns with your view (what's ahead of you is up), like GTA's. The
@@ -6844,6 +6905,70 @@
     if (REAL) for (const c of WC.m.values()) if (c.ok) roads(c);
     return { roads, st };
   })();
+  // ---- voice, for friends only: talk to your friends, straight from phone to phone (WebRTC, peer to peer). Three ways:
+  // Nearby (the closest players on the street, their voices fading with distance), This place (everyone in the same
+  // room: a club, an HQ, a party) and a private Channel (a six-letter code you share). The server only passes the
+  // handshake between people who may hear each other, so nobody listens in on another channel; each player holds at
+  // most 8 voices at once, so a hundred people can be talking in their own groups at the same time
+  const VOICE = { on: false, mode: 'near', code: '', chan: '', peers: new Map(), stream: null, busy: false };
+  const RTC_CFG = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
+  const vMe = () => String((me$ && me$.handle) || myName || '').toLowerCase();
+  const vChannel = () => VOICE.mode === 'chan' ? (VOICE.code ? 'c:' + VOICE.code : '') : VOICE.mode === 'place' ? (inside && inside.key ? 'p:' + String(inside.key).replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 60) : '') : '';
+  function vPeer(h) {
+    let p = VOICE.peers.get(h); if (p) return p;
+    const pc = new RTCPeerConnection(RTC_CFG), audio = new Audio(); audio.autoplay = true; audio.playsInline = true;
+    if (VOICE.stream) for (const t of VOICE.stream.getTracks()) pc.addTrack(t, VOICE.stream);
+    pc.ontrack = (e) => { audio.srcObject = e.streams[0]; audio.play().catch(() => {}); };
+    pc.onconnectionstatechange = () => { if (['failed', 'closed'].includes(pc.connectionState)) vDrop(h); vUi(); };
+    p = { pc, audio, at: Date.now() }; VOICE.peers.set(h, p); return p;
+  }
+  function vDrop(h) { const p = VOICE.peers.get(h); if (!p) return; try { p.pc.close(); } catch {} p.audio.srcObject = null; VOICE.peers.delete(h); vUi(); }
+  const vIce = (pc) => new Promise((ok) => { if (pc.iceGatheringState === 'complete') return ok(); const t = setTimeout(ok, 2500); pc.addEventListener('icegatheringstatechange', () => { if (pc.iceGatheringState === 'complete') { clearTimeout(t); ok(); } }); }); // (the whole offer in one message)
+  const vSend = (h, obj) => my('voiceSignal', { to: h, channel: VOICE.chan, data: JSON.stringify(obj) }).catch(() => {});
+  async function vOffer(h) { const p = vPeer(h); const o = await p.pc.createOffer(); await p.pc.setLocalDescription(o); await vIce(p.pc); await vSend(h, { t: 'offer', sdp: p.pc.localDescription.sdp }); }
+  async function vInbox() {
+    if (!VOICE.on) return; let list = []; try { list = await my('voiceInbox'); } catch { return; }
+    for (const m of list || []) { try { const h = String(m.from).toLowerCase(), o = JSON.parse(m.data); if ((m.channel || '') !== VOICE.chan) continue; // (only my channel's)
+      if (o.t === 'offer') { if (VOICE.peers.has(h) && VOICE.peers.get(h).pc.signalingState !== 'stable') vDrop(h); const p = vPeer(h); await p.pc.setRemoteDescription({ type: 'offer', sdp: o.sdp }); const a = await p.pc.createAnswer(); await p.pc.setLocalDescription(a); await vIce(p.pc); await vSend(h, { t: 'answer', sdp: p.pc.localDescription.sdp }); }
+      else if (o.t === 'answer') { const p = VOICE.peers.get(h); if (p && p.pc.signalingState === 'have-local-offer') await p.pc.setRemoteDescription({ type: 'answer', sdp: o.sdp }); }
+      else if (o.t === 'bye') vDrop(h); } catch {} }
+  }
+  async function vTick() {
+    if (!VOICE.on || VOICE.busy) return; VOICE.busy = true;
+    try {
+      const chan = vChannel(), meH = vMe(); if (chan !== VOICE.chan) { if (VOICE.chan) my('voiceLeave', { channel: VOICE.chan }).catch(() => {}); for (const h of [...VOICE.peers.keys()]) vDrop(h); VOICE.chan = chan; }
+      let want = [];
+      if (chan) { const r = await my('voiceJoin', { channel: chan }); if (r && r.error) { tickerSay(r.error); } else want = (r.members || []).filter((h) => h !== meH); }
+      else if (VOICE.mode === 'near' && !inside) want = [...others.values()].map((o) => ({ h: String(o.name || '').toLowerCase(), d: Math.hypot(o.x - me.x, o.z - me.z) })).filter((o) => o.h && o.h !== meH && o.d < 65).sort((a2, b2) => a2.d - b2.d).slice(0, 8).map((o) => o.h);
+      const fr = new Set(((FR.list && FR.list.friends) || []).map((f) => String(f.handle || '').toLowerCase())); want = want.filter((h) => fr.has(h)); // (only ever your friends)
+      for (const h of [...VOICE.peers.keys()]) if (!want.includes(h)) { vSend(h, { t: 'bye' }); vDrop(h); }
+      for (const h of want) if (!VOICE.peers.has(h) && meH < h) vOffer(h).catch(() => vDrop(h)); // (the one whose name comes first calls; the other answers)
+      await vInbox();
+    } catch {} finally { VOICE.busy = false; }
+  }
+  function vVolumes() { // nearby voices fade with distance; a channel's are all at full
+    for (const [h, p] of VOICE.peers) { let v = 1; if (!VOICE.chan) { const o = [...others.values()].find((o2) => String(o2.name || '').toLowerCase() === h); v = o ? Math.max(0, Math.min(1, 1.15 - Math.hypot(o.x - me.x, o.z - me.z) / 65)) : 0; } p.audio.volume = v; }
+  }
+  async function voiceOn() {
+    if (!signedIn()) return tickerSay('Sign in to talk to other players');
+    try { VOICE.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); } catch { return tickerSay('Allow the microphone to talk'); }
+    VOICE.on = true; VOICE.chan = '__'; vUi(); vTick(); tickerSay(VOICE.mode === 'near' ? 'Voice on: your friends near you can hear you' : VOICE.mode === 'place' ? 'Voice on: your friends in this place can hear you' : 'Voice on: channel ' + VOICE.code + ' (friends only)');
+  }
+  function voiceOff() { VOICE.on = false; for (const h of [...VOICE.peers.keys()]) { vSend(h, { t: 'bye' }); vDrop(h); } if (VOICE.chan && VOICE.chan !== '__') my('voiceLeave', { channel: VOICE.chan }).catch(() => {}); VOICE.chan = ''; if (VOICE.stream) for (const t of VOICE.stream.getTracks()) t.stop(); VOICE.stream = null; vUi(); }
+  function vMenu() {
+    const pick = prompt('Voice: type 1 for Nearby, 2 for This place, 3 to start a private channel, or a channel code to join it', '1'); if (pick == null) return;
+    const v = pick.trim().toUpperCase();
+    if (v === '1') VOICE.mode = 'near'; else if (v === '2') VOICE.mode = 'place';
+    else if (v === '3') { VOICE.mode = 'chan'; VOICE.code = Array.from({ length: 6 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); tickerSay('Your channel code: ' + VOICE.code + '. Share it with your friends'); }
+    else if (/^[A-Z0-9]{6}$/.test(v)) { VOICE.mode = 'chan'; VOICE.code = v; } else return tickerSay('A channel code is six letters and numbers');
+    VOICE.chan = '__'; if (!VOICE.on) voiceOn(); else vTick(); vUi();
+  }
+  const vBtn = document.createElement('button'); vBtn.id = 'vcBtn'; vBtn.setAttribute('aria-label', 'Voice chat');
+  { const T0 = MOBILE || isTouch; vBtn.style.cssText = `position:fixed;${T0 ? 'right:calc(12px + env(safe-area-inset-right));top:calc(330px + env(safe-area-inset-top))' : 'left:148px;bottom:92px'};z-index:26;height:38px;min-width:38px;padding:0 12px;border:0;border-radius:19px;background:rgba(15,23,42,.82);color:#fff;font:800 12px 'Plus Jakarta Sans',system-ui;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer`; }
+  document.body.append(vBtn);
+  { let hold = 0; vBtn.addEventListener('pointerdown', () => { hold = setTimeout(() => { hold = 0; vMenu(); }, 550); }); vBtn.addEventListener('pointerup', () => { if (hold) { clearTimeout(hold); hold = 0; if (VOICE.on) voiceOff(); else voiceOn(); } }); vBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); clearTimeout(hold); hold = 0; vMenu(); }); }
+  function vUi() { const n = VOICE.peers.size, lab = VOICE.mode === 'near' ? 'Nearby' : VOICE.mode === 'place' ? 'This place' : VOICE.code; vBtn.style.background = VOICE.on ? 'linear-gradient(135deg,#16A34A,#0EA5E9)' : 'rgba(15,23,42,.82)'; vBtn.innerHTML = `<span style="font-size:15px">${VOICE.on ? '🎙️' : '🔇'}</span>${VOICE.on ? `${lab} · ${n}` : ''}`; vBtn.title = 'Voice with your friends. Tap: on or off · hold: Nearby, This place or a private channel'; }
+  vUi(); setInterval(() => { vBtn.style.display = playing ? 'flex' : 'none'; if (VOICE.on) { vTick(); vVolumes(); } }, 2000);
   // the 3D cell's share of the real city: its streets as one mesh (pavement, asphalt, the round joints that close each
   // bend, dashed centre lines), its buildings as another (walls with a band of windows to every floor, flat roofs), and
   // every building's outline a solid you walk round
@@ -6858,6 +6983,15 @@
         for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], key = Math.round(ax * 10) + ',' + Math.round(az * 10) + ',' + Math.round(bx * 10) + ',' + Math.round(bz * 10); if (seen.has(key) || !inC((ax + bx) / 2, (az + bz) / 2)) continue; seen.add(key);
           quad(pave, pc, PV, ax, az, bx, bz, w + 0.8, y - 0.02); quad(ash, ac, AS, ax, az, bx, bz, w, y); disc(pave, pc, PV, bx, bz, w + 0.8, y - 0.021); disc(ash, ac, AS, bx, bz, w, y + 0.001); if (k === 0) { disc(pave, pc, PV, ax, az, w + 0.8, y - 0.021); disc(ash, ac, AS, ax, az, w, y + 0.001); }
           if (r.c <= 3) { const L = Math.hypot(bx - ax, bz - az); for (let u = 1; u + 1.6 < L; u += 4) { const f0 = u / L, f1 = (u + 1.6) / L; quad(line, lc, WL, ax + (bx - ax) * f0, az + (bz - az) * f0, ax + (bx - ax) * f1, az + (bz - az) * f1, 0.08, y + 0.01); } } } }
+      { const lamps = []; for (const c of ch) for (const r of c.r) { if (r.br) continue; const w = REAL.widths[r.c] / 2 + 1.1, p2 = r.p; let acc = (Math.abs(p2[0] * 7 + p2[1] * 3) % 26), side = 1; // (a lamp every 26 units along each street, alternating sides)
+          for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L;
+            for (let u = 26 - acc; u < L; u += 26) { const lx = ax + (bx - ax) * u / L + nx * w * side, lz = az + (bz - az) * u / L + nz * w * side; if (inC(lx, lz)) lamps.push([lx, lz, Math.atan2(-nz * side, -nx * side)]); side = -side; }
+            acc = (acc + L) % 26; } }
+        if (lamps.length) { const o3 = new T3.Object3D(), mk = (geo, mat, f) => { const m = new T3.InstancedMesh(geo, mat, lamps.length); lamps.forEach((l, k) => { f(l); o3.updateMatrix(); m.setMatrixAt(k, o3.matrix); }); m.castShadow = !MOBILE; grp.add(m); };
+          const pole = new T3.MeshStandardMaterial({ color: 0x3A3F47, metalness: 0.6, roughness: 0.45 }), head = new T3.MeshStandardMaterial({ color: 0xF1F5F9, emissive: 0xFFD89A, emissiveIntensity: night > 0.5 ? 1.6 : 0 });
+          mk(new T3.CylinderGeometry(0.09, 0.13, 6.2, 8), pole, ([lx, lz]) => { o3.position.set(lx, 3.1, lz); o3.rotation.set(0, 0, 0); });
+          mk(new T3.BoxGeometry(1.5, 0.12, 0.12), pole, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 0.7, 6.1, lz + Math.sin(a) * 0.7); o3.rotation.set(0, -a, 0); });
+          mk(new T3.BoxGeometry(0.55, 0.16, 0.3), head, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); } }
       const am = new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1 }); am.userData.road = true;
       mesh(pave, pc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: T3.DoubleSide }));
       mesh(ash, ac, am); mesh(line, lc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 })); }
@@ -7049,7 +7183,8 @@
     for (const l of (REAL ? lotsIn(VT) : lots)) {
       if (!visible(l.i, l.j) && !(l.w && visible(l.i + 1, l.j))) continue;
       const a = l.i * T, b = l.j * T, c = a + T, d = b + T, R = rnd(l.i * 53 + l.j * 89);
-      const f = l.kind === 'plot' ? (REC && REC.clip ? () => w3plot(a, b, c, d, R, l) : REAL ? () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.grassLot) : () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.plot, C.plotEdge))
+      const f = l.kind === 'rtall' ? (() => { let first = true; const R2 = () => { if (first) { first = false; return l.t === 2 ? 0.12 : 0.45; } return R(); }; return () => cityLot(a, b, c, d, R2); })() // (a real tower or block: the city's modelled tower or office block)
+        : l.kind === 'plot' ? (REC && REC.clip ? () => w3plot(a, b, c, d, R, l) : REAL ? () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.grassLot) : () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.plot, C.plotEdge))
         : l.kind === 'house' && REC && REC.clip && oldTown(l.i, l.j) ? () => brazilHouse(a, b, c, d, R, l) : l.kind === 'house' && REC && REC.clip ? () => homeModel(lotHome(l, R), a, b, c, d) : l.kind === 'house' ? () => { flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.grassLot); const h = 4 + R() * 2; box(a + 2, 0, b + 2, c - 2, h, d - 2, ['#FFFFFF', '#FFF7E6', '#FDE68A'][Math.floor(R() * 3)]); gable(a + 1.7, b + 1.7, c - 1.7, d - 1.7, h, 2.6, ['#C2410C', '#9A3412', '#475569'][Math.floor(R() * 3)]); }
         : l.kind === 'trees' ? () => { tree(a + 3 + R() * 4, b + 3 + R() * 4, 2.3 + R(), R() < 0.5 ? C.tree : C.treeLight); if (R() < 0.5) tree(a + 2 + R() * 6, b + 2 + R() * 6, 1.8); }
         : l.kind === 'palm' ? () => palm(a + 5, b + 5, 8 + R() * 3)
@@ -10636,8 +10771,10 @@
         // each car to its own figures (CAR_STATS: 0-100 time, top speed), a body with weight: the throttle pulls hard low
         // down and fades toward the top; brakes bite; the air and the road slow you when you lift; the steering is quick in
         // town and calms at speed; the tyres' grip pulls any slide back into line, the handbrake (Space) lets it drift
-        const d = V3.drive, q = d.q, thr = Math.max(-1, Math.min(1, -iz)), str = Math.max(-1, Math.min(1, ix)), hb = keys.has(' '), st = CAR_STATS[q.model] || [0, 0, 300, 7, 220];
-        const top = Math.min(30, st[4] / 11), acc = Math.max(3, 30 / st[3]), brake = 26, rev = 7;
+        const d = V3.drive, q = d.q, thr = Math.max(-1, Math.min(1, -(iz - ((isTouch || MOBILE) ? stick.z : 0)))), str = Math.max(-1, Math.min(1, ix)), hb = keys.has(' '), st = CAR_STATS[q.model] || [0, 0, 300, 7, 220];
+        const top = Math.min(30, st[4] / 11), brake = 26, rev = 7, GEARS = [0.17, 0.32, 0.48, 0.65, 0.82, 1.01], vAbs = Math.max(0, d.v || 0); let gear = 0; while (gear < 5 && vAbs > GEARS[gear] * top) gear++;
+        const acc = Math.max(3, 30 / st[3]) * [1.3, 1.12, 1, 0.9, 0.8, 0.72][gear] * (d.shiftT > 0 ? 0.35 : 1); // (a gearbox: strong in first, easing off up the box, a breath at each change)
+        if (d.gear != null && gear !== d.gear && thr > 0.05) d.shiftT = 0.18; d.shiftT = Math.max(0, (d.shiftT || 0) - dt); d.gear = gear; d.braking = thr < -0.05 && (d.v || 0) > 0.5 || hb;
         d.steer = (d.steer || 0) + (str - (d.steer || 0)) * Math.min(1, dt * 7);
         let fx = Math.cos(q.ang), fz = Math.sin(q.ang); if (d.vx === undefined) { d.vx = fx * d.v; d.vz = fz * d.v; }
         let fwd = d.vx * fx + d.vz * fz, lat = -d.vx * fz + d.vz * fx; // (speed along the car, and sideways across it)
@@ -10652,7 +10789,8 @@
           if (ok(nx, nz)) { q.cx = nx; q.cz = nz; }
           else if (ok(nx, q.cz)) { q.cx = nx; d.vz *= -0.2; d.vx *= 0.8; } else if (ok(q.cx, nz)) { q.cz = nz; d.vx *= -0.2; d.vz *= 0.8; } // (a glancing blow: it scrapes along)
           else { d.vx *= -0.3; d.vz *= -0.3; if (Math.abs(fwd) > 9 && navigator.vibrate) navigator.vibrate(60); } } // (head on: it stops dead and rocks back)
-        d.v = d.vx * fx + d.vz * fz;
+        d.v = d.vx * fx + d.vz * fz; d.lat = lat;
+        carSound(d, top, GEARS, thr);
         if (!d.fp) { if (d.set != null && Math.abs(V3.dist - d.set) > 0.05) d.user = Math.max(8, V3.dist - (d.off || 0)); // (you zoomed: that's your distance now)
           const base = d.user ?? 40; d.off = (d.off || 0) + (Math.abs(d.v) * 0.6 - (d.off || 0)) * Math.min(1, dt * 1.5); V3.dist = d.set = base + d.off; } // (the camera hangs back a little more the faster you go, on top of the distance you chose)
         { let sp2 = document.getElementById('speedo'); if (!sp2) { sp2 = document.createElement('div'); sp2.id = 'speedo'; sp2.style.cssText = 'position:fixed;right:16px;bottom:150px;z-index:30;padding:8px 14px;border-radius:14px;background:rgba(15,23,42,.78);color:#fff;font:800 22px/1 system-ui;text-align:center;backdrop-filter:blur(8px);pointer-events:none'; document.body.append(sp2); }
@@ -10722,7 +10860,7 @@
   // the phone asking at once) costs no extra trip to the server. Anything that changes something clears them.
   const MY_READS = new Set(['board', 'civic', 'govBoard', 'me', 'stage', 'hqRequests', 'pendingShows', 'pendingJobs', 'payoutBanks', 'treasury2', 'topUpInfo', 'payoutAccount', 'room', 'myFurniture', 'groups', 'inbox', 'receipts', 'jobs', 'myJobs', 'friends', 'people', 'publicProfile', 'myCars', 'myJet', 'myHomes', 'homes', 'gridCareer', 'myOutfits', 'outfits', 'parties', 'stages', 'hqList', 'hqRow', 'earnings', 'keyOf', 'myFurniture', 'shows']);
   const MY_CACHE = new Map();
-  const MY_QUIET = new Set(['live', 'typing', 'read', 'messages', 'wake']); // chat traffic that changes nothing the cache holds
+  const MY_QUIET = new Set(['live', 'typing', 'read', 'messages', 'wake', 'voiceJoin', 'voiceLeave', 'voiceSignal', 'voiceInbox']); // chat and voice traffic that changes nothing the cache holds
   const MY_AGAIN = new Set([...MY_READS, 'live', 'typing', 'read', 'messages', 'postOnce']); // safe to send twice
   async function my(method, args = {}) {
     if (!MY_READS.has(method)) { if (!MY_QUIET.has(method)) { MY_CACHE.clear(); const pr = myNet(method, args); pr.finally(() => { if (signedIn()) { my('me').catch(() => {}); my('receipts').catch(() => {}); } }); return pr; } return myNet(method, args); }
@@ -11713,7 +11851,7 @@
     if (waking) return; waking = true; let ver = -1, fails = 0;
     while (signedIn()) {
       if (document.hidden) { await new Promise((ok) => setTimeout(ok, 4000)); continue; }
-      try { const r = await myNet('wake', { ver }); if (ver !== -1 && r.ver !== ver) { linkPoll(); friendsPoll(); } ver = r.ver; fails = 0; }
+      try { const r = await myNet('wake', { ver }); if (ver !== -1 && r.ver !== ver) { linkPoll(); friendsPoll(); if (VOICE.on) vInbox(); } ver = r.ver; fails = 0; }
       catch { await new Promise((ok) => setTimeout(ok, Math.min(30000, 2000 * 2 ** Math.min(4, fails++)))); }
     }
     waking = false;
@@ -13455,14 +13593,39 @@
     if (!want) return; plane.constant = 1.22 * (V3.ws || 1); G3.renderer.localClippingEnabled = true;
     if (V3.cabObj !== o) { o.traverse((m) => { if (m.isMesh && m.material && m.userData.own) { m.material.clippingPlanes = [plane]; m.material.clipShadows = true; } }); V3.cabObj = o; }
   }
+  // a phone's pedals: GAS and BRAKE on the right (held down, like the keys), DRIFT for the handbrake; the stick on
+  // the left steers. Shown only while driving on a touch screen
+  function drivePads(on) {
+    let el = document.getElementById('drvPads');
+    if (!on) { if (el) el.style.display = 'none'; for (const k of ['w', 's', ' ']) keys.delete(k); return; }
+    if (!el) { el = document.createElement('div'); el.id = 'drvPads'; el.style.cssText = 'position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(158px + env(safe-area-inset-bottom));z-index:31;display:flex;gap:10px;align-items:flex-end;touch-action:none;user-select:none;-webkit-user-select:none';
+      const pad = (label, key, bg, w, h) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = `width:${w}px;height:${h}px;border:0;border-radius:18px;background:${bg};color:#fff;font:900 13px 'Plus Jakarta Sans',system-ui;letter-spacing:.04em;box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 -4px 0 rgba(0,0,0,.25);touch-action:none`;
+        const down = (e) => { e.preventDefault(); keys.add(key); b.style.transform = 'scale(.94)'; }, up = (e) => { e.preventDefault(); keys.delete(key); b.style.transform = ''; };
+        b.addEventListener('pointerdown', down); b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('pointerleave', up); return b; };
+      el.append(pad('DRIFT', ' ', 'rgba(15,23,42,.8)', 64, 56), pad('BRAKE', 's', 'linear-gradient(160deg,#EF4444,#991B1B)', 74, 74), pad('GAS', 'w', 'linear-gradient(160deg,#22C55E,#15803D)', 82, 104)); document.body.append(el); }
+    el.style.display = 'flex';
+  }
   function driveStart(q) {
-    V3.drive = { q, v: 0, fp: false, dist: V3.dist }; V3.dist = 42; me.x = q.cx; me.z = q.cz; me.vx = me.vz = 0;
+    V3.drive = { q, v: 0, fp: false, dist: V3.dist }; V3.dist = 42; me.x = q.cx; me.z = q.cz; me.vx = me.vz = 0; if (isTouch || MOBILE) drivePads(true);
     if (!V3.viewBtn) { const b = V3.viewBtn = document.createElement('button'); b.id = 'drvView'; b.style.cssText = 'position:fixed;right:16px;bottom:96px;z-index:30;padding:10px 14px;border-radius:14px;border:0;background:rgba(15,23,42,.78);color:#fff;font:600 14px system-ui;backdrop-filter:blur(8px)'; b.onclick = () => { b.blur(); driveView(); }; document.body.append(b); }
     V3.viewBtn.textContent = '👁 Driver’s seat'; V3.viewBtn.style.display = 'block'; tickerSay('W / S to drive and brake, A / D to steer, Space to drift, V for the view');
   }
+  // the engine: two oscillators through a filter, their pitch the revs (climbing through each gear, dropping at each
+  // change), louder on the throttle; and the tyres squealing when the car slides. Quiet when the city's sound is off
+  function carSound(d, top, GEARS, thr) {
+    const c = audioCtx(); if (!c || c.state !== 'running') return;
+    let S2 = d.snd; if (!S2) { const out = c.createGain(); out.gain.value = 0; out.connect(c.destination); const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 900; f.connect(out);
+      const o1 = c.createOscillator(), o2 = c.createOscillator(); o1.type = 'sawtooth'; o2.type = 'square'; const g2 = c.createGain(); g2.gain.value = 0.35; o1.connect(f); o2.connect(g2); g2.connect(f); o1.start(); o2.start();
+      const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), ch = nb.getChannelData(0); for (let k = 0; k < ch.length; k++) ch[k] = Math.random() * 2 - 1; const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true; const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 3; const sq = c.createGain(); sq.gain.value = 0; ns.connect(bp); bp.connect(sq); sq.connect(c.destination); ns.start();
+      S2 = d.snd = { out, f, o1, o2, sq, ns }; }
+    const on = CITY.on && !document.hidden, v = Math.abs(d.v || 0), g = d.gear || 0, lo = g ? GEARS[g - 1] * top : 0, hi = GEARS[g] * top, rpm = 900 + Math.max(0, Math.min(1, (v - lo) / Math.max(0.1, hi - lo))) * 5200 * (d.shiftT > 0 ? 0.7 : 1), t = c.currentTime;
+    S2.o1.frequency.setTargetAtTime(rpm / 30, t, 0.05); S2.o2.frequency.setTargetAtTime(rpm / 60, t, 0.05); S2.f.frequency.setTargetAtTime(500 + rpm * 0.35, t, 0.08);
+    S2.out.gain.setTargetAtTime(on ? 0.035 + 0.06 * Math.max(0, thr) : 0, t, 0.08); S2.sq.gain.setTargetAtTime(on ? Math.max(0, Math.min(1, (Math.abs(d.lat || 0) - 2.5) / 6)) * 0.07 : 0, t, 0.05);
+  }
+  function carSoundOff(d) { const S2 = d && d.snd; if (!S2) return; try { const t = S2.out.context.currentTime; S2.out.gain.setTargetAtTime(0, t, 0.1); S2.sq.gain.setTargetAtTime(0, t, 0.05); setTimeout(() => { try { S2.o1.stop(); S2.o2.stop(); S2.ns.stop(); } catch {} }, 600); } catch {} d.snd = null; }
   function driveView() { const d = V3.drive; if (!d) return; d.fp = !d.fp; if (!d.fp && V3.cam) { V3.cam.near = 2.5; V3.cam.updateProjectionMatrix(); } V3.viewBtn.textContent = d.fp ? '👁 Behind the car' : '👁 Driver’s seat'; }
   function driveExit() {
-    const d = V3.drive; if (!d) return; const q = d.q, fx = Math.cos(q.ang), fz = Math.sin(q.ang); V3.drive = null; V3.dist = d.dist || 30; if (V3.cam) { V3.cam.near = 2.5; V3.cam.updateProjectionMatrix(); }
+    const d = V3.drive; if (!d) return; carSoundOff(d); drivePads(false); const q = d.q, fx = Math.cos(q.ang), fz = Math.sin(q.ang); V3.drive = null; V3.dist = d.dist || 30; if (V3.cam) { V3.cam.near = 2.5; V3.cam.updateProjectionMatrix(); }
     for (const sd of [1, -1]) { const px = q.cx + fz * 1.8 * sd, pz = q.cz - fx * 1.8 * sd; if (walkable(px, pz)) { me.x = px; me.z = pz; break; } } me.vx = me.vz = 0; // out of the driver's door (or the other one)
     if (V3.viewBtn) V3.viewBtn.style.display = 'none'; { const sp2 = document.getElementById('speedo'); if (sp2) sp2.style.display = 'none'; }
   }

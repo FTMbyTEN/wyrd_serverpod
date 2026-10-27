@@ -3321,6 +3321,75 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'ok': true});
   }
 
+  // ---------------- voice: players talk to each other directly (WebRTC, peer to peer) ----------------
+  // Voice is for friends only. The server only carries the handshake (offers, answers) between two friends who may
+  // hear each other: members of
+  // the same channel (a private one by its code, `c:<code>`, or a place's, `p:<room>`), or two players standing near
+  // each other on the street. A channel holds at most [_vMax]; members who stop checking in drop out after 40 s.
+  static const _vMax = 8;
+  static const _vNear = 70.0;
+  static final _vbox = <String, List<Map<String, dynamic>>>{}; // a player's id -> handshakes waiting for them
+  static final _vchan = <String, Map<String, DateTime>>{}; // channel -> handle (lower case) -> last check-in
+
+  static Map<String, DateTime> _vMembers(String channel) {
+    final m = _vchan[channel] ??= {};
+    m.removeWhere((_, t) => DateTime.now().difference(t) > const Duration(seconds: 40));
+    if (m.isEmpty) _vchan.remove(channel);
+    return m;
+  }
+
+  static bool _vChannelOk(String c) =>
+      RegExp(r'^(c:[A-Z0-9]{6}|p:[A-Za-z0-9:_\-]{1,60})$').hasMatch(c);
+
+  /// Join (or stay in) voice [channel]; returns who's in it. Call again every 15 s or so to stay in.
+  Future<String> voiceJoin(Session session, String channel) async {
+    if (!_vChannelOk(channel)) return _err('Not a voice channel.');
+    final me = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    if (me == null) return _err('Make your Lagosian first.');
+    final k = me.handle.toLowerCase(), m = _vMembers(channel);
+    if (!m.containsKey(k) && m.length >= _vMax) return _err('That channel is full ($_vMax people).');
+    (_vchan[channel] ??= {})[k] = DateTime.now();
+    return jsonEncode({'channel': channel, 'members': [for (final h in _vMembers(channel).keys) h]});
+  }
+
+  /// Leave voice [channel].
+  Future<String> voiceLeave(Session session, String channel) async {
+    final me = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    if (me != null) _vchan[channel]?.remove(me.handle.toLowerCase());
+    return jsonEncode({'ok': true});
+  }
+
+  /// Hand [data] (a WebRTC offer or answer, as JSON) to the player [to], if we may hear each other: the same
+  /// [channel], or (no channel) near each other on the street. It wakes their game at once.
+  Future<String> voiceSignal(Session session, String to, String channel, String data) async {
+    if (data.length > 16000) return _err('Too long.');
+    final me = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
+    final them = await _byHandle(session, to);
+    if (me == null || them == null || them.authUserId == me.authUserId) return _err('No one to talk to.');
+    final friends = await IslandFriend.db.findFirstRow(session,
+        where: (t) => t.status.equals('accepted') & ((t.fromUser.equals(me.authUserId) & t.toUser.equals(them.authUserId)) | (t.fromUser.equals(them.authUserId) & t.toUser.equals(me.authUserId))));
+    if (friends == null) return _err('Voice is for friends only.');
+    final a = me.handle.toLowerCase(), b = them.handle.toLowerCase();
+    var ok = false;
+    if (channel.isNotEmpty) {
+      final m = _vMembers(channel);
+      ok = m.containsKey(a) && m.containsKey(b);
+    } else {
+      final p = IslandEndpoint.here(me.handle), q = IslandEndpoint.here(them.handle);
+      ok = p != null && q != null && sqrt(pow(p.x - q.x, 2) + pow(p.z - q.z, 2)) <= _vNear;
+    }
+    if (!ok) return _err('You can only talk to people in your channel or near you.');
+    final box = _vbox[them.authUserId.uuid] ??= [];
+    box.add({'from': me.handle, 'channel': channel, 'data': data});
+    if (box.length > 60) box.removeRange(0, box.length - 60);
+    _ping(them.authUserId);
+    return jsonEncode({'ok': true});
+  }
+
+  /// The handshakes waiting for me (each taken once).
+  Future<String> voiceInbox(Session session) async =>
+      jsonEncode(_vbox.remove(_user(session).uuid) ?? const []);
+
   /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
   Future<String> wake(Session session, int ver) async {
     final k = _user(session).uuid;
