@@ -30,6 +30,7 @@ class PoliceService {
     'CD-1': ('Careless driving: a crash', 2),
     'PT-1': ('Striking a patrol car', 4),
     'FS-1': ('Failing to stop for a patrol', 3),
+    'TH-1': ('Car theft', 4),
   };
 
   /// how sure each kind of evidence is, before anything else (a unit's sensor also by its health)
@@ -288,6 +289,13 @@ class PoliceService {
         'confidence': _source['patrol'],
         'detail': 'saw it from the patrol car',
       });
+    if (code == 'TH-1')
+      evidence.add({
+        'source': 'tracker',
+        'id': 'tracker',
+        'confidence': 0.95,
+        'detail': "the car's tracker and its owner's report",
+      });
     if (code == 'CD-1' || code == 'PT-1')
       evidence.add({
         'source': 'crash',
@@ -320,7 +328,8 @@ class PoliceService {
     var amount = 0;
     if (conf < 0.5) {
       outcome = 'note';
-    } else if (conf < 0.8 || before.isEmpty) {
+    } else if (conf < 0.8 || (before.isEmpty && code != 'TH-1')) {
+      // (theft is never let off with a warning)
       outcome = 'warning';
     } else {
       outcome = 'fine';
@@ -353,7 +362,7 @@ class PoliceService {
             : 'watched',
         stateAt: now,
       );
-      if (severity >= 3)
+      if (severity >= 3 && code != 'TH-1')
         CityWire.happened(
           code == 'PT-1'
               ? 'crash'

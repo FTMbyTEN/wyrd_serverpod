@@ -810,6 +810,21 @@ class EndpointIsland extends _isc.EndpointRef {
   );
 
   /// A line of chat, heard by the people near the speaker.
+  /// A pass for the live server on Cloudflare (play.lagos-island.workers.dev/live): who you are, your island name and
+  /// your friends' names, signed with the shared `liveSecret` and good for 15 minutes. The live server trusts nothing
+  /// else: the name others see and who you may talk to come from here, as they do from [tick].
+  _ida.Future<String> liveTicket(
+    String id,
+    String key,
+  ) => caller.callServerEndpoint<String>(
+    'island',
+    'liveTicket',
+    {
+      'id': id,
+      'key': key,
+    },
+  );
+
   _ida.Future<void> say(
     String id,
     String text,
@@ -1617,6 +1632,54 @@ class EndpointIslandMe extends _isc.EndpointRef {
         'pushSubscribe',
         {'endpoint': endpoint},
       );
+
+  /// Join (or stay in) voice [channel]; returns who's in it. Call again every 15 s or so to stay in.
+  _ida.Future<String> voiceJoin(String channel) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'voiceJoin',
+        {'channel': channel},
+      );
+
+  /// Taking a car that isn't yours, at [place]: car theft under WYRD's law (Fair Streets). The car's tracker reports it,
+  /// so it's always a fine, never a warning, and it puts the police on you.
+  _ida.Future<String> carTheft(String place) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'carTheft',
+        {'place': place},
+      );
+
+  /// Leave voice [channel].
+  _ida.Future<String> voiceLeave(String channel) =>
+      caller.callServerEndpoint<String>(
+        'islandMe',
+        'voiceLeave',
+        {'channel': channel},
+      );
+
+  /// Hand [data] (a WebRTC offer or answer, as JSON) to the player [to], if we may hear each other: the same
+  /// [channel], or (no channel) near each other on the street. It wakes their game at once.
+  _ida.Future<String> voiceSignal(
+    String to,
+    String channel,
+    String data,
+  ) => caller.callServerEndpoint<String>(
+    'islandMe',
+    'voiceSignal',
+    {
+      'to': to,
+      'channel': channel,
+      'data': data,
+    },
+  );
+
+  /// The handshakes waiting for me (each taken once).
+  _ida.Future<String> voiceInbox() => caller.callServerEndpoint<String>(
+    'islandMe',
+    'voiceInbox',
+    {},
+  );
 
   /// Wait (up to 25 s) until something happens to me (my number moves past [ver]); then look at friends and messages.
   _ida.Future<String> wake(int ver) => caller.callServerEndpoint<String>(

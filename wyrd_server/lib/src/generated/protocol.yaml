@@ -59,6 +59,7 @@ island:
   - tick:
   - online:
   - spin:
+  - liveTicket:
   - say:
 islandMe:
   - setEmail:
@@ -138,6 +139,11 @@ islandMe:
   - publicProfile:
   - people:
   - pushSubscribe:
+  - voiceJoin:
+  - carTheft:
+  - voiceLeave:
+  - voiceSignal:
+  - voiceInbox:
   - wake:
   - friendRequest:
   - friendRespond:

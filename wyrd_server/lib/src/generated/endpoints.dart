@@ -1472,6 +1472,31 @@ class Endpoints extends _is.EndpointDispatch {
                 params['key'],
               ),
         ),
+        'liveTicket': _is.MethodConnector(
+          name: 'liveTicket',
+          params: {
+            'id': _is.ParameterDescription(
+              name: 'id',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'key': _is.ParameterDescription(
+              name: 'key',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['island'] as _i1elbils.IslandEndpoint).liveTicket(
+                    session,
+                    params['id'],
+                    params['key'],
+                  ),
+        ),
         'say': _is.MethodConnector(
           name: 'say',
           params: {
@@ -3072,6 +3097,104 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     params['endpoint'],
                   ),
+        ),
+        'voiceJoin': _is.MethodConnector(
+          name: 'voiceJoin',
+          params: {
+            'channel': _is.ParameterDescription(
+              name: 'channel',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .voiceJoin(
+                    session,
+                    params['channel'],
+                  ),
+        ),
+        'carTheft': _is.MethodConnector(
+          name: 'carTheft',
+          params: {
+            'place': _is.ParameterDescription(
+              name: 'place',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .carTheft(
+                    session,
+                    params['place'],
+                  ),
+        ),
+        'voiceLeave': _is.MethodConnector(
+          name: 'voiceLeave',
+          params: {
+            'channel': _is.ParameterDescription(
+              name: 'channel',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .voiceLeave(
+                    session,
+                    params['channel'],
+                  ),
+        ),
+        'voiceSignal': _is.MethodConnector(
+          name: 'voiceSignal',
+          params: {
+            'to': _is.ParameterDescription(
+              name: 'to',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'channel': _is.ParameterDescription(
+              name: 'channel',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'data': _is.ParameterDescription(
+              name: 'data',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .voiceSignal(
+                    session,
+                    params['to'],
+                    params['channel'],
+                    params['data'],
+                  ),
+        ),
+        'voiceInbox': _is.MethodConnector(
+          name: 'voiceInbox',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['islandMe'] as _ixszl6xq.IslandMeEndpoint)
+                  .voiceInbox(session),
         ),
         'wake': _is.MethodConnector(
           name: 'wake',

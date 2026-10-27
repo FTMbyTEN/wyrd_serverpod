@@ -8,6 +8,7 @@ import 'package:serverpod/serverpod.dart';
 import '../drone/drone_service.dart';
 import '../generated/protocol.dart';
 import '../world/bank.dart';
+import '../world/police_service.dart';
 import '../world/world_authority.dart';
 import 'grid_career.dart';
 import 'island_auth_endpoint.dart';
@@ -3351,6 +3352,11 @@ class IslandMeEndpoint extends Endpoint {
     (_vchan[channel] ??= {})[k] = DateTime.now();
     return jsonEncode({'channel': channel, 'members': [for (final h in _vMembers(channel).keys) h]});
   }
+
+  /// Taking a car that isn't yours, at [place]: car theft under WYRD's law (Fair Streets). The car's tracker reports it,
+  /// so it's always a fine, never a warning, and it puts the police on you.
+  Future<String> carTheft(Session session, String place) =>
+      PoliceService.report(session, _user(session), jsonEncode({'code': 'TH-1', 'place': place}));
 
   /// Leave voice [channel].
   Future<String> voiceLeave(Session session, String channel) async {

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
+
 import 'package:serverpod/serverpod.dart';
 
 import '../generated/protocol.dart';
@@ -238,6 +240,38 @@ class IslandEndpoint extends Endpoint {
   }
 
   /// A line of chat, heard by the people near the speaker.
+  /// A pass for the live server on Cloudflare (play.lagos-island.workers.dev/live): who you are, your island name and
+  /// your friends' names, signed with the shared `liveSecret` and good for 15 minutes. The live server trusts nothing
+  /// else: the name others see and who you may talk to come from here, as they do from [tick].
+  Future<String> liveTicket(Session session, String id, String key) async {
+    final secret = (session.passwords['liveSecret'] ?? '').trim();
+    final taken = _players[id];
+    if (secret.isEmpty || !_okId(id) || !_okKey(key) || (taken != null && taken.key != key)) return jsonEncode({'error': 'no'});
+    final handle = await _handleOf(session);
+    final ghost = handle != null && _ghosts.contains(session.authenticated!.userIdentifier);
+    final friends = <String>[];
+    if (handle != null && !ghost) {
+      final uid = UuidValue.fromString(session.authenticated!.userIdentifier);
+      final rows = await IslandFriend.db.find(session, where: (t) => t.status.equals('accepted') & (t.fromUser.equals(uid) | t.toUser.equals(uid)), limit: 500);
+      final ids = {for (final r in rows) r.fromUser == uid ? r.toUser : r.fromUser};
+      if (ids.isNotEmpty) {
+        for (final p in await IslandProfile.db.find(session, where: (t) => t.authUserId.inSet(ids))) {
+          friends.add(p.handle.toLowerCase());
+        }
+      }
+    }
+    final body = base64Url.encode(utf8.encode(jsonEncode({
+      'id': id,
+      'name': handle == null ? 'Guest ${id.substring(id.length - 4).toUpperCase()}' : ghost ? 'Anonymous' : handle,
+      'v': handle != null && !ghost,
+      'h': handle == null || ghost ? '' : handle.toLowerCase(),
+      'f': friends,
+      'exp': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 900,
+    })));
+    final sig = base64Url.encode(Hmac(sha256, utf8.encode(secret)).convert(utf8.encode(body)).bytes);
+    return jsonEncode({'ticket': '$body.$sig'});
+  }
+
   Future<void> say(Session session, String id, String text, String key) async {
     final p = _owned(id, key);
     final t = _clean(text, 140);
