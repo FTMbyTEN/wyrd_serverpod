@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-27T23:28:17.570Z">
+<meta name="li-build" content="2026-10-27T23:44:25.964Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4955,7 +4955,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     const want = p.lie > 0.04 ? (p.lie < 0.55 ? 'Sitting_Idle_Loop' : 'Idle_Loop') : pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : sn > 18 ? 'Sprint_Loop' : sn > 13 ? 'Jog_Fwd_Loop' : sn > 1.2 ? 'Walk_Loop' : partying && pose === 'dance' ? 'Dance_Loop' : 'Idle_Loop';
     if (p.cur !== want && p.acts[want]) { const next = p.acts[want].reset().play(); if (p.cur && p.acts[p.cur]) p.acts[p.cur].crossFadeTo(next, 0.25, false); p.cur = want; }
     if (p.acts[p.cur]) p.acts[p.cur].timeScale = p.cur === 'Walk_Loop' ? Math.max(0.6, Math.min(1.4, sn / 10)) : p.cur === 'Sprint_Loop' ? Math.max(0.8, Math.min(1.3, sn / 24)) : p.cur === 'Jog_Fwd_Loop' ? Math.max(0.8, Math.min(1.3, sn / 15)) : 1; // feet that keep up with the ground
-    p.mixer.update(dt);
+    { const far = Math.hypot(px - me.x, pz - me.z) > (MOBILE ? 45 : 80); p.acc = (p.acc || 0) + dt; p.fc = (p.fc || 0) + 1; if (!far || p.fc % 3 === 0) { p.mixer.update(p.acc); p.acc = 0; } } // (far off, a step every third frame: no one can tell, and phones keep up)
     if (p.lie > 0.004) { // in bed: sit on the edge, then lie back, head on the pillow; a slow breath while asleep
       const e = p.lie * p.lie * (3 - 2 * p.lie), yaw = lieRot ? Math.PI / 2 : 0, off = 3.3 * e, by = (seatY || 2.6) - 0.2;
       if (p.lx == null || pose !== 'sleep' && p.lie > 0.98) { p.lx = px; p.lz = pz; } p.lx += (px - p.lx) * Math.min(1, dt * 4); p.lz += (pz - p.lz) * Math.min(1, dt * 4);
@@ -5412,6 +5412,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     x.clearRect(0, 0, W, H);
     // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
+    if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
     if (!V3.drive) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); // (at the wheel you're in the car)
     if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < (q.traffic ? 200 : 75) && Math.abs(q.cz - me.z) < (q.traffic ? 200 : 75)).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
     flush3d(); w3cabin(true);
@@ -7240,6 +7241,31 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
       const off = q.rd.w * q.lane, px = ax + ux * q.u - uz * off, pz = az + uz * q.u + ux * off; // (on the right of its way)
       q.cx += (px - q.cx) * Math.min(1, dt * 8); q.cz += (pz - q.cz) * Math.min(1, dt * 8); const want2 = Math.atan2(uz, ux); let da = want2 - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * Math.min(1, dt * 5);
     }
+  }
+  // people on the pavements: a few Lagosians walking the real streets round you, on the pavement either side, at a
+  // walking pace. At a corner they take another street, and at a dead end they turn back. They are spawned out of
+  // sight and let go when far behind. Each has their own look, and they reuse a small pool of bodies.
+  const WALK = { list: [], at: 0, seed: 1 };
+  function walkStep(now) {
+    const dt = Math.min(0.1, (now - (WALK.at || now)) / 1000); WALK.at = now; if (!REAL || inside) return [];
+    const G = trGraph(); if (!G.roads.length) return WALK.list;
+    WALK.list = WALK.list.filter((w) => Math.hypot(w.x - me.x, w.z - me.z) < 160);
+    const want = MOBILE ? 6 : 12, used = new Set(WALK.list.map((w) => w.slot));
+    for (let tries = 0; WALK.list.length < want && tries < 20; tries++) { const rd = G.roads[Math.floor(Math.random() * G.roads.length)]; if (rd.c < 2) continue; // (no one walks the expressways)
+      const k = Math.floor(Math.random() * (rd.n - 1)), x0 = rd.p[2 * k], z0 = rd.p[2 * k + 1], d = Math.hypot(x0 - me.x, z0 - me.z); if (d < 35 || d > 130) continue;
+      let slot = 0; while (used.has('walker:' + slot)) slot++; used.add('walker:' + slot);
+      WALK.list.push({ rd, k, u: Math.random() * 2, dir: Math.random() < 0.5 ? 1 : -1, side: Math.random() < 0.5 ? 1 : -1, v: 2.4 + Math.random() * 1.2, x: x0, z: z0, slot: 'walker:' + slot, L: parseLook('', 'walker' + (WALK.seed++)) }); }
+    for (const w of WALK.list) {
+      const seg = () => { const p2 = w.rd.p, a = w.dir > 0 ? w.k : w.k + 1, b = w.dir > 0 ? w.k + 1 : w.k; return [p2[2 * a], p2[2 * a + 1], p2[2 * b], p2[2 * b + 1]]; };
+      let [ax, az, bx, bz] = seg(), L = Math.hypot(bx - ax, bz - az) || 1; w.u += w.v * dt;
+      while (w.u > L) { w.u -= L; const nk = w.k + w.dir; if (w.dir > 0 ? nk + 1 < w.rd.n : nk >= 0) w.k = nk;
+        else { const ex = w.dir > 0 ? w.rd.p[w.rd.p.length - 2] : w.rd.p[0], ez = w.dir > 0 ? w.rd.p[w.rd.p.length - 1] : w.rd.p[1], opts = (G.nodes.get(G.key(ex, ez)) || []).filter((o) => o.rd !== w.rd && o.rd.c >= 2);
+          if (opts.length) { const o = opts[Math.floor(Math.random() * opts.length)]; w.rd = o.rd; w.dir = o.end === 0 ? 1 : -1; w.k = w.dir > 0 ? 0 : o.rd.n - 2; } else w.dir = -w.dir; }
+        [ax, az, bx, bz] = seg(); L = Math.hypot(bx - ax, bz - az) || 1; }
+      const ux = (bx - ax) / L, uz = (bz - az) / L, off = (w.rd.w + 0.9) * w.side * w.dir; // (the same pavement, whichever way they walk)
+      w.x = ax + ux * w.u - uz * off; w.z = az + uz * w.u + ux * off;
+    }
+    return WALK.list;
   }
   // the 3D cell's share of the real city: its streets as one mesh (pavement, asphalt, the round joints that close each
   // bend, dashed centre lines), its buildings as another (walls with a band of windows to every floor, flat roofs), and
