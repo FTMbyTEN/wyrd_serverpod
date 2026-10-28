@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-28T00:10:15.258Z">
+<meta name="li-build" content="2026-10-28T05:49:48.317Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1609,6 +1609,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
 #drvPads .dBrake .dPl { width: 74px; height: 84px; border-color: #7f1d1d; } #drvPads .dGas .dPl { width: 54px; height: 116px; border-color: #14532d; }
 #drvPads .dBrake small { color: #FCA5A5; } #drvPads .dGas small { color: #86EFAC; }
 @media (orientation: landscape) and (max-height: 500px) { #drvPads { bottom: calc(52px + env(safe-area-inset-bottom)); zoom: .82; } }
+#speedo { display: none !important; } /* (speed and gear are in the panel on the left now) */
 </style>
 </head>
 <body>
@@ -2240,7 +2241,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     const w = document.createElement('div'); w.id = 'whatsNew'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', "What's new");
     w.style.cssText = 'position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:60;width:min(92vw,380px);padding:16px 16px 14px;border-radius:18px;background:rgba(15,23,42,.92);color:#F8FAFC;font:500 13px/1.45 "Plus Jakarta Sans",system-ui;box-shadow:0 0 0 2px rgba(250,204,21,.8),0 12px 32px rgba(0,0,0,.45);backdrop-filter:blur(10px)';
     w.innerHTML = '<b style="display:block;font:900 16px Anton,system-ui;letter-spacing:.02em;color:#FACC15;margin-bottom:6px">✨ LAGOS ISLAND JUST GOT AN UPDATE</b>'
-      + '<div>🗺️ A minimap in the corner: tap a place on it to set your route.<br>🏎️ Smoother driving: each car handles its own way, Space to drift.<br>🌇 Richer 3D light on the streets.</div>'
+      + '<div>🧭 GPS along the real streets: tap a place on the map for your route.<br>🚕 Rides that pick you up and drive you there.<br>🚦 WYRD’s smart traffic lights, and gated estates with guards.<br>🧍 New people, walking the pavements.</div>'
       + '<div style="margin-top:8px;opacity:.85">Download the island’s models and textures now so everything runs smoothly.</div>'
       + '<div style="display:flex;gap:8px;margin-top:12px"><button data-w="dl" style="flex:1;padding:10px;border:0;border-radius:12px;background:#FACC15;color:#0F172A;font:800 13px system-ui;cursor:pointer">⬇ Download now</button><button data-w="x" style="padding:10px 14px;border:0;border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font:700 13px system-ui;cursor:pointer">Later</button></div>';
     document.body.append(w); const close = () => w.remove(), dl = w.querySelector('[data-w="dl"]');
@@ -5453,8 +5454,9 @@ body.phoneOn #gpsPanel { opacity: .35; }
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
     if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false;
+    if (R.kind === 'world') estateStep(now); else for (const e of GATED.list) e.g.visible = false;
     gps3d();
-    { const inCar = doorStep(now); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
+    { const inCar = doorStep(now) || (typeof trip !== 'undefined' && trip && trip.phase === 'ontrip'); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
     if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < (q.traffic ? 200 : 75) && Math.abs(q.cz - me.z) < (q.traffic ? 200 : 75)).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
     flush3d(); w3cabin(true);
     void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
@@ -7191,7 +7193,60 @@ body.phoneOn #gpsPanel { opacity: .35; }
       (drv ? `<div class="gS"><b>${Math.round(sp * 3.6)}</b><small>KM/H</small><span>${drv.mg === -1 ? 'R' : drv.mg === 0 ? 'N' : drv.mg || 1}</span></div>` : '');
     if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; }
   }
+  // gated estates, as Lagos has them: a wall round the estate, and where each street enters, a gatehouse with a
+  // security guard and a red-and-white barrier. The barrier lifts as you or a car comes up to it, and drops once you're
+  // through. Built from the district's real rectangle and the real streets that cross its edge (HQ Row for now)
+  const GATED = { built: null, list: [] };
+  function estateBuild() {
+    if (!G3.ok || !REAL || !TR.graph) return; const THREE = G3.T, G = TR.graph, n = G.roads.length; if (GATED.built === n) return; GATED.built = n;
+    for (const e of GATED.list) G3.scene.remove(e.g); GATED.list = [];
+    for (const d of (REAL.districts || []).filter((d2) => d2.fill === 'hq')) {
+      const [i0, j0, i1, j1] = d.rect, x0 = i0 * T, z0 = j0 * T, x1 = (i1 + 1) * T, z1 = (j1 + 1) * T, g = new THREE.Group(), gates = [];
+      // where the streets cross the edge: each crossing a gate
+      for (const rd of G.roads) for (let k = 0; k + 1 < rd.n; k++) { const ax = rd.p[2 * k], az = rd.p[2 * k + 1], bx = rd.p[2 * k + 2], bz = rd.p[2 * k + 3];
+        const inA = ax > x0 && ax < x1 && az > z0 && az < z1, inB = bx > x0 && bx < x1 && bz > z0 && bz < z1; if (inA === inB) continue;
+        for (const [ex, ez, side] of [[x0, null, 'w'], [x1, null, 'e'], [null, z0, 'n'], [null, z1, 's']]) { let u; if (ex != null) { if ((ax - ex) * (bx - ex) > 0) continue; u = (ex - ax) / (bx - ax); } else { if ((az - ez) * (bz - ez) > 0) continue; u = (ez - az) / (bz - az); }
+          const cx = ax + (bx - ax) * u, cz = az + (bz - az) * u; if (cx < x0 - 1 || cx > x1 + 1 || cz < z0 - 1 || cz > z1 + 1) continue; if (gates.some((q) => Math.hypot(q.x - cx, q.z - cz) < 12)) continue;
+          gates.push({ x: cx, z: cz, side, w: rd.w + 1.2, open: 0 }); } }
+      const wallM = new THREE.MeshStandardMaterial({ color: 0xE7E1D3, roughness: 0.9 }), capM = new THREE.MeshStandardMaterial({ color: 0x9A9488, roughness: 0.8 }), wireM = new THREE.MeshStandardMaterial({ color: 0x3a3d44, metalness: 0.6, roughness: 0.4 });
+      const walls = [], wall = (ax, az, bx, bz) => { const L = Math.hypot(bx - ax, bz - az); if (L < 0.5) return; walls.push([ax, az, bx, bz]); const m = new THREE.Mesh(new THREE.BoxGeometry(L, 2.4, 0.3), wallM); m.position.set((ax + bx) / 2, 1.2, (az + bz) / 2); m.rotation.y = -Math.atan2(bz - az, bx - ax); m.castShadow = m.receiveShadow = !MOBILE; g.add(m);
+        const c = new THREE.Mesh(new THREE.BoxGeometry(L, 0.14, 0.42), capM); c.position.set((ax + bx) / 2, 2.45, (az + bz) / 2); c.rotation.y = m.rotation.y; g.add(c);
+        const w = new THREE.Mesh(new THREE.BoxGeometry(L, 0.04, 0.04), wireM); w.position.set((ax + bx) / 2, 2.85, (az + bz) / 2); w.rotation.y = m.rotation.y; g.add(w); }; // (the wall, its coping, a strand of razor wire over it)
+      // the four sides, broken where the gates are
+      for (const [sd, a0, b0, fixed, alongX] of [['n', x0, x1, z0, true], ['s', x0, x1, z1, true], ['w', z0, z1, x0, false], ['e', z0, z1, x1, false]]) {
+        const cuts = gates.filter((q) => q.side === sd).map((q) => [(alongX ? q.x : q.z) - q.w - 3, (alongX ? q.x : q.z) + q.w + 3]).sort((p2, q2) => p2[0] - q2[0]); let at = a0;
+        for (const [c0, c1] of [...cuts, [b0, b0]]) { if (c0 > at) alongX ? wall(at, fixed, c0, fixed) : wall(fixed, at, fixed, c0); at = Math.max(at, c1); } }
+      // each gate: two pillars, a gatehouse, the barrier on its hinge
+      const pillarM = new THREE.MeshStandardMaterial({ color: 0x2F3A2F, roughness: 0.7 }), houseM = new THREE.MeshStandardMaterial({ color: 0xF2EBDD, roughness: 0.85 }), roofM = new THREE.MeshStandardMaterial({ color: 0x0B6E3A, roughness: 0.6 }), glassM = new THREE.MeshStandardMaterial({ color: 0x9FC3D8, roughness: 0.1, transparent: true, opacity: 0.55 });
+      const stripe = (() => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 8; const c = cv.getContext('2d'); for (let k = 0; k < 8; k++) { c.fillStyle = k % 2 ? '#DC2626' : '#F8FAFC'; c.fillRect(k * 8, 0, 8, 8); } const t2 = new THREE.CanvasTexture(cv); t2.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t2, roughness: 0.5 }); })();
+      for (const q of gates) { const gg = new THREE.Group(), across = q.side === 'n' || q.side === 's'; gg.position.set(q.x, 0, q.z); gg.rotation.y = across ? 0 : Math.PI / 2; g.add(gg); // (local x runs along the wall, across the road)
+        for (const sx of [-1, 1]) { const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 3.2, 0.8), pillarM); p2.position.set(sx * (q.w + 0.6), 1.6, 0); p2.castShadow = !MOBILE; gg.add(p2); const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.25, 10, 8), new THREE.MeshStandardMaterial({ color: 0xFFF3C4, emissive: 0xFFD89A, emissiveIntensity: night > 0.5 ? 1.8 : 0.2 })); lamp.position.set(sx * (q.w + 0.6), 3.45, 0); gg.add(lamp); }
+        const hx = q.w + 3.2, house = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.6, 2.4), houseM); house.position.set(hx, 1.3, 1.6); house.castShadow = !MOBILE; gg.add(house);
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 3.0), roofM); roof.position.set(hx, 2.7, 1.6); gg.add(roof); const win = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.05), glassM); win.position.set(hx, 1.6, 0.38); gg.add(win);
+        const sign = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.5, 0.06), roofM); sign.position.set(0, 3.6, 0); gg.add(sign); // (the estate's name board over the way in)
+        const hinge = new THREE.Group(); hinge.position.set(-q.w + 0.2, 1.05, -0.6); gg.add(hinge); const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 0.5), pillarM); post.position.set(-q.w + 0.2, 0.55, -0.6); gg.add(post);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(2 * q.w - 0.4, 0.14, 0.14), stripe); arm.position.set(q.w - 0.2, 0, 0); hinge.add(arm); q.hinge = hinge;
+        q.guard = { x: q.x + (across ? hx - 0.6 : 0), z: q.z + (across ? -0.4 : hx - 0.6), L: parseLook('m,2,0,1,0', 'guard' + Math.round(q.x)) }; }
+      G3.scene.add(g); GATED.list.push({ g, gates, walls, name: d.name }); }
+  }
+  // the walls are solid: on foot you go round, or in at a gate
+  function gatedWall(px, pz) {
+    for (const e of GATED.list) for (const [ax, az, bx, bz] of e.walls) { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz, u = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / L2)); if (Math.hypot(ax + dx * u - px, az + dz * u - pz) < 0.75) return true; }
+    return false;
+  }
+  // each frame: the barriers rise for whoever comes up to them, and the guards stand at their posts
+  function estateStep(now) {
+    const dt = Math.min(0.1, (now - (GATED.at || now)) / 1000); GATED.at = now; estateBuild(); const ws = V3.ws || 1, on = V3_LIVE && !inside;
+    for (const e of GATED.list) { e.g.visible = on; if (!on) continue; e.g.position.set(0, 0, 0); e.g.scale.setScalar(ws);
+      for (const q of e.gates) { const near = (x2, z2) => Math.hypot(x2 - q.x, z2 - q.z) < q.w + 9;
+        const want = near(me.x, me.z) || (V3.drive && near(V3.drive.q.cx, V3.drive.q.cz)) || TR.cars.some((c) => near(c.cx, c.cz)) || (typeof trip !== 'undefined' && trip && trip.car && near(trip.car.x, trip.car.z)) ? 1 : 0;
+        q.open += (want - q.open) * Math.min(1, dt * (want ? 2.2 : 1.1)); q.hinge.rotation.z = q.open * 1.35;
+        if (PEOPLE.ok && Math.hypot(q.x - me.x, q.z - me.z) < 120) person3d(q.guard.x, q.guard.z, '#1F2937', 'guard:' + Math.round(q.x) + ',' + Math.round(q.z), now, q.guard.L, null, 0); } }
+  }
+  // the Porsche is Ten's: only Ten, signed in, has it waiting on the street (everyone else's car stays theirs to steal, under WYRD's law)
+  function isTen() { return typeof signedIn === 'function' && signedIn() && /^ten$/i.test(String(myName || '').trim()); }
   function myRidePark() {
+    if (!isTen()) { if (V3.myRide) { if (V3.wcars) V3.wcars = V3.wcars.filter((q) => q !== V3.myRide); V3.myRide = null; } return false; }
     const s2 = realRoadNear(me.x, me.z); if (!s2) return false; const side = s2.w / 4, nx = -Math.sin(s2.ang), nz = Math.cos(s2.ang);
     if (!G3.protos.porsche911) G3.vehicle('porsche911');
     const q = V3.myRide || (V3.myRide = { model: 'porsche911', sc: 0.95, paint: '#1F6B3A', mine: true, name: "Ten's Porsche 911" }); q.cx = s2.x + nx * side; q.cz = s2.z + nz * side; q.ang = s2.ang;
@@ -7373,8 +7428,18 @@ body.phoneOn #gpsPanel { opacity: .35; }
       const st = tlState(L, m.grp); P2.lamps.forEach((o, n) => { const c = ['r', 'a', 'g'][n], lit = c === st; o.material.emissive.copy(lit ? on[c] : dark); o.material.emissiveIntensity = lit ? 2.2 : 0; o.material.color.copy(lit ? on[c] : dark); }); k++; }
     for (; k < TLP.pool.length; k++) TLP.pool[k].g.visible = false;
   }
-  // a junction's light for one group of its arms, now: 'g', 'a' (amber) or 'r'
-  function tlState(L, grp) { const t = ((performance.now() / 1000 + L.off) % 34), mine = grp === 0 ? t : (t + 17) % 34; return mine < 14 ? 'g' : mine < 17 ? 'a' : 'r'; }
+  // the lights are WYRD's: smart signals that count the cars queuing on each side of a junction. A side with no one
+  // waiting keeps its red while the other flows. Green goes where the queue is, after at least 8 s of the last green
+  // and at most 24 s while others wait (40 s if no one does). Amber lasts 3 s. Junctions far from you just tick over
+  function tlState(L, grp) { if (L.g == null) return ((performance.now() / 1000 + L.off) % 34 < 17) === (grp === 0) ? 'g' : 'r'; return L.amber > 0 ? (grp === L.g ? 'a' : 'r') : grp === L.g ? 'g' : 'r'; }
+  function tlRun(G, dt) {
+    for (const L of G.lights.values()) { if (Math.abs(L.x - me.x) > 400 || Math.abs(L.z - me.z) > 400) continue;
+      if (L.g == null) { L.g = L.off % 2; L.t = L.off % 9; L.amber = 0; L.wait = [0, 0]; }
+      L.t += dt; const w = L.wait || [0, 0], other = 1 - L.g;
+      if (L.amber > 0) { L.amber -= dt; if (L.amber <= 0) { L.amber = 0; L.g = other; L.t = 0; } }
+      else if (L.t > 8 && ((w[other] > 0 && (w[L.g] === 0 || L.t > 24)) || L.t > 40)) L.amber = 3;
+      L.wait = [0, 0]; } // (counted again this frame, by the cars stopped at it)
+  }
   const TR_MODELS = ['danfo', 'danfo', 'danfo', 'corolla', 'corolla', 'camry', 'highlander', 'landcruiser', 'rangerover'];
   function trSpawn(G) {
     for (let tries = 0; tries < 40; tries++) { const rd = G.roads[Math.floor(Math.random() * G.roads.length)]; if (rd.c > 5) continue; const k = Math.floor(Math.random() * (rd.n - 1)), x0 = rd.p[2 * k], z0 = rd.p[2 * k + 1], d = Math.hypot(x0 - me.x, z0 - me.z); if (d < 60 || d > 200 || !V3.cells.has(Math.floor(x0 / W3.CS) + ',' + Math.floor(z0 / W3.CS))) continue; // (out of the way, but soon in sight, on a street that's built)
@@ -7385,6 +7450,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
   function trSeg(q) { const p2 = q.rd.p, a = q.dir > 0 ? q.k : q.k + 1, b = q.dir > 0 ? q.k + 1 : q.k; return [p2[2 * a], p2[2 * a + 1], p2[2 * b], p2[2 * b + 1]]; }
   function trStep(dt) {
     if (!REAL || !V3.on || inside || !G3.ok) return; const G = trGraph(); if (!G.roads.length) return;
+    if (G.lights) tlRun(G, dt);
     const want = MOBILE ? 14 : 24; TR.cars = TR.cars.filter((q) => Math.hypot(q.cx - me.x, q.cz - me.z) < 260 || (V3.drive && V3.drive.q === q)); if (TR.cars.length < want) trSpawn(G);
     for (const q of TR.cars) {
       if (V3.drive && V3.drive.q === q) continue; // (a car you've taken is yours to drive)
@@ -7396,7 +7462,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
       if (!block && G.lights) { const nk = q.dir > 0 ? q.k + 1 : q.k, ex = q.rd.p[2 * nk], ez = q.rd.p[2 * nk + 1], Lj = G.lights.get(G.key(ex, ez)); // (the point this stretch leads to: a junction with lights?)
         if (Lj) { const back = Math.atan2(q.cz - ez, q.cx - ex); let arm = null, bd = 9; for (const m of Lj.arms) { const d = Math.abs(Math.atan2(Math.sin(m.a - back), Math.cos(m.a - back))); if (m.rd === q.rd && d < bd) { bd = d; arm = m; } } // (the arm it's coming in on)
           const st = arm ? tlState(Lj, arm.grp) : 'g', toLine = Math.hypot(ex - q.cx, ez - q.cz) - Lj.r;
-          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; } } // (red: stop at the line; amber: stop if there's room to)
+          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) { block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; if (arm && Lj.wait && toLine < 30) Lj.wait[arm.grp]++; } } } // (red: stop at the line, and WYRD counts you in the queue; amber: stop if there's room to)
       q.v += ((block ? 0 : top) - q.v) * Math.min(1, dt * (block ? 3 : 0.8)); q.u += q.v * dt;
       while (q.u > L) { q.u -= L; const nk = q.k + q.dir; if (q.dir > 0 ? nk + 1 < q.rd.n : nk >= 0) q.k = nk;
         else { const endX = q.dir > 0 ? q.rd.p[q.rd.p.length - 2] : q.rd.p[0], endZ = q.dir > 0 ? q.rd.p[q.rd.p.length - 1] : q.rd.p[1], opts = (G.nodes.get(G.key(endX, endZ)) || []).filter((o) => o.rd !== q.rd && o.rd.c <= 5);
@@ -7705,9 +7771,8 @@ body.phoneOn #gpsPanel { opacity: .35; }
     for (const [i, j, t1, t2] of BILLBOARDS) if (visible(i, j)) items.push({ d: P(i * T, 0, j * T)[2], f: () => billboard(i * T, j * T, t1, t2) });
     const now = performance.now();
     items.push({ d: P(wyrd.x, 0, wyrd.z)[2] + 0.02, f: () => drawWyrd(now) });
-    if (trip && (trip.phase === 'coming' || trip.phase === 'arrived')) { const c = trip.car; items.push({ d: P(c.x, 0, c.z)[2] + 0.01, f: () => vehicle(c.x, c.z, c.dx, c.dz, trip.kind, trip.driver.color, trip.driver.plate) }); }
+    if (trip && trip.car && (trip.phase === 'coming' || trip.phase === 'arrived' || trip.phase === 'ontrip')) { const c = trip.car; items.push({ d: P(c.x, 0, c.z)[2] + 0.01, f: () => vehicle(c.x, c.z, c.dx, c.dz, trip.kind, trip.driver.color, trip.driver.plate) }); }
     if (CRUISE) items.push({ d: P(CRUISE.x, 0, CRUISE.z)[2] - 0.02, f: () => modernYacht(CRUISE.x, CRUISE.z, CRUISE.ang, now / 1000, CRUISE.kind === 'sunset') });
-    if (trip && trip.phase === 'ontrip' && drive) items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => vehicle(me.x, me.z, drive.dx, drive.dz, trip.kind, trip.driver.color, trip.driver.plate) });
     glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
@@ -8321,7 +8386,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     for (const c of R._crowd || []) items.push({ who: 1, d: P(c.x, 0, c.z)[2] + 0.02, f: c.f }); // a club's crowd
     for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
     if (R.kind === 'beach') for (const o of [...others.values(), me]) if (o.z < SHORE) items.push({ d: P(o.x, 0, o.z)[2] + 0.015, f: () => wade(o.x, o.z, now) }); // the sea over whoever's in it
-    items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()) });
+    if (!(trip && trip.phase === 'ontrip')) items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()) }); // (riding: you're inside)
     if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
     if (R.kind === 'arena') drawStands(R, now);
     items.sort((p, q) => p.d - q.d);
@@ -10797,6 +10862,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     if (inside && inside.kind === 'yacht') return onDeck(px, pz);
     if (inside && roomSolids(inside).some((b) => px > b[0] - 0.9 && px < b[2] + 0.9 && pz > b[1] - 0.9 && pz < b[3] + 0.9)) return false; // you walk round things, not through them
     if (inside && (inside.kind === 'hq' || inside.kind === 'home') && BAYS[inside.kind === 'hq' ? 'bq' : inside.style] && pz > inside.d - 1.5) return px > 1.5 && px < inside.w - 1.5 && pz < inside.d + 18.5 && (pz > inside.d + 1.4 || Math.abs(px - inside.w / 2) < 5); // out through the front door into the yard, the wall either side of it
+    if (!inside && REAL && typeof GATED !== 'undefined' && GATED.list.length && gatedWall(px, pz)) return false; // (an estate's wall)
     if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && (pz < 23 || px < ARENA_SIDE + 1 || px > inside.w - ARENA_SIDE - 1 || (pz > inside.d - ARENA_SIDE - 1 && Math.abs(px - inside.w / 2) > ARENA_GATE - 1.5)));
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
@@ -13853,11 +13919,12 @@ body.phoneOn #gpsPanel { opacity: .35; }
         if (!trip) { stack = [['home']]; return render('home'); }
         const t = trip, dv = t.driver;
         const head = { searching: 'Finding you a rider', coming: `${dv.name} is on the way`, arrived: `${dv.name} is here`, ontrip: 'On the way', done: 'You\'ve arrived' }[t.phase];
-        const sub = t.phase === 'searching' ? 'Matching you with riders nearby…' : t.phase === 'coming' ? `Arriving in ${Math.max(1, Math.ceil(t.eta))} s` : t.phase === 'arrived' ? 'Hop on. Your trip is starting.' : t.phase === 'ontrip' ? `To ${t.dest.name}` : `${t.dest.name}`;
-        const pct = t.phase === 'ontrip' && drive ? Math.round(100 * (1 - drive.path.length / t.legs)) : t.phase === 'done' ? 100 : 0;
+        const mmss = (sec) => { sec = Math.max(1, Math.ceil(sec)); return sec >= 60 ? `${Math.floor(sec / 60)} min ${String(sec % 60).padStart(2, '0')} s` : `${sec} s`; };
+        const sub = t.phase === 'searching' ? `Matching you with riders nearby · usually under ${t.kind === 'okada' ? '1' : '2'} min` : t.phase === 'coming' ? `Arriving in ${mmss(t.eta)}` : t.phase === 'arrived' ? 'Walk to the car: your trip is starting' : t.phase === 'ontrip' ? `To ${t.dest.name} · ${mmss(t.eta)} left` : `${t.dest.name}`;
+        const pct = t.phase === 'coming' || t.phase === 'ontrip' ? Math.round(100 * Math.max(0, Math.min(1, t.prog || 0))) : t.phase === 'done' || t.phase === 'arrived' ? 100 : 0;
         show(`<div class="ptitle">${head}</div><div class="lock">${sub}</div>
           ${t.phase === 'searching' ? '<div class="radar"><i></i><i></i><i></i><span>🛰️</span></div>' : `<div class="driver"><div class="av">${t.kind === 'okada' ? '🛵' : '🚗'}</div><div><b>${esc(dv.name)}</b><div class="dim">★ ${dv.rating} · ${esc(dv.vehicle)}</div><div class="plate">${esc(dv.plate)}</div></div></div>`}
-          ${t.phase === 'ontrip' || t.phase === 'done' ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}
+          ${t.phase !== 'searching' ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}
           <div class="pcard"><div class="row"><span>Fare</span><b>${naira(t.fare)}</b></div><div class="row"><span>Ride</span><b>${t.kind === 'okada' ? 'Okada' : 'Car'}</b></div><div class="row"><span>To</span><b>${esc(t.dest.name)}</b></div></div>
           ${t.phase === 'done' ? `<div class="pcard"><h3>Paid ${naira(t.fare)}</h3><div class="dim">Rate ${esc(dv.name)}</div><div class="stars">${[1, 2, 3, 4, 5].map((n) => `<button data-star="${n}">★</button>`).join('')}</div><button class="pbtn" id="tDone">Done</button></div>` : ''}
           ${t.phase === 'searching' || t.phase === 'coming' ? '<button class="pbtn alt" id="tCancel">Cancel ride</button>' : ''}`);
@@ -13871,7 +13938,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
         // a search that narrows the places as you type, popular spots, then every district with a picture of each place
         const POP = ['WYRD Tower', 'Eko Hotel', 'Elegushi Beach', 'The Arena (live shows)', 'Eko Home Store', 'Lekki Luxury Cars', 'Banana Island Marina'].map((n) => PLACES.find((p) => p[5] === n)).filter(Boolean);
         show(`${ahead('ride', 'Ride', 'Okada or car · paid when you arrive')}
-          ${REAL ? `<button id="rMine" class="pcard" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;color:inherit"><span style="font-size:26px">🏎️</span><span style="flex:1"><b style="display:block">My Porsche 911</b><small style="opacity:.75">Brought to the street beside you</small></span><b style="color:#FF8A00">Call</b></button>` : ''}
+          ${REAL && isTen() ? `<button id="rMine" class="pcard" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;color:inherit"><span style="font-size:26px">🏎️</span><span style="flex:1"><b style="display:block">My Porsche 911</b><small style="opacity:.75">Brought to the street beside you</small></span><b style="color:#FF8A00">Call</b></button>` : ''}
           <div class="search" style="--ac:#FF8A00"><span>🔎</span><input id="rFind" placeholder="Where to?" value="${esc(rideFind)}" autocomplete="off"></div>
           <div class="chips" style="--ac:#FF8A00">${POP.map((p) => `<button data-p="${PLACES.indexOf(p)}">${ico(ICONS[p[0]] ? p[0] : 'pin')} ${esc(p[5].replace(' (live shows)', ''))}</button>`).join('')}</div>
           <div id="rNone" class="pcard dim" style="display:none">No place by that name. Try a district: Ikoyi, Lekki, Ajah…</div>
@@ -13969,49 +14036,69 @@ body.phoneOn #gpsPanel { opacity: .35; }
       driver: { name, plate, rating: (4.6 + R() * 0.39).toFixed(2), vehicle: r.kind === 'okada' ? 'Bajaj Boxer · red' : RIDE_CARS[Math.floor(R() * RIDE_CARS.length)], color: r.kind === 'okada' ? '#DC2626' : ['#F8FAFC', '#111827', '#1D4ED8', '#9CA3AF', '#B91C1C'][Math.floor(R() * 5)] }, car: null };
     if (inside) leaveRoom();
   }
-  async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; stack = [['home']]; render('ride'); }
+  async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; cam.follow = true; stack = [['home']]; render('ride'); }
   // the ride you ordered, in the 3D streets: the driver's car (a Corolla or a Camry, the Lagos ride-hailing cars) drives in
   // from where they accepted, along the roads, and stops by you; a small card on the HUD shows who, the plate, how far
   function rideStep3d() {
-    const t = typeof trip !== 'undefined' ? trip : null, on = !!(t && t.car && (t.phase === 'coming' || t.phase === 'arrived'));
+    const t = typeof trip !== 'undefined' ? trip : null, on = !!(t && t.car && (t.phase === 'coming' || t.phase === 'arrived' || t.phase === 'ontrip'));
     if (!on) { if (V3.rideQ) { V3.rideQ = null; } rideMini(null); return; }
-    const c = t.car; if (!V3.rideQ) { const md = t.kind === 'okada' ? 'corolla' : 'camry'; if (!G3.protos[md]) G3.vehicle(md); V3.rideQ = { cx: c.x, cz: c.z, model: md, ang: 0, sc: 0.95, tint: '#F8FAFC', ride: true }; }
-    const q = V3.rideQ; q.cx = c.x; q.cz = c.z; if (c.dx || c.dz) { let da = Math.atan2(c.dz, c.dx) - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * 0.2; } q.v = t.phase === 'coming' ? 8 : 0; q.traffic = true;
+    const c = t.car; if (!V3.rideQ) { const md = t.kind === 'okada' ? 'corolla' : 'camry'; if (!G3.protos[md]) G3.vehicle(md); V3.rideQ = { cx: c.x, cz: c.z, model: md, ang: Math.atan2(c.dz, c.dx), sc: 0.95, tint: t.driver.color || '#F8FAFC', ride: true }; }
+    const q = V3.rideQ; q.cx = c.x; q.cz = c.z; if (c.dx || c.dz) { let da = Math.atan2(c.dz, c.dx) - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * 0.2; } q.v = t.phase === 'arrived' ? 0 : c.v || 0; q.traffic = true; if (t.phase === 'ontrip') { me.x = c.x; me.z = c.z; }
     if (V3.wcars && !V3.wcars.includes(q)) V3.wcars.push(q); rideMini(t);
   }
   function rideMini(t) {
     let el = document.getElementById('rideMini'); if (!t) { if (el) el.style.display = 'none'; return; }
     if (!el) { el = document.createElement('div'); el.id = 'rideMini'; el.style.cssText = "position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:32;min-width:240px;padding:10px 14px;border-radius:16px;background:rgba(15,15,18,.88);color:#F4F4F5;font:600 12px 'Plus Jakarta Sans',system-ui;box-shadow:0 10px 26px rgba(0,0,0,.35);border-top:3px solid #F7C81E;pointer-events:auto;cursor:pointer;backdrop-filter:blur(8px)"; el.onclick = () => openPhone('trip'); document.body.append(el); }
-    const mins = Math.max(1, Math.round((t.eta || 0) / 30)), here = t.phase === 'arrived', tot = t.tot || (t.tot = Math.max(1, t.eta || 1)), prog = here ? 1 : Math.max(0.03, 1 - (t.eta || 0) / tot);
-    el.style.display = 'block'; el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span style="font:400 15px Anton,sans-serif;letter-spacing:.5px;color:#F7C81E">${here ? 'YOUR RIDE IS HERE' : 'RIDE ON THE WAY'}</span><b>${here ? 'Get in' : mins + ' min'}</b></div><div style="margin-top:4px;opacity:.85">${esc(t.driver.name)} · ${esc(t.driver.plate)} · ${t.kind === 'okada' ? 'Okada' : 'Car'}</div><div style="margin-top:8px;height:5px;border-radius:3px;background:#2E2E34;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(prog * 100)}%;background:linear-gradient(90deg,#22C55E,#F7C81E)"></i></div>`;
+    const sec = Math.max(1, Math.ceil(t.eta || 0)), mins = sec >= 60 ? Math.round(sec / 60) + ' min' : sec + ' s', here = t.phase === 'arrived', riding = t.phase === 'ontrip', prog = here ? 1 : Math.max(0.03, Math.min(1, t.prog || 0));
+    el.style.display = 'block'; el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span style="font:400 15px Anton,sans-serif;letter-spacing:.5px;color:#F7C81E">${here ? 'YOUR RIDE IS HERE' : riding ? 'ON YOUR WAY' : 'RIDE ON THE WAY'}</span><b>${here ? 'Getting in' : mins}</b></div><div style="margin-top:4px;opacity:.85">${esc(t.driver.name)} · ${esc(t.driver.plate)} · ${t.kind === 'okada' ? 'Okada' : 'Car'}</div><div style="margin-top:8px;height:5px;border-radius:3px;background:#2E2E34;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(prog * 100)}%;background:linear-gradient(90deg,#22C55E,#F7C81E)"></i></div>`;
+  }
+  // the ride, step by step, along the real streets:
+  // 1. Searching: a few seconds.
+  // 2. A driver accepts from a few streets away and drives to the road nearest you. They speed up, slow down for the
+  //    corners, and stop beside you.
+  // 3. You walk to the car and get in.
+  // 4. The trip runs to the street by your stop, with you inside (out of sight), the camera following.
+  // 5. You step out and pay. The app counts down the wait and then the trip.
+  const RIDE_SP = { okada: 11, car: 9 }; // (map units a second, in town)
+  function rideRoute(x0, z0, x1, z1) { return (REAL && typeof gpsRoute === 'function' && gpsRoute(x0, z0, x1, z1)) || [x0, z0, x1, z1]; }
+  function rideAlong(c, dt, top) { // move the car along its path; how much of the path is left
+    let left = 0; { let px = c.x, pz = c.z; for (let i = c.i + 2; i + 1 < c.path.length; i += 2) { left += Math.hypot(c.path[i] - px, c.path[i + 1] - pz); px = c.path[i]; pz = c.path[i + 1]; } }
+    let turn = 0; if (c.i + 5 < c.path.length) { const a1 = Math.atan2(c.path[c.i + 3] - c.path[c.i + 1], c.path[c.i + 2] - c.path[c.i]), a2 = Math.atan2(c.path[c.i + 5] - c.path[c.i + 3], c.path[c.i + 4] - c.path[c.i + 2]); turn = Math.abs(Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1))); }
+    const toCorner = c.i + 3 < c.path.length ? Math.hypot(c.path[c.i + 2] - c.x, c.path[c.i + 3] - c.z) : 0;
+    const want = Math.min(top, Math.max(2, left * 0.9), turn > 0.5 && toCorner < 12 ? Math.max(3.5, top * (1 - turn / 2.5)) : top); // (slower into a corner, and to a stop at the end)
+    c.v = (c.v || 0) + (want - (c.v || 0)) * Math.min(1, dt * (want < (c.v || 0) ? 3 : 1.2));
+    let step = c.v * dt;
+    while (step > 0 && c.i + 3 < c.path.length) { const tx = c.path[c.i + 2], tz = c.path[c.i + 3], ex = tx - c.x, ez = tz - c.z, d = Math.hypot(ex, ez);
+      if (d > 0.01) { c.dx = ex / d; c.dz = ez / d; } if (d <= step) { c.x = tx; c.z = tz; c.i += 2; step -= d; } else { c.x += ex / d * step; c.z += ez / d * step; step = 0; } }
+    return Math.max(0, left - c.v * dt);
   }
   function tripStep(dt) {
-    const t = trip, now = performance.now();
+    const t = trip, now = performance.now(), top = RIDE_SP[t.kind] || 9;
     if (t.phase === 'searching' && now > t.until) {
-      // a rider a few streets away accepts
-      const [pi, pj] = t.from, cands = roadTiles.filter(([i, j]) => { const d = Math.abs(i - pi) + Math.abs(j - pj); return d >= 5 && d <= 11; });
-      const st = cands.length ? cands[Math.floor(Math.random() * cands.length)] : t.from, path = pathTo(st[0], st[1], pi, pj);
-      t.car = { x: st[0] * T + T / 2, z: st[1] * T + T / 2, path, dx: 1, dz: 0 }; t.phase = 'coming';
+      // a driver a few streets away accepts
+      let sx = me.x + 160, sz = me.z;
+      if (REAL && typeof gpsGraph === 'function') { const G = gpsGraph(), cand = []; for (let i = 0; i < G.X.length; i += 3) { const d = Math.hypot(G.X[i] - me.x, G.Z[i] - me.z); if (d > 110 && d < 260) cand.push(i); } if (cand.length) { const k = cand[Math.floor(Math.random() * cand.length)]; sx = G.X[k]; sz = G.Z[k]; } }
+      else { const [pi, pj] = t.from, cands = roadTiles.filter(([i, j]) => { const d = Math.abs(i - pi) + Math.abs(j - pj); return d >= 5 && d <= 11; }); if (cands.length) { const st = cands[Math.floor(Math.random() * cands.length)]; sx = st[0] * T + T / 2; sz = st[1] * T + T / 2; } }
+      const path = rideRoute(sx, sz, me.x, me.z); path.splice(-2, 2); // (to the road by you, not onto the pavement)
+      t.car = { x: sx, z: sz, path, i: 0, dx: 1, dz: 0, v: 0 }; t.phase = 'coming'; t.tot = 0;
       notify(`${t.driver.name} accepted your ride · ${t.driver.plate}`, 'ride');
-      cam.follow = false; cam.x = (t.car.x + me.x) / 2; cam.z = (t.car.z + me.z) / 2;
+      cam.follow = false; cam.x = (sx + me.x) / 2; cam.z = (sz + me.z) / 2;
     }
     if (t.phase === 'coming') {
-      const c = t.car, sp = t.kind === 'okada' ? 30 : 24;
-      let left = 0; for (let k = 0; k < c.path.length; k++) left += k ? Math.hypot(c.path[k][0] - c.path[k - 1][0], c.path[k][1] - c.path[k - 1][1]) : Math.hypot(c.path[0][0] - c.x, c.path[0][1] - c.z);
-      t.eta = left / sp;
-      if (!c.path.length) { t.phase = 'arrived'; t.until = now + 2200; notify(`${t.driver.name} is here`, 'ride'); }
-      else { const [tx, tz] = c.path[0], ex = tx - c.x, ez = tz - c.z, dist = Math.hypot(ex, ez), st = sp * dt; if (dist <= st) { c.x = tx; c.z = tz; c.path.shift(); } else { c.x += (ex / dist) * st; c.z += (ez / dist) * st; c.dx = ex / dist; c.dz = ez / dist; } }
+      const c = t.car, left = rideAlong(c, dt, top); t.eta = left / Math.max(3, Math.min(top, (c.v || 0) + 2)); if (!t.tot) t.tot = Math.max(1, t.eta); t.prog = 1 - t.eta / t.tot;
+      if (left < 0.4) { t.phase = 'arrived'; t.until = now + 2600; t.w0 = [me.x, me.z]; notify(`${t.driver.name} is here`, 'ride'); }
       const e = Math.min(1, dt * 2); cam.x += (c.x - cam.x) * e; cam.z += (c.z - cam.z) * e;
     }
-    if (t.phase === 'arrived' && now > t.until) {
-      me.x = t.car.x; me.z = t.car.z;
-      if (!driveTo(t.dest.i, t.dest.j)) { me.x = t.dest.i * T + T / 2; me.z = t.dest.j * T + T / 2; }
-      t.phase = 'ontrip'; t.legs = drive ? drive.path.length : 1;
+    if (t.phase === 'arrived') { // you walk to the car and get in (its passenger side)
+      const c = t.car, u = Math.min(1, 1 - (t.until - now) / 2600), sx = c.x - c.dz * 1.6, sz = c.z + c.dx * 1.6;
+      me.x = t.w0[0] + (sx - t.w0[0]) * Math.min(1, u * 1.4); me.z = t.w0[1] + (sz - t.w0[1]) * Math.min(1, u * 1.4); me.vx = me.vz = 0;
+      if (now > t.until) { const dx2 = (t.dest.i + 0.5) * T, dz2 = (t.dest.j + 0.5) * T; c.path = rideRoute(c.x, c.z, dx2, dz2); c.i = 0; c.v = 0; t.phase = 'ontrip'; t.tot = 0; cam.follow = true; }
     }
-    if (t.phase === 'ontrip' && !drive) {
-      t.phase = 'done';
-      my('payRide', { id: t.id }).then((v) => { if (me$) me$.naira = v.naira; pnaira.textContent = naira(v.naira); notify(`Paid ${naira(t.fare)} for your ride`, 'wallet'); }).catch((e) => notify(e.message, 'ride'));
-      if (phone.style.display !== 'block') openPhone('trip');
+    if (t.phase === 'ontrip') {
+      const c = t.car, left = rideAlong(c, dt, top); me.x = c.x; me.z = c.z; me.vx = me.vz = 0; t.eta = left / Math.max(3, Math.min(top, (c.v || 0) + 2)); if (!t.tot) t.tot = Math.max(1, t.eta); t.prog = 1 - t.eta / t.tot;
+      if (left < 0.4) { t.phase = 'done'; me.x = c.x - c.dz * 1.8; me.z = c.z + c.dx * 1.8; // (out on the pavement side)
+        my('payRide', { id: t.id }).then((v) => { if (me$) me$.naira = v.naira; pnaira.textContent = naira(v.naira); notify(`Paid ${naira(t.fare)} for your ride`, 'wallet'); }).catch((e) => notify(e.message, 'ride'));
+        if (phone.style.display !== 'block') openPhone('trip'); }
     }
   }
   // the ride on the map: an okada or a car, with the driver's plate over it
@@ -14356,7 +14443,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
     if (!next && !inside) { const tk = gridNear() || (gridTask() && gridTask().type !== "fault" && near("grid", 6) ? gridTask() : null); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; else if (near('grid', 6)) next = { label: '⚡ Careers at the National Grid', run: () => openPhone('grid') }; }
-    if (!next && V3.on && !inside && V3.wcars) { let best = null, bd = 4.2; for (const q of V3.wcars) { const dd = Math.hypot(q.cx - me.x, q.cz - me.z); if (dd < bd) { bd = dd; best = q; } } if (best) next = best.mine ? { label: best.model === 'porsche911' ? '🏎️ Drive your Porsche' : '🚗 Drive your car', run: () => carEnter(best) } : { label: '🚨 Steal this car', run: () => carTheft(best) }; } // only your own car is yours to drive // a car within reach
+    if (!next && V3.on && !inside && V3.wcars && !trip) { let best = null, bd = 4.2; for (const q of V3.wcars) { if (q.ride) continue; const dd = Math.hypot(q.cx - me.x, q.cz - me.z); if (dd < bd) { bd = dd; best = q; } } if (best) next = best.mine ? { label: best.model === 'porsche911' ? '🏎️ Drive your Porsche' : '🚗 Drive your car', run: () => carEnter(best) } : { label: '🚨 Steal this car', run: () => carTheft(best) }; } // only your own car is yours to drive // a car within reach
     // (calling your Porsche is in the Ride app now)
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
