@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-27T23:44:25.964Z">
+<meta name="li-build" content="2026-10-28T00:06:25.843Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1574,6 +1574,41 @@ html body #coach .cbtns button.main { background: #F7C81E !important; color: #0F
 html body #wyrdGuide .wgn { font-family: Anton, sans-serif !important; font-weight: 400 !important; color: #F7C81E !important; }
 html body #wyrdGuide .wgt small { color: #FACC15 !important; }
 html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E34 !important; } html body #wyrdGuide .wgbar i.ok { background: #F7C81E !important; }
+/* the GPS panel: steady on the left, under the HUD card, in the HUD's look, in portrait and landscape alike */
+#gpsPanel { position: fixed; left: calc(10px + env(safe-area-inset-left)); top: calc(118px + env(safe-area-inset-top)); z-index: 28; width: 190px; display: none; pointer-events: none; font-family: 'Plus Jakarta Sans', sans-serif; color: #F4F4F5; }
+#gpsPanel > div { background: rgba(15,15,18,.88); border: 2px solid #22D3EE; border-radius: 6px; box-shadow: 0 0 14px rgba(34,211,238,.35), 3px 4px 0 rgba(0,0,0,.4); padding: 7px 10px; margin-bottom: 6px; }
+#gpsPanel .gN { display: flex; gap: 10px; align-items: center; } #gpsPanel .gA { font-size: 30px; line-height: 1; color: #22D3EE; text-shadow: 0 0 10px #22D3EE; width: 32px; text-align: center; }
+#gpsPanel .gN b { display: block; font: 400 16px Anton, sans-serif; letter-spacing: .5px; text-transform: uppercase; } #gpsPanel .gN em { font-style: normal; font-weight: 800; font-size: 13px; color: #A5F3FC; }
+#gpsPanel .gD small { font: 400 10px Anton, sans-serif; letter-spacing: 1px; color: #22D3EE; } #gpsPanel .gD b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #gpsPanel .gD span { font-size: 12px; color: #D4D4D8; font-weight: 700; }
+#gpsPanel .gS { display: flex; align-items: baseline; gap: 6px; border-color: #F7C81E !important; box-shadow: 3px 4px 0 rgba(0,0,0,.4) !important; } #gpsPanel .gS b { font: 400 30px Anton, sans-serif; color: #F7C81E; } #gpsPanel .gS small { font: 400 11px Anton, sans-serif; color: #A1A1AA; } #gpsPanel .gS span { margin-left: auto; font: 400 22px Anton, sans-serif; color: #fff; background: #26262C; border-radius: 4px; padding: 0 8px; }
+.touch #gpsPanel { width: 156px; top: calc(96px + env(safe-area-inset-top)); } .touch #gpsPanel > div { padding: 5px 8px; } .touch #gpsPanel .gA { font-size: 24px; width: 26px; } .touch #gpsPanel .gN b { font-size: 14px; } .touch #gpsPanel .gS b { font-size: 24px; }
+/* a phone on its side: everything smaller and out of the middle, so the street shows. Down the left: the HUD card,
+   the GPS panel, then the stick, one under the other. The sound button sits beside the card, and the bar along the
+   bottom is narrower */
+@media (orientation: landscape) and (max-height: 500px) {
+  html body.touch #hud { zoom: .58 !important; top: calc(6px + env(safe-area-inset-top)) !important; left: calc(8px + env(safe-area-inset-left)) !important; }
+  html body.touch #tCity { position: fixed !important; top: calc(10px + env(safe-area-inset-top)) !important; left: calc(222px + env(safe-area-inset-left)) !important; bottom: auto !important; right: auto !important; zoom: .8; }
+  html body.touch #top { zoom: .7 !important; }
+  html body.touch #stick { left: calc(14px + env(safe-area-inset-left)) !important; bottom: calc(46px + env(safe-area-inset-bottom)) !important; width: 104px !important; height: 104px !important; }
+  #gpsPanel, .touch #gpsPanel { top: calc(88px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); width: 150px; }
+  .touch #gpsPanel > div { padding: 3px 7px; margin-bottom: 4px; } .touch #gpsPanel .gD { display: none; } .touch #gpsPanel .gS b { font-size: 20px; } .touch #gpsPanel .gS span { font-size: 16px; }
+}
+body.phoneOn #gpsPanel { opacity: .35; }
+/* the mechanical controls at the wheel on a phone: gear stick in its gate, handbrake lever, brake and accelerator pedals */
+#drvPads { position: fixed; right: calc(12px + env(safe-area-inset-right)); bottom: calc(150px + env(safe-area-inset-bottom)); z-index: 31; display: none; gap: 12px; align-items: flex-end; touch-action: none; user-select: none; -webkit-user-select: none; font-family: Anton, sans-serif; }
+#drvPads small { display: block; text-align: center; font-size: 10px; letter-spacing: 1px; color: #F4F4F5; text-shadow: 0 1px 2px #000; margin-top: 4px; }
+#drvPads .dGear { position: relative; width: 46px; height: 158px; border-radius: 10px; background: linear-gradient(90deg, #111, #2a2b30 50%, #111); border: 2px solid #F7C81E; box-shadow: inset 0 2px 8px #000, 3px 4px 0 rgba(0,0,0,.45); touch-action: none; }
+#drvPads .dGate { position: absolute; inset: 6px 4px; display: flex; flex-direction: column; justify-content: space-between; } #drvPads .dGate i { font-style: normal; font-size: 13px; line-height: 16px; text-align: right; padding-right: 3px; color: #71717A; } #drvPads .dGate i.on { color: #F7C81E; }
+#drvPads .dKnob { position: absolute; left: 6px; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fafafa, #9ca3af 45%, #374151); box-shadow: 0 3px 6px #000; transition: top .12s cubic-bezier(.3,1.5,.6,1); pointer-events: none; }
+#drvPads .dHb { width: 42px; touch-action: none; } #drvPads .dHbT { position: absolute; } #drvPads .dHb { position: relative; height: 120px; display: flex; flex-direction: column; align-items: center; }
+#drvPads .dHb::before { content: ''; position: absolute; top: 6px; bottom: 22px; width: 10px; border-radius: 5px; background: #0b0b0d; box-shadow: inset 0 2px 5px #000; }
+#drvPads .dHbL { position: relative; z-index: 1; width: 38px; height: 46px; border-radius: 10px 10px 6px 6px; background: linear-gradient(180deg, #3f3f46, #18181b); border: 2px solid #52525B; box-shadow: 0 4px 8px rgba(0,0,0,.6); transition: transform .15s; } #drvPads .dHbL b { display: block; margin: 6px auto 0; width: 14px; height: 8px; border-radius: 3px; background: #EF4444; }
+#drvPads .dHb small { margin-top: auto; }
+#drvPads .dPed { touch-action: none; } #drvPads .dPl { transform: perspective(240px) rotateX(18deg); transform-origin: 50% 100%; border-radius: 10px 10px 14px 14px; border: 2px solid #3f3f46; box-shadow: 0 6px 12px rgba(0,0,0,.55); transition: transform .06s, filter .06s;
+  background: repeating-linear-gradient(180deg, #2d2e33 0 5px, #18191c 5px 9px), #222; }
+#drvPads .dBrake .dPl { width: 74px; height: 84px; border-color: #7f1d1d; } #drvPads .dGas .dPl { width: 54px; height: 116px; border-color: #14532d; }
+#drvPads .dBrake small { color: #FCA5A5; } #drvPads .dGas small { color: #86EFAC; }
+@media (orientation: landscape) and (max-height: 500px) { #drvPads { bottom: calc(52px + env(safe-area-inset-bottom)); zoom: .82; } }
 </style>
 </head>
 <body>
@@ -5360,7 +5395,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     V3.yaw = cam.yaw; V3.tx = me.x; V3.tz = me.z; V3.on = true;
     V3.swoop = new URLSearchParams(location.search).get('swoop') === '0' ? null : { t0: performance.now(), dur: 2800 }; // the dive down from the bird's eye
   }
-  function v3leave() { w3portalOff(); if (V3.drive) driveExit(); V3.ws = 1;    V3.live = false; V3_LIVE = false; V3.on = false; if (G3.canvas) G3.canvas.style.display = 'none'; if (V3.vig) V3.vig.style.display = 'none'; cv.style.background = '';
+  function v3leave() { w3portalOff(); if (V3.drive) driveExit(); if (typeof DOOR !== 'undefined') DOOR.on = null; V3.ws = 1;    V3.live = false; V3_LIVE = false; V3.on = false; if (G3.canvas) G3.canvas.style.display = 'none'; if (V3.vig) V3.vig.style.display = 'none'; cv.style.background = '';
     if (V3.groups) { G3.scene.remove(V3.groups); V3.groups = null; V3.key = null; }
     G3.scene.children.forEach((o) => { if (o.userData && o.userData.base != null) o.intensity = o.userData.base; });
     if (G3.renderer) G3.renderer.shadowMap.enabled = false;
@@ -5413,7 +5448,9 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
-    if (!V3.drive) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); // (at the wheel you're in the car)
+    if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false;
+    gps3d();
+    { const inCar = doorStep(now); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
     if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < (q.traffic ? 200 : 75) && Math.abs(q.cz - me.z) < (q.traffic ? 200 : 75)).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
     flush3d(); w3cabin(true);
     void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
@@ -7063,6 +7100,93 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
   }
   // Ten's Porsche: a green 911 of your own on the real map, waiting on the street nearest you, yours to drive anywhere;
   // call it and it pulls up beside you, on your side of the nearest street
+  // ---- GPS: the way to your goal (a place you picked, or your shift) along the real streets, not as the crow flies.
+  // The road network that has loaded becomes a graph: every point of every street, joined where streets share a point.
+  // A* finds the shortest way from the point nearest you to the point nearest the goal. It's worked out again when the
+  // goal changes, when you stray, or as more of the city loads. It's drawn three times, all in the same cyan:
+  // - In 3D, a glowing ribbon on the road with chevrons streaming towards the goal, and a beam of light over it.
+  // - On the flat map, a glowing line.
+  // - On the minimap, a glowing line.
+  // A steady panel on the left says the next turn, how far, and when you'll arrive.
+  const GPS = { path: null, key: '', at: 0, n: -1, mesh: null, beam: null, t0: performance.now() };
+  function gpsGraph() {
+    let n = 0; for (const c of WC.m.values()) if (c.ok) n++; if (GPS.g && GPS.n === n) return GPS.g; GPS.n = n;
+    const id = new Map(), X = [], Z = [], adj = [], key = (x2, z2) => Math.round(x2 * 2) + ',' + Math.round(z2 * 2), seen = new Set();
+    const node = (x2, z2) => { const kk = key(x2, z2); let i = id.get(kk); if (i == null) { i = X.length; id.set(kk, i); X.push(x2); Z.push(z2); adj.push([]); } return i; };
+    for (const c of WC.m.values()) if (c.ok) for (const r of c.r) { const sig = r.p.slice(0, 4).join(','); if (seen.has(sig)) continue; seen.add(sig); const slow = r.c <= 1 ? 0.8 : r.c <= 3 ? 0.9 : 1; // (big roads cost a little less: a GPS prefers them, as a driver would)
+      let prev = node(r.p[0], r.p[1]); for (let k = 2; k < r.p.length; k += 2) { const cur = node(r.p[k], r.p[k + 1]), d = Math.hypot(X[cur] - X[prev], Z[cur] - Z[prev]) * slow; if (cur !== prev) { adj[prev].push(cur, d); adj[cur].push(prev, d); } prev = cur; } }
+    // streets that cross without sharing a point (the map's simplified lines miss by a little) are joined where their points lie within 2 units
+    const cell = new Map(), ck = (x2, z2) => Math.floor(x2 / 2) + ',' + Math.floor(z2 / 2);
+    for (let i = 0; i < X.length; i++) { const k0 = ck(X[i], Z[i]); (cell.get(k0) || cell.set(k0, []).get(k0)).push(i); }
+    for (let i = 0; i < X.length; i++) { const cx2 = Math.floor(X[i] / 2), cz2 = Math.floor(Z[i] / 2);
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const j of cell.get((cx2 + a) + ',' + (cz2 + b)) || []) { if (j <= i) continue; const d = Math.hypot(X[j] - X[i], Z[j] - Z[i]); if (d < 2) { adj[i].push(j, d); adj[j].push(i, d); } } }
+    return (GPS.g = { X, Z, adj });
+  }
+  function gpsNearest(G, x2, z2) { let best = -1, bd = Infinity; for (let i = 0; i < G.X.length; i++) { const d = (G.X[i] - x2) ** 2 + (G.Z[i] - z2) ** 2; if (d < bd) { bd = d; best = i; } } return best; }
+  function gpsRoute(x0, z0, x1, z1) {
+    const G = gpsGraph(); if (!G.X.length) return null; const a = gpsNearest(G, x0, z0), b = gpsNearest(G, x1, z1); if (a < 0 || b < 0) return null;
+    const N = G.X.length, g = new Float64Array(N).fill(Infinity), from = new Int32Array(N).fill(-1), done = new Uint8Array(N), h = (i) => Math.hypot(G.X[i] - G.X[b], G.Z[i] - G.Z[b]) * 0.8;
+    const heap = [[h(a), a]]; g[a] = 0;
+    const push = (f, i) => { heap.push([f, i]); let k = heap.length - 1; while (k > 0) { const pk = (k - 1) >> 1; if (heap[pk][0] <= heap[k][0]) break; [heap[pk], heap[k]] = [heap[k], heap[pk]]; k = pk; } };
+    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r2 = l + 1; let m = k; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r2 < heap.length && heap[r2][0] < heap[m][0]) m = r2; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } } return top; };
+    let steps = 0; while (heap.length && steps++ < 400000) { const [, i] = pop(); if (done[i]) continue; done[i] = 1; if (i === b) break; const A = G.adj[i]; for (let k = 0; k < A.length; k += 2) { const j = A[k], ng = g[i] + A[k + 1]; if (ng < g[j]) { g[j] = ng; from[j] = i; push(ng + h(j), j); } } }
+    let end = b; if (!done[b]) { let bd = Infinity; for (let i = 0; i < N; i++) if (done[i]) { const d = Math.hypot(G.X[i] - x1, G.Z[i] - z1); if (d < bd) { bd = d; end = i; } } if (end === b || bd > Math.hypot(x0 - x1, z0 - z1) - 5) return null; } // (the goal beyond what's loaded: as near as the streets go, then straight on)
+    const pts = []; for (let i = end; i >= 0; i = from[i]) { pts.push(G.Z[i], G.X[i]); if (i === a) break; } pts.reverse(); // (x, z pairs, from you)
+    return [x0, z0, ...pts, x1, z1];
+  }
+  function gpsTick() {
+    const gl = REAL && !inside ? MM.goal() : null; if (!gl) { GPS.path = null; GPS.key = ''; return; }
+    const now = performance.now(), k = gl.x.toFixed(0) + ',' + gl.z.toFixed(0) + ':' + GPS.n;
+    let off = Infinity; if (GPS.path) for (let i = 0; i + 1 < GPS.path.length && i < 80; i += 2) off = Math.min(off, Math.hypot(GPS.path[i] - me.x, GPS.path[i + 1] - me.z));
+    if (k !== GPS.key || off > 30 || now - GPS.at > 8000) { GPS.key = k; GPS.at = now; GPS.path = gpsRoute(me.x, me.z, gl.x, gl.z) || [me.x, me.z, gl.x, gl.z]; GPS.built = false; }
+    else if (GPS.path) { let best = 0, bd = Infinity; for (let i = 0; i + 1 < Math.min(GPS.path.length, 60); i += 2) { const d = Math.hypot(GPS.path[i] - me.x, GPS.path[i + 1] - me.z); if (d < bd) { bd = d; best = i; } } // (the part behind you falls away)
+      if (best > 0) { GPS.path = [me.x, me.z, ...GPS.path.slice(best + 2)]; GPS.trim = (GPS.trim || 0) + 1; if (GPS.trim % 6 === 0) GPS.built = false; } else { GPS.path[0] = me.x; GPS.path[1] = me.z; } }
+  }
+  setInterval(() => { try { gpsTick(); gpsPanel(); } catch (e) { if (!gpsTick.warned) { gpsTick.warned = true; console.warn('gps', e); } } }, 250);
+  const gpsLen = (p2) => { let L = 0; for (let i = 2; i + 1 < p2.length; i += 2) L += Math.hypot(p2[i] - p2[i - 2], p2[i + 1] - p2[i - 1]); return L; };
+  // the next turn: the first bend of more than 35 degrees ahead, and how far it is
+  function gpsNext(p2) {
+    let dist = 0; for (let i = 2; i + 3 < p2.length; i += 2) { dist += Math.hypot(p2[i] - p2[i - 2], p2[i + 1] - p2[i - 1]); const a1 = Math.atan2(p2[i + 1] - p2[i - 1], p2[i] - p2[i - 2]), a2 = Math.atan2(p2[i + 3] - p2[i + 1], p2[i + 2] - p2[i]); let d = a2 - a1; d = Math.atan2(Math.sin(d), Math.cos(d));
+      if (Math.abs(d) > 0.6 && Math.hypot(p2[i + 2] - p2[i], p2[i + 3] - p2[i + 1]) > 2) return { dist, dir: d > 0 ? 'right' : 'left', sharp: Math.abs(d) > 1.9 }; } // (z runs south, so a positive turn is to the right)
+    return { dist: gpsLen(p2), dir: 'ahead' };
+  }
+  const gpsM = (u) => { const m = u * (REAL ? 1.5 : 3); return m < 1000 ? Math.max(10, Math.round(m / 10) * 10) + ' m' : (m / 1000).toFixed(1) + ' km'; };
+  // in 3D: the ribbon and the beam (built again when the route changes; the chevrons stream every frame)
+  function gps3d() {
+    if (!G3.ok) return; const THREE = G3.T, ws = V3.ws || 1, on = V3_LIVE && !inside && GPS.path && GPS.path.length >= 4;
+    if (!GPS.mat) { GPS.mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, uniforms: { t: { value: 0 } },
+        vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: 'varying vec2 vU; uniform float t; void main() { float edge = smoothstep(0.0, 0.18, vU.y) * smoothstep(1.0, 0.82, vU.y); float rim = smoothstep(0.08, 0.0, abs(vU.y - 0.5) - 0.42); float f = fract(vU.x * 0.16 - abs(vU.y - 0.5) * 0.9 - t * 1.4); float chev = smoothstep(0.55, 0.62, f) * (1.0 - smoothstep(0.78, 0.84, f)); vec3 c = vec3(0.13, 0.86, 1.0); float a = min(1.0, 0.45 * edge + 0.9 * chev * edge + 0.8 * rim); gl_FragColor = vec4(mix(c, vec3(0.85, 1.0, 1.0), chev * 0.7), a); }' });
+      GPS.beamMat = new THREE.MeshBasicMaterial({ color: 0x22D3EE, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }); }
+    GPS.mat.uniforms.t.value = (performance.now() - GPS.t0) / 1000;
+    if (!on) { if (GPS.mesh) GPS.mesh.visible = false; if (GPS.beam) GPS.beam.visible = false; return; }
+    if (!GPS.built || !GPS.mesh) { GPS.built = true; const p2 = GPS.path, pos = [], uv = [], idx = []; let u = 0, n = 0; const W2 = 1.3, maxL = 900;
+      for (let i = 0; i + 1 < p2.length && u < maxL; i += 2) { const px = p2[i], pz = p2[i + 1], j = Math.min(i + 2, p2.length - 2), k2 = Math.max(i - 2, 0); let dx = p2[j] - p2[k2], dz = p2[j + 1] - p2[k2 + 1]; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
+        if (i) u += Math.hypot(px - p2[i - 2], pz - p2[i - 1]); const y = ((w3ground(px, pz) || 0) + 0.18) * ws; pos.push((px - dz * W2) * ws, y, (pz + dx * W2) * ws, (px + dz * W2) * ws, y, (pz - dx * W2) * ws); uv.push(u, 0, u, 1); if (n) idx.push(2 * n - 2, 2 * n - 1, 2 * n, 2 * n - 1, 2 * n + 1, 2 * n); n++; }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+      if (GPS.mesh) { GPS.mesh.geometry.dispose(); GPS.mesh.geometry = geo; } else { GPS.mesh = new THREE.Mesh(geo, GPS.mat); GPS.mesh.renderOrder = 5; GPS.mesh.frustumCulled = false; G3.scene.add(GPS.mesh); } }
+    GPS.mesh.visible = true;
+    if (!GPS.beam) { GPS.beam = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 140, 16, 1, true), GPS.beamMat); G3.scene.add(GPS.beam); }
+    const ex = GPS.path[GPS.path.length - 2], ez = GPS.path[GPS.path.length - 1]; GPS.beam.visible = true; GPS.beam.position.set(ex * ws, ((w3ground(ex, ez) || 0) + 70) * ws, ez * ws); GPS.beam.scale.set(ws, ws, ws); GPS.beamMat.opacity = 0.25 + 0.12 * Math.sin(GPS.mat.uniforms.t.value * 3);
+  }
+  // on the flat map
+  function gps2d() {
+    if (V3_LIVE || inside || !GPS.path || GPS.path.length < 4) return; const t = (performance.now() - GPS.t0) / 1000;
+    x.save(); x.lineCap = x.lineJoin = 'round'; x.beginPath(); for (let i = 0; i + 1 < GPS.path.length; i += 2) { const q = P(GPS.path[i], 0.3, GPS.path[i + 1]); if (i) x.lineTo(q[0], q[1]); else x.moveTo(q[0], q[1]); }
+    x.strokeStyle = 'rgba(34,211,238,.28)'; x.lineWidth = Math.max(6, 2.6 * K); x.stroke(); x.shadowColor = '#22D3EE'; x.shadowBlur = 12; x.strokeStyle = '#67E8F9'; x.lineWidth = Math.max(2, 0.7 * K); x.setLineDash([Math.max(6, 2 * K), Math.max(5, 1.6 * K)]); x.lineDashOffset = -t * 30; x.stroke(); x.restore();
+  }
+  // the panel on the left: steady, the same in portrait and landscape
+  function gpsPanel() {
+    let el = document.getElementById('gpsPanel'); const drv = V3.drive, has = GPS.path && GPS.path.length >= 4;
+    if (!el) { el = document.createElement('div'); el.id = 'gpsPanel'; document.body.append(el); }
+    const show = playing && !inside && (has || drv) && !document.body.classList.contains('ovl'); el.style.display = show ? 'block' : 'none'; if (!show) return;
+    const gl = MM.goal(), nx = has ? gpsNext(GPS.path) : null, left = has ? gpsLen(GPS.path) : 0, sp = drv ? Math.abs(drv.v || 0) : Math.hypot(me.vx || 0, me.vz || 0), eta = has ? left / Math.max(drv ? 9 : 2.6, sp) : 0;
+    const arrow = !nx ? '' : nx.dir === 'ahead' ? '⬆' : nx.dir === 'left' ? (nx.sharp ? '↰' : '⬅') : nx.sharp ? '↱' : '➡';
+    const html = (has ? `<div class="gN"><span class="gA">${arrow}</span><span><b>${nx.dir === 'ahead' ? 'Straight on' : 'Turn ' + nx.dir}</b><em>${gpsM(nx.dist)}</em></span></div>
+      <div class="gD"><small>TO</small><b>${esc(gl ? gl.name : '')}</b><span>${gpsM(left)} · ${Math.max(1, Math.round(eta / 60))} min</span></div>` : '') +
+      (drv ? `<div class="gS"><b>${Math.round(sp * 3.6)}</b><small>KM/H</small><span>${drv.mg === -1 ? 'R' : drv.mg === 0 ? 'N' : drv.mg || 1}</span></div>` : '');
+    if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; }
+  }
   function myRidePark() {
     const s2 = realRoadNear(me.x, me.z); if (!s2) return false; const side = s2.w / 4, nx = -Math.sin(s2.ang), nz = Math.cos(s2.ang);
     if (!G3.protos.porsche911) G3.vehicle('porsche911');
@@ -7118,7 +7242,8 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
       const D = st.D, ps = yawNow(), k = kNow(), R2 = D / 2; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D); g.save(); g.beginPath(); g.arc(R2, R2, R2, 0, Math.PI * 2); g.clip();
       g.fillStyle = '#2B5C85'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(k * T / S, k * T / S); g.imageSmoothingEnabled = true; g.drawImage(base, -me.x * S / T, -me.z * S / T); g.restore();
       const gl = goal();
-      if (gl) { const [gx, gy] = toMap(gl.x, gl.z, ps, k); g.save(); g.setLineDash([4, 4]); g.strokeStyle = 'rgba(250,204,21,.95)'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(R2, R2); g.lineTo(R2 + gx, R2 + gy); g.stroke(); g.restore(); } // (the way to it, as the crow flies)
+      if (gl) { const path = typeof GPS !== 'undefined' && GPS.path && GPS.path.length >= 4 ? GPS.path : [me.x, me.z, gl.x, gl.z]; g.save(); g.lineCap = g.lineJoin = 'round'; g.beginPath(); for (let i = 0; i + 1 < path.length; i += 2) { const [mx, my] = toMap(path[i], path[i + 1], ps, k); if (i) g.lineTo(R2 + mx, R2 + my); else g.moveTo(R2 + mx, R2 + my); }
+        g.strokeStyle = 'rgba(34,211,238,.35)'; g.lineWidth = 6; g.stroke(); g.shadowColor = '#22D3EE'; g.shadowBlur = 8; g.strokeStyle = '#A5F3FC'; g.lineWidth = 2.4; g.setLineDash([5, 4]); g.lineDashOffset = -performance.now() / 60; g.stroke(); g.restore(); } // (the way to it along the streets, glowing and streaming)
       g.font = "800 10px 'Plus Jakarta Sans',system-ui"; g.textAlign = 'center'; g.textBaseline = 'top';
       for (const p2 of PLACES) { const [mx, my] = toMap((p2[1] + p2[3] / 2) * T, (p2[2] + p2[4] / 2) * T, ps, k); if (Math.hypot(mx, my) > R2 - 4) continue; g.fillStyle = PIN_COL[p2[0]] || '#F8FAFC'; g.beginPath(); g.arc(R2 + mx, R2 + my, st.big ? 4 : 3, 0, Math.PI * 2); g.fill(); g.strokeStyle = 'rgba(15,23,42,.8)'; g.lineWidth = 1; g.stroke();
         if (st.big) { const nm = p2[5].replace(/ \(.*\)$/, ''); g.lineWidth = 3; g.strokeStyle = 'rgba(15,23,42,.85)'; g.strokeText(nm, R2 + mx, R2 + my + 5); g.fillStyle = '#F8FAFC'; g.fillText(nm, R2 + mx, R2 + my + 5); } }
@@ -7136,7 +7261,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     }
     setInterval(() => { try { paint(); } catch (e) { if (!paint.warned) { paint.warned = true; console.warn('minimap', e); } } }, MOBILE ? 100 : 50);
     if (REAL) for (const c of WC.m.values()) if (c.ok) roads(c);
-    return { roads, st, base, S };
+    return { roads, st, base, S, goal };
   })();
   // ---- voice, for friends only: talk to your friends, straight from phone to phone (WebRTC, peer to peer). Three ways:
   // Nearby (the closest players on the street, their voices fading with distance), This place (everyone in the same
@@ -7213,8 +7338,39 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     for (const c of WC.m.values()) if (c.ok) for (const r of c.r) { if (r.br && r.c > 3) continue; const id = r.p.slice(0, 4).join(','); if (seen.has(id) || r.p.length < 4) continue; seen.add(id);
       const rd = { p: r.p, c: r.c, w: REAL.widths[r.c] / 2, n: r.p.length / 2 }; roads.push(rd);
       for (const [end, k] of [[0, 0], [1, r.p.length - 2]]) { const kk = key(r.p[k], r.p[k + 1]); (nodes.get(kk) || nodes.set(kk, []).get(kk)).push({ rd, end }); } }
-    return (TR.graph = { roads, nodes, key });
+    // traffic lights: where three or more streets meet and at least one is a main road (no expressway: those have
+    // interchanges). Each arm knows its direction out of the junction; arms run in two groups by their axis. One group is
+    // green for 14 s with 3 s of amber, then the other; each junction is offset so the city doesn't change all at once
+    const lights = new Map(), arms = new Map();
+    for (const rd of roads) for (let k = 0; k < rd.n; k++) { const x2 = rd.p[2 * k], z2 = rd.p[2 * k + 1], kk = key(x2, z2), list = arms.get(kk) || arms.set(kk, []).get(kk);
+      for (const nb of [k - 1, k + 1]) if (nb >= 0 && nb < rd.n) list.push({ rd, a: Math.atan2(rd.p[2 * nb + 1] - z2, rd.p[2 * nb] - x2), w: rd.w, x: x2, z: z2 }); }
+    for (const [kk, list] of arms) { if (list.length < 3 || list.some((m) => m.rd.c <= 1) || !list.some((m) => m.rd.c <= 4)) continue;
+      const a0 = list[0].a; for (const m of list) { const d = Math.abs(Math.atan2(Math.sin(2 * (m.a - a0)), Math.cos(2 * (m.a - a0)))); m.grp = d < Math.PI / 2 ? 0 : 1; }
+      lights.set(kk, { x: list[0].x, z: list[0].z, arms: list, r: Math.max(...list.map((m) => m.w)) + 2.5, off: (Math.abs(Math.round(list[0].x * 13 + list[0].z * 7)) % 34) }); }
+    return (TR.graph = { roads, nodes, key, lights });
   }
+  // the posts at the lights near you: one on the near-side corner of each arm, facing the traffic coming in, red over
+  // amber over green, lit as the junction runs. A pool of them, moved to the nearest junctions as you go
+  const TLP = { pool: [], g: null };
+  function tlPosts() {
+    if (!G3.ok || !REAL || !TR.graph || !TR.graph.lights) return; const THREE = G3.T, ws = V3.ws || 1;
+    if (!TLP.g) { TLP.g = new THREE.Group(); G3.scene.add(TLP.g); }
+    TLP.g.visible = V3_LIVE && !inside; if (!TLP.g.visible) return;
+    const near = []; for (const L of TR.graph.lights.values()) { const d = Math.hypot(L.x - me.x, L.z - me.z); if (d < 140) near.push([d, L]); } near.sort((a, b) => a[0] - b[0]);
+    let k = 0; const dark = new THREE.Color(0x1a1a1a), on = { r: new THREE.Color(0xff2a1f), a: new THREE.Color(0xffb020), g: new THREE.Color(0x22e05a) };
+    for (const [, L] of near) for (const m of L.arms) { if (k >= 48) break;
+      let P2 = TLP.pool[k]; if (!P2) { const g = new THREE.Group(), pole = new THREE.MeshStandardMaterial({ color: 0x2b2f36, roughness: 0.5, metalness: 0.5 });
+        const add = (geo, mat, x, y, z) => { const o = new THREE.Mesh(geo, mat); o.position.set(x, y, z); o.castShadow = !MOBILE; g.add(o); return o; };
+        add(new THREE.CylinderGeometry(0.08, 0.1, 3.4, 8), pole, 0, 1.7, 0); add(new THREE.BoxGeometry(0.34, 1.05, 0.3), pole, 0, 3.5, 0); add(new THREE.BoxGeometry(0.5, 1.25, 0.04), new THREE.MeshStandardMaterial({ color: 0xF2C230, roughness: 0.6 }), 0, 3.5, -0.17); // (the pole, the box, the yellow backboard)
+        const lamps = ['r', 'a', 'g'].map((c, n) => add(new THREE.SphereGeometry(0.11, 10, 8), new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x000000, roughness: 0.3 }), 0, 3.85 - n * 0.33, 0.14));
+        P2 = TLP.pool[k] = { g, lamps }; TLP.g.add(g); }
+      const ca = Math.cos(m.a), sa = Math.sin(m.a), px = L.x + ca * L.r + sa * (m.w + 1.3), pz = L.z + sa * L.r - ca * (m.w + 1.3); // (back from the junction along the arm, on the right of the traffic coming in)
+      P2.g.visible = true; P2.g.position.set(px * ws, w3ground(px, pz) * ws, pz * ws); P2.g.rotation.set(0, Math.PI / 2 - m.a, 0); P2.g.scale.setScalar(ws);
+      const st = tlState(L, m.grp); P2.lamps.forEach((o, n) => { const c = ['r', 'a', 'g'][n], lit = c === st; o.material.emissive.copy(lit ? on[c] : dark); o.material.emissiveIntensity = lit ? 2.2 : 0; o.material.color.copy(lit ? on[c] : dark); }); k++; }
+    for (; k < TLP.pool.length; k++) TLP.pool[k].g.visible = false;
+  }
+  // a junction's light for one group of its arms, now: 'g', 'a' (amber) or 'r'
+  function tlState(L, grp) { const t = ((performance.now() / 1000 + L.off) % 34), mine = grp === 0 ? t : (t + 17) % 34; return mine < 14 ? 'g' : mine < 17 ? 'a' : 'r'; }
   const TR_MODELS = ['danfo', 'danfo', 'danfo', 'corolla', 'corolla', 'camry', 'highlander', 'landcruiser', 'rangerover'];
   function trSpawn(G) {
     for (let tries = 0; tries < 40; tries++) { const rd = G.roads[Math.floor(Math.random() * G.roads.length)]; if (rd.c > 5) continue; const k = Math.floor(Math.random() * (rd.n - 1)), x0 = rd.p[2 * k], z0 = rd.p[2 * k + 1], d = Math.hypot(x0 - me.x, z0 - me.z); if (d < 60 || d > 200 || !V3.cells.has(Math.floor(x0 / W3.CS) + ',' + Math.floor(z0 / W3.CS))) continue; // (out of the way, but soon in sight, on a street that's built)
@@ -7233,6 +7389,10 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
       const top = q.rd.c <= 1 ? 7.8 : q.rd.c <= 3 ? 5.5 : 3.6; let block = false; // (what's ahead: you, your car, another car in the same direction)
       const ahead = (x2, z2, r) => { const dx = x2 - q.cx, dz = z2 - q.cz, f = dx * ux + dz * uz, s2 = Math.abs(-dx * uz + dz * ux); return f > 0 && f < r && s2 < 2.4; };
       if (ahead(me.x, me.z, 11)) block = true; for (const o of TR.cars) if (o !== q && ahead(o.cx, o.cz, 10)) { block = true; break; }
+      if (!block && G.lights) { const nk = q.dir > 0 ? q.k + 1 : q.k, ex = q.rd.p[2 * nk], ez = q.rd.p[2 * nk + 1], Lj = G.lights.get(G.key(ex, ez)); // (the point this stretch leads to: a junction with lights?)
+        if (Lj) { const back = Math.atan2(q.cz - ez, q.cx - ex); let arm = null, bd = 9; for (const m of Lj.arms) { const d = Math.abs(Math.atan2(Math.sin(m.a - back), Math.cos(m.a - back))); if (m.rd === q.rd && d < bd) { bd = d; arm = m; } } // (the arm it's coming in on)
+          const st = arm ? tlState(Lj, arm.grp) : 'g', toLine = Math.hypot(ex - q.cx, ez - q.cz) - Lj.r;
+          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; } } // (red: stop at the line; amber: stop if there's room to)
       q.v += ((block ? 0 : top) - q.v) * Math.min(1, dt * (block ? 3 : 0.8)); q.u += q.v * dt;
       while (q.u > L) { q.u -= L; const nk = q.k + q.dir; if (q.dir > 0 ? nk + 1 < q.rd.n : nk >= 0) q.k = nk;
         else { const endX = q.dir > 0 ? q.rd.p[q.rd.p.length - 2] : q.rd.p[0], endZ = q.dir > 0 ? q.rd.p[q.rd.p.length - 1] : q.rd.p[1], opts = (G.nodes.get(G.key(endX, endZ)) || []).filter((o) => o.rd !== q.rd && o.rd.c <= 5);
@@ -7312,6 +7472,15 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
           mk(new T3.CylinderGeometry(0.09, 0.13, 6.2, 8), pole, ([lx, lz]) => { o3.position.set(lx, 3.1, lz); o3.rotation.set(0, 0, 0); });
           mk(new T3.BoxGeometry(1.5, 0.12, 0.12), pole, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 0.7, 6.1, lz + Math.sin(a) * 0.7); o3.rotation.set(0, -a, 0); });
           mk(new T3.BoxGeometry(0.55, 0.16, 0.3), head, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); } }
+      { const trees = []; for (const c of ch) for (const r of c.r) { if (r.br || r.c < 3) continue; const w = REAL.widths[r.c] / 2 + 1.45, p2 = r.p; let acc = (Math.abs(p2[0] * 5 + p2[1] * 11) % 19) + 6, side = -1; // (trees along the side streets' pavements, about every 19 units, between the lamps, clear of the junctions)
+          for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L, jA = jw(ax, az) + 3, jB = jw(bx, bz) + 3;
+            for (let u = 19 - acc; u < L; u += 19) { if (u > jA && u < L - jB) { const tx = ax + (bx - ax) * u / L + nx * w * side, tz = az + (bz - az) * u / L + nz * w * side; if (inC(tx, tz)) trees.push([tx, tz, 0.8 + ((Math.abs(Math.round(tx * 3 + tz))) % 5) * 0.1]); } side = -side; }
+            acc = (acc + L) % 19; } }
+        if (trees.length) { const o3 = new T3.Object3D(), mk = (geo, mat, f) => { const m = new T3.InstancedMesh(geo, mat, trees.length); trees.forEach((t, k) => { f(t); o3.updateMatrix(); m.setMatrixAt(k, o3.matrix); }); m.castShadow = !MOBILE; grp.add(m); };
+          mk(new T3.CylinderGeometry(0.13, 0.2, 2.6, 7), new T3.MeshStandardMaterial({ color: 0x6B4F36, roughness: 0.95 }), ([tx, tz, k]) => { o3.position.set(tx, 1.3 * k, tz); o3.scale.set(k, k, k); });
+          mk(new T3.IcosahedronGeometry(1.5, 1), new T3.MeshStandardMaterial({ color: 0x3F7A3A, roughness: 0.9, flatShading: true }), ([tx, tz, k]) => { o3.position.set(tx, 3.3 * k, tz); o3.scale.set(k * 1.1, k * 0.9, k * 1.1); });
+          mk(new T3.IcosahedronGeometry(1.0, 1), new T3.MeshStandardMaterial({ color: 0x5A9446, roughness: 0.9, flatShading: true }), ([tx, tz, k]) => { o3.position.set(tx + 0.5 * k, 3.9 * k, tz - 0.3 * k); o3.scale.set(k, k, k); });
+          const ring = new T3.CylinderGeometry(0.75, 0.75, 0.14, 12); mk(ring, new T3.MeshStandardMaterial({ color: 0xBDB8AE, roughness: 0.9 }), ([tx, tz]) => { o3.position.set(tx, 0.26, tz); o3.scale.set(1, 1, 1); }); } } // (each in its kerbstone ring)
       const am = new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1 }); am.userData.road = true;
       mesh(pave, pc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: T3.DoubleSide }));
       mesh(ash, ac, am); mesh(line, lc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 }));
@@ -7461,7 +7630,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     // between yellow edge lines) on the straights, zebra crossings at every junction, a manhole now and then
     const isRoad = (i, j) => i >= 0 && j >= 0 && i < BOARD.w && j < BOARD.h && at(i, j) === ROAD;
     const line = (x0, z0, x1, z1, y) => { const p = P(x0, y, z0), q = P(x1, y, z1); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); };
-    if (REAL) { if (!(REC && REC.clip)) drawRealStreets(); } /* (in 3D the cell has them as a mesh) */
+    if (REAL) { if (!(REC && REC.clip)) { drawRealStreets(); gps2d(); } } /* (in 3D the cell has them as a mesh); the GPS route over the streets */
     else for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) {
       if (!isRoad(i, j) || !visible(i, j) || (REC && REC.clip && placeAt[j * BOARD.w + i] >= 0)) continue; // (in 3D, a lane under a landmark stays under it)
       const xa = i * T, za = j * T, xb = xa + T, zb = za + T;
@@ -10716,7 +10885,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
       else if (ae && ae.tagName === 'BUTTON' && [' ', 'enter'].indexOf(e.key.toLowerCase()) < 0) ae.blur(); }
     if (inside && deco && bmKey(e)) { e.preventDefault(); return; }
     keys.add(e.key.toLowerCase());
-    if (V3.drive && !e.repeat) { const k = e.key.toLowerCase(); if (k === 'v') driveView(); else if (k === 'f') driveExit(); }
+    if (V3.drive && !e.repeat) { const k = e.key.toLowerCase(); if (k === 'v') driveView(); else if (k === 'f') carLeave(); }
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) e.preventDefault();
   });
   addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
@@ -11159,7 +11328,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
         // each car to its own figures (CAR_STATS: 0-100 time, top speed), a body with weight: the throttle pulls hard low
         // down and fades toward the top; brakes bite; the air and the road slow you when you lift; the steering is quick in
         // town and calms at speed; the tyres' grip pulls any slide back into line, the handbrake (Space) lets it drift
-        const d = V3.drive, q = d.q, thr = Math.max(-1, Math.min(1, -(iz - ((isTouch || MOBILE) ? stick.z : 0)))), str = Math.max(-1, Math.min(1, ix)), hb = keys.has(' '), st = CAR_STATS[q.model] || [0, 0, 300, 7, 220];
+        const d = V3.drive, q = d.q, thr = Math.max(-1, Math.min(1, -(iz - ((isTouch || MOBILE) ? stick.z : 0)) + PEDAL.gas - PEDAL.brake)), str = Math.max(-1, Math.min(1, ix)), hb = keys.has(' ') || PEDAL.hb, st = CAR_STATS[q.model] || [0, 0, 300, 7, 220];
         const top = Math.min(30, st[4] / 11), brake = 26, rev = 7, GEARS = [0.17, 0.32, 0.48, 0.65, 0.82, 1.01], vAbs = Math.max(0, d.v || 0);
         // a manual gearbox, shifted by you (X up, Z down; the ▲ ▼ pads on a phone): R, N, 1 to 6. Each gear pulls up to its
         // own top speed and no further (the limiter); too high a gear at low speed bogs down; drop a gear at speed and the
@@ -13698,6 +13867,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
         // a search that narrows the places as you type, popular spots, then every district with a picture of each place
         const POP = ['WYRD Tower', 'Eko Hotel', 'Elegushi Beach', 'The Arena (live shows)', 'Eko Home Store', 'Lekki Luxury Cars', 'Banana Island Marina'].map((n) => PLACES.find((p) => p[5] === n)).filter(Boolean);
         show(`${ahead('ride', 'Ride', 'Okada or car · paid when you arrive')}
+          ${REAL ? `<button id="rMine" class="pcard" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;color:inherit"><span style="font-size:26px">🏎️</span><span style="flex:1"><b style="display:block">My Porsche 911</b><small style="opacity:.75">Brought to the street beside you</small></span><b style="color:#FF8A00">Call</b></button>` : ''}
           <div class="search" style="--ac:#FF8A00"><span>🔎</span><input id="rFind" placeholder="Where to?" value="${esc(rideFind)}" autocomplete="off"></div>
           <div class="chips" style="--ac:#FF8A00">${POP.map((p) => `<button data-p="${PLACES.indexOf(p)}">${ico(ICONS[p[0]] ? p[0] : 'pin')} ${esc(p[5].replace(' (live shows)', ''))}</button>`).join('')}</div>
           <div id="rNone" class="pcard dim" style="display:none">No place by that name. Try a district: Ikoyi, Lekki, Ajah…</div>
@@ -13708,6 +13878,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
           $('rNone').style.display = any ? 'none' : 'block';
         };
         $('rFind').oninput = (e) => { rideFind = e.target.value; filter(); }; filter();
+        if ($('rMine')) $('rMine').onclick = () => { if (inside) return tickerSay('Step outside first: your Porsche comes to the street'); if (myRidePark()) { tickerSay(V3.on ? "Your Porsche 911 don land: it's waiting on the street beside you" : 'Your Porsche is on the street beside you: switch to 3D to drive it'); closePhone(); } else tickerSay('No street near enough here for your Porsche'); };
         pbody.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => { const s = SECTORS[b.dataset.s]; const j = s.rows[0] ?? s.rect[1], i = s.cols[0] ?? Math.round((s.rect[0] + s.rect[2]) / 2); const t = nearestRoad(i + 0.5, j + 0.5); go('rideq', { i: t[0], j: t[1], name: s.name, peek: 's' + b.dataset.s }); }));
         pbody.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { const p = PLACES[b.dataset.p]; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + b.dataset.p }); }));
         // the pictures fill in one by one, nearest the top first
@@ -14013,31 +14184,94 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     if (!want) return; plane.constant = 1.22 * (V3.ws || 1); G3.renderer.localClippingEnabled = true;
     if (V3.cabObj !== o) { o.traverse((m) => { if (m.isMesh && m.material && m.userData.own) { m.material.clippingPlanes = [plane]; m.material.clipShadows = true; } }); V3.cabObj = o; }
   }
-  // a phone's pedals: GAS and BRAKE on the right (held down, like the keys), DRIFT for the handbrake; the stick on
-  // the left steers. Shown only while driving on a touch screen
+  // a phone's controls at the wheel, mechanical: on the right, from the middle out:
+  // - The gear stick in its gate (R N 1-6): push it up or down a notch to shift.
+  // - The handbrake lever: pull it back to lock the rear wheels and drift; it springs off when you let go.
+  // - The brake and accelerator pedals: they press as far as your thumb pushes them, so you can feather the throttle.
+  // The stick on the left steers. Shown only while driving on a touch screen.
+  const PEDAL = { gas: 0, brake: 0, hb: false };
   function drivePads(on) {
     let el = document.getElementById('drvPads');
-    if (!on) { if (el) el.style.display = 'none'; for (const k of ['w', 's', ' ']) keys.delete(k); return; }
-    if (!el) { el = document.createElement('div'); el.id = 'drvPads'; el.style.cssText = 'position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(158px + env(safe-area-inset-bottom));z-index:31;display:flex;gap:10px;align-items:flex-end;touch-action:none;user-select:none;-webkit-user-select:none';
-      const pad = (label, key, bg, w, h) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = `width:${w}px;height:${h}px;border:0;border-radius:18px;background:${bg};color:#fff;font:900 13px 'Plus Jakarta Sans',system-ui;letter-spacing:.04em;box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 -4px 0 rgba(0,0,0,.25);touch-action:none`;
-        const down = (e) => { e.preventDefault(); keys.add(key); b.style.transform = 'scale(.94)'; }, up = (e) => { e.preventDefault(); keys.delete(key); b.style.transform = ''; };
-        b.addEventListener('pointerdown', down); b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('pointerleave', up); return b; };
-      { const sh = (t, k) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = 'width:52px;height:46px;border:0;border-radius:14px;background:rgba(15,23,42,.85);color:#FACC15;font:900 18px system-ui;touch-action:none'; b.addEventListener('pointerdown', (e) => { e.preventDefault(); gearShift(k); }); return b; }, col = document.createElement('div'); col.style.cssText = 'display:flex;flex-direction:column;gap:8px'; col.append(sh('▲', 1), sh('▼', -1)); el.append(col); } // the gear stick
-      el.append(pad('DRIFT', ' ', 'rgba(15,23,42,.8)', 64, 56), pad('BRAKE', 's', 'linear-gradient(160deg,#EF4444,#991B1B)', 74, 74), pad('GAS', 'w', 'linear-gradient(160deg,#22C55E,#15803D)', 82, 104)); document.body.append(el); }
+    if (!on) { if (el) el.style.display = 'none'; PEDAL.gas = PEDAL.brake = 0; PEDAL.hb = false; clearInterval(drivePads.t); return; }
+    if (!el) { el = document.createElement('div'); el.id = 'drvPads'; document.body.append(el);
+      el.innerHTML = `<div class="dGear"><div class="dGate">${['6', '5', '4', '3', '2', '1', 'N', 'R'].map((g) => `<i data-g="${g}">${g}</i>`).join('')}</div><div class="dKnob"></div></div>
+        <div class="dHb"><div class="dHbT"></div><div class="dHbL"><b></b></div><small>HANDBRAKE</small></div>
+        <div class="dPed dBrake" data-k="brake"><div class="dPl"></div><small>BRAKE</small></div>
+        <div class="dPed dGas" data-k="gas"><div class="dPl"></div><small>GAS</small></div>`;
+      // the pedals: how far down they're pushed, from where your thumb landed
+      el.querySelectorAll('.dPed').forEach((pd) => { const plate = pd.querySelector('.dPl'), k = pd.dataset.k; let y0 = 0, id = null;
+        const set = (v) => { PEDAL[k] = v; plate.style.transform = `perspective(240px) rotateX(${18 + v * 26}deg) translateY(${v * 9}px)`; plate.style.filter = `brightness(${1 - v * 0.25})`; };
+        pd.addEventListener('pointerdown', (e) => { e.preventDefault(); id = e.pointerId; pd.setPointerCapture(id); y0 = e.clientY; set(0.6); if (navigator.vibrate) navigator.vibrate(8); });
+        pd.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; set(Math.max(0.15, Math.min(1, 0.6 + (e.clientY - y0) / 70))); });
+        const up = (e) => { if (e.pointerId !== id) return; id = null; set(0); }; pd.addEventListener('pointerup', up); pd.addEventListener('pointercancel', up); });
+      // the handbrake: pulled back past halfway, it's on
+      { const hbEl = el.querySelector('.dHb'), lever = hbEl.querySelector('.dHbL'); let y0 = 0, id = null;
+        const set = (v) => { lever.style.transform = `translateY(${v * 46}px)`; const was = PEDAL.hb; PEDAL.hb = v > 0.5; if (PEDAL.hb && !was && navigator.vibrate) navigator.vibrate(15); };
+        hbEl.addEventListener('pointerdown', (e) => { e.preventDefault(); id = e.pointerId; hbEl.setPointerCapture(id); y0 = e.clientY; set(0.15); });
+        hbEl.addEventListener('pointermove', (e) => { if (e.pointerId === id) set(Math.max(0, Math.min(1, 0.15 + (e.clientY - y0) / 46))); });
+        const up = (e) => { if (e.pointerId !== id) return; id = null; set(0); }; hbEl.addEventListener('pointerup', up); hbEl.addEventListener('pointercancel', up); }
+      // the gear stick: a notch up or down for each push past the gate (a tap above or below the knob shifts too)
+      { const gr = el.querySelector('.dGear'); let y0 = 0, id = null, moved = false;
+        gr.addEventListener('pointerdown', (e) => { e.preventDefault(); id = e.pointerId; gr.setPointerCapture(id); y0 = e.clientY; moved = false; });
+        gr.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; const dy = e.clientY - y0; if (Math.abs(dy) > 24) { gearShift(dy < 0 ? 1 : -1); y0 = e.clientY; moved = true; if (navigator.vibrate) navigator.vibrate(12); } });
+        gr.addEventListener('pointerup', (e) => { if (e.pointerId !== id) return; id = null; if (!moved) { const r = gr.querySelector('.dKnob').getBoundingClientRect(); gearShift(e.clientY < r.top + r.height / 2 ? 1 : -1); if (navigator.vibrate) navigator.vibrate(12); } }); }
+    }
     el.style.display = 'flex';
+    // the knob sits at the gear you're in
+    clearInterval(drivePads.t); drivePads.t = setInterval(() => { const d = V3.drive; if (!d) return; const g = d.mg === -1 ? 'R' : d.mg === 0 ? 'N' : String(d.mg ?? 1), cell = el.querySelector(`.dGate i[data-g="${g}"]`), knob = el.querySelector('.dKnob');
+      el.querySelectorAll('.dGate i').forEach((i) => i.classList.toggle('on', i === cell)); if (cell) knob.style.top = (cell.offsetTop + cell.offsetHeight / 2) + 'px'; }, 120);
   }
   // someone else's car: taking it is car theft under WYRD's law. You're asked first; then the tracker reports it, the
   // court fines you and the police come looking
   async function carTheft(q) {
     if (!signedIn()) return openPhone();
     if (!confirm('This car belongs to someone else. Taking it is car theft: WYRD’s police will fine you and come after you. Steal it anyway?')) return;
-    driveStart(q); q.stolen = true;
+    carEnter(q); q.stolen = true;
     try { const r = await my('carTheft', { place: (whereEl.textContent || 'Lagos Island').replace('📍 ', '').slice(0, 60) }), c = r.citation || {}; tickerSay(c.amount ? `🚨 Car theft reported. Fined ₦${c.amount.toLocaleString()}: the police are looking for you.` : '🚨 Car theft reported to the police.'); }
     catch (e) { tickerSay('🚨 Car theft: the police have been told.'); }
   }
   function gearShift(k) { const d = V3.drive; if (!d) return; const n = Math.max(-1, Math.min(6, (d.mg ?? 1) + k)); if (n === d.mg) return;
     if (n < 0 && Math.abs(d.v || 0) > 1.5) return tickerSay('Stop before you put it in reverse'); d.mg = n; d.shiftT = 0.16; } // one gear at a time, as with a real stick
   addEventListener('keydown', (e) => { if (!V3.drive || e.repeat || e.target.closest?.('input, textarea')) return; const k = e.key.toLowerCase(); if (k === 'x') gearShift(1); else if (k === 'z') gearShift(-1); });
+  // getting in, unhurried: you walk round to the driver's door (on the left, as in Lagos), it swings open, you climb in
+  // and sit, and it shuts with a thunk before the engine starts. Getting out: it opens, you step out, it shuts. The door
+  // is a panel in the car's own paint, hinged at its front edge, shown only while it moves
+  const DOOR = { on: null, g: null };
+  function doorSound(open) { const c = audioCtx(); if (!c || c.state !== 'running') return; const t = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.setValueAtTime(open ? 340 : 150, t); o.frequency.exponentialRampToValueAtTime(50, t + (open ? 0.07 : 0.16)); g.gain.setValueAtTime(open ? 0.12 : 0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t + (open ? 0.1 : 0.22)); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.3); }
+  function carEnter(q) { if (DOOR.on || V3.drive) return; DOOR.on = { q, kind: 'in', t0: performance.now(), x0: me.x, z0: me.z }; }
+  function carLeave() { const d = V3.drive; if (!d || DOOR.on) { if (!DOOR.on) driveExit(); return; } const q = d.q; driveExit(); DOOR.on = { q, kind: 'out', t0: performance.now(), x1: me.x, z1: me.z }; }
+  const ease = (u) => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
+  // one frame of it: places you and the door; true while you're out of sight (in the seat)
+  function doorStep(now) {
+    const D = DOOR.on; if (!D) { if (DOOR.g) DOOR.g.visible = false; return false; }
+    const q = D.q, fx = Math.cos(q.ang), fz = Math.sin(q.ang), spec = CAR_SPEC[q.model] || CAR_SPEC.corolla, sc = q.sc || 1, half = spec.W / 2 * sc;
+    const dx = q.cx + fz * (half + 0.7), dz = q.cz - fx * (half + 0.7), sx = q.cx + fz * 0.38 * sc, sz = q.cz - fx * 0.38 * sc; // (by the door; in the seat)
+    let t = (now - D.t0) / 1000, ang = 0, hide = false;
+    if (D.kind === 'in') {
+      const walk = D.walk || (D.walk = Math.max(0.5, Math.hypot(dx - D.x0, dz - D.z0) / 3.2));
+      if (t < walk) { const u = t / walk; me.x = D.x0 + (dx - D.x0) * u; me.z = D.z0 + (dz - D.z0) * u; }
+      else if ((t -= walk) < 0.8) { me.x = dx; me.z = dz; ang = ease(t / 0.8); if (!D.o) { D.o = 1; doorSound(true); } }
+      else if ((t -= 0.8) < 0.9) { const u = ease(t / 0.9); me.x = dx + (sx - dx) * u; me.z = dz + (sz - dz) * u; ang = 1; hide = u > 0.6; }
+      else if ((t -= 0.9) < 0.7) { hide = true; me.x = sx; me.z = sz; ang = 1 - ease(t / 0.7); }
+      else { if (!D.c) { D.c = 1; doorSound(false); } DOOR.on = null; driveStart(q); hide = true; }
+    } else {
+      if (t < 0.7) { hide = true; ang = ease(t / 0.7); if (!D.o) { D.o = 1; doorSound(true); } me.x = sx; me.z = sz; }
+      else if ((t -= 0.7) < 0.9) { const u = ease(t / 0.9); me.x = sx + (D.x1 - sx) * u; me.z = sz + (D.z1 - sz) * u; ang = 1; hide = u < 0.4; }
+      else if ((t -= 0.9) < 0.7) { me.x = D.x1; me.z = D.z1; ang = 1 - ease(t / 0.7); }
+      else { if (!D.c) { D.c = 1; doorSound(false); } DOOR.on = null; }
+    }
+    me.vx = me.vz = 0;
+    if (G3.ok) { const THREE = G3.T, ws = V3.ws || 1;
+      if (!DOOR.g) { const g = DOOR.g = new THREE.Group(), hinge = new THREE.Group(); g.add(hinge); g.userData.hinge = hinge;
+        const paint = DOOR.paint = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.45 }), glass = new THREE.MeshStandardMaterial({ color: 0x1C2A36, roughness: 0.1, metalness: 0.3, transparent: true, opacity: 0.7 }), trim = new THREE.MeshStandardMaterial({ color: 0x2A2C33, roughness: 0.7 });
+        const box = (w, h, d, m, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.castShadow = true; hinge.add(b); };
+        box(1.08, 0.58, 0.06, paint, -0.54, 0.62, 0); box(0.98, 0.38, 0.03, glass, -0.56, 1.1, 0); box(1.0, 0.5, 0.02, trim, -0.54, 0.62, 0.035); box(0.12, 0.03, 0.04, trim, -0.92, 0.82, -0.05); // (the panel, its window, the trim inside, the handle)
+        G3.scene.add(g); }
+      const g = DOOR.g, hinge = g.userData.hinge; DOOR.paint.color.set(q.paint || q.tint || spec.col || '#CBD5E1');
+      g.visible = ang > 0.01; g.position.set(q.cx * ws, w3ground(q.cx, q.cz) * ws, q.cz * ws); g.rotation.set(0, -q.ang, 0); g.scale.setScalar(sc * ws);
+      hinge.position.set(spec.L * 0.12, 0, -spec.W / 2 - 0.03); hinge.rotation.y = -1.1 * ang; } // (opens to about 63 degrees)
+    return hide;
+  }
   function driveStart(q) {
     V3.drive = { q, v: 0, fp: false, dist: V3.dist, mg: 1 }; V3.dist = 42; me.x = q.cx; me.z = q.cz; me.vx = me.vz = 0; if (isTouch || MOBILE) drivePads(true);
     if (!V3.viewBtn) { const b = V3.viewBtn = document.createElement('button'); b.id = 'drvView'; b.style.cssText = 'position:fixed;right:16px;bottom:96px;z-index:30;padding:10px 14px;border-radius:14px;border:0;background:rgba(15,23,42,.78);color:#fff;font:600 14px system-ui;backdrop-filter:blur(8px)'; b.onclick = () => { b.blur(); driveView(); }; document.body.append(b); }
@@ -14066,7 +14300,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
   let act = null;
   function updateAct() {
     let next = null;
-    if (V3.drive) next = { label: '🚪 Get out', run: () => driveExit() };
+    if (DOOR.on) next = null; else if (V3.drive) next = { label: '🚪 Get out', run: () => carLeave() };
     document.body.classList.toggle('onFloor', refHere()); // on a work floor the task panels dock to the side, so you can see yourself work
     // at a building's door: within reach of the middle of its front (not anywhere round it, so walking past on a road doesn't keep asking)
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
@@ -14118,8 +14352,8 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
     if (!next && !inside) { const tk = gridNear() || (gridTask() && gridTask().type !== "fault" && near("grid", 6) ? gridTask() : null); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; else if (near('grid', 6)) next = { label: '⚡ Careers at the National Grid', run: () => openPhone('grid') }; }
-    if (!next && V3.on && !inside && V3.wcars) { let best = null, bd = 4.2; for (const q of V3.wcars) { const dd = Math.hypot(q.cx - me.x, q.cz - me.z); if (dd < bd) { bd = dd; best = q; } } if (best) next = best.mine ? { label: best.model === 'porsche911' ? '🏎️ Drive your Porsche' : '🚗 Drive your car', run: () => driveStart(best) } : { label: '🚨 Steal this car', run: () => carTheft(best) }; } // only your own car is yours to drive // a car within reach
-    if (!next && REAL && V3.on && !inside && V3.myRide && Math.hypot(V3.myRide.cx - me.x, V3.myRide.cz - me.z) > 10) next = { label: '🏎️ Call my Porsche', run: () => { if (myRidePark()) tickerSay("Your Porsche 911 don land: it's waiting on the street beside you"); } };
+    if (!next && V3.on && !inside && V3.wcars) { let best = null, bd = 4.2; for (const q of V3.wcars) { const dd = Math.hypot(q.cx - me.x, q.cz - me.z); if (dd < bd) { bd = dd; best = q; } } if (best) next = best.mine ? { label: best.model === 'porsche911' ? '🏎️ Drive your Porsche' : '🚗 Drive your car', run: () => carEnter(best) } : { label: '🚨 Steal this car', run: () => carTheft(best) }; } // only your own car is yours to drive // a car within reach
+    // (calling your Porsche is in the Ride app now)
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
     if (!next && sector.id === 'hqrow') {
