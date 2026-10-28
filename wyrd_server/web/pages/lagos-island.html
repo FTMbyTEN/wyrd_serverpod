@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-28T00:06:25.843Z">
+<meta name="li-build" content="2026-10-28T00:10:15.258Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4907,8 +4907,8 @@ body.phoneOn #gpsPanel { opacity: .35; }
     const ms = []; gs.traverse((m) => { if (m.isMesh) ms.push(m); });
     const BG = bm.geometry, bpos = [], bgrid = new Map(), bc = 0.1, bkey = (x, y, z) => (Math.floor(x / bc) * 73856093) ^ (Math.floor(y / bc) * 19349663) ^ (Math.floor(z / bc) * 83492791), tv = new THREE.Vector3(), maxOff = WEAR_SNUG[gk] ?? 0.022;
     for (let i = 0; i < BG.attributes.position.count; i++) { tv.fromBufferAttribute(BG.attributes.position, i); bm.applyBoneTransform(i, tv); bpos.push(tv.x, tv.y, tv.z); const kk = bkey(tv.x, tv.y, tv.z); let a = bgrid.get(kk); if (!a) bgrid.set(kk, (a = [])); a.push(i); }
-    const snug = (q) => { let best = -1, bd = 1e9; for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) { const a = bgrid.get(bkey(q.x + dx * bc, q.y + dy * bc, q.z + dz * bc)); if (a) for (const j of a) { const ex = q.x - bpos[j * 3], ey = q.y - bpos[j * 3 + 1], ez = q.z - bpos[j * 3 + 2], d = ex * ex + ey * ey + ez * ez; if (d < bd) { bd = d; best = j; } } }
-      if (best < 0) return; const d = Math.sqrt(bd); if (d <= maxOff) return; const f = maxOff / d; q.set(bpos[best * 3] + (q.x - bpos[best * 3]) * f, bpos[best * 3 + 1] + (q.y - bpos[best * 3 + 1]) * f, bpos[best * 3 + 2] + (q.z - bpos[best * 3 + 2]) * f); };
+    const snug = (q) => { let best = -1, bd = 1e9; for (let r = 1; r <= 3 && best < 0; r++) for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) for (let dz = -r; dz <= r; dz++) { const a = bgrid.get(bkey(q.x + dx * bc, q.y + dy * bc, q.z + dz * bc)); if (a) for (const j of a) { const ex = q.x - bpos[j * 3], ey = q.y - bpos[j * 3 + 1], ez = q.z - bpos[j * 3 + 2], d = ex * ex + ey * ey + ez * ez; if (d < bd) { bd = d; best = j; } } }
+      snug.best = best; if (best < 0) return; const d = Math.sqrt(bd); if (d <= maxOff) return; const f = maxOff / d; q.set(bpos[best * 3] + (q.x - bpos[best * 3]) * f, bpos[best * 3 + 1] + (q.y - bpos[best * 3 + 1]) * f, bpos[best * 3 + 2] + (q.z - bpos[best * 3 + 2]) * f); };
     const parts = [], pts = [];
     ms.forEach((m, mi) => {
       if (keep && !keep.includes(mi)) return;
@@ -4919,10 +4919,14 @@ body.phoneOn #gpsPanel { opacity: .35; }
       const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), q = new THREE.Vector3(), S = new THREE.Matrix4(), M2 = new THREE.Matrix4();
       for (let i = 0; i < n; i++) {
         q.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); snug(q); pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z; pts.push(q.x, q.y, q.z);
-        let d1 = 1e9, d2 = 1e9, k1 = 0, k2 = 0;
+        // the cloth moves with the skin under it: each point takes the weights of the nearest point of the body (so a
+        // trouser leg follows its own leg and nothing stretches between them); the nearest bones only where there's no skin near
+        const bi = snug.best, BI = BG.attributes.skinIndex, BW2 = BG.attributes.skinWeight;
+        if (bi >= 0 && BI && BW2) { for (let c = 0; c < 4; c++) { si[i * 4 + c] = BI.getComponent(bi, c); sw[i * 4 + c] = BW2.getComponent(bi, c); } }
+        else { let d1 = 1e9, d2 = 1e9, k1 = 0, k2 = 0;
         for (const sg of segs) { seg.set(sg.a, sg.e); seg.closestPointToPoint(q, true, cp); const d = cp.distanceTo(q); if (d < d1) { d2 = d1; k2 = k1; d1 = d; k1 = sg.k; } else if (d < d2) { d2 = d; k2 = sg.k; } }
-        const w1 = 1 / Math.pow(d1 + 0.01, 4), w2 = 1 / Math.pow(d2 + 0.01, 4), tt = w1 + w2; si[i * 4] = k1; sw[i * 4] = w1 / tt; si[i * 4 + 1] = k2; sw[i * 4 + 1] = w2 / tt;
-        S.elements.fill(0); for (let c = 0; c < 2; c++) { const e = boneMats[si[i * 4 + c]].elements; for (let z = 0; z < 16; z++) S.elements[z] += sw[i * 4 + c] * e[z]; }
+        const w1 = 1 / Math.pow(d1 + 0.01, 4), w2 = 1 / Math.pow(d2 + 0.01, 4), tt = w1 + w2; si[i * 4] = k1; sw[i * 4] = w1 / tt; si[i * 4 + 1] = k2; sw[i * 4 + 1] = w2 / tt; }
+        S.elements.fill(0); for (let c = 0; c < 4; c++) { if (!sw[i * 4 + c]) continue; const e = boneMats[si[i * 4 + c]].elements; for (let z = 0; z < 16; z++) S.elements[z] += sw[i * 4 + c] * e[z]; }
         q.applyMatrix4(M2.multiplyMatrices(bm.bindMatrixInverse, S).multiply(bm.bindMatrix).invert()); pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z;
       }
       const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -4972,7 +4976,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     const hairKey = (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4], key = name, THREE = G3.T;
     let p = PEOPLE.inst.get(key);
     if (!p || p.hairKey !== hairKey || p.g !== L.g) { if (p) p.root.removeFromParent(); p = makePerson(L.g, hairKey); PEOPLE.inst.set(key, p); }
-    dressWear(p, L.outfit); // their clothes: real 3D garments (on once they've loaded)
+    // (their clothes are painted onto the body by its outfit shader: the 3D garments were cut for the old bodies and tear on these)
     dressAcc(p, L.acc || []); // their accessories (on once the models have loaded)
     // facing: the way they're moving
     const lying = pose === 'sleep' || (p.lie || 0) > 0.02; // going to sleep or waking: no walking about while it happens
