@@ -67,12 +67,41 @@ abstract final class TopUp {
     final have = _customers[u.uuid];
     if (have != null) return have;
     final (st, j) = await _api(s, 'POST', '/customers', body: {'name': {'first': handle, 'last': 'Lagos Island'}, 'email': email}, idem: 'cus-${u.uuid}');
-    final id = j['data'] is Map ? (j['data'] as Map)['id'] : null;
-    if (st >= 300 || id is! String) {
+    var id = j['data'] is Map ? (j['data'] as Map)['id'] : null;
+    // already a customer (made before the server last restarted, when this map was emptied): find them by email
+    if (st == 409 || (j['error'] is Map && (j['error'] as Map)['type'] == 'CUSTOMER_ALREADY_EXISTS')) id = await _findCustomer(s, email);
+    if (id is! String) {
       s.log('[topup] customer failed $st: ${j['_raw']}', level: LogLevel.warning);
       throw TopUpRefused('Checkout is not available right now. Try again in a moment.');
     }
     return _customers[u.uuid] = id;
+  }
+
+  /// a Flutterwave customer's id by email: their search, then the customer list (the newest first)
+  static Future<String?> _findCustomer(Session s, String email) async {
+    String? pick(Map<String, dynamic> j) {
+      final d = j['data'];
+      final list = d is List ? d : d is Map && d['customers'] is List ? d['customers'] as List : d is Map ? [d] : const [];
+      for (final c in list) {
+        if (c is Map && '${c['email']}'.toLowerCase() == email.toLowerCase() && c['id'] is String) return c['id'] as String;
+      }
+      return null;
+    }
+    final (st1, j1) = await _api(s, 'POST', '/customers/search', body: {'email': email});
+    final a = st1 < 300 ? pick(j1) : null;
+    if (a != null) return a;
+    for (var page = 1; page <= 5; page++) {
+      final (st2, j2) = await _api(s, 'GET', '/customers?page=$page&size=50');
+      if (st2 >= 300) {
+        s.log('[topup] customer lookup failed $st1/$st2: ${j1['_raw']} | ${j2['_raw']}', level: LogLevel.warning);
+        return null;
+      }
+      final b = pick(j2);
+      if (b != null) return b;
+      final d = j2['data'];
+      if (d is! List || d.isEmpty) break;
+    }
+    return null;
   }
 
   static Map<String, dynamic> info(Session s) {
